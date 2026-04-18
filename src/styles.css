@@ -1,1 +1,99 @@
 /* You can add global styles to this file, and also import other style files */
+/* Import font */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap');
+
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Tajawal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* container for data wrapper */
+.container {
+    padding: 7px;
+}
+
+/* Flex classes */
+.d-flex {
+    display: flex;
+    gap: 7px;
+}
+
+.align-items-start {
+    align-items: flex-start;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.align-items-end {
+    align-items: flex-end;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.justify-conrtent-betweeen {
+    justify-content: space-between;
+}
+
+.justify-conrtent-around {
+    justify-content: space-around;
+}
+
+.gap-2 {
+    gap: 1rem !important;
+}
+
+/* Mouse style */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* colors */
+.text-danger {
+    color: #CB3F41;
+}
+
+.text-primary {
+    color: #006CB5;
+}
+
+.text-secondary {
+    color: #d3d3d3;
+}
+
+/* margins */
+.m-1 {
+    margin: 0.25rem;
+}
+
+.m-2 {
+    margin: 0.5rem;
+}
+
+.m-3 {
+    margin: 0.75rem;
+}
+
+.m-4 {
+    margin: 0.1rem;
+}
+
+.mt-1 {
+    margin: 0.25rem;
+}
+.mt-2 {
+    margin: 0.5rem;
+}

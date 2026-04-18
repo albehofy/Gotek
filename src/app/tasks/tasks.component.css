@@ -1,0 +1,76 @@
+/* number of filters style */
+.number-of-filters {
+    width: 35px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 4px;
+    background-color: #F3F3F3;
+    color: #0D0D0D;
+    user-select: none;
+    cursor: pointer;
+}
+
+.number-of-filters .number {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -12px;
+    right: -7px;
+    font-size: 0.8em;
+    border-radius: 50%;
+    font-weight: 600;
+    color: #FFF;
+    background-color: #e73f3f;
+}
+
+
+/* tasks container && Tasks Cards */
+.tasks-holder {
+    padding: 0;
+    margin: 0;
+    width: 290px;
+}
+
+.open {
+    background-color: #d9f5ea;
+    padding: 0px 7px;
+    border-radius: 4px;
+}
+
+.task {
+    width: 100%;
+    padding: 7px;
+    margin: 7px 0;
+    border-radius: 4px;
+    background-color: #FFF;
+    box-shadow: rgba(0, 0, 0, 0.09) 0px 3px 12px;
+}
+
+.tasks-header {
+    padding: 3px 7px;
+    border-bottom: 1px solid #FFF;
+}
+
+.task-title {
+    font-size: 0.8em;
+    /* font-weight: 500; */
+}
+
+.task-actions  i { 
+    font-size: 0.9em;
+}
+
+.task-date {
+    font-size: 0.8rem;
+}
+
+/* alignments */
+.text-center {
+    text-align: center;
+}

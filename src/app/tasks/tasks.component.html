@@ -1,0 +1,47 @@
+<header class="d-flex align-items-center gap-2 mt-2">
+    <h2>Tasks</h2>
+    <span class="number-of-filters">
+        <i class="fa-solid fa-filter"></i>
+        <span class="number">{{appliedFilters}}</span>
+    </span>
+</header>
+
+<section>
+    <!-- open tasks -->
+    <div class="tasks-holder open">
+        <div class="tasks-header d-flex align-items-center justify-conrtent-betweeen">
+            <h3>open Tasks</h3>
+            <span>{{openTasks.length}}</span>
+        </div>
+        <div class="tasks-body">
+            @for (task of openTasks; track task.id) {
+            <div class="task">
+                <div class="task-main-info d-flex align-items-center justify-conrtent-betweeen mt-2">
+                    <h4 class="task-title">{{task.title}}</h4>
+                    <div class="task-actions">
+                        <i class="fa-regular fa-pen-to-square text-danger cursor-pointer"></i>
+                        <i class="fa-regular fa-trash-can text-primary cursor-pointer"></i>
+                    </div>
+                </div>
+                <!-- <div class="teask-description text-center">
+                    {{task.description}}
+                </div> -->
+                <div class="d-flex align-items-end justify-conrtent-betweeen mt-2">
+                    <p class="task-assigned-to  d-flex align-items-center"><i class="fa-regular fa-user"></i>
+                        <span>{{task.assignedTo}}</span></p>
+                    <p class="task-priority d-flex align-items-center"> <i class="fa-regular fa-flag"></i>
+                        <span>{{task.priority}}</span></p>
+                </div>
+                <div class="task-date-holder d-flex align-items-center  mt-2"> 
+                    <i class="fa-regular fa-calendar"></i> 
+                    <p class="d-flex align-items-center justify-conrtent-betweeen task-date">
+                        {{task.createdAt | date:'longDate'}} <i class="fa-solid fa-arrow-right text-secondary"></i> {{task.dueDate | date:'longDate'}}
+                    </p>
+                </div>
+                <!-- <p class="task-date d-flex align-items-center  mt-2"> <i class="fa-regular fa-calendar-plus"></i>Due
+                    Date: {{task.dueDate | date:'short'}}</p> -->
+            </div>
+            }
+        </div>
+    </div>
+</section>
