@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio — Gotek Digital Solutions</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      .page-hero {
+        background: var(--black);
+        padding: 160px 64px 100px;
+        position: relative;
+        overflow: hidden;
+      }
+      .page-hero-orb {
+        position: absolute;
+        width: 700px;
+        height: 700px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(
+          circle,
+          rgba(232, 98, 10, 0.08),
+          transparent 70%
+        );
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .page-hero-title {
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        letter-spacing: -2.5px;
+        color: white;
+      }
+      .page-hero-title .o {
+        color: var(--orange);
+      }
+      .page-hero-desc {
+        margin-top: 20px;
+        font-size: 1.05rem;
+        color: rgba(255, 255, 255, 0.45);
+        max-width: 560px;
+        line-height: 1.75;
+      }
+      .port-filter {
+        padding: 56px 64px 0;
+        background: var(--white);
+      }
+      .port-filter-inner {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--gray2);
+        padding-bottom: 24px;
+      }
+      .pf-btn {
+        padding: 9px 22px;
+        border-radius: 100px;
+        border: 1.5px solid var(--gray2);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        background: white;
+        color: var(--text-body);
+      }
+      .pf-btn:hover,
+      .pf-btn.active {
+        background: var(--orange);
+        border-color: var(--orange);
+        color: white;
+      }
+      .portfolio-main {
+        padding: 56px 64px 110px;
+      }
+      .port-masonry {
+        columns: 3;
+        gap: 20px;
+      }
+      .port-item {
+        text-decoration: none;
+        break-inside: avoid;
+        margin-bottom: 20px;
+        border-radius: var(--radius);
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        display: block;
+        transition:
+          transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.35s;
+      }
+      .port-item:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.14);
+      }
+      .port-thumb-wrap {
+        position: relative;
+        overflow: hidden;
+      }
+      .port-img {
+        width: 100%;
+        display: block;
+        transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+        object-fit: cover;
+      }
+      .port-bg {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+        font-size: 5rem;
+      }
+      .port-item:hover .port-bg,
+      .port-item:hover .port-img {
+        transform: scale(1.06);
+      }
+      .port-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.88) 0%,
+          rgba(0, 0, 0, 0) 55%
+        );
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 28px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .port-item:hover .port-overlay {
+        opacity: 1;
+      }
+      .port-tag-list {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .port-tag {
+        display: inline-block;
+        background: var(--orange);
+        color: white;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 100px;
+        letter-spacing: 0.5px;
+      }
+      .port-proj-name {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: white;
+        margin-bottom: 4px;
+      }
+      .port-proj-client {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.55);
+      }
+      .port-view-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        opacity: 0;
+        transform: translateY(-8px) scale(0.85);
+        transition: 0.3s;
+        box-shadow: var(--shadow-lg);
+        color: var(--orange);
+        font-weight: 700;
+      }
+      .port-item:hover .port-view-btn {
+        opacity: 1;
+        transform: none;
+      }
+      .port-feat {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: var(--orange);
+        color: white;
+        font-size: 0.62rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 100px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+      .port-skeleton {
+        break-inside: avoid;
+        margin-bottom: 20px;
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .skeleton-box {
+        background: linear-gradient(
+          90deg,
+          var(--gray) 25%,
+          var(--gray2) 50%,
+          var(--gray) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      .stats-strip {
+        background: var(--orange);
+        padding: 56px 64px;
+      }
+      .stats-strip-inner {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        text-align: center;
+      }
+      .ss-item {
+        padding: 0 20px;
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .ss-item:last-child {
+        border-right: none;
+      }
+      .ss-num {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 800;
+        font-size: 2.8rem;
+        color: white;
+        line-height: 1;
+      }
+      .ss-label {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 6px;
+      }
+      .port-empty {
+        text-align: center;
+        padding: 80px 20px;
+      }
+      .port-empty-icon {
+        font-size: 3rem;
+        margin-bottom: 16px;
+      }
+      .port-empty-title {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+      @media (max-width: 1100px) {
+        .page-hero,
+        .port-filter,
+        .portfolio-main,
+        .stats-strip {
+          padding-left: 32px;
+          padding-right: 32px;
+        }
+        .page-hero {
+          padding-top: 140px;
+        }
+        .port-masonry {
+          columns: 2;
+        }
+        .stats-strip-inner {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 40px;
+        }
+        .ss-item {
+          border-right: none;
+        }
+      }
+      @media (max-width: 640px) {
+        .page-hero,
+        .port-filter,
+        .portfolio-main,
+        .stats-strip {
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+        .page-hero {
+          padding-top: 120px;
+        }
+        .port-masonry {
+          columns: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav
+      class="nav nav-white"
+      id="nav"
+      style="background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px)"
+    >
+      <a href="index.html" class="nav-logo"
+        ><div class="logo-box">
+          <img src="logo.png" alt="" /><span class="lf">G</span>
+        </div>
+        <span class="logo-text" style="color: white"
+          >Gotek<span>.</span></span
+        ></a
+      >
+      <ul class="nav-menu">
+        <li>
+          <a
+            href="index.html"
+            style="color: rgba(255, 255, 255, 0.7)"
+            data-lang="home"
+            >Home</a
+          >
+        </li>
+        <li>
+          <a
+            href="about.html"
+            style="color: rgba(255, 255, 255, 0.7)"
+            data-lang="about"
+            >About</a
+          >
+        </li>
+        <li>
+          <a
+            href="services.html"
+            style="color: rgba(255, 255, 255, 0.7)"
+            data-lang="services"
+            >Services</a
+          >
+        </li>
+        <li>
+          <a
+            href="portfolio.html"
+            style="color: white"
+            class="active"
+            data-lang="portfolio"
+            >Portfolio</a
+          >
+        </li>
+        <li>
+          <a
+            href="contact.html"
+            style="color: rgba(255, 255, 255, 0.7)"
+            data-lang="contact"
+            >Contact</a
+          >
+        </li>
+      </ul>
+      <div class="nav-actions">
+        <a
+          href="login.html"
+          class="nav-btn-ghost"
+          style="
+            margin-right: 4px;
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+          "
+          data-lang="login"
+          >Login</a
+        ><a
+          href="contact.html"
+          class="nav-btn"
+          style="margin-right: 4px"
+          data-lang="get_started"
+          >Get Started</a
+        ><button
+          id="langToggle"
+          class="nav-btn-ghost"
+          style="
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+          "
+        >
+          AR / EN
+        </button>
+        <div class="hamburger" id="ham">
+          <span style="background: white"></span
+          ><span style="background: white"></span
+          ><span style="background: white"></span>
+        </div>
+      </div>
+    </nav>
+    <div class="mobile-menu" id="mob">
+      <a href="index.html" data-lang="home">Home</a
+      ><a href="about.html" data-lang="about">About</a
+      ><a href="services.html" data-lang="services">Services</a
+      ><a href="portfolio.html" class="active" data-lang="portfolio"
+        >Portfolio</a
+      ><a href="contact.html" data-lang="contact">Contact</a
+      ><a href="contact.html" class="mob-cta" data-lang="get_started"
+        >Get Started →</a
+      >
+    </div>
+
+    <section class="page-hero">
+      <div class="page-hero-orb"></div>
+      <div class="container" style="position: relative; z-index: 1">
+        <div
+          class="section-eyebrow reveal"
+          style="color: var(--orange)"
+          data-lang="port_hero_label"
+        >
+          Our Portfolio
+        </div>
+        <h1 class="page-hero-title reveal d1">
+          <span data-lang="port_hero_title_1">Work We're</span>
+          <span class="o" data-lang="port_hero_title_2">Proud</span><br /><span
+            data-lang="port_hero_title_3"
+            >To Deliver</span
+          >
+        </h1>
+        <p class="page-hero-desc reveal d2" data-lang="port_hero_desc">
+          Real projects. Real results. Explore our work across branding,
+          advertising, web development, video, and more.
+        </p>
+      </div>
+    </section>
+
+    <div class="port-filter">
+      <div class="container">
+        <div class="port-filter-inner">
+          <button
+            class="pf-btn active"
+            onclick="filterPort(this, 'all')"
+            data-lang="port_filter_all"
+          >
+            All Projects
+          </button>
+          <button
+            class="pf-btn"
+            onclick="filterPort(this, 'branding')"
+            data-lang="port_filter_branding"
+          >
+            Branding
+          </button>
+          <button
+            class="pf-btn"
+            onclick="filterPort(this, 'ads')"
+            data-lang="port_filter_ads"
+          >
+            Ads
+          </button>
+          <button
+            class="pf-btn"
+            onclick="filterPort(this, 'web')"
+            data-lang="port_filter_web"
+          >
+            Web
+          </button>
+          <button
+            class="pf-btn"
+            onclick="filterPort(this, 'video')"
+            data-lang="port_filter_video"
+          >
+            Video
+          </button>
+          <button
+            class="pf-btn"
+            onclick="filterPort(this, 'pos')"
+            data-lang="port_filter_pos"
+          >
+            POS
+          </button>
+          <button
+            class="pf-btn"
+            onclick="filterPort(this, 'social')"
+            data-lang="port_filter_social"
+          >
+            Social
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="portfolio-main">
+      <div class="container">
+        <div class="port-masonry" id="portGrid">
+          <div class="port-skeleton">
+            <div class="skeleton-box" style="height: 280px"></div>
+          </div>
+          <div class="port-skeleton">
+            <div class="skeleton-box" style="height: 220px"></div>
+          </div>
+          <div class="port-skeleton">
+            <div class="skeleton-box" style="height: 260px"></div>
+          </div>
+          <div class="port-skeleton">
+            <div class="skeleton-box" style="height: 320px"></div>
+          </div>
+          <div class="port-skeleton">
+            <div class="skeleton-box" style="height: 220px"></div>
+          </div>
+          <div class="port-skeleton">
+            <div class="skeleton-box" style="height: 260px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-strip stats-trigger">
+      <div class="container">
+        <div class="stats-strip-inner">
+          <div class="ss-item">
+            <div class="ss-num" data-count="150" data-suffix="+">0+</div>
+            <div class="ss-label">Projects Completed</div>
+          </div>
+          <div class="ss-item">
+            <div class="ss-num" data-count="2000" data-suffix="+">0+</div>
+            <div class="ss-label">Happy Clients</div>
+          </div>
+          <div class="ss-item">
+            <div class="ss-num" data-count="98" data-suffix="%">0%</div>
+            <div class="ss-label">Client Satisfaction</div>
+          </div>
+          <div class="ss-item">
+            <div class="ss-num" data-count="9" data-suffix="+">0+</div>
+            <div class="ss-label">Industries Served</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section
+      style="background: var(--black); padding: 110px 64px; text-align: center"
+    >
+      <div class="container">
+        <div
+          class="section-eyebrow reveal"
+          style="justify-content: center"
+          data-lang="port_cta_label"
+        >
+          Work With Us
+        </div>
+        <h2
+          class="reveal d1"
+          style="
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            letter-spacing: -2px;
+            color: white;
+          "
+        >
+          <span data-lang="port_cta_title">Your Project Could Be</span
+          ><br /><span style="color: var(--orange)" data-lang="port_cta_title_2"
+            >Our Next Success Story</span
+          >
+        </h2>
+        <div
+          class="reveal d2"
+          style="
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 48px;
+            flex-wrap: wrap;
+          "
+        >
+          <a
+            href="contact.html"
+            class="btn btn-orange"
+            data-lang="port_cta_btn"
+            style="font-size: 1rem; padding: 16px 40px"
+            >Start Your Project →</a
+          >
+          <a
+            href="services.html"
+            class="btn btn-outline-white"
+            style="font-size: 1rem; padding: 16px 40px"
+            data-lang="port_cta_btn_secondary"
+            >View Services</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-top">
+          <div class="footer-brand">
+            <a href="index.html" class="nav-logo"
+              ><div class="logo-box"><span class="lf">G</span></div>
+              <span class="logo-text" style="color: white"
+                >Gotek<span>.</span></span
+              ></a
+            >
+            <p class="footer-brand-desc" data-lang="footer_desc">
+              Integrated digital solutions. Your true growth partner.
+            </p>
+            <div class="footer-social">
+              <a
+                href="https://www.facebook.com/goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="Facebook"
+                >f</a
+              ><a
+                href="https://www.instagram.com/gotekksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="Instagram"
+                >ig</a
+              ><a
+                href="https://www.tiktok.com/@goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="TikTok"
+                >tk</a
+              ><a
+                href="https://www.snapchat.com/@goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="Snapchat"
+                >sc</a
+              ><a
+                href="https://x.com/goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="X / Twitter"
+                >𝕏</a
+              ><a
+                href="https://www.youtube.com/@GoTekSa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="YouTube"
+                >yt</a
+              >
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title" data-lang="footer_svc">Services</div>
+            <ul class="footer-links">
+              <li>
+                <a href="services.html#ads" data-lang="footer_ads"
+                  >Paid Advertising</a
+                >
+              </li>
+              <li>
+                <a href="services.html#brand" data-lang="footer_brand"
+                  >Branding & Identity</a
+                >
+              </li>
+              <li>
+                <a href="services.html#social" data-lang="footer_social"
+                  >Social Media</a
+                >
+              </li>
+              <li>
+                <a href="services.html#video" data-lang="footer_video"
+                  >Video Production</a
+                >
+              </li>
+              <li>
+                <a href="services.html#web" data-lang="footer_web"
+                  >Web Development</a
+                >
+              </li>
+              <li>
+                <a href="services.html#pos" data-lang="footer_pos"
+                  >POS Systems</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title" data-lang="footer_company">
+              Company
+            </div>
+            <ul class="footer-links">
+              <li>
+                <a href="about.html" data-lang="footer_about">About Us</a>
+              </li>
+              <li>
+                <a href="portfolio.html" data-lang="footer_port">Portfolio</a>
+              </li>
+              <li>
+                <a href="contact.html" data-lang="footer_contact_link"
+                  >Contact</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title" data-lang="footer_contact">
+              Contact
+            </div>
+            <ul class="footer-links">
+              <li>
+                <a href="mailto:hello@goteksa.com" data-lang="footer_email"
+                  >hello@goteksa.com</a
+                >
+              </li>
+              <li><a href="#" data-lang="footer_wa">WhatsApp Support</a></li>
+              <li><a href="#" data-lang="footer_ksa">Saudi Arabia</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy" data-lang="footer_copy">
+            © 2026 Gotek Digital Solutions — goteksa.com All rights reserved.
+          </div>
+          <div class="footer-legal">
+            <a href="#" data-lang="footer_privacy">Privacy Policy</a
+            ><a href="#" data-lang="footer_terms">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="shared.js"></script>
+    <script>
+      const heightMap = {
+        "al-nakheel": 280,
+        techmart: 220,
+        bloom: 260,
+        luxe: 320,
+        "al-noor": 220,
+        greenlife: 260,
+        sawa: 240,
+        medico: 280,
+        "snap-fashion": 220,
+      };
+      let allProjects = [];
+
+      function renderProjects(projects) {
+        const grid = document.getElementById("portGrid");
+        if (!projects.length) {
+          grid.innerHTML =
+            '<div class="port-empty"><div class="port-empty-icon">📂</div><div class="port-empty-title">No projects in this category yet</div></div>';
+          return;
+        }
+        grid.innerHTML = projects
+          .map((p, i) => {
+            const h = heightMap[p.id] || 240;
+            const d = i % 3 === 1 ? " d1" : i % 3 === 2 ? " d2" : "";
+            const imgHtml = p.thumbnail
+              ? `<img class="port-img" src="${p.thumbnail}" alt="${p.title}" style="height:${h}px" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="port-bg" style="background:${p.thumbBg};height:${h}px;display:none">${p.emoji}</div>`
+              : `<div class="port-bg" style="background:${p.thumbBg};height:${h}px">${p.emoji}</div>`;
+            return `<a class="port-item reveal${d}" data-cat="${p.category}" href="project.html?p=${p.id}">
+      <div class="port-thumb-wrap">${imgHtml}</div>
+      ${p.featured ? '<div class="port-feat">Featured</div>' : ""}
+      <div class="port-view-btn">↗</div>
+      <div class="port-overlay">
+        <div class="port-tag-list">${p.tags.map((t) => `<span class="port-tag">${t}</span>`).join("")}</div>
+        <div class="port-proj-name">${p.title}</div>
+        <div class="port-proj-client">${p.titleAccent}</div>
+      </div>
+    </a>`;
+          })
+          .join("");
+        // Re-observe new reveal elements
+        const ro = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) e.target.classList.add("in");
+            });
+          },
+          { threshold: 0.08 },
+        );
+        document
+          .querySelectorAll(".port-item.reveal:not(.in)")
+          .forEach((el) => ro.observe(el));
+      }
+
+      function filterPort(btn, cat) {
+        document
+          .querySelectorAll(".pf-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const filtered =
+          cat === "all"
+            ? allProjects
+            : allProjects.filter((p) => p.category === cat);
+        renderProjects(filtered);
+      }
+
+      (async function () {
+        allProjects = await GotekAPI.getProjects();
+        renderProjects(allProjects);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gotek Digital Solutions — Integrated Digital Agency</title>
+    <meta
+      name="description"
+      content="Gotek Digital Solutions provides integrated digital services — branding, paid advertising, web development, social media management, video production, and POS systems."
+    />
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="index.css" />
+    <style>
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      #homePortGrid .port-card {
+        background-size: 200% 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav class="nav nav-transparent" id="nav">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-box">
+          <img src="logo.png" alt="" /><span class="lf">G</span>
+        </div>
+        <span class="logo-text">Gotek<span>.</span></span>
+      </a>
+      <ul class="nav-menu">
+        <li><a href="index.html" class="active" data-lang="home">Home</a></li>
+        <li><a href="about.html" data-lang="about">About</a></li>
+        <li><a href="services.html" data-lang="services">Services</a></li>
+        <li><a href="portfolio.html" data-lang="portfolio">Portfolio</a></li>
+        <li><a href="contact.html" data-lang="contact">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a
+          href="login.html"
+          class="nav-btn-ghost"
+          style="margin-right: 4px"
+          data-lang="login"
+          >Login</a
+        ><a
+          href="contact.html"
+          class="nav-btn"
+          style="margin-right: 4px"
+          data-lang="get_started"
+          >Get Started</a
+        >
+        <button id="langToggle" class="nav-btn-ghost">AR / EN</button>
+        <div class="hamburger" id="ham">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="mobile-menu" id="mob">
+      <a href="index.html" data-lang="home">Home</a>
+      <a href="about.html" data-lang="about">About</a>
+      <a href="services.html" data-lang="services">Services</a>
+      <a href="portfolio.html" data-lang="portfolio">Portfolio</a>
+      <a href="contact.html" data-lang="contact">Contact</a>
+      <a href="contact.html" class="mob-cta" data-lang="mob_get_started"
+        >Get Started →</a
+      >
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-noise"></div>
+      <div class="hero-orb hero-orb1"></div>
+      <div class="hero-orb hero-orb2"></div>
+      <div class="hero-inner container">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            <span data-lang="hero_badge"
+              >Integrated Digital Solutions — Est. 2026</span
+            >
+          </div>
+          <h1 class="hero-title">
+            <span data-lang="hero_title_1">Elevate Your</span><br />
+            <span class="hero-title-line2"
+              ><span data-lang="hero_title_2">Business</span>
+              <span class="hero-accent" data-lang="hero_title_3"
+                >Online</span
+              ></span
+            >
+          </h1>
+          <p class="hero-desc">
+            <span data-lang="hero_desc"
+              >From brand identity to paid advertising, web development to POS
+              systems — we're your all-in-one digital partner built to grow your
+              business in the modern era.</span
+            >
+          </p>
+          <div class="hero-actions">
+            <a href="services.html" class="btn btn-orange"
+              ><span data-lang="explore_services">Explore Our Services</span>
+              <span class="btn-icon">→</span></a
+            >
+            <a
+              href="portfolio.html"
+              class="btn btn-outline-dark"
+              data-lang="view_work"
+              >View Our Work</a
+            >
+          </div>
+          <div class="hero-stats">
+            <div class="hstat">
+              <div class="hstat-num" data-count="2000" data-suffix="+">0+</div>
+              <div class="hstat-label" data-lang="clients_served">
+                Clients Served
+              </div>
+            </div>
+            <div class="hstat-div"></div>
+            <div class="hstat">
+              <div class="hstat-num" data-count="9" data-suffix="+">0+</div>
+              <div class="hstat-label" data-lang="years_exp">
+                Years Experience
+              </div>
+            </div>
+            <div class="hstat-div"></div>
+            <div class="hstat">
+              <div class="hstat-num" data-count="20" data-suffix="+">0+</div>
+              <div class="hstat-label" data-lang="team_spec">
+                Team Specialists
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-card hc-main">
+            <div class="hc-top">
+              <div class="hc-icon">📈</div>
+              <div class="hc-badge good">+247%</div>
+            </div>
+            <div class="hc-label">Campaign ROAS This Month</div>
+            <div class="hc-chart">
+              <div class="bar" style="--h: 40%"></div>
+              <div class="bar" style="--h: 60%"></div>
+              <div class="bar" style="--h: 45%"></div>
+              <div class="bar" style="--h: 75%"></div>
+              <div class="bar" style="--h: 55%"></div>
+              <div class="bar" style="--h: 90%"></div>
+              <div class="bar active" style="--h: 100%"></div>
+            </div>
+          </div>
+          <div class="hero-card hc-side hc-side1">
+            <div class="hcs-icon">🎨</div>
+            <div class="hcs-text" data-lang="brand_id">Brand Identity</div>
+            <div class="hcs-sub" data-lang="brand_id_sub">
+              12 delivered this week
+            </div>
+          </div>
+          <div class="hero-card hc-side hc-side2">
+            <div class="hcs-icon">🌐</div>
+            <div class="hcs-text" data-lang="web_proj">Web Projects</div>
+            <div class="hcs-sub" data-lang="web_proj_sub">
+              5 live this month
+            </div>
+          </div>
+          <div class="hero-card hc-float">
+            <div class="hcf-row">
+              <div class="hcf-dot"></div>
+              <span data-lang="new_client">New client onboarded</span>
+            </div>
+            <div class="hcf-name">Al-Nakheel Retail Co.</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-scroll-hint">
+        <div class="scroll-line"></div>
+        <span data-lang="scroll">Scroll</span>
+      </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <span data-lang="svc_ads">Paid Advertising</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_brand">Brand Identity</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_social">Social Media</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_video">Video Production</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_web">Web Development</span
+        ><span class="dot">◆</span> <span data-lang="svc_pos">POS Systems</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_ads">Paid Advertising</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_brand">Brand Identity</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_social">Social Media</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_video">Video Production</span
+        ><span class="dot">◆</span>
+        <span data-lang="svc_web">Web Development</span
+        ><span class="dot">◆</span> <span data-lang="svc_pos">POS Systems</span
+        ><span class="dot">◆</span>
+      </div>
+    </div>
+
+    <!-- ABOUT TEASER -->
+    <section class="section about-teaser">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-left reveal-left">
+            <div class="about-img-wrap">
+              <div class="about-img-bg"></div>
+              <div class="about-img-card">
+                <div class="aic-logo">
+                  <div
+                    class="logo-box"
+                    style="
+                      width: 56px;
+                      height: 56px;
+                      border-radius: 14px;
+                      font-size: 1.6rem;
+                    "
+                  >
+                    <span class="lf">G</span>
+                  </div>
+                </div>
+                <div class="aic-title" data-lang="gotek_name">
+                  Gotek Digital Solutions
+                </div>
+                <div class="aic-sub" data-lang="gotek_sub">
+                  Your Growth Partner Since 2026
+                </div>
+                <div class="aic-divider"></div>
+                <div class="aic-facts">
+                  <div class="aic-fact">
+                    <span>🏆</span>
+                    <span data-lang="fact_years">9+ Years of Expertise</span>
+                  </div>
+                  <div class="aic-fact">
+                    <span>🌍</span>
+                    <span data-lang="fact_regions">Egypt & Saudi Arabia</span>
+                  </div>
+                  <div class="aic-fact">
+                    <span>👥</span>
+                    <span data-lang="fact_team">20+ Specialists</span>
+                  </div>
+                </div>
+              </div>
+              <div class="about-float-tag">
+                <span>Founded on excellence</span>
+              </div>
+            </div>
+          </div>
+          <div class="about-right">
+            <div class="section-eyebrow reveal" data-lang="who_we">
+              Who We Are
+            </div>
+            <h2 class="section-heading reveal d1">
+              <span data-lang="about_title_1">The Agency Built</span><br /><span
+                data-lang="about_title_2"
+                >For <span class="o">Real Results</span></span
+              >
+            </h2>
+            <p class="section-sub reveal d2">
+              <span data-lang="about_desc_1"
+                >Gotek Digital Solutions combines digital marketing and
+                technical development under one roof. Built by engineers and
+                marketers with over 9 years of proven success through
+                <strong>Media Glow</strong> in Egypt, now expanding into the
+                Saudi market.</span
+              >
+            </p>
+            <p class="section-sub reveal d3" style="margin-top: 12px">
+              <span data-lang="about_desc_2"
+                >Our mission is simple:
+                <strong>your success is our success</strong>. We partner with
+                you from the initial idea to real, measurable results.</span
+              >
+            </p>
+            <div class="about-pills reveal d4">
+              <div class="pill" data-lang="pill_results">🎯 Results-Driven</div>
+              <div class="pill" data-lang="pill_partner">
+                🤝 True Partnership
+              </div>
+              <div class="pill" data-lang="pill_innov">💡 Innovation First</div>
+              <div class="pill" data-lang="pill_data">📊 Data-Backed</div>
+            </div>
+            <a
+              href="about.html"
+              class="btn btn-dark reveal d5"
+              data-lang="full_story"
+              >Our Full Story →</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section
+      class="section services-section"
+      style="background: var(--off-white)"
+    >
+      <div class="container">
+        <div class="services-head">
+          <div>
+            <div class="section-eyebrow reveal" data-lang="what_we">
+              What We Offer
+            </div>
+            <h2 class="section-heading reveal d1">
+              <span data-lang="svc_title_1">Six Ways We </span
+              ><span class="o" data-lang="svc_title_2">Grow</span><br /><span
+                data-lang="svc_title_3"
+                >Your Business</span
+              >
+            </h2>
+          </div>
+          <a
+            href="services.html"
+            class="btn btn-outline-dark reveal"
+            data-lang="all_svc"
+            >All Services →</a
+          >
+        </div>
+        <div class="services-grid">
+          <a href="services.html#ads" class="svc-card reveal">
+            <div class="svc-num">01</div>
+            <div class="svc-icon-wrap"><span>📣</span></div>
+            <h3 class="svc-title" data-lang="svc1_title">Paid Advertising</h3>
+            <p class="svc-desc" data-lang="svc1_desc">
+              Facebook, Instagram, Google, TikTok & Snapchat — targeted
+              campaigns that convert.
+            </p>
+            <div class="svc-arrow">→</div>
+          </a>
+
+          <a href="services.html#brand" class="svc-card reveal d1">
+            <div class="svc-num">02</div>
+            <div class="svc-icon-wrap"><span>🎨</span></div>
+            <h3 class="svc-title" data-lang="svc2_title">
+              Branding & Identity
+            </h3>
+            <p class="svc-desc" data-lang="svc2_desc">
+              Logo design, brand guidelines, social media kits, and print
+              materials.
+            </p>
+            <div class="svc-arrow">→</div>
+          </a>
+
+          <a href="services.html#social" class="svc-card reveal d2">
+            <div class="svc-num">03</div>
+            <div class="svc-icon-wrap"><span>📱</span></div>
+            <h3 class="svc-title" data-lang="svc3_title">
+              Social Media Management
+            </h3>
+            <p class="svc-desc" data-lang="svc3_desc">
+              Full page management, content creation, design, and performance
+              analytics.
+            </p>
+            <div class="svc-arrow">→</div>
+          </a>
+
+          <a href="services.html#video" class="svc-card reveal">
+            <div class="svc-num">04</div>
+            <div class="svc-icon-wrap"><span>🎬</span></div>
+            <h3 class="svc-title" data-lang="svc4_title">Video Production</h3>
+            <p class="svc-desc" data-lang="svc4_desc">
+              Reels, promos, shoots, and professional editing for maximum
+              engagement.
+            </p>
+            <div class="svc-arrow">→</div>
+          </a>
+
+          <a href="services.html#web" class="svc-card reveal d1">
+            <div class="svc-num">05</div>
+            <div class="svc-icon-wrap"><span>💻</span></div>
+            <h3 class="svc-title" data-lang="svc5_title">
+              Web Design & Development
+            </h3>
+            <p class="svc-desc" data-lang="svc5_desc">
+              Stunning, fast, responsive websites — from corporate to full
+              e-commerce stores.
+            </p>
+            <div class="svc-arrow">→</div>
+          </a>
+
+          <a href="services.html#pos" class="svc-card svc-card-dark reveal d2">
+            <div class="svc-num">06</div>
+            <div class="svc-icon-wrap"><span>🖥️</span></div>
+            <h3 class="svc-title" data-lang="svc6_title">POS Systems</h3>
+            <p class="svc-desc" data-lang="svc6_desc">
+              Custom cashier, inventory & sales reporting systems for retail
+              businesses.
+            </p>
+            <div class="svc-arrow">→</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- NUMBERS -->
+    <section class="section numbers-section stats-trigger">
+      <div class="container">
+        <div class="numbers-inner">
+          <div class="numbers-left">
+            <div
+              class="section-eyebrow reveal"
+              style="color: var(--orange-light)"
+              data-lang="by_numbers"
+            >
+              By The Numbers
+            </div>
+            <h2 class="section-heading reveal d1" style="color: white">
+              <span data-lang="nums_title_1">Results That</span><br /><span
+                class="o"
+                data-lang="nums_title_2"
+                >Speak Volumes</span
+              >
+            </h2>
+            <p
+              class="section-sub reveal d2"
+              style="color: rgba(255, 255, 255, 0.5); max-width: 400px"
+            >
+              <span data-lang="nums_desc"
+                >Over nine years of delivering excellence across Egypt and the
+                Kingdom of Saudi Arabia.</span
+              >
+            </p>
+            <a
+              href="about.html"
+              class="btn btn-outline-white reveal d3"
+              style="margin-top: 32px"
+              data-lang="meet_team"
+              >Meet The Team →</a
+            >
+          </div>
+          <div class="numbers-right">
+            <div class="stat-card reveal">
+              <div class="stat-num" data-count="2000" data-suffix="+">0+</div>
+              <div class="stat-label" data-lang="stat_clients">
+                Happy Clients
+              </div>
+              <div class="stat-icon">😊</div>
+            </div>
+            <div class="stat-card reveal d1">
+              <div class="stat-num" data-count="9" data-suffix="+">0+</div>
+              <div class="stat-label" data-lang="stat_years">Years Active</div>
+              <div class="stat-icon">🏆</div>
+            </div>
+            <div class="stat-card reveal d2">
+              <div class="stat-num" data-count="20" data-suffix="+">0+</div>
+              <div class="stat-label" data-lang="stat_team">
+                Team Specialists
+              </div>
+              <div class="stat-icon">👥</div>
+            </div>
+            <div class="stat-card reveal d3">
+              <div class="stat-num" data-count="6" data-suffix="">0</div>
+              <div class="stat-label" data-lang="stat_svc">Core Services</div>
+              <div class="stat-icon">⚙️</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO PREVIEW -->
+    <section class="section portfolio-section">
+      <div class="container">
+        <div class="portfolio-head">
+          <div>
+            <div class="section-eyebrow reveal" data-lang="our_port">
+              Our Portfolio
+            </div>
+            <h2 class="section-heading reveal d1">
+              <span data-lang="port_title_1">Projects We're </span
+              ><span class="o" data-lang="port_title_2">Proud</span><br /><span
+                data-lang="port_title_3"
+                >To Deliver</span
+              >
+            </h2>
+          </div>
+          <a
+            href="portfolio.html"
+            class="btn btn-orange reveal"
+            data-lang="view_all"
+            >View All Projects</a
+          >
+        </div>
+        <div class="portfolio-grid" id="homePortGrid">
+          <!-- Skeleton loaders -->
+          <div
+            class="port-card port-big"
+            style="background: var(--gray); animation: shimmer 1.4s infinite"
+          ></div>
+          <div
+            class="port-card"
+            style="background: var(--gray); animation: shimmer 1.4s infinite"
+          ></div>
+          <div
+            class="port-card"
+            style="background: var(--gray); animation: shimmer 1.4s infinite"
+          ></div>
+          <div
+            class="port-card"
+            style="background: var(--gray); animation: shimmer 1.4s infinite"
+          ></div>
+          <div
+            class="port-card"
+            style="background: var(--gray); animation: shimmer 1.4s infinite"
+          ></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section
+      class="section testimonials-section"
+      style="background: var(--off-white)"
+    >
+      <div class="container">
+        <div
+          class="section-eyebrow reveal"
+          style="justify-content: center"
+          data-lang="client_say"
+        >
+          What Clients Say
+        </div>
+        <h2 class="section-heading reveal d1" style="text-align: center">
+          <span data-lang="testi_title_1">Trusted by </span
+          ><span class="o" data-lang="testi_title_2">2,000+ Businesses</span>
+        </h2>
+        <div class="testi-grid" id="homeTestiGrid">
+          <!-- API-powered testimonials load here -->
+          <div class="testi-card reveal">
+            <div class="testi-stars">★★★★★</div>
+            <p
+              class="testi-text"
+              style="color: var(--text-muted); font-style: italic"
+            >
+              Loading reviews...
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="cta-noise"></div>
+      <div class="cta-orb"></div>
+      <div
+        class="container"
+        style="position: relative; z-index: 1; text-align: center"
+      >
+        <div
+          class="section-eyebrow reveal"
+          style="justify-content: center; color: rgba(255, 255, 255, 0.6)"
+          data-lang="ready_start"
+        >
+          Ready To Start?
+        </div>
+        <h2
+          class="reveal d1"
+          style="
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            letter-spacing: -2px;
+            color: white;
+            line-height: 1.05;
+          "
+        >
+          <span data-lang="cta_title_1">Let's Build Something</span><br /><span
+            style="color: var(--orange-light)"
+            data-lang="cta_title_2"
+            >Remarkable Together</span
+          >
+        </h2>
+        <p
+          class="reveal d2"
+          style="
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 1.05rem;
+            margin: 24px auto 0;
+            max-width: 520px;
+            line-height: 1.7;
+          "
+        >
+          <span data-lang="cta_desc"
+            >Whether you need a brand refresh, more leads, or a complete digital
+            transformation — Gotek is your partner.</span
+          >
+        </p>
+        <div
+          class="reveal d3"
+          style="
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 48px;
+            flex-wrap: wrap;
+          "
+        >
+          <a
+            href="contact.html"
+            class="btn btn-orange"
+            style="font-size: 1rem; padding: 16px 40px"
+            data-lang="start_proj"
+            >Start Your Project →</a
+          >
+          <a
+            href="services.html"
+            class="btn btn-outline-white"
+            style="font-size: 1rem; padding: 16px 40px"
+            data-lang="explore_svc"
+            >Explore Services</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-top">
+          <div class="footer-brand">
+            <a href="index.html" class="nav-logo" style="margin-bottom: 0">
+              <div class="logo-box">
+                <img src="logo.png" alt="" /><span class="lf">G</span>
+              </div>
+              <span class="logo-text" style="color: white"
+                >Gotek<span>.</span></span
+              >
+            </a>
+            <p class="footer-brand-desc" data-lang="footer_desc">
+              Integrated digital solutions for businesses and entrepreneurs.
+              Your true partner in growth — from idea to results.
+            </p>
+            <div class="footer-social">
+              <a
+                href="https://www.facebook.com/goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="Facebook"
+                >f</a
+              ><a
+                href="https://www.instagram.com/gotekksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="Instagram"
+                >ig</a
+              ><a
+                href="https://www.tiktok.com/@goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="TikTok"
+                >tk</a
+              ><a
+                href="https://www.snapchat.com/@goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="Snapchat"
+                >sc</a
+              ><a
+                href="https://x.com/goteksa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="X / Twitter"
+                >𝕏</a
+              ><a
+                href="https://www.youtube.com/@GoTekSa"
+                class="fs-btn"
+                target="_blank"
+                rel="noopener"
+                title="YouTube"
+                >yt</a
+              >
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title" data-lang="footer_svc">Services</div>
+            <ul class="footer-links">
+              <li>
+                <a href="services.html#ads" data-lang="footer_ads"
+                  >Paid Advertising</a
+                >
+              </li>
+              <li>
+                <a href="services.html#brand" data-lang="footer_brand"
+                  >Branding & Identity</a
+                >
+              </li>
+              <li>
+                <a href="services.html#social" data-lang="footer_social"
+                  >Social Media</a
+                >
+              </li>
+              <li>
+                <a href="services.html#video" data-lang="footer_video"
+                  >Video Production</a
+                >
+              </li>
+              <li>
+                <a href="services.html#web" data-lang="footer_web"
+                  >Web Development</a
+                >
+              </li>
+              <li>
+                <a href="services.html#pos" data-lang="footer_pos"
+                  >POS Systems</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title" data-lang="footer_company">
+              Company
+            </div>
+            <ul class="footer-links">
+              <li>
+                <a href="about.html" data-lang="footer_about">About Us</a>
+              </li>
+              <li>
+                <a href="portfolio.html" data-lang="footer_port">Portfolio</a>
+              </li>
+              <li>
+                <a href="contact.html" data-lang="footer_contact_link"
+                  >Contact</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title" data-lang="footer_contact">
+              Contact
+            </div>
+            <ul class="footer-links">
+              <li>
+                <a href="mailto:hello@goteksa.com" data-lang="footer_email"
+                  >hello@goteksa.com</a
+                >
+              </li>
+              <li>
+                <a href="https://wa.me/966XXXXXXXXX" data-lang="footer_wa"
+                  >WhatsApp Support</a
+                >
+              </li>
+              <li><a href="#" data-lang="footer_ksa">Saudi Arabia</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy">
+            <span data-lang="footer_copy"
+              >© 2026 Gotek Digital Solutions — goteksa.com All rights
+              reserved.</span
+            >
+            |
+            <a
+              href="https://goteksa.com"
+              style="color: rgba(255, 255, 255, 0.25); text-decoration: none"
+              >goteksa.com</a
+            >
+          </div>
+          <div class="footer-legal">
+            <a href="#" data-lang="footer_privacy">Privacy Policy</a>
+            <a href="#" data-lang="footer_terms">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="shared.js"></script>
+    <script>
+      // Hero stats trigger on load
+      document.querySelectorAll(".hstat-num[data-count]").forEach((el) => {
+        const dur = 1800,
+          end = +el.dataset.count,
+          suf = el.dataset.suffix || "";
+        const step = (ts) => {
+          if (!step.t) step.t = ts;
+          const p = Math.min((ts - step.t) / dur, 1);
+          el.textContent = Math.floor(p * end) + suf;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        setTimeout(() => requestAnimationFrame(step), 600);
+      });
+    </script>
+    <script>
+      /* Home testimonials — API powered */
+      (async function () {
+        const testimonials = await GotekAPI.getTestimonials(3);
+        const grid = document.getElementById("homeTestiGrid");
+        if (!grid || !testimonials || !testimonials.length) return;
+        const bgColors = [
+          "var(--orange)",
+          "var(--black)",
+          "#2D6A4F",
+          "#1a3a5c",
+          "#6b2d6b",
+        ];
+        grid.innerHTML = testimonials
+          .slice(0, 3)
+          .map((t, i) => {
+            const delay = i === 0 ? "" : i === 1 ? " d1" : " d2";
+            const avatarImg = t.avatar
+              ? `<img src="${t.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" loading="lazy" onerror="this.style.display='none'">`
+              : "";
+            return `<div class="testi-card reveal${delay}">
+      <div class="testi-stars">${"★".repeat(t.rating || 5)}</div>
+      <p class="testi-text">"${t.text}"</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:${bgColors[i]};position:relative;overflow:hidden">
+          ${avatarImg}
+          <span style="position:${t.avatar ? "absolute" : "relative"};opacity:${t.avatar ? "0" : "1"}">${t.initials}</span>
+        </div>
+        <div>
+          <div class="testi-name">${t.name}</div>
+          <div class="testi-role">${t.role}</div>
+        </div>
+      </div>
+    </div>`;
+          })
+          .join("");
+        const ro = new IntersectionObserver(
+          (e) =>
+            e.forEach((x) => {
+              if (x.isIntersecting) x.target.classList.add("in");
+            }),
+          { threshold: 0.08 },
+        );
+        document
+          .querySelectorAll("#homeTestiGrid .reveal:not(.in)")
+          .forEach((el) => ro.observe(el));
+      })();
+
+      /* Home portfolio — API powered */
+      (async function () {
+        const projects = await GotekAPI.getProjects({ limit: 5 });
+        const grid = document.getElementById("homePortGrid");
+        if (!grid || !projects || !projects.length) return;
+        const delays = ["", "d1", "d2", "", "d1"];
+        const isBig = [true, false, false, false, false];
+        grid.innerHTML = projects
+          .slice(0, 5)
+          .map((p, i) => {
+            const d = delays[i] ? " " + delays[i] : "";
+            const big = isBig[i] ? " port-big" : "";
+            const imgContent = p.thumbnail
+              ? `<img src="${p.thumbnail}" alt="${p.title}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" loading="lazy" onerror="this.remove()">`
+              : "";
+            return `<a href="project.html?p=${p.id}" class="port-card${big} reveal${d}" style="text-decoration:none;position:relative;overflow:hidden;display:block">
+      <div class="port-thumb" style="background:${p.thumbBg};position:relative">
+        ${imgContent}
+        <div class="port-emoji" style="${p.thumbnail ? "opacity:0" : ""}">${p.emoji}</div>
+      </div>
+      <div class="port-overlay">
+        <div class="port-tag">${p.tags[0]}</div>
+        <div class="port-name">${p.title} — ${p.titleAccent}</div>
+      </div>
+    </a>`;
+          })
+          .join("");
+        // re-observe reveals
+        const ro = new IntersectionObserver(
+          (e) =>
+            e.forEach((x) => {
+              if (x.isIntersecting) x.target.classList.add("in");
+            }),
+          { threshold: 0.08 },
+        );
+        document
+          .querySelectorAll("#homePortGrid .reveal:not(.in)")
+          .forEach((el) => ro.observe(el));
+      })();
+    </script>
+  </body>
+</html>
