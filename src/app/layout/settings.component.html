@@ -1,0 +1,172 @@
+<main class="pc">
+  <div class="pg-head">
+    <h2>Settings</h2>
+    <p>Manage your account profile and security.</p>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="saveMessage()" class="success-message">
+    {{ saveMessage() }}
+  </div>
+
+  <div class="g2">
+    <!-- Profile Section -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Profile Information</span>
+      </div>
+      <div class="cb">
+        <div class="s-group">
+          <label class="s-label">Full Name</label>
+          <input
+            class="s-input"
+            type="text"
+            [(ngModel)]="user.fullName"
+            name="fullName"
+          />
+        </div>
+
+        <div class="s-group">
+          <label class="s-label">Email Address</label>
+          <input
+            class="s-input"
+            type="email"
+            [(ngModel)]="user.email"
+            name="email"
+          />
+        </div>
+
+        <div class="s-group">
+          <label class="s-label">Company</label>
+          <input
+            class="s-input"
+            type="text"
+            [(ngModel)]="user.company"
+            name="company"
+          />
+        </div>
+
+        <div class="s-group">
+          <label class="s-label">Phone</label>
+          <input
+            class="s-input"
+            type="tel"
+            [(ngModel)]="user.phone"
+            name="phone"
+          />
+        </div>
+
+        <div class="s-group">
+          <label class="s-label">Role</label>
+          <input
+            class="s-input"
+            type="text"
+            [(ngModel)]="user.role"
+            name="role"
+            disabled
+          />
+        </div>
+
+        <button class="save-btn" (click)="onSaveProfile()">
+          Save Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- Security Section -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Security</span>
+      </div>
+      <div class="cb">
+        <div class="s-row">
+          <div>
+            <div class="s-row-title">Change Password</div>
+            <div class="s-row-sub">Last changed 30 days ago</div>
+          </div>
+          <button class="s-row-link" (click)="onChangePassword()">
+            Update →
+          </button>
+        </div>
+
+        <div class="s-row">
+          <div>
+            <div class="s-row-title">Two-Factor Authentication</div>
+            <div class="s-row-sub">
+              {{ twoFAEnabled() ? 'Enabled' : 'Adds extra account security' }}
+            </div>
+          </div>
+          <button class="s-row-link" (click)="onToggle2FA()">
+            {{ twoFAEnabled() ? 'Disable' : 'Enable' }} →
+          </button>
+        </div>
+
+        <div class="s-row danger">
+          <div>
+            <div class="s-row-title">Sign Out All Devices</div>
+            <div class="s-row-sub">Remove all active sessions</div>
+          </div>
+          <button class="s-row-link danger" onclick="location.href='/login'">
+            Sign Out →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preferences Section -->
+  <div class="card">
+    <div class="ch">
+      <span class="ch-title">Notification Preferences</span>
+    </div>
+    <div class="cb">
+      <div class="pref-row">
+        <div>
+          <div class="pref-title">Email Notifications</div>
+          <div class="pref-sub">Receive campaign and activity updates</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="settings.emailNotifications" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="pref-row">
+        <div>
+          <div class="pref-title">Push Notifications</div>
+          <div class="pref-sub">Real-time alerts on your browser</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="settings.pushNotifications" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="pref-row">
+        <div>
+          <div class="pref-title">Weekly Reports</div>
+          <div class="pref-sub">Automated summary of your metrics</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="settings.weeklyReports" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="pref-row">
+        <div>
+          <div class="pref-title">Dark Mode</div>
+          <div class="pref-sub">Easy on the eyes</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="settings.darkMode" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <button class="save-btn" (click)="onSaveSettings()">
+        Save Preferences
+      </button>
+    </div>
+  </div>
+</main>

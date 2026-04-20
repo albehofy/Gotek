@@ -1,0 +1,394 @@
+<main class="client-detail-page" *ngIf="client">
+  <!-- Header with Back Button -->
+  <div class="detail-header">
+    <button class="btn-back" (click)="goBack()">← Back to Clients</button>
+    <h1>{{ client.name }}</h1>
+    <span
+      class="status-badge"
+      [style.background-color]="getStatusColor(client.status) + '20'"
+      [style.color]="getStatusColor(client.status)"
+    >
+      {{ client.status }}
+    </span>
+  </div>
+
+  <!-- Client Overview Cards -->
+  <div class="overview-cards">
+    <div class="card-item">
+      <div class="card-label">Total Budget</div>
+      <div class="card-value">{{ client.totalBudget | currency: 'SAR' }}</div>
+      <div class="card-subtitle">Allocated</div>
+    </div>
+
+    <div class="card-item">
+      <div class="card-label">Amount Spent</div>
+      <div class="card-value spent">{{ client.totalSpent | currency: 'SAR' }}</div>
+      <div class="card-subtitle">{{ (client.totalSpent / client.totalBudget * 100) | number: '0.0' }}% Used</div>
+    </div>
+
+    <div class="card-item">
+      <div class="card-label">Amount Remaining</div>
+      <div class="card-value remaining">{{ client.totalRemaining | currency: 'SAR' }}</div>
+      <div class="card-subtitle">{{ (client.totalRemaining / client.totalBudget * 100) | number: '0.0' }}% Available</div>
+    </div>
+
+    <div class="card-item">
+      <div class="card-label">Payment Status</div>
+      <div
+        class="payment-status"
+        [style.background]="getPaymentStatusBg(client.paymentStatus)"
+        [style.color]="getPaymentStatusColor(client.paymentStatus)"
+      >
+        {{ client.paymentStatus }}
+      </div>
+    </div>
+
+    <div class="card-item">
+      <div class="card-label">Active Projects</div>
+      <div class="card-value">{{ getActiveProjectsCount() }}</div>
+      <div class="card-subtitle">In Progress</div>
+    </div>
+
+    <div class="card-item">
+      <div class="card-label">Completed Projects</div>
+      <div class="card-value">{{ getCompletedProjectsCount() }}</div>
+      <div class="card-subtitle">Finished</div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-nav">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'overview'"
+      (click)="setActiveTab('overview')"
+    >
+      Overview
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'projects'"
+      (click)="setActiveTab('projects')"
+    >
+      Projects ({{ client.projects.length }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'financial'"
+      (click)="setActiveTab('financial')"
+    >
+      Financial
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'history'"
+      (click)="setActiveTab('history')"
+    >
+      History ({{ client.history.length }})
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="tab-panel overview-panel">
+      <div class="content-grid">
+        <!-- Contact Information -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Contact Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Name:</span>
+              <span class="value">{{ client.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Email:</span>
+              <span class="value email">{{ client.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Phone:</span>
+              <span class="value phone">{{ client.phone }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Contact Person:</span>
+              <span class="value">{{ client.contactPerson || 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Website:</span>
+              <span class="value website" *ngIf="client.website">{{ client.website }}</span>
+              <span class="value" *ngIf="!client.website">N/A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Company Information -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Company Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Company Name:</span>
+              <span class="value">{{ client.company }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Tax ID:</span>
+              <span class="value">{{ client.taxId || 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Address:</span>
+              <span class="value">{{ client.address }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">City:</span>
+              <span class="value">{{ client.city }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Country:</span>
+              <span class="value">{{ client.country }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Postal Code:</span>
+              <span class="value">{{ client.postalCode }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Status -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Account Status</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Status:</span>
+              <span
+                class="badge"
+                [style.background-color]="getStatusColor(client.status) + '20'"
+                [style.color]="getStatusColor(client.status)"
+              >
+                {{ client.status }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">Join Date:</span>
+              <span class="value">{{ client.joinDate | date: 'dd MMM yyyy' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Total Projects:</span>
+              <span class="value">{{ client.projects.length }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Payment Status:</span>
+              <span
+                class="badge"
+                [style.background]="getPaymentStatusBg(client.paymentStatus)"
+                [style.color]="getPaymentStatusColor(client.paymentStatus)"
+              >
+                {{ client.paymentStatus }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Section -->
+      <div class="card" *ngIf="client.notes">
+        <div class="card-header">
+          <h3>Notes</h3>
+        </div>
+        <div class="card-body">
+          <p class="notes-text">{{ client.notes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects Tab -->
+    <div *ngIf="activeTab === 'projects'" class="tab-panel projects-panel">
+      <div *ngIf="client.projects.length > 0" class="projects-grid">
+        <div *ngFor="let project of client.projects" class="project-card">
+          <div class="project-header">
+            <div class="project-info">
+              <span class="project-icon">{{ getProjectCategoryIcon(project.category) }}</span>
+              <div>
+                <h4>{{ project.name }}</h4>
+                <p class="project-category">{{ project.category }}</p>
+              </div>
+            </div>
+            <span
+              class="project-status"
+              [style.background-color]="getStatusColor(project.status) + '20'"
+              [style.color]="getStatusColor(project.status)"
+            >
+              {{ project.status }}
+            </span>
+          </div>
+
+          <div class="project-body">
+            <div class="progress-section">
+              <div class="progress-label">
+                <span>Budget Usage</span>
+                <span class="progress-percent">{{ (project.spent / project.budget * 100) | number: '0.0' }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width]="(project.spent / project.budget * 100) + '%'"></div>
+              </div>
+            </div>
+
+            <div class="project-details">
+              <div class="detail-item">
+                <span class="detail-label">Budget</span>
+                <span class="detail-value">{{ project.budget | currency: 'SAR' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Spent</span>
+                <span class="detail-value spent">{{ project.spent | currency: 'SAR' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Remaining</span>
+                <span class="detail-value remaining">{{ (project.budget - project.spent) | currency: 'SAR' }}</span>
+              </div>
+            </div>
+
+            <div class="project-dates">
+              <div class="date-item">
+                <span class="date-label">Start Date</span>
+                <span>{{ project.startDate | date: 'dd MMM yyyy' }}</span>
+              </div>
+              <div class="date-item" *ngIf="project.endDate">
+                <span class="date-label">End Date</span>
+                <span>{{ project.endDate | date: 'dd MMM yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="client.projects.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No projects found for this client</p>
+      </div>
+    </div>
+
+    <!-- Financial Tab -->
+    <div *ngIf="activeTab === 'financial'" class="tab-panel financial-panel">
+      <div class="financial-grid">
+        <!-- Summary Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Financial Summary</h3>
+          </div>
+          <div class="card-body financial-summary">
+            <div class="summary-row">
+              <span class="label">Total Budget</span>
+              <span class="value">{{ client.totalBudget | currency: 'SAR' }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Total Spent</span>
+              <span class="value spent">{{ client.totalSpent | currency: 'SAR' }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Total Remaining</span>
+              <span class="value remaining">{{ client.totalRemaining | currency: 'SAR' }}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="summary-row">
+              <span class="label">Budget Utilization</span>
+              <span class="value percent">{{ (client.totalSpent / client.totalBudget * 100) | number: '0.0' }}%</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Payment Status</span>
+              <span
+                class="badge"
+                [style.background]="getPaymentStatusBg(client.paymentStatus)"
+                [style.color]="getPaymentStatusColor(client.paymentStatus)"
+              >
+                {{ client.paymentStatus }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project Budget Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Project Budget Breakdown</h3>
+          </div>
+          <div class="card-body">
+            <div *ngFor="let project of client.projects" class="breakdown-row">
+              <div class="breakdown-label">
+                <span>{{ project.name }}</span>
+              </div>
+              <div class="breakdown-values">
+                <span class="breakdown-amount">{{ project.budget | currency: 'SAR' }}</span>
+                <div class="breakdown-bar">
+                  <div class="breakdown-used" [style.width]="(project.spent / project.budget * 100) + '%'"></div>
+                </div>
+                <span class="breakdown-percent">{{ (project.spent / project.budget * 100) | number: '0.0' }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget Utilization Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Budget Utilization Overview</h3>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <div class="chart-item">
+              <div class="chart-label">Spent</div>
+              <div class="chart-value spent">{{ client.totalSpent | currency: 'SAR' }}</div>
+              <div class="chart-percent">{{ (client.totalSpent / client.totalBudget * 100) | number: '0.0' }}%</div>
+            </div>
+            <div class="chart-bar">
+              <div class="chart-fill-spent" [style.width]="(client.totalSpent / client.totalBudget * 100) + '%'"></div>
+              <div class="chart-fill-remaining" [style.width]="(client.totalRemaining / client.totalBudget * 100) + '%'"></div>
+            </div>
+            <div class="chart-item">
+              <div class="chart-label">Remaining</div>
+              <div class="chart-value remaining">{{ client.totalRemaining | currency: 'SAR' }}</div>
+              <div class="chart-percent">{{ (client.totalRemaining / client.totalBudget * 100) | number: '0.0' }}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div *ngIf="activeTab === 'history'" class="tab-panel history-panel">
+      <div *ngIf="client.history.length > 0" class="history-list">
+        <div *ngFor="let entry of client.history; let i = index" class="history-item">
+          <div class="history-marker">
+            <div class="history-icon">{{ getHistoryIcon(entry.type) }}</div>
+            <div *ngIf="i < client.history.length - 1" class="history-line"></div>
+          </div>
+
+          <div class="history-content">
+            <div class="history-header">
+              <h4>{{ entry.title }}</h4>
+              <span class="history-type" [style.background]="getStatusColor(entry.type) + '20'" [style.color]="getStatusColor(entry.type)">
+                {{ entry.type }}
+              </span>
+            </div>
+            <p class="history-description">{{ entry.description }}</p>
+            <div class="history-meta">
+              <span class="history-date">📅 {{ entry.timestamp | date: 'dd MMM yyyy HH:mm' }}</span>
+              <span *ngIf="entry.category" class="history-category">🏷️ {{ entry.category }}</span>
+              <span *ngIf="entry.amount" class="history-amount">💰 {{ entry.amount | currency: 'SAR' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="client.history.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No history records found</p>
+      </div>
+    </div>
+  </div>
+</main>

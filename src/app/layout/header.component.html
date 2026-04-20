@@ -1,0 +1,29 @@
+<header class="tb">
+  <div class="tb-l">
+    <button class="tb-menu" (click)="onMenuToggle()">☰</button>
+    <div class="tb-bc">
+      <span>Dashboard</span>
+      <span class="sep">›</span>
+      <span class="cur">{{ currentPage }}</span>
+    </div>
+  </div>
+  <div class="tb-r">
+    <div class="tb-search">
+      <span class="tb-search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Search…"
+        (input)="onSearch($event)"
+        [value]="searchQuery()"
+      />
+    </div>
+    <button class="tb-btn" (click)="onNotificationToggle()">
+      🔔<span class="tb-ndot"></span>
+    </button>
+    <button class="tb-user" (click)="onUserToggle()">
+      <div class="tb-av">{{ user.avatar }}</div>
+      <span class="tb-uname">{{ user.name }}</span>
+      <span class="tb-caret">▾</span>
+    </button>
+  </div>
+</header>

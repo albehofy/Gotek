@@ -1,0 +1,239 @@
+<main class="pc">
+  <!-- Welcome Banner -->
+  <div class="wbanner">
+    <div class="wb-bg"></div>
+    <div class="wb-overlay"></div>
+    <div class="wb-tint"></div>
+    <div class="wb-inner">
+      <div>
+        <div class="wb-greeting">Good morning, <em>Demo</em> 👋</div>
+        <div class="wb-sub">Here's everything happening with your campaigns today.</div>
+        <div class="wb-date">{{ currentDate() }}</div>
+      </div>
+      <div class="wb-btns">
+        <button class="wb-btn wb-primary">📣 Campaigns</button>
+        <button class="wb-btn wb-ghost">📋 Reports</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div *ngFor="let kpi of kpis" [ngClass]="['kpi', kpi.class]">
+      <div class="kpi-top">
+        <div class="kpi-icon">{{ kpi.icon }}</div>
+        <span [ngClass]="['kpi-badge', 'badge-' + kpi.badgeType]">
+          {{ kpi.badge }}
+        </span>
+      </div>
+      <div class="kpi-val">{{ formatNumber(kpi.value) }}</div>
+      <div class="kpi-label">{{ kpi.label }}</div>
+      <div class="kpi-sub">{{ kpi.subLabel }}</div>
+    </div>
+  </div>
+
+  <!-- Main Grid 2 -->
+  <div class="g2">
+    <!-- Bar Chart Card -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Platform ROAS Performance</span>
+        <a class="ch-action">Full Analytics →</a>
+      </div>
+      <div class="cb">
+        <div class="bar-chart">
+          <div class="bar-col">
+            <span class="bar-val">3.2×</span>
+            <div class="bar bar-fb" style="height: 70%"></div>
+            <span class="bar-lbl">FB</span>
+          </div>
+          <div class="bar-col">
+            <span class="bar-val">3.8×</span>
+            <div class="bar bar-ig" style="height: 82%"></div>
+            <span class="bar-lbl">IG</span>
+          </div>
+          <div class="bar-col">
+            <span class="bar-val">4.2×</span>
+            <div class="bar bar-gg" style="height: 100%"></div>
+            <span class="bar-lbl">Google</span>
+          </div>
+          <div class="bar-col">
+            <span class="bar-val">2.8×</span>
+            <div class="bar bar-tk" style="height: 58%"></div>
+            <span class="bar-lbl">TikTok</span>
+          </div>
+          <div class="bar-col">
+            <span class="bar-val">2.1×</span>
+            <div class="bar bar-sn" style="height: 42%"></div>
+            <span class="bar-lbl">Snap</span>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-i">
+            <div class="legend-d" style="background: #1877F2"></div>
+            Facebook
+          </div>
+          <div class="legend-i">
+            <div class="legend-d" style="background: #E1306C"></div>
+            Instagram
+          </div>
+          <div class="legend-i">
+            <div class="legend-d" style="background: var(--accent)"></div>
+            Google
+          </div>
+          <div class="legend-i">
+            <div class="legend-d" style="background: #111"></div>
+            TikTok
+          </div>
+          <div class="legend-i">
+            <div class="legend-d" style="background: #FFFC00; border: 1px solid #ccc"></div>
+            Snapchat
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed Card -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Recent Activity</span>
+        <a class="ch-action">Mark all read</a>
+      </div>
+      <div class="cb">
+        <div class="feed">
+          <div *ngFor="let activity of activities" class="feed-item">
+            <div [ngClass]="['feed-icon', activity.iconClass]">{{ activity.icon }}</div>
+            <div>
+              <div class="feed-text">
+                <strong>{{ activity.title }}</strong> {{ activity.description }}
+              </div>
+              <div class="feed-time">{{ activity.time }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid 3 -->
+  <div class="g3">
+    <!-- Campaigns Table -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Active Campaigns</span>
+        <a class="ch-action">All →</a>
+      </div>
+      <div class="cb">
+        <table class="ctable">
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Status</th>
+              <th>ROAS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let campaign of campaigns">
+              <td>
+                <div class="ct-name">{{ campaign.name }}</div>
+                <div class="ct-sub">{{ campaign.platform }}</div>
+              </td>
+              <td>
+                <span [ngClass]="['badge', 'b-' + campaign.statusType]">
+                  ● {{ campaign.status }}
+                </span>
+              </td>
+              <td>
+                <span [ngClass]="['ct-roas', campaign.statusType === 'paused' ? 'muted' : '']">
+                  {{ campaign.roas }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Projects Progress -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Projects In Progress</span>
+        <a class="ch-action">All →</a>
+      </div>
+      <div class="cb">
+        <div class="proj-items">
+          <div *ngFor="let project of projects" class="proj-item">
+            <div class="proj-emoji">{{ project.emoji }}</div>
+            <div class="proj-info">
+              <div class="proj-name">{{ project.name }}</div>
+              <div class="proj-type">{{ project.type }}</div>
+              <div class="proj-prog">
+                <div class="prog-bar">
+                  <div class="prog-fill g" [style.width.%]="project.progress"></div>
+                </div>
+              </div>
+            </div>
+            <div class="proj-pct">{{ project.progress }}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Donut -->
+    <div class="card">
+      <div class="ch">
+        <span class="ch-title">Budget Split</span>
+      </div>
+      <div class="cb">
+        <div class="donut-wrap">
+          <div class="donut">
+            <div class="donut-c">
+              <div class="donut-n">40K</div>
+              <div class="donut-s">SAR / mo</div>
+            </div>
+          </div>
+        </div>
+        <div class="dl">
+          <div class="dl-row">
+            <div class="dl-dot" style="background: var(--accent)"></div>
+            <span class="dl-lbl">Meta (FB/IG)</span>
+            <span class="dl-pct">38%</span>
+          </div>
+          <div class="dl-row">
+            <div class="dl-dot" style="background: var(--blue)"></div>
+            <span class="dl-lbl">Google Ads</span>
+            <span class="dl-pct">24%</span>
+          </div>
+          <div class="dl-row">
+            <div class="dl-dot" style="background: var(--green)"></div>
+            <span class="dl-lbl">TikTok</span>
+            <span class="dl-pct">16%</span>
+          </div>
+          <div class="dl-row">
+            <div class="dl-dot" style="background: var(--gold)"></div>
+            <span class="dl-lbl">Snapchat</span>
+            <span class="dl-pct">22%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card">
+    <div class="ch">
+      <span class="ch-title">Quick Actions</span>
+    </div>
+    <div class="cb">
+      <div class="qa-grid">
+        <a *ngFor="let action of quickActions" class="qa">
+          <span class="qa-icon">{{ action.icon }}</span>
+          <div>
+            <div class="qa-label">{{ action.label }}</div>
+            <div class="qa-sub">{{ action.subLabel }}</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</main>

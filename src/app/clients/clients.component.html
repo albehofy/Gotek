@@ -1,0 +1,347 @@
+<main class="pc">
+  <div class="pg-head">
+    <h1>Clients</h1>
+    <button class="btn-primary" (click)="onAddClient()">
+      <span>+ Add Client</span>
+    </button>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="filters">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search by name, email, company..."
+        [(ngModel)]="searchQuery"
+        (input)="filterClients()"
+        class="search-input"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="filter-status">
+      <select [(ngModel)]="filterStatus" (change)="filterClients()" class="select-filter">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="suspended">Suspended</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Clients Table -->
+  <div class="table-container">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Company</th>
+          <th>Contact</th>
+          <th>Total Budget</th>
+          <th>Spent / Remaining</th>
+          <th>Payment Status</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of getPaginatedClients()" class="table-row">
+          <td>
+            <strong>{{ client.name }}</strong>
+            <div class="client-person">{{ client.contactPerson }}</div>
+          </td>
+          <td>{{ client.company }}</td>
+          <td>
+            <div class="contact-info">
+              <div>{{ client.email }}</div>
+              <div class="phone">{{ client.phone }}</div>
+            </div>
+          </td>
+          <td class="amount">{{ client.totalBudget | currency: 'SAR' }}</td>
+          <td class="amount">
+            <div>
+              <span class="spent">{{ client.totalSpent | currency: 'SAR' }}</span>
+              <span class="remaining">{{ client.totalRemaining | currency: 'SAR' }}</span>
+            </div>
+          </td>
+          <td>
+            <span
+              class="badge payment-badge"
+              [style.background]="getPaymentStatusBg(client.paymentStatus)"
+              [style.color]="getPaymentStatusColor(client.paymentStatus)"
+            >
+              {{ client.paymentStatus }}
+            </span>
+          </td>
+          <td>
+            <span
+              class="badge status-badge"
+              [style.background-color]="getStatusColor(client.status) + '20'"
+              [style.color]="getStatusColor(client.status)"
+            >
+              {{ client.status }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-action show" (click)="onShowClient(client)" title="View Details">
+              👁️
+            </button>
+            <button class="btn-action edit" (click)="onEditClient(client)" title="Edit">
+              ✏️
+            </button>
+            <button class="btn-action delete" (click)="onDeleteClient(client)" title="Delete">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredClients.length === 0" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>No clients found</p>
+      <button class="btn-secondary" (click)="onAddClient()">Add Your First Client</button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="filteredClients.length > 0" class="pagination">
+    <button
+      class="pg-btn"
+      [disabled]="currentPage() === 1"
+      (click)="currentPage.set(currentPage() - 1)"
+    >
+      ← Previous
+    </button>
+    <span class="pg-info">Page {{ currentPage() }} of {{ getTotalPages() }}</span>
+    <button
+      class="pg-btn"
+      [disabled]="currentPage() === getTotalPages()"
+      (click)="currentPage.set(currentPage() + 1)"
+    >
+      Next →
+    </button>
+  </div>
+</main>
+
+<!-- Add Client Modal -->
+<div class="modal-overlay" [class.active]="showAddModal()" (click)="closeModals()">
+  <div class="modal-content add-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Add New Client</h2>
+      <button class="btn-close" (click)="closeModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Client Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="newClient.name"
+          placeholder="Enter client name"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Email *</label>
+        <input
+          type="email"
+          [(ngModel)]="newClient.email"
+          placeholder="Enter email"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Company *</label>
+        <input
+          type="text"
+          [(ngModel)]="newClient.company"
+          placeholder="Enter company name"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Phone</label>
+        <input
+          type="tel"
+          [(ngModel)]="newClient.phone"
+          placeholder="Enter phone number"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Contact Person</label>
+        <input
+          type="text"
+          [(ngModel)]="newClient.contactPerson"
+          placeholder="Enter contact person name"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>City</label>
+        <input
+          type="text"
+          [(ngModel)]="newClient.city"
+          placeholder="Enter city"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Country</label>
+        <input
+          type="text"
+          [(ngModel)]="newClient.country"
+          placeholder="Enter country"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Total Budget</label>
+        <input
+          type="number"
+          [(ngModel)]="newClient.totalBudget"
+          placeholder="Enter total budget"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="newClient.status" class="form-input">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="suspended">Suspended</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn-primary" (click)="onSaveNewClient()">Add Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Client Modal -->
+<div class="modal-overlay" [class.active]="showEditModal()" (click)="closeModals()">
+  <div class="modal-content edit-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Client</h2>
+      <button class="btn-close" (click)="closeModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="selectedClient" class="edit-form">
+        <div class="form-group">
+          <label>Client Name</label>
+          <input
+            type="text"
+            [(ngModel)]="editingClient.name"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            [(ngModel)]="editingClient.email"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Company</label>
+          <input
+            type="text"
+            [(ngModel)]="editingClient.company"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input
+            type="tel"
+            [(ngModel)]="editingClient.phone"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Contact Person</label>
+          <input
+            type="text"
+            [(ngModel)]="editingClient.contactPerson"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>City</label>
+          <input
+            type="text"
+            [(ngModel)]="editingClient.city"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Country</label>
+          <input
+            type="text"
+            [(ngModel)]="editingClient.country"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select [(ngModel)]="editingClient.status" class="form-input">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Status</label>
+          <select [(ngModel)]="editingClient.paymentStatus" class="form-input">
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn-primary" (click)="onSaveEditClient()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" [class.active]="showDeleteModal()" (click)="closeModals()">
+  <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Delete Client</h2>
+      <button class="btn-close" (click)="closeModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p *ngIf="selectedClient" class="delete-message">
+        Are you sure you want to delete <strong>{{ selectedClient.name }}</strong>? This action cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn-danger" (click)="onConfirmDelete()">Delete Client</button>
+    </div>
+  </div>
+</div>

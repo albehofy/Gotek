@@ -1,4 +1,37 @@
-<div class="container">
-  <!-- Tasks Page -->
-  <app-tasks/>
-</div>
+<!-- Show Login if not authenticated -->
+<router-outlet *ngIf="!showDashboard()"></router-outlet>
+
+<!-- Show Dashboard if authenticated -->
+<ng-container *ngIf="showDashboard()">
+  <!-- Mobile sidebar overlay - only show on mobile when sidebar is open -->
+  <div class="sb-overlay" *ngIf="sidebarOpen()" (click)="$event.stopPropagation(); onSidebarToggle()"></div>
+
+  <!-- Sidebar -->
+  <app-sidebar
+    [isOpen]="sidebarOpen()"
+    (toggleSidebar)="onSidebarToggle()"
+    (navigate)="onNavigate($event)"
+    (logout)="onLogout()"
+    (toggleCollapse)="onSidebarCollapse()"
+  ></app-sidebar>
+
+  <!-- Main Content Area -->
+  <div class="main" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <!-- Header -->
+    <app-header
+      [currentPage]="currentPage()"
+      (toggleSidebar)="onSidebarToggle()"
+      (toggleNotifications)="onNotificationToggle()"
+      (toggleUserMenu)="onUserToggle()"
+    ></app-header>
+
+    <!-- Tasks View -->
+    <app-tasks *ngIf="isViewActive('tasks')"></app-tasks>
+
+    <!-- Clients View -->
+    <app-clients *ngIf="isViewActive('clients')"></app-clients>
+
+    <!-- Settings View -->
+    <app-settings *ngIf="isViewActive('settings')"></app-settings>
+  </div>
+</ng-container>

@@ -1,0 +1,56 @@
+<aside class="sb" [class.open]="isOpen" [class.collapsed]="isCollapsed()">
+  <div class="sb-img"></div>
+  <div class="sb-grad"></div>
+  <div class="sb-content" (click)="$event.stopPropagation()">
+    <div class="sb-header">
+      <a href="#" class="sb-logo" (click)="$event.preventDefault()">
+        <div class="sb-lb"><span>G</span></div>
+        <span class="sb-lname">Gotek<em>.</em></span>
+      </a>
+      <button class="sb-close" (click)="onToggleCollapse(); $event.stopPropagation()" title="Collapse sidebar">{{ isCollapsed() ? '→' : '←' }}</button>
+    </div>
+
+    <nav class="sb-nav">
+      <ng-container *ngFor="let section of ['Main', 'Content', 'Communication', 'Account']">
+        <div class="sb-section" *ngIf="getSectionItems(section).length > 0 && !isCollapsed()">
+          {{ section }}
+        </div>
+        <ng-container *ngFor="let item of getSectionItems(section)">
+          <button
+            class="sb-item"
+            [class.active]="activeItem() === item.id"
+            (click)="onNavigate(item.id)"
+            [title]="isCollapsed() ? item.label : ''"
+          >
+            <span class="sb-icon">{{ item.icon }}</span>
+            <span *ngIf="!isCollapsed()">{{ item.label }}</span>
+            <span class="sb-badge" *ngIf="item.badge">{{ item.badge }}</span>
+            <span class="sb-dot" *ngIf="item.dot"></span>
+          </button>
+        </ng-container>
+      </ng-container>
+    </nav>
+
+    <div class="sb-foot">
+      <button class="sb-user" (click)="showUserMenu.set(!showUserMenu())">
+        <div class="sb-av">{{ user.avatar }}</div>
+        <div class="sb-uinfo" *ngIf="!isCollapsed()">
+          <div class="sb-uname">{{ user.name }}</div>
+          <div class="sb-urole">{{ user.role }}</div>
+        </div>
+        <span class="sb-ucaret" *ngIf="!isCollapsed()">▾</span>
+      </button>
+
+      <!-- User Menu Dropdown -->
+      <div class="user-menu" *ngIf="showUserMenu()">
+        <button class="user-menu-item" (click)="onNavigate('settings'); showUserMenu.set(false)">
+          ⚙️ Settings
+        </button>
+        <div class="menu-divider"></div>
+        <button class="user-menu-item danger" (click)="onLogout(); showUserMenu.set(false)">
+          🚪 Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>

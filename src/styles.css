@@ -1,86 +1,158 @@
-/* You can add global styles to this file, and also import other style files */
-/* Import font */
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap');
+/* =====================================================
+   GOTEK DASHBOARD — Global Styles
+   Fonts: Cormorant Garamond (display) + Plus Jakarta Sans
+   Palette: Near-white bg | Black sidebar | Orange accent
+   Responsive: 260px → ∞
+   ===================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&display=swap');
+
+:root {
+  --accent: #E8620A;
+  --accent-h: #CC5308;
+  --accent-p: #FFF3EC;
+  --accent-pm: #FFDCC7;
+  --ink: #0E0C0A;
+  --ink2: #1C1916;
+  --body: #3A3530;
+  --muted: #8A8078;
+  --muted-m: #D9D0C6;
+  --lite: #B8B0A8;
+  --bg: #F5F3EF;
+  --surface: #FFFFFF;
+  --border: #E4DED6;
+  --border2: #EDE8E2;
+  --green: #16A34A;
+  --green-p: #DCFCE7;
+  --green-m: #BBECCB;
+  --red: #DC2626;
+  --red-p: #FEF2F2;
+  --red-h: #A71D1D;
+  --red-m: #FCB5B5;
+  --blue: #2563EB;
+  --blue-p: #EFF6FF;
+  --blue-m: #BDD7F9;
+  --gold: #D97706;
+  --gold-p: #FFFBEB;
+  --gold-m: #FDD589;
+  --sb-w: 256px;
+  --tb-h: 64px;
+  --ff-d: 'Cormorant Garamond', Georgia, serif;
+  --ff-b: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --r: 12px;
+  --r-lg: 18px;
+  --shadow: 0 1px 12px rgba(14, 12, 10, 0.07);
+  --shadow-xs: 0 1px 4px rgba(14, 12, 10, 0.04);
+  --shadow-s: 0 2px 12px rgba(14, 12, 10, 0.08);
+  --shadow-m: 0 6px 28px rgba(14, 12, 10, 0.1);
+  --shadow-l: 0 12px 48px rgba(14, 12, 10, 0.15);
+  --shadow-xl: 0 20px 60px rgba(14, 12, 10, 0.2);
+}
 
 *,
 *::before,
 *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
 }
 
 body {
-    font-family: "Tajawal", sans-serif;
-    font-weight: 400;
-    font-style: normal;
+  font-family: var(--ff-b);
+  background: var(--bg);
+  color: var(--body);
+  min-height: 100%;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* container for data wrapper */
-.container {
-    padding: 7px;
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-/* Flex classes */
-.d-flex {
-    display: flex;
-    gap: 7px;
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
 
-.align-items-start {
-    align-items: flex-start;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
-.align-items-center {
-    align-items: center;
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--ff-d);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.15;
 }
 
-.align-items-end {
-    align-items: flex-end;
+/* ── Main Layout ── */
+app-root {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  /* overflow: hidden; */
 }
 
-.justify-content-center {
-    justify-content: center;
+/* Main area container - only shown with sidebar on dashboard */
+.main {
+  margin-left: var(--sb-w);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.32s var(--ease);
 }
 
-.justify-conrtent-betweeen {
-    justify-content: space-between;
+.main.sidebar-collapsed {
+  margin-left: 80px;
 }
 
-.justify-conrtent-around {
-    justify-content: space-around;
+/* Mobile sidebar overlay */
+.sb-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(14, 12, 10, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 290;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.32s var(--ease), visibility 0.32s var(--ease);
+  pointer-events: none;
 }
 
-.gap-2 {
-    gap: 1rem !important;
+@media (max-width: 1024px) {
+  .sb-overlay {
+    display: block;
+  }
 }
 
-/* Mouse style */
-.cursor-pointer {
-    cursor: pointer;
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .main {
+    margin-left: 0;
+  }
 }
 
-/* colors */
-.text-danger {
-    color: #CB3F41;
-}
-
-.text-primary {
-    color: #006CB5;
-}
-
-.text-secondary {
-    color: #d3d3d3;
-}
-
-/* margins */
-.m-1 {
-    margin: 0.25rem;
-}
-
-.m-2 {
-    margin: 0.5rem;
+@media (max-width: 280px) {
+  :root {
+    --sb-w: 220px;
+  }
 }
 
 .m-3 {
