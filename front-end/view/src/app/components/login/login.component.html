@@ -1,0 +1,86 @@
+<div style="min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: var(--bg-main);">
+  
+  <!-- LEFT: Form -->
+  <div style="display: flex; align-items: center; justify-content: center; padding: 40px; position: relative;">
+    <div class="glow-orb primary" style="top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3;"></div>
+    
+    <div class="glass-panel" style="width: 100%; max-width: 480px; padding: 48px; border-radius: var(--radius-lg); position: relative; z-index: 2;">
+      <a routerLink="/" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; margin-bottom: 32px; transition: color 0.3s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-secondary)'">
+        <i class="fa-solid fa-arrow-left"></i> Back to website
+      </a>
+
+      <div class="sec-tag">Secure Sign In</div>
+      <h1 class="sec-title" style="font-size: 2.5rem; margin-bottom: 16px;">Welcome <span>back</span></h1>
+      <p style="color: var(--text-secondary); margin-bottom: 32px;">Access your Gotek dashboard — campaigns, projects, reports, and more.</p>
+
+      <div style="background: rgba(232, 98, 10, 0.1); border: 1px solid rgba(232, 98, 10, 0.2); padding: 16px; border-radius: var(--radius-sm); display: flex; gap: 16px; margin-bottom: 32px;">
+        <i class="fa-solid fa-lightbulb" style="color: var(--orange); font-size: 1.2rem; margin-top: 4px;"></i>
+        <div>
+          <div style="color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 8px;">Demo Access</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 4px;"><strong>Email:</strong> demo&#64;goteksa.com</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem;"><strong>Password:</strong> gotek2026</div>
+        </div>
+      </div>
+
+      <div *ngIf="showError" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.9rem; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Invalid email or password. Please try again.
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="color: var(--text-primary); font-size: 0.95rem; font-weight: 600;">Email Address <span style="color: var(--orange);">*</span></label>
+          <div style="position: relative;">
+            <i class="fa-solid fa-envelope" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            <input type="email" formControlName="email" placeholder="you@company.com" class="form-control" style="padding-left: 48px;" autocomplete="email" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="color: var(--text-primary); font-size: 0.95rem; font-weight: 600;">Password <span style="color: var(--orange);">*</span></label>
+          <div style="position: relative;">
+            <i class="fa-solid fa-lock" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Enter your password" class="form-control" style="padding-left: 48px; padding-right: 48px;" autocomplete="current-password" />
+            <button type="button" (click)="togglePassword()" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+              <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" formControlName="rememberMe" id="rememberMe" style="accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer;" />
+          <label for="rememberMe" style="color: var(--text-secondary); font-size: 0.9rem; cursor: pointer;">Remember me for 30 days</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || loading" style="width: 100%; padding: 16px; font-size: 1.05rem; justify-content: center;">
+          {{ loading ? 'Signing in...' : 'Sign in to Dashboard' }} <i class="fa-solid fa-arrow-right" *ngIf="!loading"></i>
+        </button>
+
+      </form>
+
+      <div style="text-align: center; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border-light);">
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">Don't have an account? <a routerLink="/contact" style="color: var(--orange); text-decoration: none; font-weight: 600;">Contact us</a></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: Visual -->
+  <div style="background: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1600&q=80') center/cover no-repeat; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 64px;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(5,5,7,0.9) 0%, rgba(232,98,10,0.3) 100%);"></div>
+    
+    <div style="position: relative; z-index: 2;">
+      <a routerLink="/" style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+        <img src="assets/gotek-logo.png" alt="Gotek" style="height: 48px; filter: brightness(0) invert(1);" />
+        Gotek<span style="color: var(--orange);">.</span>
+      </a>
+    </div>
+
+    <div style="position: relative; z-index: 2;">
+      <div class="sec-tag" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff;">Client Portal</div>
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 4rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 24px;">Your growth,<br/><span style="color: var(--orange);">fully</span> visible.</h2>
+      <p style="color: rgba(255,255,255,0.8); font-size: 1.25rem; max-width: 500px; line-height: 1.6;">Track every campaign, approve deliverables, and review performance — all your digital work in one intelligent dashboard.</p>
+    </div>
+  </div>
+
+</div>

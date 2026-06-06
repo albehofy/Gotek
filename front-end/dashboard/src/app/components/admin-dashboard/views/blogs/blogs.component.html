@@ -1,0 +1,84 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">{{ isEditing ? 'Edit Blog Article' : 'Write New Blog Article' }}</div>
+      <button *ngIf="isEditing" class="action-btn" (click)="cancelEdit()">Cancel Edit</button>
+    </div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="blogForm" (ngSubmit)="saveBlog()">
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div class="fgroup">
+            <label class="s-label">Article Title (English)</label>
+            <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Modern UI Design Trends" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Article Title (Arabic)</label>
+            <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: اتجاهات تصميم واجهات المستخدم الحديثة" dir="rtl" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Content (English)</label>
+            <textarea class="s-input" formControlName="description_en" rows="5" required placeholder="Write article content here..."></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Content (Arabic)</label>
+            <textarea class="s-input" formControlName="description_ar" rows="5" required placeholder="اكتب محتوى المقال هنا..." dir="rtl"></textarea>
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Image Alternate Text (SEO)</label>
+            <input class="s-input" formControlName="img_alt" type="text" placeholder="e.g. Design Trends" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Media File (Image or Video)</label>
+            <input class="s-input" type="file" accept="image/*,video/*" (change)="onMediaSelected($event)" style="padding-top: 10px;" />
+            <div *ngIf="mediaPreview" style="margin-top: 10px;">
+              <img [src]="mediaPreview" style="max-height: 80px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" />
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+          <button type="submit" class="save-btn" [disabled]="loading || blogForm.invalid">{{ isEditing ? 'Update Article' : 'Publish Article' }}</button>
+          <button type="button" *ngIf="isEditing" class="action-btn" style="background: #e1e1e1;" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Published Articles</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadBlogs()">Refresh List</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 800px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px; width: 80px;">Cover</th>
+            <th style="padding: 15px;">Title (EN)</th>
+            <th style="padding: 15px;">Title (AR)</th>
+            <th style="padding: 15px; width: 80px; text-align: center;">Likes</th>
+            <th style="padding: 15px; width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of blogs">
+            <td>
+              <img *ngIf="b.media_url || b.image" [src]="b.media_url || b.image" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;">
+            </td>
+            <td><strong>{{ b.title_en || b.title?.en || b.title }}</strong></td>
+            <td>{{ b.title_ar || b.title?.ar }}</td>
+            <td style="text-align: center;">
+              <span class="badge badge-blue">{{ b.likes || 0 }} <i class="fi fi-rr-heart" style="color: red; margin-left: 2px;"></i></span>
+            </td>
+            <td>
+              <button class="action-btn" title="Edit Article" (click)="editBlog(b)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fi fi-rr-edit"></i></button>
+              <button class="action-btn" title="Delete Article" (click)="deleteBlog(b.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="blogs.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px; color: var(--admin-text-light);">No articles found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

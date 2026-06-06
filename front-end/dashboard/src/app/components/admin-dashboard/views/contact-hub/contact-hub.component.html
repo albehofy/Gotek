@@ -1,0 +1,64 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Edit Contact Information</div></div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="contactForm" (ngSubmit)="saveContactInfo()">
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div class="fgroup"><label class="s-label">WhatsApp Phone</label><input class="s-input" formControlName="whatsapp_phone" type="text" /></div>
+          <div class="fgroup"><label class="s-label">WhatsApp Description</label><input class="s-input" formControlName="whatsapp_desc" type="text" /></div>
+          <div class="fgroup"><label class="s-label">Official Email</label><input class="s-input" formControlName="official_email" type="email" /></div>
+          <div class="fgroup"><label class="s-label">Company Address</label><input class="s-input" formControlName="company_address" type="text" /></div>
+          <div class="fgroup"><label class="s-label">Google Maps URL</label><input class="s-input" formControlName="google_maps_url" type="text" /></div>
+          <div class="fgroup"><label class="s-label">Emergency Support Info</label><input class="s-input" formControlName="emergency_support_info" type="text" /></div>
+        </div>
+        <div style="margin-top: 30px;">
+          <button type="submit" class="save-btn" [disabled]="loadingInfo">Save All Changes</button>
+          <span *ngIf="infoMessage" style="margin-left: 15px; color: var(--admin-primary);">{{ infoMessage }}</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Customer Inquiries</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadInquiries()">Refresh Messages</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 900px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px;">Lead Name</th>
+            <th style="padding: 15px;">Contact Info</th>
+            <th style="padding: 15px;">Project & Service</th>
+            <th style="padding: 15px;">Date</th>
+            <th style="padding: 15px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let inq of inquiries">
+            <td>
+              <strong>{{ inq.full_name }}</strong><br>
+              <small style="color:var(--admin-text-muted)">{{ inq.company_name || 'Individual' }}</small>
+            </td>
+            <td>
+              <a href="mailto:{{ inq.email }}" style="color:var(--admin-primary);text-decoration:none">{{ inq.email }}</a><br>
+              <span style="font-size:0.85rem;color:var(--admin-text-muted)">{{ inq.phone }}</span>
+            </td>
+            <td>
+              <span class="badge badge-blue">{{ inq.service_needed || 'General' }}</span><br>
+              <small style="display:block;margin-top:5px;max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" [title]="inq.project_details">{{ inq.project_details }}</small>
+            </td>
+            <td>{{ inq.created_at | date:'short' }}</td>
+            <td>
+              <button class="action-btn" title="Delete Lead" (click)="deleteInquiry(inq.id)"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="inquiries.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px;">No inquiries found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

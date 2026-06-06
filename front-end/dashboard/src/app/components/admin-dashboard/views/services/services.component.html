@@ -1,0 +1,124 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">{{ isEditing ? 'Edit Service' : 'Add New Service' }}</div>
+      <button *ngIf="isEditing" class="action-btn" (click)="cancelEdit()">Cancel Edit</button>
+    </div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          
+          <!-- General Service info -->
+          <div class="fgroup">
+            <label class="s-label">Service Title (English)</label>
+            <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Web Development" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Service Title (Arabic)</label>
+            <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: تطوير مواقع الويب" dir="rtl" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Category / Badge (English)</label>
+            <input class="s-input" formControlName="subtitle_en" type="text" required placeholder="e.g. Technology" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Category / Badge (Arabic)</label>
+            <input class="s-input" formControlName="subtitle_ar" type="text" required placeholder="مثلاً: التقنية" dir="rtl" />
+          </div>
+
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Description (English)</label>
+            <textarea class="s-input" formControlName="description_en" rows="3" required></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Description (Arabic)</label>
+            <textarea class="s-input" formControlName="description_ar" rows="3" required dir="rtl"></textarea>
+          </div>
+
+          <!-- Icon & Ordering -->
+          <div class="fgroup">
+            <label class="s-label">FontAwesome Icon Class</label>
+            <input class="s-input" formControlName="icon" type="text" placeholder="e.g. fa-solid fa-laptop-code" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Display Order</label>
+            <input class="s-input" formControlName="order" type="number" />
+          </div>
+
+          <!-- Features -->
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Features - English (Comma separated)</label>
+            <input class="s-input" formControlName="features_en" type="text" placeholder="e.g. Fast Loading, Custom CMS, Responsive Design" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Features - Arabic (Comma separated)</label>
+            <input class="s-input" formControlName="features_ar" type="text" placeholder="مثلاً: تحميل سريع، لوحة تحكم مخصصة، تصميم متجاوب" dir="rtl" />
+          </div>
+
+          <!-- Stats -->
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Stats - English (Format: Label:Sub:Badge, separated by commas)</label>
+            <input class="s-input" formControlName="stats_str_en" type="text" placeholder="e.g. 100%:Customized:New, 24/7:Support:N/A" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Stats - Arabic (Format: Label:Sub:Badge, separated by commas)</label>
+            <input class="s-input" formControlName="stats_str_ar" type="text" placeholder="مثلاً: %100:مخصص:جديد، 24/7:دعم متواصل" dir="rtl" />
+          </div>
+
+          <!-- CTA URL & Text -->
+          <div class="fgroup">
+            <label class="s-label">CTA Text (English)</label>
+            <input class="s-input" formControlName="cta_text_en" type="text" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">CTA Text (Arabic)</label>
+            <input class="s-input" formControlName="cta_text_ar" type="text" dir="rtl" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">CTA Link URL</label>
+            <input class="s-input" formControlName="cta_url" type="text" placeholder="/contact" />
+          </div>
+        </div>
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+          <button type="submit" class="save-btn" [disabled]="loading || serviceForm.invalid">{{ isEditing ? 'Update Service' : 'Create Service' }}</button>
+          <button type="button" *ngIf="isEditing" class="action-btn" style="background: #e1e1e1;" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All Services</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadServices()">Refresh List</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 800px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px; width: 60px;">Icon</th>
+            <th style="padding: 15px;">Service Title (EN)</th>
+            <th style="padding: 15px;">Category (EN)</th>
+            <th style="padding: 15px; width: 60px;">Order</th>
+            <th style="padding: 15px; width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of services">
+            <td style="text-align: center; font-size: 1.2rem; padding: 15px;"><i [class]="s.iconClass || s.icon"></i></td>
+            <td><strong>{{ s.title_en || s.title?.en || s.title }}</strong></td>
+            <td><span class="badge badge-blue">{{ s.subtitle_en || s.category?.en || s.category }}</span></td>
+            <td>{{ s.order }}</td>
+            <td>
+              <button class="action-btn" title="Edit Service" (click)="editService(s)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fi fi-rr-edit"></i></button>
+              <button class="action-btn" title="Delete Service" (click)="deleteService(s.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="services.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px; color: var(--admin-text-light);">No services found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

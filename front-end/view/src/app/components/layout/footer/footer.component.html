@@ -1,0 +1,55 @@
+<footer class="glass-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a routerLink="/" class="nav-logo-txt" style="margin-bottom: 16px; display: inline-flex;">
+          <img src="assets/gotek-logo.png" alt="Gotek" style="height: 36px; filter: brightness(0) invert(1);" />
+          Gotek<span>.</span>
+        </a>
+        <p class="footer-brand-desc">{{ footerData?.desc?.en || ('footer_desc' | translate) }}</p>
+        <div class="footer-social">
+          <a *ngIf="footerData?.socials?.facebook" [href]="footerData.socials.facebook" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+          <a *ngIf="!footerData || !footerData.socials" href="https://www.facebook.com/goteksa" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+          
+          <a *ngIf="footerData?.socials?.instagram" [href]="footerData.socials.instagram" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+          <a *ngIf="!footerData || !footerData.socials" href="https://www.instagram.com/gotekksa" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+          
+          <a *ngIf="footerData?.socials?.twitter" [href]="footerData.socials.twitter" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+          <a *ngIf="!footerData || !footerData.socials" href="https://x.com/goteksa" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">{{ 'footer_svc' | translate }}</div>
+        <ul class="footer-links">
+          <li><a routerLink="/services">{{ 'footer_ads' | translate }}</a></li>
+          <li><a routerLink="/services">{{ 'footer_brand' | translate }}</a></li>
+          <li><a routerLink="/services">{{ 'footer_social' | translate }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">{{ 'footer_company' | translate }}</div>
+        <ul class="footer-links">
+          <li><a routerLink="/about">{{ 'footer_about' | translate }}</a></li>
+          <li><a routerLink="/portfolio">{{ 'footer_port' | translate }}</a></li>
+          <li><a routerLink="/contact">{{ 'footer_contact_link' | translate }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">{{ 'footer_contact' | translate }}</div>
+        <ul class="footer-links">
+          <li><a [href]="'mailto:' + (footerData?.email || 'hello@goteksa.com')">{{ footerData?.email || ('footer_email' | translate) }}</a></li>
+          <li><a [href]="'https://wa.me/' + (footerData?.phone || '966500000000')">{{ footerData?.phone || ('footer_wa' | translate) }}</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom" style="border-top: 1px solid var(--border-light); padding-top: 24px;">
+      <div class="footer-copy">
+        <span>{{ footerData?.copy?.en || ('footer_copy' | translate) }}</span>
+      </div>
+      <div class="footer-legal">
+        <a href="#">{{ 'footer_privacy' | translate }}</a>
+        <a href="#">{{ 'footer_terms' | translate }}</a>
+      </div>
+    </div>
+  </div>
+</footer>

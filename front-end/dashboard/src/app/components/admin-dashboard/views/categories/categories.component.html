@@ -1,0 +1,78 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">{{ isEditing ? 'Edit Category' : 'Add New Category' }}</div>
+      <button *ngIf="isEditing" class="action-btn" (click)="cancelEdit()">Cancel Edit</button>
+    </div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div class="fgroup">
+            <label class="s-label">Category Name (English)</label>
+            <input class="s-input" formControlName="name_en" type="text" required placeholder="e.g. Mobile Apps" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Category Name (Arabic)</label>
+            <input class="s-input" formControlName="name_ar" type="text" required placeholder="مثلاً: تطبيقات الجوال" dir="rtl" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Description (English)</label>
+            <textarea class="s-input" formControlName="description_en" rows="2" placeholder="Brief explanation of category..."></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Description (Arabic)</label>
+            <textarea class="s-input" formControlName="description_ar" rows="2" placeholder="وصف الفئة..." dir="rtl"></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Category Thumbnail / Image</label>
+            <input class="s-input" type="file" accept="image/*" (change)="onImageSelected($event)" style="padding-top: 10px;" />
+            <div *ngIf="imagePreview" style="margin-top: 10px;">
+              <img [src]="imagePreview" style="max-height: 80px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+          <button type="submit" class="save-btn" [disabled]="loading || categoryForm.invalid">{{ isEditing ? 'Update Category' : 'Create Category' }}</button>
+          <button type="button" *ngIf="isEditing" class="action-btn" style="background: #e1e1e1;" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All Portfolio Categories</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadCategories()">Refresh List</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 700px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px; width: 80px;">Thumbnail</th>
+            <th style="padding: 15px;">Category Name (EN)</th>
+            <th style="padding: 15px;">Category Name (AR)</th>
+            <th style="padding: 15px;">Description (EN)</th>
+            <th style="padding: 15px; width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cat of categories">
+            <td>
+              <img *ngIf="cat.image_url || cat.image" [src]="cat.image_url || cat.image" style="width: 45px; height: 45px; border-radius: 4px; object-fit: cover;">
+            </td>
+            <td><strong>{{ cat.name_en || cat.name?.en || cat.name }}</strong></td>
+            <td>{{ cat.name_ar || cat.name?.ar }}</td>
+            <td style="color: var(--admin-text-light); font-size: 0.9rem;">{{ cat.description_en || cat.description?.en || 'N/A' }}</td>
+            <td>
+              <button class="action-btn" title="Edit Category" (click)="editCategory(cat)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fi fi-rr-edit"></i></button>
+              <button class="action-btn" title="Delete Category" (click)="deleteCategory(cat.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="categories.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px; color: var(--admin-text-light);">No categories found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

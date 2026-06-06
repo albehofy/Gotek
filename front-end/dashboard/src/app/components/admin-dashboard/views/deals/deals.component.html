@@ -1,0 +1,187 @@
+<div class="view-container">
+  <!-- Top Title / Action -->
+  <div class="view-header">
+    <div>
+      <h2 class="view-title">Deals Management</h2>
+      <p class="view-subtitle">Track clients contracts, total invoicing, payments, and operational progress.</p>
+    </div>
+    <button *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'" class="btn btn-primary" (click)="openAddModal()">
+      <i class="fi fi-rr-plus"></i> Write Client Deal
+    </button>
+  </div>
+
+  <!-- Key Metrics Summary Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card card-billing">
+      <div class="metric-icon"><i class="fi fi-rr-money-bill-wave"></i></div>
+      <div class="metric-details">
+        <span class="metric-label">Total Invoicing</span>
+        <h3 class="metric-value">{{ totalBilling | number:'1.2-2' }} SAR</h3>
+      </div>
+    </div>
+    <div class="metric-card card-paid">
+      <div class="metric-icon"><i class="fi fi-rr-checkbox"></i></div>
+      <div class="metric-details">
+        <span class="metric-label">Paid Amount</span>
+        <h3 class="metric-value">{{ totalPaid | number:'1.2-2' }} SAR</h3>
+      </div>
+    </div>
+    <div class="metric-card card-due">
+      <div class="metric-icon"><i class="fi fi-rr-time-past"></i></div>
+      <div class="metric-details">
+        <span class="metric-label">Remaining Balance</span>
+        <h3 class="metric-value">{{ totalRemaining | number:'1.2-2' }} SAR</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid / List -->
+  <div class="glass-panel">
+    <div class="panel-header">
+      <h3 class="panel-title"><i class="fi fi-rr-briefcase" style="color: var(--color-orange);"></i> Client Deals</h3>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading deal ledger...</p>
+    </div>
+
+    <div *ngIf="!isLoading && deals.length === 0" class="empty-state">
+      <i class="fi fi-rr-folder-open empty-icon"></i>
+      <p>No active client deals logged yet.</p>
+    </div>
+
+    <!-- Responsive Table -->
+    <div *ngIf="!isLoading && deals.length > 0" class="table-responsive">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Deal Title</th>
+            <th>Client</th>
+            <th>Total Cost</th>
+            <th>Paid</th>
+            <th>Due Balance</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let deal of deals">
+            <td class="deal-title">
+              <strong>{{ deal.title }}</strong>
+              <small>{{ deal.description | slice:0:60 }}...</small>
+            </td>
+            <td>
+              <div class="client-badge">
+                <i class="fi fi-rr-user"></i> {{ deal.client?.name || 'Gotek Client' }}
+              </div>
+            </td>
+            <td class="price-cell">{{ deal.total_price | number:'1.2-2' }} SAR</td>
+            <td class="paid-cell">{{ deal.paid_amount | number:'1.2-2' }} SAR</td>
+            <td class="due-cell" [class.danger-text]="deal.remaining_balance > 0">{{ deal.remaining_balance | number:'1.2-2' }} SAR</td>
+            <td>
+              <div class="progress-container">
+                <div class="progress-bar" [style.width.%]="deal.progress"></div>
+                <span class="progress-text">{{ deal.progress }}%</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [class]="'badge-' + deal.status">{{ deal.status }}</span>
+            </td>
+            <td *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'">
+              <div class="action-btn-group">
+                <button class="action-btn pay" title="Log Payment" (click)="openPaymentModal(deal)">
+                  <i class="fi fi-rr-dollar"></i>
+                </button>
+                <button class="action-btn edit" title="Edit Deal" (click)="openEditModal(deal)">
+                  <i class="fi fi-rr-edit"></i>
+                </button>
+                <button class="action-btn delete" title="Delete Deal" (click)="deleteDeal(deal.id)">
+                  <i class="fi fi-rr-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Deal Modal Form -->
+  <div class="modal-backdrop" *ngIf="showDealModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Modify Client Deal' : 'Log New Client Deal' }}</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <form [formGroup].="dealForm" (ngSubmit)="submitDeal()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Deal Title / Contract Identifier</label>
+            <input type="text" formControlName="title" placeholder="e.g. Website development and SEO package" />
+          </div>
+
+          <div class="form-group">
+            <label>Details / Specifications</label>
+            <textarea formControlName="description" rows="4" placeholder="Detail deal milestones..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Assigned Client Account</label>
+            <select formControlName="client_id">
+              <option value="">Choose client...</option>
+              <option *ngFor="let client of clients" [value]="client.id">{{ client.name }} ({{ client.email }})</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Total Contract Price (SAR)</label>
+              <input type="number" formControlName="total_price" min="0" />
+            </div>
+            <div class="form-group half" *ngIf="!isEditMode">
+              <label>Initial Downpayment Paid (SAR)</label>
+              <input type="number" formControlName="paid_amount" min="0" />
+            </div>
+            <div class="form-group half" *ngIf="isEditMode">
+              <label>Status</label>
+              <select formControlName="status">
+                <option value="pending">Pending</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="dealForm.invalid">Save Deal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Log Payment Modal -->
+  <div class="modal-backdrop" *ngIf="showPaymentModal">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3>Record Client Payment</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Payment Amount Received (SAR)</label>
+            <input type="number" formControlName="amount" placeholder="e.g. 5000" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid">Add Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

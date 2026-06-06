@@ -1,0 +1,181 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">{{ isEditing ? 'Edit Project Details & Case Study' : 'Add New Project' }}</div>
+      <button *ngIf="isEditing" class="action-btn" (click)="cancelEdit()">Cancel Edit</button>
+    </div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+        
+        <!-- SECTION 1: GENERAL INFO -->
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--admin-text-light);">1. General Info</h3>
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+          <div class="fgroup">
+            <label class="s-label">Project Title (English)</label>
+            <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Gotek E-Commerce Platform" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Project Title (Arabic)</label>
+            <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: متجر جوتيك الإلكتروني" dir="rtl" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Category</label>
+            <select class="s-input" formControlName="category_id" required>
+              <option value="">Select Category</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name_en || cat.name?.en || cat.name }}</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Main Image Alt Text</label>
+            <input class="s-input" formControlName="main_image_alt" type="text" placeholder="SEO Alt Text" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Description / Brief (English)</label>
+            <textarea class="s-input" formControlName="description_en" rows="3" required></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Description / Brief (Arabic)</label>
+            <textarea class="s-input" formControlName="description_ar" rows="3" required dir="rtl"></textarea>
+          </div>
+        </div>
+
+        <!-- SECTION 2: BRANDING & VISUALS -->
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--admin-text-light);">2. Branding & Visuals</h3>
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px;">
+          <div class="fgroup">
+            <label class="s-label">Case Study Accent Color</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="color" formControlName="color" style="width: 45px; height: 45px; border: none; border-radius: 4px; cursor: pointer; background: transparent;" />
+              <input class="s-input" formControlName="color" type="text" placeholder="#000000" style="flex: 1;" />
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Project Emoji Icon</label>
+            <input class="s-input" formControlName="emoji" type="text" placeholder="e.g. 🛍️ or 🎨" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Main Image File</label>
+            <input class="s-input" type="file" accept="image/*" (change)="onMainImageSelected($event)" style="padding-top: 10px;" />
+            <div *ngIf="mainImagePreview" style="margin-top: 10px;">
+              <img [src]="mainImagePreview" style="max-height: 80px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: CASE STUDY META -->
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--admin-text-light);">3. Case Study Meta</h3>
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+          <div class="fgroup">
+            <label class="s-label">Client Name</label>
+            <input class="s-input" formControlName="client" type="text" placeholder="e.g. Aura Cosmetics" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Timeline</label>
+            <input class="s-input" formControlName="timeline" type="text" placeholder="e.g. 3 Months" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Project Tags (Comma separated)</label>
+            <input class="s-input" formControlName="tags" type="text" placeholder="e.g. E-Commerce, Angular, Laravel" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Deliverables (Comma separated)</label>
+            <input class="s-input" formControlName="deliverables" type="text" placeholder="e.g. UI/UX Design, Payment Gateway, SEO" />
+          </div>
+        </div>
+
+        <!-- SECTION 4: CHALLENGE & SOLUTION -->
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--admin-text-light);">4. Challenge & Solution</h3>
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Challenge (English)</label>
+            <textarea class="s-input" formControlName="challenge_en" rows="3"></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Challenge (Arabic)</label>
+            <textarea class="s-input" formControlName="challenge_ar" rows="3" dir="rtl"></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Solution (English)</label>
+            <textarea class="s-input" formControlName="solution_en" rows="3"></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Solution (Arabic)</label>
+            <textarea class="s-input" formControlName="solution_ar" rows="3" dir="rtl"></textarea>
+          </div>
+        </div>
+
+        <!-- SECTION 5: METRICS & TESTIMONIAL -->
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--admin-text-light);">5. Metrics & Testimonial</h3>
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Results / Stats (Format: Value:Label, separated by commas)</label>
+            <input class="s-input" formControlName="results_str" type="text" placeholder="e.g. 150%:Sales Growth, 99.9%:Uptime, 3x:Recall" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Client Quote / Testimonial Text</label>
+            <textarea class="s-input" formControlName="testimonial_text" rows="2" placeholder="Feedback quote..."></textarea>
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Quote Author Name</label>
+            <input class="s-input" formControlName="testimonial_name" type="text" placeholder="e.g. Fahad Al-Mansoori" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Quote Author Role</label>
+            <input class="s-input" formControlName="testimonial_role" type="text" placeholder="e.g. CEO, Gotek Retail" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Quote Author Avatar Image URL</label>
+            <input class="s-input" formControlName="testimonial_avatar" type="text" placeholder="HTTPS image url" />
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+          <button type="submit" class="save-btn" [disabled]="loading || projectForm.invalid">
+            <i class="fi fi-rr-disk" style="margin-right: 5px;"></i> {{ isEditing ? 'Update Project & Case Study' : 'Create Project' }}
+          </button>
+          <button type="button" *ngIf="isEditing" class="action-btn" style="background: #e1e1e1;" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TABLE CARD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All Projects</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadProjects()">Refresh List</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 900px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px; width: 60px;">Emoji</th>
+            <th style="padding: 15px; width: 80px;">Image</th>
+            <th style="padding: 15px;">Project Title (EN)</th>
+            <th style="padding: 15px;">Category</th>
+            <th style="padding: 15px;">Client</th>
+            <th style="padding: 15px; width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of projects">
+            <td style="text-align: center; font-size: 1.5rem; padding: 15px;">{{ p.emoji || '🏗️' }}</td>
+            <td style="padding: 10px;">
+              <img *ngIf="p.main_image_url || p.image" [src]="p.main_image_url || p.image" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;">
+            </td>
+            <td><strong>{{ p.title_en || p.title?.en || p.title }}</strong></td>
+            <td><span class="badge badge-blue">{{ p.category?.name_en || p.category?.name?.en || 'N/A' }}</span></td>
+            <td>{{ p.client || 'N/A' }}</td>
+            <td>
+              <button class="action-btn" title="Edit Project" (click)="editProject(p)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fi fi-rr-edit"></i></button>
+              <button class="action-btn" title="Delete Project" (click)="deleteProject(p.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="projects.length === 0">
+            <td colspan="6" style="text-align: center; padding: 25px; color: var(--admin-text-light);">No projects found in database.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

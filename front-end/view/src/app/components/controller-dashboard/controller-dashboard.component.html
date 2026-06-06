@@ -1,0 +1,1188 @@
+<!-- Mobile sidebar overlay -->
+<div class="sb-overlay" [class.active]="sidebarOpen" (click)="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sb" [class.open]="sidebarOpen">
+  <div class="sb-img"></div>
+  <div class="sb-grad"></div>
+  <div class="sb-content">
+    <a routerLink="/" class="sb-logo">
+      <img src="assets/gotek-logo.png" alt="Gotek Logo" style="height: 38px; object-fit: contain; padding-left: 6px;" />
+    </a>
+
+    <nav class="sb-nav">
+      <div class="sb-section">Main Console</div>
+      <a class="sb-item" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+        <span class="sb-icon"><i class="fa-solid fa-gauge"></i></span><span>Dashboard Overview</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'contact-hub'" (click)="setTab('contact-hub')">
+        <span class="sb-icon"><i class="fa-solid fa-inbox"></i></span><span>Contact Hub & Leads</span>
+        <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>
+      </a>
+
+      <!-- Collapsible Website Content Menu -->
+      <div class="nav-dropdown" [class.open]="websiteMenuOpen">
+        <div class="sb-item dropdown-toggle-btn" (click)="toggleWebsiteMenu()" style="cursor: pointer;">
+          <span class="sb-icon"><i class="fa-solid fa-globe"></i></span>
+          <span>Website Content</span>
+          <i class="fa-solid fa-chevron-down arrow-icon" style="margin-left: auto; transition: transform 0.3s; font-size: 0.8rem;" [style.transform]="websiteMenuOpen ? 'rotate(180deg)' : 'none'"></i>
+        </div>
+        <div class="dropdown-menu-list" [style.max-height]="websiteMenuOpen ? '500px' : '0'" style="overflow: hidden; transition: max-height 0.3s ease-in-out; padding-left: 12px;">
+          <a class="sb-item nav-sub-item" [class.active]="activeTab === 'projects'" (click)="setTab('projects')">
+            <span class="sb-icon"><i class="fa-solid fa-folder-open"></i></span>
+            <span>Projects / Portfolio</span>
+          </a>
+          <a class="sb-item nav-sub-item" [class.active]="activeTab === 'categories'" (click)="setTab('categories')">
+            <span class="sb-icon"><i class="fa-solid fa-tags"></i></span>
+            <span>Portfolio Categories</span>
+          </a>
+          <a class="sb-item nav-sub-item" [class.active]="activeTab === 'services'" (click)="setTab('services')">
+            <span class="sb-icon"><i class="fa-solid fa-gears"></i></span>
+            <span>Services Catalog</span>
+          </a>
+          <a class="sb-item nav-sub-item" [class.active]="activeTab === 'blogs'" (click)="setTab('blogs')">
+            <span class="sb-icon"><i class="fa-solid fa-newspaper"></i></span>
+            <span>Blog Articles</span>
+          </a>
+          <a class="sb-item nav-sub-item" [class.active]="activeTab === 'testimonials'" (click)="setTab('testimonials')">
+            <span class="sb-icon"><i class="fa-solid fa-comments"></i></span>
+            <span>Testimonials</span>
+          </a>
+          <a class="sb-item nav-sub-item" [class.active]="activeTab === 'faqs'" (click)="setTab('faqs')">
+            <span class="sb-icon"><i class="fa-solid fa-circle-question"></i></span>
+            <span>FAQs Accordion</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sb-section">Static Page Editors</div>
+      <a class="sb-item" [class.active]="activeTab === 'home-page'" (click)="setTab('home-page')">
+        <span class="sb-icon"><i class="fa-solid fa-house"></i></span><span>Home Page Section</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'about-page'" (click)="setTab('about-page')">
+        <span class="sb-icon"><i class="fa-solid fa-circle-info"></i></span><span>About Page Section</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'services-page'" (click)="setTab('services-page')">
+        <span class="sb-icon"><i class="fa-solid fa-briefcase"></i></span><span>Services Page Section</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'portfolio-page'" (click)="setTab('portfolio-page')">
+        <span class="sb-icon"><i class="fa-solid fa-images"></i></span><span>Portfolio Page Section</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'blogs-page'" (click)="setTab('blogs-page')">
+        <span class="sb-icon"><i class="fa-solid fa-blog"></i></span><span>Blogs Page Section</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'footer-section'" (click)="setTab('footer-section')">
+        <span class="sb-icon"><i class="fa-solid fa-sliders"></i></span><span>Footer Content</span>
+      </a>
+
+      <div class="sb-section">System</div>
+      <a class="sb-item" routerLink="/">
+        <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span><span>Visit Website</span>
+      </a>
+      <a class="sb-item danger" (click)="logout()" style="cursor: pointer;">
+        <span class="sb-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span>Logout</span>
+      </a>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-user" (click)="toggleDropdown('user')">
+        <div class="sb-av"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="sb-uinfo">
+          <div class="sb-uname">Gotek Admin</div>
+          <div class="sb-urole">Administrator</div>
+        </div>
+        <span class="sb-ucaret">▾</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT CONTAINER -->
+<div class="main-container">
+  <!-- TOPBAR -->
+  <header class="tb">
+    <div class="tb-l">
+      <button class="tb-menu" (click)="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div class="tb-bc">
+        <span>Control Dashboard</span>
+        <span class="sep">›</span>
+        <span class="cur">{{ activeTab | titlecase }}</span>
+      </div>
+    </div>
+    <div class="tb-r">
+      <div class="tb-user" (click)="toggleDropdown('user')">
+        <div class="tb-av"><i class="fa-solid fa-user-shield"></i></div>
+        <span class="tb-uname">Gotek Admin</span>
+        <span class="tb-caret">▾</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- User profile dropdown -->
+  <div class="dropdown dd-user" [class.show]="activeDropdown === 'user'">
+    <div class="ud-top">
+      <div class="ud-name">Gotek Admin</div>
+      <div class="ud-role">Administrator</div>
+      <div class="ud-email">demo&#64;goteksa.com</div>
+    </div>
+    <a class="ud-row" (click)="setTab('contact-hub')"><i class="fa-solid fa-inbox" style="color:var(--orange)"></i> &nbsp;Manage Leads</a>
+    <a class="ud-row" routerLink="/"><i class="fa-solid fa-globe" style="color:var(--orange)"></i> &nbsp;Visit Website</a>
+    <div class="ud-divider"></div>
+    <a class="ud-row danger" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i> &nbsp;Sign Out</a>
+  </div>
+
+  <!-- VIEW PANEL AREA -->
+  <main class="pc">
+
+    <!-- OVERVIEW TAB -->
+    <div class="view" [class.active]="activeTab === 'overview'">
+      <div class="wbanner">
+        <div class="wb-bg"></div>
+        <div class="wb-overlay"></div>
+        <div class="wb-tint"></div>
+        <div class="wb-inner">
+          <div>
+            <div class="wb-greeting">Welcome to Gotek Hub 👋</div>
+            <div class="wb-sub">Ready to fully control and manage the website databases.</div>
+          </div>
+          <div class="wb-btns">
+            <button class="wb-btn wb-primary" (click)="setTab('projects')"><i class="fa-solid fa-folder-open"></i> Portfolio Projects</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" (click)="setTab('projects')">
+          <div class="label">Total Active Projects</div>
+          <div class="value">{{ overviewStats.projects }}</div>
+          <div class="trend up"><i class="fa-solid fa-circle-check"></i> Live portfolio items</div>
+        </div>
+        <div class="stat-card" (click)="setTab('services')">
+          <div class="label">Services Available</div>
+          <div class="value">{{ overviewStats.services }}</div>
+          <div class="trend up"><i class="fa-solid fa-circle-check"></i> Active catalog</div>
+        </div>
+        <div class="stat-card" (click)="setTab('testimonials')">
+          <div class="label">Client Testimonials</div>
+          <div class="value">{{ overviewStats.testimonials }}</div>
+          <div class="trend up"><i class="fa-solid fa-circle-check"></i> Approved reviews</div>
+        </div>
+        <div class="stat-card" (click)="setTab('contact-hub')">
+          <div class="label">Active Inquiries</div>
+          <div class="value">{{ overviewStats.inquiries }}</div>
+          <div class="trend up"><i class="fa-solid fa-circle-check"></i> Pending leads</div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+        
+        <!-- Chart 1: Project Distribution -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-pie" style="color:var(--orange); margin-right:8px;"></i>
+              Projects by Category
+            </div>
+          </div>
+          <div class="cb" style="padding: 10px 0;">
+            <div *ngIf="projectsChartData.length === 0" style="text-align:center; padding: 40px; color:var(--admin-muted);">
+              No category data available
+            </div>
+            <div *ngIf="projectsChartData.length > 0" class="chart-bars" style="display:flex; flex-direction:column; gap:16px;">
+              <div *ngFor="let item of projectsChartData" class="chart-bar-row">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
+                  <span style="font-weight:600; color:var(--admin-text);">{{ item.name }}</span>
+                  <span style="font-weight:700; color:var(--orange);">
+                    {{ item.count }} 
+                    <span style="opacity:0.6; font-size:0.75rem; font-weight:500;">
+                      ({{ (overviewStats.projects > 0 ? (item.count / overviewStats.projects * 100) : 0) | number:'1.0-0' }}%)
+                    </span>
+                  </span>
+                </div>
+                <div style="width:100%; height:8px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; border: 1px solid rgba(255,255,255,0.02);">
+                  <div [style.width.%]="overviewStats.projects > 0 ? (item.count / overviewStats.projects * 100) : 0" style="height:100%; background:linear-gradient(90deg, var(--orange), #ff7a1f); border-radius:10px; transition: width 1s ease-in-out;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart 2: Leads by Service -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-column" style="color:var(--indigo); margin-right:8px;"></i>
+              Leads Distribution
+            </div>
+          </div>
+          <div class="cb" style="padding: 10px 0;">
+            <div *ngIf="inquiriesChartData.length === 0" style="text-align:center; padding: 40px; color:var(--admin-muted);">
+              No leads data available
+            </div>
+            <div *ngIf="inquiriesChartData.length > 0" class="chart-bars" style="display:flex; flex-direction:column; gap:16px;">
+              <div *ngFor="let item of inquiriesChartData" class="chart-bar-row">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
+                  <span style="font-weight:600; color:var(--admin-text);">{{ item.name }}</span>
+                  <span style="font-weight:700; color:var(--indigo);">
+                    {{ item.count }} 
+                    <span style="opacity:0.6; font-size:0.75rem; font-weight:500;">
+                      ({{ (overviewStats.inquiries > 0 ? (item.count / overviewStats.inquiries * 100) : 0) | number:'1.0-0' }}%)
+                    </span>
+                  </span>
+                </div>
+                <div style="width:100%; height:8px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; border: 1px solid rgba(255,255,255,0.02);">
+                  <div [style.width.%]="overviewStats.inquiries > 0 ? (item.count / overviewStats.inquiries * 100) : 0" style="height:100%; background:linear-gradient(90deg, var(--indigo), #a5b4fc); border-radius:10px; transition: width 1s ease-in-out;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Projects Table -->
+      <div class="card" style="margin-top: 24px">
+        <div class="card-header">
+          <div class="card-title">Recent Project Updates</div>
+          <a (click)="setTab('projects')" style="font-size: 0.8rem; color: var(--orange); text-decoration: none; cursor:pointer;">View All</a>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Project Title</th>
+                <th>Category</th>
+                <th>Client</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of recentProjects">
+                <td>
+                  <div class="user-cell">
+                    <img *ngIf="p.main_image_url || p.image" [src]="p.main_image_url || p.image" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
+                    <span>{{ p.title_en || p.title }}</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-blue">{{ p.category?.name_en || p.category_id || 'N/A' }}</span></td>
+                <td>{{ p.client || 'N/A' }}</td>
+              </tr>
+              <tr *ngIf="recentProjects.length === 0">
+                <td colspan="3" style="text-align: center; padding: 20px;">No recent projects found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES TAB -->
+    <div class="view" [class.active]="activeTab === 'services'">
+      <div class="card" *ngIf="showServiceForm" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">{{ isEditingService ? 'Edit Service' : 'Add New Service' }}</div>
+          <button class="action-btn" (click)="cancelEditService()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+        </div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Service Title (English)</label>
+                <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Web Development" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Service Title (Arabic)</label>
+                <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: تطوير مواقع الويب" dir="rtl" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Category / Badge (English)</label>
+                <input class="s-input" formControlName="subtitle_en" type="text" required placeholder="e.g. Technology" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Category / Badge (Arabic)</label>
+                <input class="s-input" formControlName="subtitle_ar" type="text" required placeholder="مثلاً: التقنية" dir="rtl" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Description (English)</label>
+                <textarea class="s-input" formControlName="description_en" rows="3" required></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Description (Arabic)</label>
+                <textarea class="s-input" formControlName="description_ar" rows="3" required dir="rtl"></textarea>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">FontAwesome Icon Class</label>
+                <input class="s-input" formControlName="icon" type="text" placeholder="e.g. fa-solid fa-laptop-code" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Display Order</label>
+                <input class="s-input" formControlName="order" type="number" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Features - English (Comma separated)</label>
+                <input class="s-input" formControlName="features_en" type="text" placeholder="e.g. Fast Loading, Custom CMS, Responsive Design" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Features - Arabic (Comma separated)</label>
+                <input class="s-input" formControlName="features_ar" type="text" placeholder="مثلاً: تحميل سريع، لوحة تحكم مخصصة، تصميم متجاوب" dir="rtl" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Stats - English (Format: Label:SubText:OptionalBadge, separated by commas)</label>
+                <input class="s-input" formControlName="stats_str_en" type="text" placeholder="e.g. 100%:Customized:New, 24/7:Support:N/A" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Stats - Arabic (Format: Label:SubText:OptionalBadge, separated by commas)</label>
+                <input class="s-input" formControlName="stats_str_ar" type="text" placeholder="مثلاً: %100:مخصص:جديد، 24/7:دعم متواصل" dir="rtl" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">CTA Text (English)</label>
+                <input class="s-input" formControlName="cta_text_en" type="text" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">CTA Text (Arabic)</label>
+                <input class="s-input" formControlName="cta_text_ar" type="text" dir="rtl" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">CTA Link URL</label>
+                <input class="s-input" formControlName="cta_url" type="text" placeholder="/contact" />
+              </div>
+            </div>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+              <button type="submit" class="save-btn" [disabled]="loadingService || serviceForm.invalid">
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingService ? 'Update Service' : 'Create Service' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Services</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="save-btn font-small" (click)="showServiceForm = !showServiceForm">
+              <i class="fa-solid" [class.fa-plus]="!showServiceForm" [class.fa-xmark]="showServiceForm"></i> 
+              {{ showServiceForm ? 'Close Form' : 'Add Service' }}
+            </button>
+            <button class="action-btn font-small" (click)="loadServices()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th style="width: 80px;">Icon</th>
+                <th>Service Title (EN)</th>
+                <th>Category (EN)</th>
+                <th style="width: 80px;">Order</th>
+                <th style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of servicesList">
+                <td style="text-align: center; font-size: 1.2rem; padding: 15px;"><i [class]="s.iconClass || s.icon"></i></td>
+                <td><strong>{{ s.title_en || s.title?.en || s.title }}</strong></td>
+                <td><span class="badge badge-blue">{{ s.subtitle_en || s.category?.en || s.category }}</span></td>
+                <td>{{ s.order }}</td>
+                <td>
+                  <button class="action-btn" title="Edit Service" (click)="editService(s)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="Delete Service" (click)="deleteService(s.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="servicesList.length === 0">
+                <td colspan="5" style="text-align: center; padding: 20px;">No services found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS TAB -->
+    <div class="view" [class.active]="activeTab === 'projects'">
+      <div class="card" *ngIf="showProjectForm" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">{{ isEditingProject ? 'Edit Project & Case Study' : 'Add New Project' }}</div>
+          <button class="action-btn" (click)="cancelEditProject()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+        </div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+            
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">1. General Info</h3>
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Project Title (English)</label>
+                <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Gotek E-Commerce Platform" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Project Title (Arabic)</label>
+                <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: متجر جوتيك الإلكتروني" dir="rtl" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Category</label>
+                <select class="s-input" formControlName="category_id" required>
+                  <option value="">Select Category</option>
+                  <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name_en || cat.name?.en || cat.name }}</option>
+                </select>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Main Image Alt Text (SEO)</label>
+                <input class="s-input" formControlName="main_image_alt" type="text" placeholder="SEO Alt Text" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Description / Brief (English)</label>
+                <textarea class="s-input" formControlName="description_en" rows="3" required></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Description / Brief (Arabic)</label>
+                <textarea class="s-input" formControlName="description_ar" rows="3" required dir="rtl"></textarea>
+              </div>
+            </div>
+
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">2. Branding & Visuals</h3>
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Case Study Accent Color</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" formControlName="color" style="width: 45px; height: 45px; border: none; border-radius: 8px; cursor: pointer; background: transparent;" />
+                  <input class="s-input" formControlName="color" type="text" placeholder="#000000" style="flex: 1;" />
+                </div>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Project Emoji Icon</label>
+                <input class="s-input" formControlName="emoji" type="text" placeholder="e.g. 🛍️ or 🎨" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Main Image File</label>
+                <input class="s-input" type="file" accept="image/*" (change)="onProjectImageSelected($event)" style="padding-top: 10px;" />
+                <div *ngIf="projectImagePreview" style="margin-top: 10px;">
+                  <img [src]="projectImagePreview" style="max-height: 120px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">3. Case Study Meta</h3>
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Client Name</label>
+                <input class="s-input" formControlName="client" type="text" placeholder="e.g. Aura Cosmetics" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Timeline</label>
+                <input class="s-input" formControlName="timeline" type="text" placeholder="e.g. 3 Months" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Project Tags (Comma separated)</label>
+                <input class="s-input" formControlName="tags" type="text" placeholder="e.g. E-Commerce, Angular, Laravel" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Deliverables (Comma separated)</label>
+                <input class="s-input" formControlName="deliverables" type="text" placeholder="e.g. UI/UX Design, Payment Gateway, SEO" />
+              </div>
+            </div>
+
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">4. Challenge & Solution</h3>
+            <div class="form-grid-custom">
+              <div class="fgroup full-width">
+                <label class="s-label">Challenge (English)</label>
+                <textarea class="s-input" formControlName="challenge_en" rows="3"></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Challenge (Arabic)</label>
+                <textarea class="s-input" formControlName="challenge_ar" rows="3" dir="rtl"></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Solution (English)</label>
+                <textarea class="s-input" formControlName="solution_en" rows="3"></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Solution (Arabic)</label>
+                <textarea class="s-input" formControlName="solution_ar" rows="3" dir="rtl"></textarea>
+              </div>
+            </div>
+
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">5. Metrics & Testimonial</h3>
+            <div class="form-grid-custom">
+              <div class="fgroup full-width">
+                <label class="s-label">Results / Stats (Format: Value:Label, separated by commas)</label>
+                <input class="s-input" formControlName="results_str" type="text" placeholder="e.g. 150%:Sales Growth, 99.9%:Uptime, 3x:Recall" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Client Quote / Testimonial Text</label>
+                <textarea class="s-input" formControlName="testimonial_text" rows="2" placeholder="Feedback quote..."></textarea>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Quote Author Name</label>
+                <input class="s-input" formControlName="testimonial_name" type="text" placeholder="e.g. Fahad Al-Mansoori" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Quote Author Role</label>
+                <input class="s-input" formControlName="testimonial_role" type="text" placeholder="e.g. CEO, Gotek Retail" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Quote Author Avatar Image URL</label>
+                <input class="s-input" formControlName="testimonial_avatar" type="text" placeholder="HTTPS image URL" />
+              </div>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+              <button type="submit" class="save-btn" [disabled]="loadingProject || projectForm.invalid">
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingProject ? 'Update Project & Case Study' : 'Create Project' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Projects</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="save-btn font-small" (click)="showProjectForm = !showProjectForm">
+              <i class="fa-solid" [class.fa-plus]="!showProjectForm" [class.fa-xmark]="showProjectForm"></i> 
+              {{ showProjectForm ? 'Close Form' : 'Add Project' }}
+            </button>
+            <button class="action-btn font-small" (click)="loadProjects()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th style="width: 70px; text-align: center;">Emoji</th>
+                <th style="width: 90px;">Image</th>
+                <th>Project Title (EN)</th>
+                <th>Category</th>
+                <th>Client</th>
+                <th style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of projects">
+                <td style="text-align: center; font-size: 1.4rem;">{{ p.emoji || '🏗️' }}</td>
+                <td>
+                  <img *ngIf="p.main_image_url || p.image" [src]="p.main_image_url || p.image" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                </td>
+                <td><strong>{{ p.title_en || p.title?.en || p.title }}</strong></td>
+                <td><span class="badge badge-blue">{{ p.category?.name_en || p.category?.name?.en || 'N/A' }}</span></td>
+                <td>{{ p.client || 'N/A' }}</td>
+                <td>
+                  <button class="action-btn" title="Edit Project" (click)="editProject(p)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="Delete Project" (click)="deleteProject(p.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="projects.length === 0">
+                <td colspan="6" style="text-align: center; padding: 25px;">No projects found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES TAB -->
+    <div class="view" [class.active]="activeTab === 'categories'">
+      <div class="card" *ngIf="showCategoryForm" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">{{ isEditingCategory ? 'Edit Category' : 'Add New Category' }}</div>
+          <button class="action-btn" (click)="cancelEditCategory()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+        </div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Category Name (English)</label>
+                <input class="s-input" formControlName="name_en" type="text" required placeholder="e.g. Mobile Apps" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Category Name (Arabic)</label>
+                <input class="s-input" formControlName="name_ar" type="text" required placeholder="مثلاً: تطبيقات الجوال" dir="rtl" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Description (English)</label>
+                <textarea class="s-input" formControlName="description_en" rows="2"></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Description (Arabic)</label>
+                <textarea class="s-input" formControlName="description_ar" rows="2" dir="rtl"></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Category Thumbnail / Image</label>
+                <input class="s-input" type="file" accept="image/*" (change)="onCategoryImageSelected($event)" style="padding-top: 10px;" />
+                <div *ngIf="categoryImagePreview" style="margin-top: 10px;">
+                  <img [src]="categoryImagePreview" style="max-height: 100px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+              <button type="submit" class="save-btn" [disabled]="loadingCategory || categoryForm.invalid">
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingCategory ? 'Update Category' : 'Create Category' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Portfolio Categories</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="save-btn font-small" (click)="showCategoryForm = !showCategoryForm">
+              <i class="fa-solid" [class.fa-plus]="!showCategoryForm" [class.fa-xmark]="showCategoryForm"></i> 
+              {{ showCategoryForm ? 'Close Form' : 'Add Category' }}
+            </button>
+            <button class="action-btn font-small" (click)="loadCategories()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th style="width: 90px;">Thumbnail</th>
+                <th>Category Name (EN)</th>
+                <th>Category Name (AR)</th>
+                <th>Description (EN)</th>
+                <th style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cat of categories">
+                <td>
+                  <img *ngIf="cat.image_url || cat.image" [src]="cat.image_url || cat.image" style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover;">
+                </td>
+                <td><strong>{{ cat.name_en || cat.name?.en || cat.name }}</strong></td>
+                <td>{{ cat.name_ar || cat.name?.ar }}</td>
+                <td style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">{{ cat.description_en || cat.description?.en || 'N/A' }}</td>
+                <td>
+                  <button class="action-btn" title="Edit Category" (click)="editCategory(cat)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="Delete Category" (click)="deleteCategory(cat.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="categories.length === 0">
+                <td colspan="5" style="text-align: center; padding: 20px;">No categories found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOG ARTICLES TAB -->
+    <div class="view" [class.active]="activeTab === 'blogs'">
+      <div class="card" *ngIf="showBlogForm" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">{{ isEditingBlog ? 'Edit Blog Article' : 'Write New Blog Article' }}</div>
+          <button class="action-btn" (click)="cancelEditBlog()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+        </div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="blogForm" (ngSubmit)="saveBlog()">
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Article Title (English)</label>
+                <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Modern UI Design Trends" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Article Title (Arabic)</label>
+                <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: اتجاهات تصميم واجهات المستخدم الحديثة" dir="rtl" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Content (English)</label>
+                <textarea class="s-input" formControlName="description_en" rows="5" required placeholder="Write article content here..."></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Content (Arabic)</label>
+                <textarea class="s-input" formControlName="description_ar" rows="5" required placeholder="اكتب محتوى المقال هنا..." dir="rtl"></textarea>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Image Alternate Text (SEO)</label>
+                <input class="s-input" formControlName="img_alt" type="text" placeholder="e.g. Design Trends" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Media File (Image or Video)</label>
+                <input class="s-input" type="file" accept="image/*,video/*" (change)="onBlogImageSelected($event)" style="padding-top: 10px;" />
+                <div *ngIf="blogImagePreview" style="margin-top: 10px;">
+                  <img [src]="blogImagePreview" style="max-height: 100px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" />
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+              <button type="submit" class="save-btn" [disabled]="loadingBlog || blogForm.invalid">
+                <i class="fa-solid fa-paper-plane"></i> {{ isEditingBlog ? 'Update Article' : 'Publish Article' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Published Articles</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="save-btn font-small" (click)="showBlogForm = !showBlogForm">
+              <i class="fa-solid" [class.fa-plus]="!showBlogForm" [class.fa-xmark]="showBlogForm"></i> 
+              {{ showBlogForm ? 'Close Form' : 'Write Article' }}
+            </button>
+            <button class="action-btn font-small" (click)="loadBlogs()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th style="width: 90px;">Cover</th>
+                <th>Title (EN)</th>
+                <th>Title (AR)</th>
+                <th style="width: 90px; text-align: center;">Likes</th>
+                <th style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of blogs">
+                <td>
+                  <img *ngIf="b.media_url || b.image" [src]="b.media_url || b.image" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                </td>
+                <td><strong>{{ b.title_en || b.title?.en || b.title }}</strong></td>
+                <td>{{ b.title_ar || b.title?.ar }}</td>
+                <td style="text-align: center;">
+                  <span class="badge badge-blue">{{ b.likes || 0 }} <i class="fa-solid fa-heart" style="color: red; margin-left: 2px;"></i></span>
+                </td>
+                <td>
+                  <button class="action-btn" title="Edit Article" (click)="editBlog(b)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="Delete Article" (click)="deleteBlog(b.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="blogs.length === 0">
+                <td colspan="5" style="text-align: center; padding: 20px;">No articles found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONIALS TAB -->
+    <div class="view" [class.active]="activeTab === 'testimonials'">
+      <div class="card" *ngIf="showTestimonialForm" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">{{ isEditingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial' }}</div>
+          <button class="action-btn" (click)="cancelEditTestimonial()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+        </div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="testimonialForm" (ngSubmit)="saveTestimonial()">
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Client Name</label>
+                <input class="s-input" formControlName="client_name" type="text" required placeholder="e.g. John Doe" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Job Title / Role</label>
+                <input class="s-input" formControlName="job_title" type="text" required placeholder="e.g. Founder & CEO" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Company Name (Optional)</label>
+                <input class="s-input" formControlName="company_name" type="text" placeholder="e.g. TechNova" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Rating (1 to 5 Stars)</label>
+                <select class="s-input" formControlName="rating" required>
+                  <option value="5">★★★★★ (5 Stars)</option>
+                  <option value="4">★★★★ (4 Stars)</option>
+                  <option value="3">★★★ (3 Stars)</option>
+                  <option value="2">★★ (2 Stars)</option>
+                  <option value="1">★ (1 Star)</option>
+                </select>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Avatar Circle Color</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" formControlName="avatar_color" style="width: 45px; height: 45px; border: none; border-radius: 8px; cursor: pointer; background: transparent;" />
+                  <input class="s-input" formControlName="avatar_color" type="text" placeholder="#e8620a" style="flex: 1;" />
+                </div>
+              </div>
+              <div></div> <!-- Spacer -->
+              
+              <div class="fgroup full-width">
+                <label class="s-label">Feedback Description (English)</label>
+                <textarea class="s-input" formControlName="feedback_en" rows="3" required placeholder="Client feedback in English..."></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Feedback Description (Arabic)</label>
+                <textarea class="s-input" formControlName="feedback_ar" rows="3" required placeholder="رأي العميل باللغة العربية..." dir="rtl"></textarea>
+              </div>
+            </div>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+              <button type="submit" class="save-btn" [disabled]="loadingTestimonial || testimonialForm.invalid">
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingTestimonial ? 'Update Testimonial' : 'Create Testimonial' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Testimonials</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="save-btn font-small" (click)="showTestimonialForm = !showTestimonialForm">
+              <i class="fa-solid" [class.fa-plus]="!showTestimonialForm" [class.fa-xmark]="showTestimonialForm"></i> 
+              {{ showTestimonialForm ? 'Close Form' : 'Add Testimonial' }}
+            </button>
+            <button class="action-btn font-small" (click)="loadTestimonials()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th style="width: 70px;">Avatar</th>
+                <th>Client Name</th>
+                <th>Role / Company</th>
+                <th>Feedback (EN)</th>
+                <th style="width: 90px; text-align: center;">Rating</th>
+                <th style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of testimonials">
+                <td>
+                  <div [style.background]="t.avatar_color || '#e8620a'" style="width: 38px; height: 38px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">
+                    {{ t.client_name?.charAt(0) }}
+                  </div>
+                </td>
+                <td><strong>{{ t.client_name }}</strong></td>
+                <td>{{ t.job_title }} {{ t.company_name ? '@ ' + t.company_name : '' }}</td>
+                <td style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ t.feedback_en }}</td>
+                <td style="text-align: center; color: gold; font-size: 0.85rem;">{{ '★'.repeat(t.rating || 5) }}</td>
+                <td>
+                  <button class="action-btn" title="Edit Testimonial" (click)="editTestimonial(t)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="Delete Testimonial" (click)="deleteTestimonial(t.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="testimonials.length === 0">
+                <td colspan="6" style="text-align: center; padding: 20px;">No testimonials found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQS TAB -->
+    <div class="view" [class.active]="activeTab === 'faqs'">
+      <div class="card" *ngIf="showFaqForm" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">{{ isEditingFaq ? 'Edit FAQ' : 'Add New FAQ' }}</div>
+          <button class="action-btn" (click)="cancelEditFaq()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+        </div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="faqForm" (ngSubmit)="saveFaq()">
+            <div class="form-grid-custom">
+              <div class="fgroup">
+                <label class="s-label">Question (English)</label>
+                <input class="s-input" formControlName="question_en" type="text" required placeholder="e.g. How long does a project take?" />
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Question (Arabic)</label>
+                <input class="s-input" formControlName="question_ar" type="text" required placeholder="مثلاً: كم يستغرق المشروع النموذجي؟" dir="rtl" />
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Answer (English)</label>
+                <textarea class="s-input" formControlName="answer_en" rows="3" required placeholder="Detailed answer..."></textarea>
+              </div>
+              <div class="fgroup full-width">
+                <label class="s-label">Answer (Arabic)</label>
+                <textarea class="s-input" formControlName="answer_ar" rows="3" required placeholder="الإجابة التفصيلية..." dir="rtl"></textarea>
+              </div>
+              <div class="fgroup">
+                <label class="s-label">Sort Order</label>
+                <input class="s-input" formControlName="sort_order" type="number" />
+              </div>
+              <div class="fgroup" style="justify-content: center;">
+                <label class="s-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding-top: 25px;">
+                  <input type="checkbox" formControlName="is_active" style="width: 20px; height: 20px; accent-color: #e8620a;" />
+                  <span>Active (Visible on public site)</span>
+                </label>
+              </div>
+            </div>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+              <button type="submit" class="save-btn" [disabled]="loadingFaq || faqForm.invalid">
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingFaq ? 'Update FAQ' : 'Create FAQ' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All FAQs</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="save-btn font-small" (click)="showFaqForm = !showFaqForm">
+              <i class="fa-solid" [class.fa-plus]="!showFaqForm" [class.fa-xmark]="showFaqForm"></i> 
+              {{ showFaqForm ? 'Close Form' : 'Add FAQ' }}
+            </button>
+            <button class="action-btn font-small" (click)="loadFaqs()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th>Question (EN)</th>
+                <th>Question (AR)</th>
+                <th style="width: 80px; text-align: center;">Order</th>
+                <th style="width: 100px; text-align: center;">Status</th>
+                <th style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let faq of faqs">
+                <td><strong>{{ faq.question_en }}</strong></td>
+                <td>{{ faq.question_ar }}</td>
+                <td style="text-align: center;">{{ faq.order }}</td>
+                <td style="text-align: center;">
+                  <span class="badge" [class.badge-orange]="faq.is_active" [class.badge-error]="!faq.is_active">
+                    {{ faq.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <button class="action-btn" title="Edit FAQ" (click)="editFaq(faq)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="Delete FAQ" (click)="deleteFaq(faq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="faqs.length === 0">
+                <td colspan="5" style="text-align: center; padding: 20px;">No FAQs found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT HUB TAB -->
+    <div class="view" [class.active]="activeTab === 'contact-hub'">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header"><div class="card-title">Edit Contact Information & Settings</div></div>
+        <div class="cb" style="padding: 24px;">
+          <form [formGroup]="contactForm" (ngSubmit)="saveContactInfo()">
+            <div class="form-grid-custom">
+              <div class="fgroup"><label class="s-label">WhatsApp Phone</label><input class="s-input" formControlName="whatsapp_phone" type="text" placeholder="e.g. +966500000000" /></div>
+              <div class="fgroup"><label class="s-label">WhatsApp Description</label><input class="s-input" formControlName="whatsapp_desc" type="text" placeholder="e.g. Chat with Sales" /></div>
+              <div class="fgroup"><label class="s-label">Official Email</label><input class="s-input" formControlName="official_email" type="email" placeholder="e.g. info@goteksa.com" /></div>
+              <div class="fgroup"><label class="s-label">Company Address</label><input class="s-input" formControlName="company_address" type="text" placeholder="Riyadh, Saudi Arabia" /></div>
+              <div class="fgroup full-width"><label class="s-label">Google Maps URL</label><input class="s-input" formControlName="google_maps_url" type="text" placeholder="https://maps.google.com/..." /></div>
+              <div class="fgroup full-width"><label class="s-label">Emergency Support Info</label><input class="s-input" formControlName="emergency_support_info" type="text" placeholder="Call +9665XXXXXXX for critical queries" /></div>
+            </div>
+            <div style="margin-top: 30px; display: flex; align-items: center;">
+              <button type="submit" class="save-btn" [disabled]="loadingInfo"><i class="fa-solid fa-floppy-disk"></i> Save All Changes</button>
+              <span *ngIf="infoMessage" style="margin-left: 15px; color: var(--orange); font-weight:600;"><i class="fa-solid fa-circle-check"></i> {{ infoMessage }}</span>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Customer Inquiries (Leads)</div>
+          <button class="save-btn font-small" (click)="loadInquiries()"><i class="fa-solid fa-rotate"></i> Refresh Messages</button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <th>Lead Name</th>
+                <th>Contact Info</th>
+                <th>Project & Service</th>
+                <th>Date</th>
+                <th style="width: 100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inq of inquiries">
+                <td>
+                  <strong>{{ inq.full_name }}</strong><br>
+                  <small style="color:rgba(255,255,255,0.5)">{{ inq.company_name || 'Individual' }}</small>
+                </td>
+                <td>
+                  <a href="mailto:{{ inq.email }}" style="color:var(--orange); text-decoration:none">{{ inq.email }}</a><br>
+                  <span style="font-size:0.85rem; color:rgba(255,255,255,0.5)">{{ inq.phone }}</span>
+                </td>
+                <td>
+                  <span class="badge badge-blue">{{ inq.service_needed || 'General' }}</span><br>
+                  <small style="display:block; margin-top:5px; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" [title]="inq.project_details">{{ inq.project_details }}</small>
+                </td>
+                <td>{{ inq.created_at | date:'short' }}</td>
+                <td>
+                  <button class="action-btn" title="Delete Lead" (click)="deleteInquiry(inq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="inquiries.length === 0">
+                <td colspan="5" style="text-align: center; padding: 20px;">No inquiries found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME PAGE SECTION TAB -->
+    <div class="view" [class.active]="activeTab === 'home-page'">
+      <div class="pg-head">
+        <h2>Home Page Header Sections</h2>
+        <p>Edit the core textual properties of the main homepage.</p>
+        <button class="save-btn" (click)="savePageData('home')" [disabled]="isSavingPage['home']" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['home'] ? 'Saving...' : 'Save All Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header"><div class="card-title">Hero Banner Section</div></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Tagline (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Tagline (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Title Line (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.en" class="s-input"></div>
+            <div><label class="s-label">Title Line (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.ar" class="s-input" dir="rtl"></div>
+            <div class="full-width"><label class="s-label">Subtitle Description (English)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.en" rows="3" class="s-input"></textarea></div>
+            <div class="full-width"><label class="s-label">Subtitle Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT PAGE SECTION TAB -->
+    <div class="view" [class.active]="activeTab === 'about-page'">
+      <div class="pg-head">
+        <h2>About Page Details & Timeline</h2>
+        <p>Configure the vision statements, descriptions, and historical journey items.</p>
+        <button class="save-btn" (click)="saveAboutData()" [disabled]="isSavingAbout" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingAbout ? 'Saving...' : 'Save All Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px; margin-bottom:24px;">
+        <div class="card-header"><div class="card-title">About US - Banner Text</div></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Label (EN)</label><input type="text" [(ngModel)]="aboutData.content.hero.en.label" class="s-input"></div>
+            <div><label class="s-label">Label (AR)</label><input type="text" [(ngModel)]="aboutData.content.hero.ar.label" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="aboutData.content.hero.en.title1" class="s-input"></div>
+            <div><label class="s-label">Title (AR)</label><input type="text" [(ngModel)]="aboutData.content.hero.ar.title1" class="s-input" dir="rtl"></div>
+            <div class="full-width"><label class="s-label">Description Brief (EN)</label><textarea [(ngModel)]="aboutData.content.hero.en.desc" rows="3" class="s-input"></textarea></div>
+            <div class="full-width"><label class="s-label">Description Brief (AR)</label><textarea [(ngModel)]="aboutData.content.hero.ar.desc" rows="3" class="s-input" dir="rtl"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <div class="card-title">Our History Timeline</div>
+          <button class="save-btn font-small" (click)="addTimeline()"><i class="fa-solid fa-plus"></i> Add Year Event</button>
+        </div>
+        <div class="cb" style="padding:24px;">
+          <div *ngFor="let item of aboutData.timeline; let i = index" style="background:rgba(255,255,255,0.01); padding:20px; border-radius:12px; margin-bottom:16px; border:1px solid var(--admin-border); position:relative">
+            <button (click)="removeTimeline(i)" style="position:absolute; top:15px; right:15px; background:#ef4444; color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-trash-can"></i> Remove</button>
+            <div style="margin-bottom:16px">
+              <label class="s-label">Year</label>
+              <input type="text" [(ngModel)]="item.year" class="s-input" style="width:120px;">
+            </div>
+            <div class="form-grid-custom">
+              <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="item.title.en" class="s-input"></div>
+              <div><label class="s-label">Title (AR)</label><input type="text" [(ngModel)]="item.title.ar" class="s-input" dir="rtl"></div>
+              <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="item.description.en" rows="3" class="s-input"></textarea></div>
+              <div class="full-width"><label class="s-label">Description (AR)</label><textarea [(ngModel)]="item.description.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            </div>
+          </div>
+          <div *ngIf="aboutData.timeline.length === 0" style="color:rgba(255,255,255,0.5)">No timeline events added yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES PAGE SECTION TAB -->
+    <div class="view" [class.active]="activeTab === 'services-page'">
+      <div class="pg-head">
+        <h2>Services Page Header</h2>
+        <p>Edit services banner textual titles.</p>
+        <button class="save-btn" (click)="savePageData('services')" [disabled]="isSavingPage['services']" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['services'] ? 'Saving...' : 'Save All Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['services'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['services'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['services'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORTFOLIO PAGE SECTION TAB -->
+    <div class="view" [class.active]="activeTab === 'portfolio-page'">
+      <div class="pg-head">
+        <h2>Portfolio Page Header</h2>
+        <p>Edit portfolio banner titles.</p>
+        <button class="save-btn" (click)="savePageData('portfolio')" [disabled]="isSavingPage['portfolio']" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['portfolio'] ? 'Saving...' : 'Save All Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['portfolio'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOGS PAGE SECTION TAB -->
+    <div class="view" [class.active]="activeTab === 'blogs-page'">
+      <div class="pg-head">
+        <h2>Blogs Page Header</h2>
+        <p>Edit blogs header banner textual titles.</p>
+        <button class="save-btn" (click)="savePageData('blogs')" [disabled]="isSavingPage['blogs']" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['blogs'] ? 'Saving...' : 'Save All Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['blogs'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER CONTENT SECTION TAB -->
+    <div class="view" [class.active]="activeTab === 'footer-section'">
+      <div class="pg-head">
+        <h2>Footer Global Content</h2>
+        <p>Edit description text and links inside the global website footer.</p>
+        <button class="save-btn" (click)="savePageData('footer')" [disabled]="isSavingPage['footer']" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['footer'] ? 'Saving...' : 'Save All Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div class="full-width"><label class="s-label">Company Description in Footer (EN)</label><textarea [(ngModel)]="pagesData['footer'].desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Email Address</label><input type="text" [(ngModel)]="pagesData['footer'].email" class="s-input"></div>
+            <div><label class="s-label">Phone Number</label><input type="text" [(ngModel)]="pagesData['footer'].phone" class="s-input"></div>
+            <div><label class="s-label">LinkedIn URL</label><input type="text" [(ngModel)]="pagesData['footer'].socials.linkedin" class="s-input"></div>
+            <div><label class="s-label">Twitter URL</label><input type="text" [(ngModel)]="pagesData['footer'].socials.twitter" class="s-input"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>

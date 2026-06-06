@@ -1,0 +1,98 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">{{ isEditing ? 'Edit Testimonial' : 'Add New Testimonial' }}</div>
+      <button *ngIf="isEditing" class="action-btn" (click)="cancelEdit()">Cancel Edit</button>
+    </div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="testimonialForm" (ngSubmit)="saveTestimonial()">
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div class="fgroup">
+            <label class="s-label">Client Name</label>
+            <input class="s-input" formControlName="client_name" type="text" required placeholder="e.g. John Doe" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Job Title / Role</label>
+            <input class="s-input" formControlName="job_title" type="text" required placeholder="e.g. Founder & CEO" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Company Name (Optional)</label>
+            <input class="s-input" formControlName="company_name" type="text" placeholder="e.g. TechNova" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Rating (1 to 5 Stars)</label>
+            <select class="s-input" formControlName="rating" required>
+              <option value="5">★★★★★ (5 Stars)</option>
+              <option value="4">★★★★ (4 Stars)</option>
+              <option value="3">★★★ (3 Stars)</option>
+              <option value="2">★★ (2 Stars)</option>
+              <option value="1">★ (1 Star)</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Avatar Color</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="color" formControlName="avatar_color" style="width: 45px; height: 45px; border: none; border-radius: 4px; cursor: pointer; background: transparent;" />
+              <input class="s-input" formControlName="avatar_color" type="text" placeholder="#e8620a" style="flex: 1;" />
+            </div>
+          </div>
+          <div></div> <!-- Empty spacer -->
+          
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Feedback Description (English)</label>
+            <textarea class="s-input" formControlName="feedback_en" rows="3" required placeholder="Client feedback in English..."></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Feedback Description (Arabic)</label>
+            <textarea class="s-input" formControlName="feedback_ar" rows="3" required placeholder="رأي العميل باللغة العربية..." dir="rtl"></textarea>
+          </div>
+        </div>
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+          <button type="submit" class="save-btn" [disabled]="loading || testimonialForm.invalid">{{ isEditing ? 'Update Testimonial' : 'Create Testimonial' }}</button>
+          <button type="button" *ngIf="isEditing" class="action-btn" style="background: #e1e1e1;" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All Testimonials</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadTestimonials()">Refresh List</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 800px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px; width: 60px;">Avatar</th>
+            <th style="padding: 15px;">Client Name</th>
+            <th style="padding: 15px;">Role / Company</th>
+            <th style="padding: 15px;">Feedback (EN)</th>
+            <th style="padding: 15px; width: 80px; text-align: center;">Rating</th>
+            <th style="padding: 15px; width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of testimonials">
+            <td>
+              <div [style.background]="t.avatar_color || '#e8620a'" style="width: 40px; height: 40px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                {{ t.client_name?.charAt(0) }}
+              </div>
+            </td>
+            <td><strong>{{ t.client_name }}</strong></td>
+            <td>{{ t.job_title }} {{ t.company_name ? '@ ' + t.company_name : '' }}</td>
+            <td style="color: var(--admin-text-light); font-size: 0.9rem;">{{ t.feedback_en }}</td>
+            <td style="text-align: center; color: gold;">{{ '★'.repeat(t.rating || 5) }}</td>
+            <td>
+              <button class="action-btn" title="Edit Testimonial" (click)="editTestimonial(t)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fi fi-rr-edit"></i></button>
+              <button class="action-btn" title="Delete Testimonial" (click)="deleteTestimonial(t.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="testimonials.length === 0">
+            <td colspan="6" style="text-align: center; padding: 20px; color: var(--admin-text-light);">No testimonials found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

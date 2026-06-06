@@ -1,0 +1,83 @@
+<div class="view">
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">{{ isEditing ? 'Edit FAQ' : 'Add New FAQ' }}</div>
+      <button *ngIf="isEditing" class="action-btn" (click)="cancelEdit()">Cancel Edit</button>
+    </div>
+    <div class="cb" style="padding: 24px;">
+      <form [formGroup]="faqForm" (ngSubmit)="saveFaq()">
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div class="fgroup">
+            <label class="s-label">Question (English)</label>
+            <input class="s-input" formControlName="question_en" type="text" required placeholder="e.g. How long does a project take?" />
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Question (Arabic)</label>
+            <input class="s-input" formControlName="question_ar" type="text" required placeholder="مثلاً: كم يستغرق المشروع النموذجي؟" dir="rtl" />
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Answer (English)</label>
+            <textarea class="s-input" formControlName="answer_en" rows="3" required placeholder="Detailed answer..."></textarea>
+          </div>
+          <div class="fgroup" style="grid-column: span 2;">
+            <label class="s-label">Answer (Arabic)</label>
+            <textarea class="s-input" formControlName="answer_ar" rows="3" required placeholder="الإجابة التفصيلية..." dir="rtl"></textarea>
+          </div>
+          <div class="fgroup">
+            <label class="s-label">Sort Order</label>
+            <input class="s-input" formControlName="sort_order" type="number" />
+          </div>
+          <div class="fgroup" style="justify-content: center;">
+            <label class="s-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding-top: 25px;">
+              <input type="checkbox" formControlName="is_active" style="width: 20px; height: 20px; accent-color: #e8620a;" />
+              <span>Active (Visible on public site)</span>
+            </label>
+          </div>
+        </div>
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+          <button type="submit" class="save-btn" [disabled]="loading || faqForm.invalid">{{ isEditing ? 'Update FAQ' : 'Create FAQ' }}</button>
+          <button type="button" *ngIf="isEditing" class="action-btn" style="background: #e1e1e1;" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">All FAQs</div>
+      <button class="save-btn" style="padding: 8px 16px; font-size: 0.8rem; background: var(--admin-bg); color: var(--admin-text); border: 1px solid var(--admin-border);" (click)="loadFaqs()">Refresh List</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="min-width: 800px;">
+        <thead>
+          <tr style="background: var(--admin-bg);">
+            <th style="padding: 15px;">Question (EN)</th>
+            <th style="padding: 15px;">Question (AR)</th>
+            <th style="padding: 15px; width: 80px; text-align: center;">Order</th>
+            <th style="padding: 15px; width: 100px; text-align: center;">Status</th>
+            <th style="padding: 15px; width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let faq of faqs">
+            <td><strong>{{ faq.question_en }}</strong></td>
+            <td>{{ faq.question_ar }}</td>
+            <td style="text-align: center;">{{ faq.order }}</td>
+            <td style="text-align: center;">
+              <span class="badge" [ngClass]="faq.is_active ? 'badge-blue' : 'badge-red'" style="background: #e8620a15; color: #e8620a; border: 1px solid #e8620a30;">
+                {{ faq.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <button class="action-btn" title="Edit FAQ" (click)="editFaq(faq)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fi fi-rr-edit"></i></button>
+              <button class="action-btn" title="Delete FAQ" (click)="deleteFaq(faq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fi fi-rr-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="faqs.length === 0">
+            <td colspan="5" style="text-align: center; padding: 20px; color: var(--admin-text-light);">No FAQs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

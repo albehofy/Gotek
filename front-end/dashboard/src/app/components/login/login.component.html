@@ -1,0 +1,66 @@
+<div class="glow-bg">
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+</div>
+
+<div class="admin-login-wrap">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="brand-logo-container">
+        <img src="assets/gotek-icon.png" alt="Gotek" class="brand-logo" />
+      </div>
+      <h1>Agency Hub Portal</h1>
+      <p>Authorized access to Gotek Management & Operations</p>
+    </div>
+
+    <div class="login-body">
+      <div class="error-msg" *ngIf="showError">
+        <i class="fi fi-rr-exclamation"></i> {{ errorMessage }}
+      </div>
+      
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="fgroup">
+          <label>Username / Email Address</label>
+          <div class="input-wrap">
+            <i class="fi fi-rr-envelope icon-lbl"></i>
+            <input type="email" formControlName="email" placeholder="username@goteksa.com" autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label>Secure Access Key</label>
+          <div class="input-wrap">
+            <i class="fi fi-rr-lock icon-lbl"></i>
+            <input type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+        </div>
+
+        <button type="submit" class="login-btn" [class.loading]="loading" [disabled]="loginForm.invalid || loading">
+          <span class="btn-text">Authenticate Credentials</span>
+          <span class="btn-spinner" *ngIf="loading"></span>
+        </button>
+      </form>
+
+      <!-- Quick Test Accounts Panel -->
+      <div class="demo-panel">
+        <span class="demo-title">Autofill Demo Roles</span>
+        <div class="demo-buttons">
+          <button type="button" class="demo-btn" (click)="autofill('admin')">Super Admin</button>
+          <button type="button" class="demo-btn" (click)="autofill('manager')">Manager</button>
+          <button type="button" class="demo-btn" (click)="autofill('generator')">Generator</button>
+          <button type="button" class="demo-btn" (click)="autofill('dept_manager')">Dept Mgr</button>
+          <button type="button" class="demo-btn" (click)="autofill('employee')">Employee</button>
+          <button type="button" class="demo-btn" (click)="autofill('client')">Client</button>
+        </div>
+      </div>
+
+      <div class="login-footer">
+        <a href="https://goteksa.com" target="_blank">
+          <i class="fi fi-rr-arrow-small-left"></i>
+          Return to Corporate Site
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

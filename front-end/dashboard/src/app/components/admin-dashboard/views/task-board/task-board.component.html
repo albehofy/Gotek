@@ -1,0 +1,382 @@
+<div class="view-container">
+  <!-- Header -->
+  <div class="view-header">
+    <div>
+      <h2 class="view-title">Workflow Task Board</h2>
+      <p class="view-subtitle">Monitor deliverables progress, employee assignments, and department boards.</p>
+    </div>
+    
+    <!-- Action buttons based on Role -->
+    <div class="action-wrap">
+      <button *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'task_generator'" class="btn btn-primary" (click)="openSliceModal()">
+        <i class="fi fi-rr-settings-sliders"></i> Generate Task from Deal
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar glass-panel">
+    <div class="filter-group">
+      <label><i class="fi fi-rr-briefcase"></i> Deal/Contract Filter</label>
+      <select [(ngModel)]="selectedDealFilter" (change)="onFilterChange()">
+        <option value="">All active contracts...</option>
+        <option *ngFor="let deal of deals" [value]="deal.id">{{ deal.title }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label><i class="fi fi-rr-settings"></i> Department Roster</label>
+      <select [(ngModel)]="selectedDeptFilter" (change)="onFilterChange()">
+        <option value="">All departments...</option>
+        <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Main Kanban Board Grid -->
+  <div class="kanban-grid">
+    
+    <!-- TODO Column -->
+    <div class="kanban-col">
+      <div class="col-header col-todo">
+        <span>To Do / Open</span>
+        <span class="count-badge">{{ todoTasks.length }}</span>
+      </div>
+      <div class="col-body">
+        <div *ngFor="let task of todoTasks" class="task-card" (click)="openDetails(task)">
+          <div class="task-card-header">
+            <span class="dept-tag">{{ task.deal?.title || 'Client Task' }}</span>
+            <span class="priority-badge" [class]="'priority-' + task.priority">{{ task.priority }}</span>
+          </div>
+          <h4 class="task-title">{{ task.title }}</h4>
+          <p class="task-desc">{{ task.description | slice:0:70 }}...</p>
+          
+          <div class="task-prices">
+            <span *ngIf="currentUser?.role !== 'employee'" class="price-lbl">Client: <span class="price-val">{{ task.client_price || 0 }} SAR</span></span>
+            <span *ngIf="currentUser?.role !== 'client' && task.employee_price" class="price-lbl">Employee: <span class="price-val">{{ task.employee_price }} SAR</span></span>
+          </div>
+
+          <div class="task-footer">
+            <div class="assignees">
+              <span *ngFor="let user of task.users" class="avatar-badge" [title]="user.name">
+                {{ (user.name || '').substring(0, 2).toUpperCase() }}
+              </span>
+              <span *ngIf="task.users?.length === 0" class="unassigned-lbl"><i class="fi fi-rr-warning"></i> Unassigned</span>
+            </div>
+            <div class="task-actions" (click)="$event.stopPropagation()">
+              <button *ngIf="currentUser?.role !== 'client'" class="action-circle" title="Move to In Progress" (click)="moveTask(task, 'in_progress')">
+                <i class="fi fi-rr-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IN PROGRESS Column -->
+    <div class="kanban-col">
+      <div class="col-header col-progress">
+        <span>In Progress</span>
+        <span class="count-badge">{{ inProgressTasks.length }}</span>
+      </div>
+      <div class="col-body">
+        <div *ngFor="let task of inProgressTasks" class="task-card" (click)="openDetails(task)">
+          <div class="task-card-header">
+            <span class="dept-tag">{{ task.deal?.title || 'Client Task' }}</span>
+            <span class="priority-badge" [class]="'priority-' + task.priority">{{ task.priority }}</span>
+          </div>
+          <h4 class="task-title">{{ task.title }}</h4>
+          <p class="task-desc">{{ task.description | slice:0:70 }}...</p>
+
+          <div class="task-prices">
+            <span *ngIf="currentUser?.role !== 'employee'" class="price-lbl">Client: <span class="price-val">{{ task.client_price || 0 }} SAR</span></span>
+            <span *ngIf="currentUser?.role !== 'client' && task.employee_price" class="price-lbl">Employee: <span class="price-val">{{ task.employee_price }} SAR</span></span>
+          </div>
+
+          <div class="task-footer">
+            <div class="assignees">
+              <span *ngFor="let user of task.users" class="avatar-badge" [title]="user.name">
+                {{ (user.name || '').substring(0, 2).toUpperCase() }}
+              </span>
+              <span *ngIf="task.users?.length === 0" class="unassigned-lbl"><i class="fi fi-rr-warning"></i> Unassigned</span>
+            </div>
+            <div class="task-actions" (click)="$event.stopPropagation()">
+              <button *ngIf="currentUser?.role !== 'client'" class="action-circle back" title="Move back to Todo" (click)="moveTask(task, 'todo')">
+                <i class="fi fi-rr-arrow-left"></i>
+              </button>
+              <button *ngIf="currentUser?.role !== 'client'" class="action-circle" title="Submit for Review" (click)="moveTask(task, 'in_review')">
+                <i class="fi fi-rr-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW Column -->
+    <div class="kanban-col">
+      <div class="col-header col-review">
+        <span>In Review</span>
+        <span class="count-badge">{{ inReviewTasks.length }}</span>
+      </div>
+      <div class="col-body">
+        <div *ngFor="let task of inReviewTasks" class="task-card" (click)="openDetails(task)">
+          <div class="task-card-header">
+            <span class="dept-tag">{{ task.deal?.title || 'Client Task' }}</span>
+            <span class="priority-badge" [class]="'priority-' + task.priority">{{ task.priority }}</span>
+          </div>
+          <h4 class="task-title">{{ task.title }}</h4>
+          <p class="task-desc">{{ task.description | slice:0:70 }}...</p>
+
+          <div class="task-prices">
+            <span *ngIf="currentUser?.role !== 'employee'" class="price-lbl">Client: <span class="price-val">{{ task.client_price || 0 }} SAR</span></span>
+            <span *ngIf="currentUser?.role !== 'client' && task.employee_price" class="price-lbl">Employee: <span class="price-val">{{ task.employee_price }} SAR</span></span>
+          </div>
+
+          <div class="task-footer">
+            <div class="assignees">
+              <span *ngFor="let user of task.users" class="avatar-badge" [title]="user.name">
+                {{ (user.name || '').substring(0, 2).toUpperCase() }}
+              </span>
+              <span *ngIf="task.users?.length === 0" class="unassigned-lbl"><i class="fi fi-rr-warning"></i> Unassigned</span>
+            </div>
+            <div class="task-actions" (click)="$event.stopPropagation()">
+              <button *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'department_manager'" class="action-circle danger" title="Request Changes" (click)="moveTask(task, 'changes_requested')">
+                <i class="fi fi-rr-cross-circle"></i>
+              </button>
+              <button *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'department_manager'" class="action-circle success" title="Approve Task" (click)="moveTask(task, 'done')">
+                <i class="fi fi-rr-checkbox"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DONE Column -->
+    <div class="kanban-col">
+      <div class="col-header col-done">
+        <span>Done / Approved</span>
+        <span class="count-badge">{{ doneTasks.length }}</span>
+      </div>
+      <div class="col-body">
+        <div *ngFor="let task of doneTasks" class="task-card done" (click)="openDetails(task)">
+          <div class="task-card-header">
+            <span class="dept-tag">{{ task.deal?.title || 'Client Task' }}</span>
+            <span class="priority-badge" [class]="'priority-' + task.priority">{{ task.priority }}</span>
+          </div>
+          <h4 class="task-title">{{ task.title }}</h4>
+          <p class="task-desc">{{ task.description | slice:0:70 }}...</p>
+
+          <div class="task-prices">
+            <span *ngIf="currentUser?.role !== 'employee'" class="price-lbl">Client: <span class="price-val">{{ task.client_price || 0 }} SAR</span></span>
+            <span *ngIf="currentUser?.role !== 'client' && task.employee_price" class="price-lbl">Employee: <span class="price-val">{{ task.employee_price }} SAR</span></span>
+          </div>
+
+          <div class="task-footer">
+            <div class="assignees">
+              <span *ngFor="let user of task.users" class="avatar-badge" [title]="user.name">
+                {{ (user.name || '').substring(0, 2).toUpperCase() }}
+              </span>
+            </div>
+            <div class="task-actions">
+              <span class="done-check"><i class="fi fi-rr-checkbox"></i> Deliverable Approved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Slicing / Generate Task Modal -->
+  <div class="modal-backdrop" *ngIf="showSliceModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Slice Client Deal into Tasks</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <form [formGroup]="sliceForm" (ngSubmit)="submitSlice()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Deal</label>
+            <select formControlName="deal_id">
+              <option value="">Select client deal...</option>
+              <option *ngFor="let deal of deals" [value]="deal.id">{{ deal.title }} (Client: {{ deal.client?.name }})</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Subtask Name</label>
+            <input type="text" formControlName="title" placeholder="e.g. Design Logo and Branding style" />
+          </div>
+
+          <div class="form-group">
+            <label>Instruction / Requirement Details</label>
+            <textarea formControlName="description" rows="3" placeholder="Provide details to the department..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Target Department</label>
+              <select formControlName="department_id">
+                <option value="">Select department...</option>
+                <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+              </select>
+            </div>
+            <div class="form-group half">
+              <label>Task Priority</label>
+              <select formControlName="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Client Task Price (SAR)</label>
+              <input type="number" formControlName="client_price" />
+            </div>
+            <div class="form-group half">
+              <label>Developer Budget (Optional - SAR)</label>
+              <input type="number" formControlName="employee_price" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="sliceForm.invalid">Deploy Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assign Member Modal -->
+  <div class="modal-backdrop" *ngIf="showAssignModal">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3>Assign Staff Members</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <form [formGroup]="assignForm" (ngSubmit)="submitAssign()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Employees</label>
+            <select multiple formControlName="user_ids" style="height: 150px;">
+              <option *ngFor="let emp of employees" [value]="emp.id">
+                {{ emp.name }} (Dept: {{ emp.department?.name || 'Dev' }})
+              </option>
+            </select>
+            <small class="hint">Hold Ctrl / Cmd to choose multiple members.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="assignForm.invalid">Assign Roster</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detailed View Modal (Audit Log, Attachments, Notes) -->
+  <div class="modal-backdrop" *ngIf="showDetailModal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div class="hdr-wrap">
+          <span class="badge" [class]="'badge-' + selectedTask.status">{{ selectedTask.status }}</span>
+          <h3>{{ selectedTask.title }}</h3>
+        </div>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body scrollable">
+        <div class="detail-columns">
+          
+          <!-- Column Left: Info & Uploads -->
+          <div class="details-left">
+            <div class="detail-section">
+              <h4>Task Details</h4>
+              <p class="description-text">{{ selectedTask.description }}</p>
+            </div>
+
+            <!-- Upload deliverables -->
+            <div *ngIf="currentUser?.role !== 'client'" class="detail-section">
+              <h4>Upload Deliverables / Media</h4>
+              <div class="upload-zone">
+                <input type="file" (change)="onFileSelected($event)" />
+                <button class="btn btn-primary mini" [disabled]="!selectedFile || isUploading" (click)="uploadFile()">
+                  {{ isUploading ? 'Uploading...' : 'Publish Media' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Attachments / Deliverable preview -->
+            <div class="detail-section">
+              <h4>Published Deliverables ({{ selectedTask.attachments?.length || 0 }})</h4>
+              <div class="attachments-list">
+                <div *ngFor="let file of selectedTask.attachments" class="file-card">
+                  <div class="file-icon">
+                    <i *ngIf="file.file_type.includes('image')" class="fi fi-rr-picture"></i>
+                    <i *ngIf="file.file_type.includes('video')" class="fi fi-rr-play-alt"></i>
+                    <i *ngIf="!file.file_type.includes('image') && !file.file_type.includes('video')" class="fi fi-rr-document"></i>
+                  </div>
+                  <div class="file-info">
+                    <a [href]="'http://localhost:8000' + file.file_path" target="_blank" class="file-name">{{ file.file_name }}</a>
+                    <span class="file-size">{{ (file.file_size / 1024 / 1024) | number:'1.2-2' }} MB</span>
+                  </div>
+                </div>
+                <div *ngIf="selectedTask.attachments?.length === 0" class="no-files">
+                  No files uploaded yet.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column Right: Notes & Assignments -->
+          <div class="details-right">
+            <!-- Assignment options for Manager / Dept Manager -->
+            <div class="detail-section" *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager' || currentUser?.role === 'department_manager'">
+              <h4>Roster & Operations</h4>
+              <button class="btn btn-secondary full-width" (click)="openAssignModal(selectedTask)">
+                <i class="fi fi-rr-user-add"></i> Assign Members
+              </button>
+            </div>
+
+            <!-- Thread Discussion / Notes -->
+            <div class="detail-section">
+              <h4>Audit Comments & Progress Notes</h4>
+              <div class="notes-thread">
+                <div *ngFor="let note of taskNotes" class="note-balloon">
+                  <div class="note-hdr">
+                    <strong>{{ note.user?.name }}</strong>
+                    <span>{{ note.created_at | date:'short' }}</span>
+                  </div>
+                  <p class="note-body">{{ note.note }}</p>
+                </div>
+                <div *ngIf="taskNotes.length === 0" class="no-notes">
+                  No notes logged for this task.
+                </div>
+              </div>
+
+              <!-- Add Note Form -->
+              <form [formGroup]="noteForm" (ngSubmit)="submitNote()" class="note-submit-form" *ngIf="currentUser?.role !== 'client'">
+                <input type="text" formControlName="note" placeholder="Write a comment..." />
+                <button type="submit" class="send-note-btn" [disabled]="noteForm.invalid"><i class="fi fi-rr-paper-plane"></i></button>
+              </form>
+            </div>
+
+            <!-- Danger Zone for Admin -->
+            <div class="detail-section danger-zone" *ngIf="currentUser?.role === 'admin'">
+              <h4>Danger Zone</h4>
+              <button class="btn btn-secondary danger-btn" (click)="deleteTask(selectedTask.id)">
+                <i class="fi fi-rr-trash"></i> Delete Task
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

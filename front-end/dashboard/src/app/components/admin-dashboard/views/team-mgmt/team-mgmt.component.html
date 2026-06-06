@@ -1,0 +1,148 @@
+<div class="view-container">
+  <!-- Header -->
+  <div class="view-header">
+    <div>
+      <h2 class="view-title">Team & Departments</h2>
+      <p class="view-subtitle">Organize departments, staff designations, and project teams.</p>
+    </div>
+    <button *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'" class="btn btn-primary" (click)="openDeptModal()">
+      <i class="fi fi-rr-plus"></i> Create Department
+    </button>
+  </div>
+
+  <div class="split-layout">
+    <!-- Left: Users list -->
+    <div class="glass-panel main-panel">
+      <div class="panel-header">
+        <h3 class="panel-title"><i class="fi fi-rr-users" style="color: var(--color-indigo);"></i> Staff Registry</h3>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Fetching active roster...</p>
+      </div>
+
+      <div *ngIf="!isLoading && users.length === 0" class="empty-state">
+        <i class="fi fi-rr-user-delete empty-icon"></i>
+        <p>No active users found in the system seeder.</p>
+      </div>
+
+      <div *ngIf="!isLoading && users.length > 0" class="table-responsive">
+        <table class="premium-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>System Role</th>
+              <th>Department</th>
+              <th *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td class="user-cell">
+                <div class="user-avatar">{{ (user.name || '').substring(0, 2).toUpperCase() }}</div>
+                <strong>{{ user.name }}</strong>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="role-badge" [class]="'role-' + user.role">{{ user.role }}</span>
+              </td>
+              <td>
+                <span class="dept-badge" *ngIf="user.department">
+                  <i class="fi fi-rr-settings"></i> {{ user.department.name }}
+                </span>
+                <span class="unassigned" *ngIf="!user.department">
+                  Unassigned
+                </span>
+              </td>
+              <td *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'">
+                <div class="action-btn-group">
+                  <button class="action-btn edit" title="Assign Department" (click)="openAssignModal(user)">
+                    <i class="fi fi-rr-settings"></i>
+                  </button>
+                  <button class="action-btn delete" title="Delete User" (click)="deleteUser(user.id)">
+                    <i class="fi fi-rr-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: Departments List -->
+    <div class="glass-panel side-panel">
+      <div class="panel-header">
+        <h3 class="panel-title"><i class="fi fi-rr-settings" style="color: var(--color-orange);"></i> Departments</h3>
+      </div>
+
+      <div class="dept-cards-list">
+        <div *ngFor="let dept of departments" class="dept-mini-card">
+          <div class="dept-info">
+            <h4>{{ dept.name }}</h4>
+            <p>{{ dept.description || 'No description provided.' }}</p>
+          </div>
+          <button *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'" class="action-btn delete" (click)="deleteDept(dept.id)">
+            <i class="fi fi-rr-trash"></i>
+          </button>
+        </div>
+        <div *ngIf="departments.length === 0" class="no-depts">
+          No departments created yet.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Dept Modal -->
+  <div class="modal-backdrop" *ngIf="showDeptModal">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3>Create Department</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <form [formGroup]="deptForm" (ngSubmit)="submitDept()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Department Name</label>
+            <input type="text" formControlName="name" placeholder="e.g. Graphic Design" />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea formControlName="description" rows="3" placeholder="Brief responsibility details..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="deptForm.invalid">Add Department</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assign Department Modal -->
+  <div class="modal-backdrop" *ngIf="showAssignModal">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3>Assign Staff Department</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      <form [formGroup]="assignForm" (ngSubmit)="submitAssign()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Choose Department</label>
+            <select formControlName="department_id">
+              <option value="">Select department...</option>
+              <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="assignForm.invalid">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

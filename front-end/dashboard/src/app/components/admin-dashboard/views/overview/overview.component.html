@@ -1,0 +1,57 @@
+<div class="view">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Total Active Projects</div>
+      <div class="value">{{ stats.projects }}</div>
+      <div class="trend up">Live portfolio items</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Services Available</div>
+      <div class="value">{{ stats.services }}</div>
+      <div class="trend up">Active catalog</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Client Testimonials</div>
+      <div class="value">{{ stats.testimonials }}</div>
+      <div class="trend up">Approved reviews</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Inquiries</div>
+      <div class="value">{{ stats.inquiries }}</div>
+      <div class="trend up">Pending leads</div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Recent Project Updates</div>
+        <a routerLink="../projects" style="font-size: 0.8rem; color: var(--admin-primary); text-decoration: none;">View All</a>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Project Title</th>
+            <th>Category</th>
+            <th>Date Added</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of recentProjects">
+            <td>
+              <div class="user-cell">
+                <img *ngIf="p.main_image_url" [src]="p.main_image_url" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
+                <span>{{ p.title_en || p.title }}</span>
+              </div>
+            </td>
+            <td><span class="badge badge-blue">{{ p.category?.name_en || p.category_id || 'N/A' }}</span></td>
+            <td>{{ p.created_at | date }}</td>
+          </tr>
+          <tr *ngIf="recentProjects.length === 0">
+            <td colspan="3" style="text-align: center; padding: 20px;">No recent projects found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
