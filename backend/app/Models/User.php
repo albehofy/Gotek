@@ -16,7 +16,11 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'department_id', // أضفنا ده عشان نربط المدير بقسمه
+        'role_id',
+        'department_id',
+        'payment_type',
+        'base_salary',
+        'commission_rate',
     ];
 
     protected $hidden = [
@@ -29,18 +33,56 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'base_salary' => 'decimal:2',
+            'commission_rate' => 'decimal:2',
         ];
     }
 
-    // علاقة المستخدم بالمهام (Many-to-Many)
-    public function tasks()
+    public function roleModel()
     {
-        return $this->belongsToMany(Task::class);
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
-    // علاقة المستخدم بالقسم (كل مدير أو موظف ينتمي لقسم)
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_user');
+    }
+
     public function department()
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function managedDepartment()
+    {
+        return $this->hasOne(Department::class, 'manager_id');
+    }
+
+    public function customNotifications()
+    {
+        return $this->hasMany(NotificationModel::class, 'user_id')->latest();
+    }
+
+    public function payrollRecords()
+    {
+        return $this->hasMany(PayrollRecord::class, 'employee_id');
+    }
+
+    public function custodyAccounts()
+    {
+        return $this->hasMany(CustodyAccount::class, 'employee_id');
+    }
+
+    public function hasPermission($permissionSlug)
+    {
+        if ($this->role === 'super_admin' || $this->role === 'Super Admin') {
+            return true;
+        }
+
+        if ($this->roleModel) {
+            return $this->roleModel->permissions->pluck('slug')->contains($permissionSlug);
+        }
+
+        return false;
     }
 }

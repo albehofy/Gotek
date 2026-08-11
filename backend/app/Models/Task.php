@@ -2,95 +2,92 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
-use App\Models\TaskChecklist;
+
 class Task extends Model
 {
-    use SoftDeletes, HasFactory;
-use LogsActivity;
+    use HasFactory, SoftDeletes;
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['title', 'status', 'description']) // الحقول اللي تهمنا
-            ->logOnlyDirty() // يسجل التعديل بس لو القيمة اتغيرت فعلاً
-            ->dontSubmitEmptyLogs();
-    }
-    // تأكد من إضافة internal_project_id و user_id في الـ fillable
     protected $fillable = [
-        'title', 
-        'description', 
-        'project_id', 
-        'internal_project_id', 
+        'title',
+        'description',
+        'scope',
         'deal_id',
+        'department_id',
+        'sub_category_id',
+        'parent_id',
+        'priority',
+        'status',
+        'estimated_hours',
         'client_price',
         'employee_price',
-        'department_id', 
-        'priority', 
-        'status', 
-        'due_date',
-        'estimated_hours',
-        'user_id' // منشئ التاسك
+        'company_margin',
     ];
 
-    protected $casts = [
-        'due_date' => 'date',
-    ];
+    protected $appends = ['computed_margin', 'subtasks_count'];
 
-    // 1. علاقة المشروع الداخلي
-    public function internalProject()
+    protected static function booted()
     {
-        return $this->belongsTo(InternalProject::class, 'internal_project_id');
+        static::saving(function ($task) {
+            $task->company_margin = max(0, (float) $task->client_price - (float) $task->employee_price);
+        });
     }
 
-    // 2. الموظفين المسند إليهم التاسك (علاقة Many-to-Many)
-    public function users()
+    public function getComputedMarginAttribute()
     {
-        return $this->belongsToMany(User::class, 'task_user'); 
+        return max(0, (float) $this->client_price - (float) $this->employee_price);
     }
 
-    public function assignedMembers()
+
+    public function getSubtasksCountAttribute()
     {
-        return $this->users();
+        return $this->subtasks()->count();
     }
 
-    // 3. منشئ التاسك
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    // 4. المرفقات (Polymorphic)
-    public function attachments()
-    {
-        return $this->morphMany(Attachment::class, 'attachable');
-    }
-
-    // 5. الـ Checklist
-    public function checklists()
-    {
-        return $this->hasMany(TaskChecklist::class, 'task_id');
-    }
-
-    // 6. تاريخ تغيير الحالات
-    public function statusHistories()
-    {
-        return $this->hasMany(TaskStatusHistory::class);
-    }
-
-    // 7. الـ Deal المرتبط
     public function deal()
     {
-        return $this->belongsTo(Deal::class, 'deal_id');
+        return $this->belongsTo(Deal::class);
     }
 
-    // 8. الملاحظات (Notes)
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Task::class, 'parent_id');
+    }
+
+    public function subtasks()
+    {
+        return $this->hasMany(Task::class, 'parent_id')->with('users');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'task_user');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(TaskAttachment::class, 'task_id')->latest();
+    }
+
     public function notes()
     {
-        return $this->hasMany(TaskNote::class, 'task_id');
+        return $this->hasMany(TaskNote::class, 'task_id')->with('user')->latest();
+    }
+
+    public function customFieldValues()
+    {
+        return $this->hasMany(TaskCustomFieldValue::class, 'task_id')->with('field');
     }
 }

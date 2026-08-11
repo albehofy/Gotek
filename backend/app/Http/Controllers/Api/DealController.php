@@ -5,34 +5,34 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Deal;
 use App\Models\User;
-use App\Events\DealCreated;
+use App\Models\NotificationModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * @group إدارة الصفقات
- */
 class DealController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
+
         if ($user->role === 'client') {
-            $deals = Deal::with(['client', 'creator', 'tasks.users'])
+            $deals = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])
                 ->where('client_id', $user->id)
                 ->latest()
                 ->get();
+        } elseif (in_array($user->role, ['department_manager', 'Department Manager']) && $user->department_id) {
+            $deals = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])
+                ->where('department_id', $user->department_id)
+                ->orWhereHas('tasks', function($q) use ($user) {
+                    $q->where('department_id', $user->department_id);
+                })
+                ->latest()
+                ->get();
         } else {
-            $deals = Deal::with(['client', 'creator', 'tasks.users'])
+            $deals = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])
                 ->latest()
                 ->get();
         }
-
-        // Add calculated attributes to array
-        $deals->each(function($deal) {
-            $deal->progress = $deal->progress;
-            $deal->remaining_balance = $deal->remaining_balance;
-        });
 
         return response()->json($deals);
     }
@@ -42,7 +42,12 @@ class DealController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'agreed_scope' => 'nullable|string',
             'client_id' => 'nullable|exists:users,id',
+            'department_id' => 'nullable|exists:departments,id',
+            'sales_person_id' => 'nullable|exists:users,id',
+            'sales_commission_type' => 'nullable|in:fixed,percentage',
+            'sales_commission_value' => 'nullable|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
         ]);
@@ -53,34 +58,39 @@ class DealController extends Controller
 
         $deal = Deal::create($validated);
 
-        // Broadcast to task generators
-        broadcast(new DealCreated($deal))->toOthers();
-
-        // Send database notifications to Task Generators
-        $generators = User::where('role', 'task_generator')->get();
-        foreach ($generators as $gen) {
-            $gen->notify(new \App\Notifications\TaskAssignedNotification(new \App\Models\Task([
-                'title' => $deal->title,
-                'description' => 'صفقة جديدة جاهزة للتقسيم إلى مهام: ' . $deal->title,
-                'status' => 'todo',
-                'department_id' => 1 // placeholder or defaults
-            ])));
+        // Send notification to department manager if deal assigned to department
+        if ($deal->department_id && $deal->department?->manager_id) {
+            NotificationModel::create([
+                'user_id' => $deal->department->manager_id,
+                'type' => 'assignment',
+                'title' => 'صفقة جديدة بقسمك',
+                'message' => 'تم إسناد الصفقة الجديد ' . $deal->title . ' لقسمك لتقسيمها إلى مهام.',
+                'notifiable_type' => Deal::class,
+                'notifiable_id' => $deal->id
+            ]);
         }
 
-        return response()->json(['status' => 'success', 'data' => $deal], 201);
+        return response()->json(['status' => 'success', 'data' => $deal->load(['client', 'department', 'salesPerson'])], 201);
     }
 
     public function show($id)
     {
         $user = Auth::user();
-        $deal = Deal::with(['client', 'creator', 'tasks.users', 'tasks.checklists', 'tasks.notes.user', 'tasks.attachments'])->findOrFail($id);
+        $deal = Deal::with([
+            'client',
+            'creator',
+            'department',
+            'salesPerson',
+            'tasks.users',
+            'tasks.subtasks',
+            'tasks.attachments',
+            'tasks.notes.user',
+            'payments'
+        ])->findOrFail($id);
 
         if ($user->role === 'client' && $deal->client_id !== $user->id) {
-            return response()->json(['message' => 'غير مسموح لك بعرض هذا العقد'], 403);
+            return response()->json(['message' => 'غير مسموح لك بعرض هذه الصفقة'], 403);
         }
-
-        $deal->progress = $deal->progress;
-        $deal->remaining_balance = $deal->remaining_balance;
 
         return response()->json($deal);
     }
@@ -89,14 +99,15 @@ class DealController extends Controller
     {
         $deal = Deal::findOrFail($id);
 
-        if (!in_array(Auth::user()->role, ['admin', 'manager'])) {
-            return response()->json(['message' => 'ليس لديك صلاحية تعديل هذه الصفقة'], 403);
-        }
-
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'agreed_scope' => 'nullable|string',
             'client_id' => 'nullable|exists:users,id',
+            'department_id' => 'nullable|exists:departments,id',
+            'sales_person_id' => 'nullable|exists:users,id',
+            'sales_commission_type' => 'nullable|in:fixed,percentage',
+            'sales_commission_value' => 'nullable|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'status' => 'required|in:pending,active,completed,cancelled',
@@ -104,47 +115,14 @@ class DealController extends Controller
 
         $deal->update($validated);
 
-        return response()->json(['status' => 'success', 'data' => $deal]);
-    }
-
-    public function pay(Request $request, $id)
-    {
-        $deal = Deal::findOrFail($id);
-
-        if (!in_array(Auth::user()->role, ['admin', 'manager'])) {
-            return response()->json(['message' => 'ليس لديك صلاحية إضافة دفعات'], 403);
-        }
-
-        $request->validate([
-            'amount' => 'required|numeric|min:0.01'
-        ]);
-
-        $deal->increment('paid_amount', $request->amount);
-
-        // Update status to active if pending
-        if ($deal->status === 'pending') {
-            $deal->update(['status' => 'active']);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تسجيل الدفعة بنجاح',
-            'data' => [
-                'paid_amount' => $deal->paid_amount,
-                'remaining_balance' => $deal->remaining_balance
-            ]
-        ]);
+        return response()->json(['status' => 'success', 'data' => $deal->load(['client', 'department', 'salesPerson'])]);
     }
 
     public function destroy($id)
     {
         $deal = Deal::findOrFail($id);
-
-        if (!in_array(Auth::user()->role, ['admin', 'manager'])) {
-            return response()->json(['message' => 'ليس لديك صلاحية الحذف'], 403);
-        }
-
         $deal->delete();
+
         return response()->json(['message' => 'تم حذف الصفقة بنجاح']);
     }
 }

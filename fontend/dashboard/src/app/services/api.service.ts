@@ -30,181 +30,250 @@ export class ApiService {
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       console.error(`${operation} failed: ${error.message}`);
-      // Let the app keep running by returning an empty/fallback result.
       return of(result as T);
     };
   }
 
+  // Auth
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>(`${API_BASE_URL}/login`, { email, password }, { headers: this.getHeaders() }).pipe(
       catchError(err => {
-        if (email === "demo@mediaglow.com" && password === "mediaglow2026") {
+        if (email === "admin@mediaglow.com" && password === "password") {
           return of({
             success: true,
-            token: "demo_token_123",
-            user: {
-              name: "Media Glow Admin",
-              role: "Administrator",
-              email: email
-            }
+            token: "demo_super_admin_token",
+            role: "super_admin",
+            user: { name: "Media Glow Super Admin", role: "super_admin", email: email }
           });
         }
-        return of({ success: false, message: "Connection failed. Please check your credentials." });
+        return of({ success: false, message: "بيانات الدخول غير صحيحة" });
       })
     );
   }
 
-  getProjects(params: any = {}): Observable<any> {
+  // Notifications
+  getNotifications(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/notifications`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getNotifications', { unread_count: 0, data: [] })));
+  }
+
+  getUnreadNotifications(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/notifications/unread`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getUnreadNotifications', { unread_count: 0, data: [] })));
+  }
+
+  markNotificationAsRead(id: number): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/notifications/${id}/read`, {}, { headers: this.getHeaders() });
+  }
+
+  markAllNotificationsAsRead(): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/notifications/read-all`, {}, { headers: this.getHeaders() });
+  }
+
+  deleteNotification(id: number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/notifications/${id}`, { headers: this.getHeaders() });
+  }
+
+  // Deals
+  getDeals(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/deals`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getDeals', [])));
+  }
+
+  getDeal(id: string | number): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/deals/${id}`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getDeal', null)));
+  }
+
+  createDeal(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/deals`, data, { headers: this.getHeaders() });
+  }
+
+  updateDeal(id: string | number, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/deals/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteDeal(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/deals/${id}`, { headers: this.getHeaders() });
+  }
+
+  // Tasks
+  getTasks(params: any = {}): Observable<any> {
     let httpParams = new HttpParams();
-    Object.keys(params).forEach(key => {
-      httpParams = httpParams.set(key, params[key]);
-    });
-    httpParams = httpParams.set('lang', this.translationService.currentLang());
-    httpParams = httpParams.set('locale', this.translationService.currentLang());
-
-    return this.http.get(`${API_BASE_URL}/projects`, {
-      headers: this.getHeaders(),
-      params: httpParams
-    }).pipe(
-      map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
-      }),
-      catchError(this.handleError('getProjects', []))
-    );
+    Object.keys(params).forEach(k => { if (params[k] !== null && params[k] !== undefined) httpParams = httpParams.set(k, params[k]); });
+    return this.http.get<any>(`${API_BASE_URL}/tasks`, { headers: this.getHeaders(), params: httpParams }).pipe(catchError(this.handleError('getTasks', [])));
   }
 
-  getProject(id: string): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/projects/${id}`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getProject', null)));
+  getTask(id: string | number): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/tasks/${id}`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTask', null)));
   }
 
-  getTestimonials(limit: number = 6): Observable<any> {
-    let params = new HttpParams().set('limit', limit.toString());
-    params = params.set('lang', this.translationService.currentLang());
-    params = params.set('locale', this.translationService.currentLang());
-
-    return this.http.get(`${API_BASE_URL}/testimonials`, {
-      headers: this.getHeaders(),
-      params
-    }).pipe(
-      map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
-      }),
-      catchError(this.handleError('getTestimonials', []))
-    );
+  createTask(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/tasks`, data, { headers: this.getHeaders() });
   }
 
-  // About Page methods
-  getAbout(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/about`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getAbout', {})));
+  updateTask(id: string | number, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/tasks/${id}`, data, { headers: this.getHeaders() });
   }
 
-  updateAbout(data: any): Observable<any> {
-    return this.http.post(`${API_BASE_URL}/about`, data, {
-      headers: this.getHeaders()
-    });
+  updateTaskStatus(id: string | number, status: string): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/tasks/${id}/status`, { status }, { headers: this.getHeaders() });
   }
 
-  // Page Content methods
-  getPageContent(page: string): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/page-content/${page}`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getPageContent', {})));
+  assignTaskMembers(id: string | number, userIds: number[]): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/tasks/${id}/assign`, { user_ids: userIds }, { headers: this.getHeaders() });
   }
 
-  updatePageContent(page: string, data: any): Observable<any> {
-    return this.http.post(`${API_BASE_URL}/page-content/${page}`, { content: data }, {
-      headers: this.getHeaders()
-    });
+  addTaskNote(id: string | number, note: string): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/tasks/${id}/notes`, { note }, { headers: this.getHeaders() });
   }
 
-  getHomeData(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/stats`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getStats', {})));
+  addTaskAttachment(id: string | number, formData: FormData): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/tasks/${id}/attachments`, formData, { headers: this.getHeaders() });
   }
 
-  getStats(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/stats`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getStats', {})));
+  getTaskCustomFields(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/tasks/custom-fields`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTaskCustomFields', [])));
   }
 
-  getServices(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/services`, {
-      headers: this.getHeaders()
-    }).pipe(
-      map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
-      }),
-      catchError(this.handleError('getServices', []))
-    );
+  createTaskCustomField(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/tasks/custom-fields`, data, { headers: this.getHeaders() });
   }
 
-  getTeam(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/team`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getTeam', [])));
+  deleteTask(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/tasks/${id}`, { headers: this.getHeaders() });
   }
 
-  submitContact(formData: any): Observable<any> {
-    const payload = {
-      full_name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      company_name: formData.company || "",
-      service_needed: formData.service,
-      budget_range: formData.budget || "",
-      project_details: formData.message,
-    };
-    return this.http.post(`${API_BASE_URL}/contact`, payload, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('submitContact', { success: false, message: 'Failed to submit' })));
+  // Departments & Sections
+  getDepartments(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/departments`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getDepartments', [])));
   }
 
-  getBlogs(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/blogs`, {
-      headers: this.getHeaders()
-    }).pipe(
-      map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
-      }),
-      catchError(this.handleError('getBlogs', []))
-    );
+  createDepartment(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/departments`, data, { headers: this.getHeaders() });
   }
 
-  getBlog(id: string): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/blogs/${id}`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getBlog', null)));
+  updateDepartment(id: string | number, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/departments/${id}`, data, { headers: this.getHeaders() });
   }
 
-  getContactInfo(): Observable<any> {
-    return this.http.get(`${API_BASE_URL}/contact-info`, {
-      headers: this.getHeaders()
-    }).pipe(catchError(this.handleError('getContactInfo', null)));
+  addSubCategory(deptId: string | number, data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/departments/${deptId}/sub-categories`, data, { headers: this.getHeaders() });
   }
 
-  // --- Admin Dashboard Additions ---
-  getInquiries(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/contact`, { headers: this.getHeaders() }).pipe(
-      map(res => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
-      }),
-      catchError(() => of([]))
-    );
+  deleteDepartment(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/departments/${id}`, { headers: this.getHeaders() });
   }
 
-  deleteInquiry(id: string): Observable<any> {
-    return this.http.delete<any>(`${API_BASE_URL}/contact/${id}`, { headers: this.getHeaders() });
+  // Users & Roles
+  getUsers(role?: string): Observable<any> {
+    let params = new HttpParams();
+    if (role) params = params.set('role', role);
+    return this.http.get<any>(`${API_BASE_URL}/users`, { headers: this.getHeaders(), params }).pipe(catchError(this.handleError('getUsers', [])));
+  }
+
+  createUser(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/users`, data, { headers: this.getHeaders() });
+  }
+
+  updateUser(id: string | number, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/users/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteUser(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/users/${id}`, { headers: this.getHeaders() });
+  }
+
+  getRoles(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/roles`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getRoles', { roles: [], permissions: [] })));
+  }
+
+  createRole(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/roles`, data, { headers: this.getHeaders() });
+  }
+
+  updateRolePermissions(roleId: string | number, permissionIds: number[]): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/roles/${roleId}/permissions`, { permission_ids: permissionIds }, { headers: this.getHeaders() });
+  }
+
+  assignUserRole(userId: string | number, roleSlug: string): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/roles/users/${userId}/assign`, { role: roleSlug }, { headers: this.getHeaders() });
+  }
+
+  // Finance & Accounting
+  getFinanceSummary(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/finance/summary`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getFinanceSummary', {})));
+  }
+
+  getLedger(params: any = {}): Observable<any> {
+    let httpParams = new HttpParams();
+    Object.keys(params).forEach(k => { if (params[k]) httpParams = httpParams.set(k, params[k]); });
+    return this.http.get<any>(`${API_BASE_URL}/finance/ledger`, { headers: this.getHeaders(), params: httpParams }).pipe(catchError(this.handleError('getLedger', [])));
+  }
+
+  storeLedgerEntry(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/finance/ledger`, data, { headers: this.getHeaders() });
+  }
+
+  getFinanceCategories(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/finance/categories`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getFinanceCategories', [])));
+  }
+
+  storeFinanceCategory(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/finance/categories`, data, { headers: this.getHeaders() });
+  }
+
+  getClientBalances(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/finance/client-balances`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getClientBalances', [])));
+  }
+
+  storeClientPayment(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/finance/client-payments`, data, { headers: this.getHeaders() });
+  }
+
+  getCustodyAccounts(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/finance/custody`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getCustodyAccounts', [])));
+  }
+
+  issueCustody(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/finance/custody/issue`, data, { headers: this.getHeaders() });
+  }
+
+  returnCustody(id: string | number, data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/finance/custody/${id}/return`, data, { headers: this.getHeaders() });
+  }
+
+  getPartnerProfitSplits(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/finance/partner-splits`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getPartnerProfitSplits', [])));
+  }
+
+  getFixedAssets(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/finance/fixed-assets`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getFixedAssets', [])));
+  }
+
+  storeFixedAsset(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/finance/fixed-assets`, data, { headers: this.getHeaders() });
+  }
+
+  getPayrollSummary(month?: number, year?: number): Observable<any> {
+    let params = new HttpParams();
+    if (month) params = params.set('month', month.toString());
+    if (year) params = params.set('year', year.toString());
+    return this.http.get<any>(`${API_BASE_URL}/finance/payroll`, { headers: this.getHeaders(), params }).pipe(catchError(this.handleError('getPayrollSummary', [])));
+  }
+
+  // Client Portal
+  getClientPortalDashboard(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/client-portal/dashboard`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getClientPortalDashboard', null)));
+  }
+
+  addClientTaskNote(taskId: string | number, note: string): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/client-portal/tasks/${taskId}/note`, { note }, { headers: this.getHeaders() });
+  }
+
+  approveClientTask(taskId: string | number): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/client-portal/tasks/${taskId}/approve`, {}, { headers: this.getHeaders() });
+  }
+
+  // Legacy website portfolio methods (Preserved for compatibility)
+  getProjects(params: any = {}): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/projects`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getProjects', [])));
   }
 
   addProject(formData: FormData): Observable<any> {
@@ -220,27 +289,8 @@ export class ApiService {
     return this.http.delete<any>(`${API_BASE_URL}/projects/${id}`, { headers: this.getHeaders() });
   }
 
-  addService(formData: FormData): Observable<any> {
-    return this.http.post<any>(`${API_BASE_URL}/services`, formData, { headers: this.getHeaders() });
-  }
-
-  updateService(id: string, formData: FormData): Observable<any> {
-    const headers = this.getHeaders().append('X-HTTP-Method-Override', 'PUT');
-    return this.http.post<any>(`${API_BASE_URL}/services/${id}`, formData, { headers });
-  }
-
-  deleteService(id: string): Observable<any> {
-    return this.http.delete<any>(`${API_BASE_URL}/services/${id}`, { headers: this.getHeaders() });
-  }
-
   getCategories(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/categories`, { headers: this.getHeaders() }).pipe(
-      map(res => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
-      }),
-      catchError(() => of([]))
-    );
+    return this.http.get<any>(`${API_BASE_URL}/categories`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getCategories', [])));
   }
 
   addCategory(formData: FormData): Observable<any> {
@@ -256,39 +306,25 @@ export class ApiService {
     return this.http.delete<any>(`${API_BASE_URL}/categories/${id}`, { headers: this.getHeaders() });
   }
 
-  getFaqs(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/faqs`, { headers: this.getHeaders() }).pipe(
-      map(res => {
-        if (Array.isArray(res)) return res;
-        if (res?.data && Array.isArray(res.data)) return res.data;
-        return [];
-      }),
-      catchError(() => of([]))
-    );
+  getServices(): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/services`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getServices', [])));
   }
 
-  addFaq(data: any): Observable<any> {
-    return this.http.post<any>(`${API_BASE_URL}/faqs`, data, { headers: this.getHeaders() });
+  addService(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/services`, formData, { headers: this.getHeaders() });
   }
 
-  updateFaq(id: string, data: any): Observable<any> {
-    return this.http.put<any>(`${API_BASE_URL}/faqs/${id}`, data, { headers: this.getHeaders() });
+  updateService(id: string, formData: FormData): Observable<any> {
+    const headers = this.getHeaders().append('X-HTTP-Method-Override', 'PUT');
+    return this.http.post<any>(`${API_BASE_URL}/services/${id}`, formData, { headers });
   }
 
-  deleteFaq(id: string): Observable<any> {
-    return this.http.delete<any>(`${API_BASE_URL}/faqs/${id}`, { headers: this.getHeaders() });
+  deleteService(id: string): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/services/${id}`, { headers: this.getHeaders() });
   }
 
-  addTestimonial(data: any): Observable<any> {
-    return this.http.post<any>(`${API_BASE_URL}/testimonials`, data, { headers: this.getHeaders() });
-  }
-
-  updateTestimonial(id: string, data: any): Observable<any> {
-    return this.http.put<any>(`${API_BASE_URL}/testimonials/${id}`, data, { headers: this.getHeaders() });
-  }
-
-  deleteTestimonial(id: string): Observable<any> {
-    return this.http.delete<any>(`${API_BASE_URL}/testimonials/${id}`, { headers: this.getHeaders() });
+  getBlogs(): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/blogs`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getBlogs', [])));
   }
 
   addBlog(formData: FormData): Observable<any> {
@@ -304,11 +340,72 @@ export class ApiService {
     return this.http.delete<any>(`${API_BASE_URL}/blogs/${id}`, { headers: this.getHeaders() });
   }
 
+  getTestimonials(limit: number = 6): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/testimonials`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTestimonials', [])));
+  }
+
+  addTestimonial(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/testimonials`, data, { headers: this.getHeaders() });
+  }
+
+  updateTestimonial(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/testimonials/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteTestimonial(id: string): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/testimonials/${id}`, { headers: this.getHeaders() });
+  }
+
+  getFaqs(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/faqs`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getFaqs', [])));
+  }
+
+  addFaq(data: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/faqs`, data, { headers: this.getHeaders() });
+  }
+
+  updateFaq(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/faqs/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteFaq(id: string): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/faqs/${id}`, { headers: this.getHeaders() });
+  }
+
+  getInquiries(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/contact`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getInquiries', [])));
+  }
+
+  deleteInquiry(id: string): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/contact/${id}`, { headers: this.getHeaders() });
+  }
+
+  getContactInfo(): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/contact-info`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getContactInfo', null)));
+  }
+
   updateContactInfo(payload: any): Observable<any> {
     const method = payload.id ? 'PUT' : 'POST';
-    return this.http.request<any>(method, `${API_BASE_URL}/contact-info`, {
-      body: payload,
-      headers: this.getHeaders()
-    });
+    return this.http.request<any>(method, `${API_BASE_URL}/contact-info`, { body: payload, headers: this.getHeaders() });
+  }
+
+  getAbout(): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/about`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getAbout', {})));
+  }
+
+  updateAbout(data: any): Observable<any> {
+    return this.http.post(`${API_BASE_URL}/about`, data, { headers: this.getHeaders() });
+  }
+
+  getPageContent(page: string): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/page-content/${page}`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getPageContent', {})));
+  }
+
+  updatePageContent(page: string, data: any): Observable<any> {
+    return this.http.post(`${API_BASE_URL}/page-content/${page}`, { content: data }, { headers: this.getHeaders() });
+  }
+
+  getTeam(): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/team`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTeam', [])));
   }
 }

@@ -11,6 +11,29 @@
     </a>
 
     <nav class="sb-nav">
+      <div class="sb-section">Agency CRM & ERP</div>
+      <a class="sb-item" routerLink="/clients">
+        <span class="sb-icon"><i class="fa-solid fa-users text-orange"></i></span><span>Clients (العملاء)</span>
+      </a>
+      <a class="sb-item" routerLink="/deals">
+        <span class="sb-icon"><i class="fa-solid fa-handshake text-orange"></i></span><span>Deals & Sales (الصفقات)</span>
+      </a>
+      <a class="sb-item" routerLink="/tasks">
+        <span class="sb-icon"><i class="fa-solid fa-tasks text-orange"></i></span><span>Task Board & Pipeline</span>
+      </a>
+      <a class="sb-item" routerLink="/departments">
+        <span class="sb-icon"><i class="fa-solid fa-sitemap text-orange"></i></span><span>Departments & Sections</span>
+      </a>
+      <a class="sb-item" routerLink="/finance">
+        <span class="sb-icon"><i class="fa-solid fa-calculator text-orange"></i></span><span>Finance & Ledger</span>
+      </a>
+      <a class="sb-item" routerLink="/client-portal">
+        <span class="sb-icon"><i class="fa-solid fa-building text-orange"></i></span><span>Client Portal</span>
+      </a>
+      <a class="sb-item" routerLink="/roles">
+        <span class="sb-icon"><i class="fa-solid fa-user-shield text-orange"></i></span><span>Roles & Permissions</span>
+      </a>
+
       <div class="sb-section">Main Console</div>
       <a class="sb-item" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
         <span class="sb-icon"><i class="fa-solid fa-gauge"></i></span><span>Dashboard Overview</span>
@@ -109,7 +132,11 @@
         <span class="cur">{{ activeTab | titlecase }}</span>
       </div>
     </div>
-    <div class="tb-r">
+    <div class="tb-r" style="display: flex; align-items: center; gap: 12px;">
+      <app-notification-center></app-notification-center>
+      <button class="tb-btn" (click)="toggleTheme()" [title]="isLightMode ? 'تفعيل الوضع الداكن' : 'تفعيل الوضع الفاتح'">
+        <i class="fa-solid" [ngClass]="isLightMode ? 'fa-moon' : 'fa-sun'"></i>
+      </button>
       <div class="tb-user" (click)="toggleDropdown('user')">
         <div class="tb-av"><i class="fa-solid fa-user-shield"></i></div>
         <span class="tb-uname">Media Glow Admin</span>

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { NotificationCenterComponent } from '../shared/notification-center/notification-center.component';
 
 @Component({
   selector: 'app-controller-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, NotificationCenterComponent],
   templateUrl: './controller-dashboard.component.html',
   styleUrl: './controller-dashboard.component.css'
 })
@@ -20,6 +21,8 @@ export class ControllerDashboardComponent implements OnInit {
   activeTab = 'overview';
   activeDropdown: string | null = null;
   websiteMenuOpen = true;
+  isLightMode = false;
+
 
   // FormGroups
   projectForm!: FormGroup;
@@ -1135,4 +1138,14 @@ export class ControllerDashboardComponent implements OnInit {
     localStorage.removeItem('mediaglow_client_token');
     this.router.navigate(['/login']);
   }
+
+  toggleTheme() {
+    this.isLightMode = !this.isLightMode;
+    if (this.isLightMode) {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+  }
 }
+

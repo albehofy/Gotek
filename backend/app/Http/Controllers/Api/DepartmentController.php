@@ -4,112 +4,100 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Models\SubCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
-/**
- * @group إدارة الأقسام
- * APIs لإدارة الأقسام داخل الوكالة (Graphic, Web, Social Media...)
- */
 class DepartmentController extends Controller
 {
-    /**
-     * عرض جميع الأقسام
-     * @authenticated
-     */
     public function index()
     {
-        $departments = Department::with('manager')->get();
+        $departments = Department::with(['manager', 'subCategories', 'employees'])->get();
         return response()->json($departments);
     }
 
-    /**
-     * إنشاء قسم جديد
-     * @authenticated
-     * @bodyParam name string required اسم القسم. Example: Graphic Design
-     * @bodyParam description string وصف القسم.
-     * @bodyParam manager_id integer ID الموظف المسئول عن القسم.
-     */
     public function store(Request $request)
     {
-        // التحقق من الصلاحية (الأدمن فقط هو من يكريت الأقسام)
-        if (Auth::user()->role !== 'admin') {
-            return response()->json(['message' => 'غير مسموح لك بإنشاء أقسام'], 403);
-        }
-
         $validated = $request->validate([
-            'name' => 'required|string|unique:departments,name',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'manager_id' => 'nullable|exists:users,id',
+            'has_partner' => 'boolean',
+            'partner_name' => 'nullable|string|max:255',
+            'partner_percentage' => 'nullable|numeric|min:0|max:100',
+            'sub_categories' => 'nullable|array'
         ]);
 
-        $department = Department::create($validated);
+        $department = Department::create([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? '',
+            'manager_id' => $validated['manager_id'] ?? null,
+            'has_partner' => $validated['has_partner'] ?? false,
+            'partner_name' => $validated['partner_name'] ?? null,
+            'partner_percentage' => $validated['partner_percentage'] ?? 0,
+        ]);
 
-        return response()->json([
-            'message' => 'تم إنشاء القسم بنجاح',
-            'data' => $department
-        ], 201);
+        if (!empty($validated['sub_categories'])) {
+            foreach ($validated['sub_categories'] as $subName) {
+                if (!empty($subName)) {
+                    SubCategory::create([
+                        'department_id' => $department->id,
+                        'name_ar' => is_array($subName) ? ($subName['ar'] ?? $subName['en']) : $subName,
+                        'name_en' => is_array($subName) ? ($subName['en'] ?? $subName['ar']) : $subName,
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['status' => 'success', 'data' => $department->load(['subCategories', 'manager'])], 201);
     }
 
-    /**
-     * عرض تفاصيل قسم معين
-     * @authenticated
-     */
     public function show($id)
     {
-        $department = Department::with(['manager', 'projects'])->findOrFail($id);
+        $department = Department::with(['manager', 'subCategories', 'employees', 'tasks', 'fixedAssets'])->findOrFail($id);
         return response()->json($department);
     }
 
-    /**
-     * حذف قسم (Soft Delete)
-     * @authenticated
-     */
+    public function update(Request $request, $id)
+    {
+        $department = Department::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'manager_id' => 'nullable|exists:users,id',
+            'has_partner' => 'boolean',
+            'partner_name' => 'nullable|string|max:255',
+            'partner_percentage' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $department->update($validated);
+
+        return response()->json(['status' => 'success', 'data' => $department->load(['subCategories', 'manager'])]);
+    }
+
+    public function addSubCategory(Request $request, $id)
+    {
+        $department = Department::findOrFail($id);
+        $validated = $request->validate([
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $sub = SubCategory::create([
+            'department_id' => $department->id,
+            'name_ar' => $validated['name_ar'],
+            'name_en' => $validated['name_en'] ?? $validated['name_ar'],
+            'description' => $validated['description'] ?? null
+        ]);
+
+        return response()->json(['status' => 'success', 'data' => $sub], 201);
+    }
+
     public function destroy($id)
     {
-        if (Auth::user()->role !== 'admin') {
-            return response()->json(['message' => 'غير مسموح لك بحذف الأقسام'], 403);
-        }
-
         $department = Department::findOrFail($id);
         $department->delete();
-
-        return response()->json([
-            'message' => 'تم نقل القسم إلى سلة المهملات بنجاح',
-            'deleted_at' => $department->deleted_at // اختياري عشان التأكيد
-        ]);
+        return response()->json(['message' => 'تم حذف القسم بنجاح']);
     }
-        /**
-     * المحذوفات قسم (get Soft Delete)
-     * @authenticated
-     */
-    public function trash()
-{
-    // التأكد من الصلاحيات (أدمن فقط)
-    if (Auth::user()->role !== 'admin') {
-        return response()->json(['message' => 'غير مسموح لك بالوصول لهذه البيانات'], 403);
-    }
-
-    // جلب الأقسام الممسوحة فقط "سوفت" مع مشاريعها الممسوحة أيضاً لو أحببت
-    $trashedDepartments = Department::onlyTrashed()->get();
-
-    return response()->json([
-        'message' => 'سلة مهملات الأقسام',
-        'data' => $trashedDepartments
-    ]);
-}
-public function restore($id)
-{
-    $department = Department::withTrashed()->findOrFail($id);
-    $department->restore();
-
-    return response()->json(['message' => 'تم استعادة القسم بنجاح']);
-}
-public function forceDelete($id)
-{
-    $department = Department::withTrashed()->findOrFail($id);
-    $department->forceDelete();
-
-    return response()->json(['message' => 'تم حذف القسم من النظام']);
-}
 }

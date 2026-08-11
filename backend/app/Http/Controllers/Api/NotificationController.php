@@ -3,75 +3,77 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\NotificationModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    /**
-     * 1. عرض كل التنبيهات (المقروءة وغير المقروءة)
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $notifications = auth()->user()->notifications;
-        
+        $user = Auth::user();
+        $notifications = NotificationModel::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->get('per_page', 20));
+
+        $unreadCount = NotificationModel::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->count();
+
         return response()->json([
-            'success' => true,
+            'status' => 'success',
+            'unread_count' => $unreadCount,
             'data' => $notifications
         ]);
     }
 
-    /**
-     * 2. عرض التنبيهات غير المقروءة فقط (مهمة للـ Counter في الـ Navbar)
-     */
     public function unread()
     {
-        $unread = auth()->user()->unreadNotifications;
+        $user = Auth::user();
+        $notifications = NotificationModel::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json([
-            'success' => true,
-            'count' => $unread->count(),
-            'data' => $unread
+            'status' => 'success',
+            'unread_count' => $notifications->count(),
+            'data' => $notifications
         ]);
     }
 
-    /**
-     * 3. تحديد تنبيه معين كمقروء
-     */
     public function markAsRead($id)
     {
-        $notification = auth()->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
+        $user = Auth::user();
+        $notification = NotificationModel::where('user_id', $user->id)->findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تحديد التنبيه كمقروء'
+        $notification->update([
+            'is_read' => true,
+            'read_at' => now(),
         ]);
+
+        return response()->json(['status' => 'success', 'message' => 'تم تمييز التنبيه كـ مقروء']);
     }
 
-    /**
-     * 4. تحديد كل التنبيهات كمقروءة (زرار Mark all as read)
-     */
     public function markAllAsRead()
     {
-        auth()->user()->unreadNotifications->markAsRead();
+        $user = Auth::user();
+        NotificationModel::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تحديد جميع التنبيهات كمقروءة'
-        ]);
+        return response()->json(['status' => 'success', 'message' => 'تم تمييز جميع التنبيهات كـ مقروءة']);
     }
 
-    /**
-     * 5. حذف تنبيه معين
-     */
     public function destroy($id)
     {
-        $notification = auth()->user()->notifications()->findOrFail($id);
+        $user = Auth::user();
+        $notification = NotificationModel::where('user_id', $user->id)->findOrFail($id);
         $notification->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم حذف التنبيه بنجاح'
-        ]);
+        return response()->json(['status' => 'success', 'message' => 'تم حذف التنبيه بنجاح']);
     }
 }
