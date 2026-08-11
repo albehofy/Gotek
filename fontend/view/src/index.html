@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>View</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+</head>
+<body>
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-content">
+      <div class="loader-creative-icon">
+        <img src="assets/media-glow-icon.png" alt="Loading..." onerror="this.src='assets/logo.png'; if(this.src.includes('logo.png')) this.onerror=null;" />
+      </div>
+      <div class="loader-text">Loading</div>
+    </div>
+  </div>
+
+  <app-root></app-root>
+
+  <script>
+    // Enforce a minimum 4 second load time
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        const loader = document.getElementById('pageLoader');
+        if (loader) {
+          loader.classList.add('hidden');
+        }
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

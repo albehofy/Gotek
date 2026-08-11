@@ -1,0 +1,189 @@
+<!-- PAGE HERO -->
+<section class="section about-hero">
+  <div class="glow-orb primary"></div>
+  <div class="container">
+    <div class="sec-tag animate-up delay-1">
+      {{ aboutContent?.content?.hero?.en?.label || ('about_hero_label' | translate) }}
+    </div>
+    <h1 class="sec-title about-hero-title animate-up delay-2">
+      {{ aboutContent?.content?.hero?.en?.title1 || ('about_hero_1' | translate) }} <br />
+      <span>{{ aboutContent?.content?.hero?.en?.title2 || ('about_hero_2' | translate) }}</span>
+    </h1>
+    <p class="sec-desc about-hero-desc animate-up delay-3">
+      {{ aboutContent?.content?.hero?.en?.desc || ('about_hero_desc' | translate) }}
+    </p>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="section">
+  <div class="container">
+    <div class="about-story-grid">
+      
+      <!-- Right Card (Why Built) -->
+      <div class="glass-panel about-story-card">
+        <div class="glow-orb"></div>
+        <div class="about-story-card-content">
+          <h3 class="sec-title about-story-card-title">
+            {{ aboutContent?.content?.story?.en?.heading || ('why_built_1' | translate) }} <span>Media Glow</span>
+          </h3>
+          <p class="about-story-card-text">
+            {{ aboutContent?.content?.story?.en?.text1 || ('why_built_desc_1' | translate) }}
+          </p>
+          <p class="about-story-card-text">
+            {{ aboutContent?.content?.story?.en?.text2 || ('why_built_desc_2' | translate) }}
+          </p>
+          <div class="about-story-quote-box">
+            <p class="about-story-quote-text">
+              "{{ aboutContent?.content?.story?.en?.quote || ('quote_text' | translate) }}"
+            </p>
+            <span class="about-story-quote-cite">
+              — {{ aboutContent?.content?.story?.en?.quote_author || ('quote_cite' | translate) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Timeline -->
+      <div class="about-timeline-section">
+        <div class="sec-tag">{{ 'our_journey' | translate }}</div>
+        <h2 class="sec-title">
+          {{ 'how_mediaglow' | translate }} <span>{{ 'came_to_be' | translate }}</span>
+        </h2>
+        
+        <div class="about-timeline-container">
+          <!-- Vertical Line -->
+          <div class="about-timeline-line"></div>
+          
+          <div *ngFor="let item of aboutContent?.timeline; let i = index" class="about-timeline-item">
+            <!-- Dot -->
+            <div class="about-timeline-dot"></div>
+            
+            <div class="glass-panel about-timeline-card">
+              <div class="about-timeline-year">{{ item.year }}</div>
+              <h4 class="about-timeline-title">{{ item.title?.en }}</h4>
+              <p class="about-timeline-desc">{{ item.description?.en }}</p>
+            </div>
+          </div>
+
+          <!-- Fallback if no timeline -->
+          <div *ngIf="!aboutContent?.timeline?.length" style="color: var(--text-muted); font-style: italic;">
+            Timeline is being updated...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISION, MISSION, VALUES -->
+<section class="section about-foundation-section">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 64px;">
+      <div class="sec-tag">{{ 'our_foundation' | translate }}</div>
+      <h2 class="sec-title">
+        {{ 'stand_for' | translate }} <span>{{ 'stand_for_2' | translate }}</span>
+      </h2>
+    </div>
+    <div class="about-foundation-grid">
+      
+      <!-- Vision -->
+      <div class="glass-panel about-foundation-card">
+        <div class="about-foundation-icon">
+          <i class="fa-solid fa-compass"></i>
+        </div>
+        <h3 class="about-foundation-title">{{ aboutContent?.content?.vision?.en?.title || ('vision_title' | translate) }}</h3>
+        <p class="about-foundation-desc">{{ aboutContent?.content?.vision?.en?.desc || ('vision_desc' | translate) }}</p>
+      </div>
+
+      <!-- Mission -->
+      <div class="glass-panel about-foundation-card featured">
+        <div class="about-foundation-icon">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <h3 class="about-foundation-title">{{ aboutContent?.content?.mission?.en?.title || ('mission_title' | translate) }}</h3>
+        <p class="about-foundation-desc">{{ aboutContent?.content?.mission?.en?.desc || ('mission_desc' | translate) }}</p>
+      </div>
+
+      <!-- Values -->
+      <div class="glass-panel about-foundation-card">
+        <div class="about-foundation-icon">
+          <i class="fa-solid fa-gem"></i>
+        </div>
+        <h3 class="about-foundation-title">{{ aboutContent?.content?.values?.en?.title || ('values_title' | translate) }}</h3>
+        <p class="about-foundation-desc">{{ aboutContent?.content?.values?.en?.desc || ('values_desc' | translate) }}</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDERS -->
+<section class="section">
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 64px; flex-wrap: wrap; gap: 24px;">
+      <div>
+        <div class="sec-tag">{{ 'leadership' | translate }}</div>
+        <h2 class="sec-title" style="margin-bottom: 0;">{{ 'meet_founders' | translate }} <span>{{ 'founders' | translate }}</span></h2>
+      </div>
+    </div>
+    
+    <div class="about-founders-grid">
+      <div class="glass-panel about-founder-card" *ngFor="let f of founders">
+        <div class="about-founder-avatar">
+          {{ f?.name ? f.name.charAt(0) : 'G' }}
+        </div>
+        <div>
+          <h3 class="about-founder-name">{{ f?.name }}</h3>
+          <div class="about-founder-role">
+            {{ f?.job_title || ('manager' | translate) }}
+          </div>
+          <p class="about-founder-bio">{{ f?.bio || "Leading the vision and strategy at Media Glow." }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="section" style="padding-top: 40px;">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 64px;">
+      <div class="sec-tag">{{ 'the_team' | translate }}</div>
+      <h2 class="sec-title" style="font-size: clamp(2rem, 4vw, 3rem);">
+        {{ aboutContent?.content?.team_text?.en?.heading || ('team_count' | translate) }} <br/>
+        <span>{{ aboutContent?.content?.team_text?.en?.subheading || ('team_goal' | translate) }}</span>
+      </h2>
+      <p class="sec-desc" style="margin: 0 auto;">{{ aboutContent?.content?.team_text?.en?.desc || ('team_desc' | translate) }}</p>
+    </div>
+
+    <div class="about-team-grid">
+      <div class="glass-panel about-team-card" *ngFor="let t of team">
+        <div class="about-team-avatar">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <h4 class="about-team-name">{{ t?.name }}</h4>
+        <div class="about-team-role">
+          {{ t?.job_title || ('employee' | translate) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container">
+    <div class="glass-panel about-cta-box">
+      <h2 class="sec-title">
+        {{ 'ready_partner_1' | translate }} <br/>
+        <span>{{ 'ready_partner_2' | translate }}</span> Media Glow?
+      </h2>
+      <p class="sec-desc" style="margin: 0 auto 40px;">{{ 'cta_about' | translate }}</p>
+      <div class="about-cta-btns">
+        <a routerLink="/contact" class="btn btn-primary">{{ 'start_proj_about' | translate }}</a>
+        <a routerLink="/services" class="btn btn-glass">{{ 'view_svc_about' | translate }}</a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,71 @@
+<!-- HERO SECTION -->
+<section class="section page-hero">
+  <div class="page-hero-orb"></div>
+  <div class="container">
+    <div class="sec-tag animate-up delay-1">
+      {{ blogsPageData?.hero?.tag?.en || ('blogs' | translate) }}
+    </div>
+    <h1 class="sec-title page-hero-title animate-up delay-2">
+      {{ blogsPageData?.hero?.title?.en || ('insights' | translate) }}<br/>
+      <span>{{ blogsPageData?.hero?.subtitle?.en || ('&_news' | translate) }}</span>
+    </h1>
+    <p class="sec-desc page-hero-desc animate-up delay-3">
+      {{ blogsPageData?.hero?.desc?.en || ('Discover the latest trends, tips, and insights from our experts.') }}
+    </p>
+
+    <!-- Search -->
+    <div class="animate-up delay-3 search-bar-wrap" style="margin: 0 auto;">
+      <i class="fa-solid fa-search search-icon"></i>
+      <input type="text" [(ngModel)]="searchQuery" (input)="filterBlogs()" [placeholder]="'search_blogs' | translate" id="blogSearchInput" />
+    </div>
+  </div>
+</section>
+
+<!-- BLOGS GRID -->
+<section class="section blogs-main-section" style="padding-top: 0;">
+  <div class="container">
+    
+    <!-- Loader -->
+    <div *ngIf="loading" style="text-align: center; padding: 100px 0;">
+      <div style="font-size: 3rem; color: var(--orange); animation: pulse-glow 1.5s infinite;"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+    </div>
+
+    <!-- Grid -->
+    <div *ngIf="!loading && filteredBlogs.length" class="blogs-grid">
+      <div class="blog-card" *ngFor="let b of filteredBlogs" [routerLink]="['/blog-details', b.id]">
+        
+        <div class="blog-thumb">
+          <img class="blog-img" *ngIf="b.image_url" [src]="b.image_url" />
+          <div *ngIf="!b.image_url" class="blog-thumb-placeholder">
+            <i class="fa-solid fa-file-lines"></i>
+          </div>
+          <div style="position: absolute; top: 16px; left: 16px; background: var(--orange); color: #fff; padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; z-index: 2;">
+            {{ b.category?.en || b.category || 'Article' }}
+          </div>
+        </div>
+        
+        <div class="blog-meta">
+          <div class="blog-date">{{ b.created_at | date:'mediumDate' }}</div>
+        </div>
+        
+        <h3 class="blog-title">{{ b.title | translate }}</h3>
+        <p class="blog-desc">
+          {{ b.description | translate }}
+        </p>
+        
+        <div class="blog-card-footer">
+          <div class="blog-readmore">
+            Read More <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="portfolio-empty" *ngIf="!loading && !filteredBlogs.length">
+      <i class="fa-solid fa-search" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
+      <p style="font-size: 1.1rem;">No articles found matching your search.</p>
+    </div>
+
+  </div>
+</section>

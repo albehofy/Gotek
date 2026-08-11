@@ -1,0 +1,451 @@
+/* ABOUT PAGE STYLES */
+
+.about-hero {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  padding-top: 140px;
+  position: relative;
+}
+
+.about-hero .container {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.about-hero-title {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.about-hero-desc {
+  margin: 0 auto;
+  font-size: 1.25rem;
+}
+
+/* STORY SECTION */
+.about-story-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 64px;
+}
+
+.about-story-card {
+  padding: 56px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.about-story-card .glow-orb {
+  width: 300px;
+  height: 300px;
+  background: rgba(232, 98, 10, 0.1);
+  top: -50px;
+  right: -50px;
+}
+
+.about-story-card-content {
+  position: relative;
+  z-index: 2;
+}
+
+.about-story-card-title {
+  font-size: 2.5rem;
+}
+
+.about-story-card-text {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+.about-story-quote-box {
+  padding-left: 24px;
+  border-left: 4px solid var(--orange);
+  margin-top: 32px;
+}
+
+.about-story-quote-text {
+  font-size: 1.2rem;
+  color: #fff;
+  font-style: italic;
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.about-story-quote-cite {
+  color: var(--orange);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* TIMELINE */
+.about-timeline-section {
+  padding-top: 32px;
+}
+
+.about-timeline-container {
+  position: relative;
+  padding-left: 32px;
+}
+
+.about-timeline-line {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-light);
+}
+
+.about-timeline-item {
+  position: relative;
+  margin-bottom: 48px;
+}
+
+.about-timeline-dot {
+  position: absolute;
+  left: -39px;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--orange);
+  border: 4px solid var(--bg-main);
+  box-shadow: 0 0 10px var(--orange-glow);
+}
+
+.about-timeline-card {
+  padding: 32px;
+  margin-left: 24px;
+}
+
+.about-timeline-year {
+  color: var(--orange);
+  font-weight: 800;
+  font-size: 1.4rem;
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 8px;
+}
+
+.about-timeline-title {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.about-timeline-desc {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 0.98rem;
+}
+
+/* FOUNDATION */
+.about-foundation-section {
+  background: rgba(255,255,255,0.01);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.about-foundation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.about-foundation-card {
+  padding: 48px 40px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.about-foundation-card.featured {
+  transform: translateY(-20px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(232, 98, 10, 0.1);
+  border-color: rgba(232, 98, 10, 0.2);
+}
+
+.about-foundation-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 32px;
+  border-radius: var(--radius-full);
+  background: rgba(232, 98, 10, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--orange);
+  border: 1px solid var(--border-glow);
+}
+
+.about-foundation-card.featured .about-foundation-icon {
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: #fff;
+  box-shadow: var(--shadow-orange);
+  border: none;
+}
+
+.about-foundation-title {
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.about-foundation-desc {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 0.98rem;
+}
+
+/* LEADERSHIP / FOUNDERS */
+.about-founders-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.about-founder-card {
+  padding: 40px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.about-founder-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  background: rgba(232, 98, 10, 0.1);
+  border: 1px solid var(--border-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.about-founder-name {
+  font-size: 1.4rem;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.about-founder-role {
+  color: var(--orange);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.about-founder-bio {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* TEAM */
+.about-team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.about-team-card {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.about-team-avatar {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+}
+
+.about-team-name {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.about-team-role {
+  color: var(--orange);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* CTA */
+.about-cta-box {
+  padding: 80px 40px;
+  background: linear-gradient(135deg, rgba(232, 98, 10, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-color: rgba(232, 98, 10, 0.3);
+  text-align: center;
+}
+
+.about-cta-btns {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 991px) {
+  .about-foundation-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .about-foundation-card.featured {
+    transform: none; /* remove floating on tablet grids */
+    box-shadow: var(--shadow-sm);
+  }
+  .about-founders-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .about-team-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    min-height: auto;
+    padding-top: 120px;
+  }
+  .about-story-card {
+    padding: 36px 24px;
+  }
+  .about-story-card-title {
+    font-size: 2rem;
+  }
+  .about-story-card-text {
+    font-size: 1.05rem;
+  }
+  .about-foundation-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .about-foundation-card {
+    padding: 36px 24px;
+  }
+  .about-timeline-card {
+    padding: 24px;
+    margin-left: 12px;
+  }
+  .about-timeline-container {
+    padding-left: 20px;
+  }
+  .about-timeline-dot {
+    left: -27px;
+  }
+  .about-team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .about-hero-title {
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+  }
+  .about-hero-desc {
+    font-size: 1.05rem;
+  }
+  .about-founder-card {
+    flex-direction: column;
+    padding: 28px 20px;
+    align-items: center;
+    text-align: center;
+  }
+  .about-founder-avatar {
+    margin-bottom: 8px;
+  }
+  .about-timeline-year {
+    font-size: 1.25rem;
+  }
+  .about-timeline-title {
+    font-size: 1.15rem;
+  }
+  .about-timeline-desc {
+    font-size: 0.9rem;
+  }
+  .about-cta-btns {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .about-cta-btns .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .about-timeline-card {
+    padding: 20px 16px;
+  }
+  .about-team-card {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 270px) {
+  .about-hero-title {
+    font-size: 1.7rem;
+  }
+  .about-hero-desc {
+    font-size: 0.9rem;
+  }
+  .about-story-card-title {
+    font-size: 1.55rem;
+  }
+  .about-story-card-text {
+    font-size: 0.9rem;
+  }
+  .about-story-quote-text {
+    font-size: 1.05rem;
+  }
+  .about-timeline-container {
+    padding-left: 12px;
+  }
+  .about-timeline-dot {
+    display: none; /* Hide dots on tiny screens since spacing is tight */
+  }
+  .about-timeline-line {
+    display: none; /* Hide timeline vertical line as well */
+  }
+  .about-timeline-card {
+    margin-left: 0;
+    padding: 16px 12px;
+  }
+  .about-founder-name {
+    font-size: 1.25rem;
+  }
+  .about-founder-bio {
+    font-size: 0.88rem;
+  }
+  .about-team-grid {
+    grid-template-columns: 1fr;
+  }
+  .about-team-card {
+    padding: 20px 12px;
+  }
+  .about-cta-box {
+    padding: 40px 16px;
+  }
+}

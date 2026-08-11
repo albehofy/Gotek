@@ -1,0 +1,57 @@
+<!-- HERO SECTION -->
+<section class="section services-hero">
+  <div class="glow-orb primary"></div>
+  <div class="container">
+    <div class="sec-tag animate-up delay-1">
+      {{ servicesPageData?.hero?.tag?.en || ('services' | translate) }}
+    </div>
+    <h1 class="sec-title services-hero-title animate-up delay-2">
+      {{ servicesPageData?.hero?.title?.en || ('what_we' | translate) }}<br/>
+      <span>{{ servicesPageData?.hero?.subtitle?.en || ('svc_title_1' | translate) }}</span>
+    </h1>
+    <p class="sec-desc services-hero-desc animate-up delay-3">
+      {{ servicesPageData?.hero?.desc?.en || ('We provide cutting-edge solutions to elevate your brand and drive measurable growth.') }}
+    </p>
+  </div>
+</section>
+
+<!-- SERVICES GRID -->
+<section class="section services-grid-section">
+  <div class="container">
+    <div class="services-grid">
+      
+      <!-- Service Item -->
+      <div class="glass-panel services-card" *ngFor="let s of services; let i = index" [id]="s.id">
+        <div class="services-card-number">0{{ i + 1 }}</div>
+        
+        <div class="services-card-content">
+          <div class="services-icon-box">
+            <i [class]="s.iconClass"></i>
+          </div>
+          <h3 class="services-card-title">{{ s.title | translate }}</h3>
+          <p class="services-card-description">{{ s.description | translate }}</p>
+          
+          <div *ngIf="s.features && s.features.length" class="services-feat-container">
+            <div class="services-feat-title">Key Features</div>
+            <ul class="services-feat-list">
+              <li *ngFor="let feat of s.features" class="services-feat-item">
+                <i class="fa-solid fa-check"></i> {{ feat | translate }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section services-cta-section">
+  <div class="container">
+    <div class="glass-panel services-cta-box">
+      <h2 class="sec-title services-cta-title">{{ 'ready_start' | translate }} <span>{{ 'start_proj' | translate }}</span></h2>
+      <a routerLink="/contact" class="btn btn-primary">{{ 'contact' | translate }}</a>
+    </div>
+  </div>
+</section>

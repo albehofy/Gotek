@@ -1,0 +1,50 @@
+<header class="glass-nav" [class.scrolled]="isScrolled" id="nav">
+  <div class="container nav-container">
+    <a routerLink="/" class="nav-logo-txt">
+      <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 40px; filter: brightness(0) invert(1);" />
+      Media Glow<span>.</span>
+    </a>
+    
+    <ul class="nav-links">
+      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ 'home' | translate }}</a></li>
+      <li><a routerLink="/about" routerLinkActive="active">{{ 'about' | translate }}</a></li>
+      <li><a routerLink="/services" routerLinkActive="active">{{ 'services' | translate }}</a></li>
+      <li><a routerLink="/portfolio" routerLinkActive="active">{{ 'portfolio' | translate }}</a></li>
+      <li><a routerLink="/blogs" routerLinkActive="active">{{ 'blogs' | translate }}</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="btn btn-glass" (click)="toggleLang()">
+        {{ translationService.currentLang() === 'ar' ? 'EN' : 'AR' }}
+      </button>
+      <a routerLink="/contact" class="btn btn-primary">{{ 'get_started' | translate }}</a>
+      <div class="hamburger" [class.open]="isMenuOpen" (click)="toggleMenu()">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu-overlay" [class.open]="isMenuOpen" (click)="closeMenu()"></div>
+<div class="mobile-menu-sidebar" [class.open]="isMenuOpen">
+  <div class="sidebar-header">
+    <a routerLink="/" class="nav-logo-txt" (click)="closeMenu()">
+      <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 32px; filter: brightness(0) invert(1);" />
+      Media Glow<span>.</span>
+    </a>
+    <div class="close-btn" (click)="closeMenu()">
+      <i class="fa-solid fa-xmark"></i>
+    </div>
+  </div>
+  <div class="sidebar-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">{{ 'home' | translate }}</a>
+    <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">{{ 'about' | translate }}</a>
+    <a routerLink="/services" routerLinkActive="active" (click)="closeMenu()">{{ 'services' | translate }}</a>
+    <a routerLink="/portfolio" routerLinkActive="active" (click)="closeMenu()">{{ 'portfolio' | translate }}</a>
+    <a routerLink="/blogs" routerLinkActive="active" (click)="closeMenu()">{{ 'blogs' | translate }}</a>
+    <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">{{ 'contact' | translate }}</a>
+  </div>
+  <div class="sidebar-footer">
+    <a routerLink="/contact" class="btn btn-primary" (click)="closeMenu()" style="width: 100%;">{{ 'get_started' | translate }}</a>
+  </div>
+</div>

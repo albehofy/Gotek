@@ -1,0 +1,133 @@
+<!-- HERO SECTION -->
+<section class="section contact-hero">
+  <div class="glow-orb primary" style="top: 20%; left: 50%; transform: translateX(-50%); width: 700px; height: 700px; opacity: 0.4;"></div>
+  <div class="container">
+    <div class="sec-tag animate-up delay-1">
+      {{ 'contact_hero_label' | translate }}
+    </div>
+    <h1 class="sec-title contact-hero-title animate-up delay-2">
+      {{ 'contact_hero_title_1' | translate }} <span>{{ 'contact_hero_title_2' | translate }}</span><br/>
+      {{ 'contact_hero_title_3' | translate }}
+    </h1>
+    <p class="sec-desc contact-hero-desc animate-up delay-3">
+      {{ 'contact_hero_desc' | translate }}
+    </p>
+  </div>
+</section>
+
+<!-- CONTACT SECTION -->
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="contact-layout-grid">
+      
+      <!-- INFO COLUMN -->
+      <div class="contact-info-col animate-up delay-1">
+        <h3>{{ 'contact_info_intro' | translate }}</h3>
+        
+        <div class="contact-info-list">
+          <div class="glass-panel contact-info-card" *ngFor="let info of contactInfo">
+            <div class="contact-info-icon">
+              <i [class]="info.icon"></i>
+            </div>
+            <div class="contact-info-content">
+              <div class="contact-info-label">{{ info.label | translate }}</div>
+              <div class="contact-info-value">{{ info.value }}</div>
+              <div class="contact-info-sub" *ngIf="info.sub">{{ info.sub }}</div>
+              <a *ngIf="info.link" [href]="info.link.url" class="btn btn-glass contact-info-link" [target]="info.link.target">{{ info.link.text }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM COLUMN -->
+      <div class="animate-up delay-2">
+        <div class="glass-panel contact-form-container">
+          
+          <div *ngIf="!formSubmitted">
+            <h2 class="contact-form-title">
+              {{ 'contact_form_title' | translate }} <span>{{ 'contact_form_title_2' | translate }}</span>
+            </h2>
+            <p class="contact-form-subtitle">{{ 'contact_form_subtitle' | translate }}</p>
+            
+            <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form-grid">
+              
+              <div class="contact-form-group">
+                <label class="contact-form-label">{{ 'contact_label_name' | translate }} <span>*</span></label>
+                <input type="text" formControlName="name" placeholder="Your full name" class="form-control" />
+              </div>
+              
+              <div class="contact-form-group">
+                <label class="contact-form-label">{{ 'contact_label_phone_form' | translate }} <span>*</span></label>
+                <input type="tel" formControlName="phone" placeholder="+966 5X XXX XXXX" class="form-control" />
+              </div>
+              
+              <div class="contact-form-group full-width">
+                <label class="contact-form-label">{{ 'contact_label_email_form' | translate }} <span>*</span></label>
+                <input type="email" formControlName="email" placeholder="you@company.com" class="form-control" />
+              </div>
+              
+              <div class="contact-form-group full-width">
+                <label class="contact-form-label">Company / Brand Name</label>
+                <input type="text" formControlName="company" placeholder="Your company name" class="form-control" />
+              </div>
+              
+              <div class="contact-form-group full-width">
+                <label class="contact-form-label">{{ 'contact_label_service' | translate }} <span>*</span></label>
+                <select formControlName="service" class="form-control" style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a0a0ab%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
+                  <option value="" disabled selected>Select a service...</option>
+                  <option *ngFor="let s of services" [value]="s">{{ s }}</option>
+                </select>
+              </div>
+              
+              <div class="contact-form-group full-width">
+                <label class="contact-form-label">{{ 'contact_label_budget' | translate }}</label>
+                <div class="contact-budget-container">
+                  <button type="button" class="btn contact-budget-btn" [ngClass]="contactForm.get('budget')?.value === 'under_5k' ? 'btn-primary' : 'btn-glass'" (click)="setBudget('under_5k')">{{ 'contact_budget_starter' | translate }}</button>
+                  <button type="button" class="btn contact-budget-btn" [ngClass]="contactForm.get('budget')?.value === '5k_15k' ? 'btn-primary' : 'btn-glass'" (click)="setBudget('5k_15k')">{{ 'contact_budget_growth' | translate }}</button>
+                  <button type="button" class="btn contact-budget-btn" [ngClass]="contactForm.get('budget')?.value === '15k_plus' ? 'btn-primary' : 'btn-glass'" (click)="setBudget('15k_plus')">{{ 'contact_budget_scale' | translate }}</button>
+                </div>
+              </div>
+              
+              <div class="contact-form-group full-width">
+                <label class="contact-form-label">{{ 'contact_label_details' | translate }} <span>*</span></label>
+                <textarea formControlName="details" placeholder="Tell us about your project, goals, timeline, and any specific requirements..." class="form-control" style="min-height: 150px; resize: vertical;"></textarea>
+              </div>
+              
+              <div class="contact-submit-row">
+                <button type="submit" class="btn btn-primary contact-submit-btn" [disabled]="contactForm.invalid || submitting" style="opacity: {{ contactForm.invalid || submitting ? 0.6 : 1 }};">
+                  {{ submitting ? 'Sending...' : ('contact_submit' | translate) }}
+                </button>
+                <span class="contact-disclaimer"><i class="fa-solid fa-lock"></i> {{ 'contact_note' | translate }}</span>
+              </div>
+              
+            </form>
+          </div>
+          
+          <div *ngIf="formSubmitted" class="contact-success-box">
+            <div class="contact-success-icon">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="contact-success-title">{{ 'contact_success_title' | translate }}</h3>
+            <p class="contact-success-desc">{{ 'contact_success_desc' | translate }}</p>
+            <button (click)="resetForm()" class="btn btn-primary">Send Another Message</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<div class="contact-map-box">
+  <div class="contact-map-overlay"></div>
+  <div class="contact-map-card-wrapper">
+    <div class="glass-panel contact-map-card">
+      <div class="contact-map-icon"><i class="fa-solid fa-location-dot"></i></div>
+      <h3 class="contact-map-title">{{ 'contact_map_title' | translate }}</h3>
+      <p class="contact-map-desc">{{ 'contact_map_location' | translate }}</p>
+      <a href="https://maps.google.com" target="_blank" class="btn btn-primary" style="width: 100%;">{{ 'contact_map_btn' | translate }}</a>
+    </div>
+  </div>
+</div>

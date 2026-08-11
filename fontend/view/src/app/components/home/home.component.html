@@ -1,0 +1,235 @@
+<section class="hero-full">
+
+  <div class="hero-top">
+    <div class="hero-top-inner">
+
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-line"></span>
+        Integrated Digital Agency
+      </div>
+
+      <h1 class="hero-headline">
+        We Build Brands<br>
+        That <em>Move</em> People
+      </h1>
+
+      <div class="hero-subrow">
+        <div class="hero-desc-col">
+          <p class="hero-desc-text">
+            From brand identity to paid media, web development to POS &mdash;
+            we're the digital partner for businesses ready to dominate their market.
+          </p>
+          <div class="hero-cta-group">
+            <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 40px;">
+              Start a Project <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a routerLink="/portfolio" class="btn btn-glass" style="padding: 16px 40px;">
+              View Our Work
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-scroll-col">
+          <div class="scroll-indicator"></div>
+          <span class="scroll-text">Scroll</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="hero-strip container" *ngIf="projects.length">
+    <a class="hero-strip-item"
+       *ngFor="let p of projects | slice:0:4"
+       [routerLink]="['/project', p.id]">
+      <img *ngIf="p.image || p.main_image"
+           [src]="p.image || p.main_image" [alt]="p.title | translate" />
+      <span class="hero-strip-emoji" *ngIf="!(p.image || p.main_image)">{{ p.emoji || '🚀' }}</span>
+      <div class="hero-strip-overlay">
+        <div class="hero-strip-label">{{ p.title | translate }}</div>
+      </div>
+    </a>
+  </div>
+
+</section>
+
+<!-- ABOUT INTRO -->
+<section class="intro-section">
+
+  <div class="intro-left">
+    <div class="intro-eyebrow">Who We Are</div>
+    <h2 class="intro-heading">
+      The Agency Built<br>For <span>Real Results</span>
+    </h2>
+    <p class="intro-body">
+      Media Glow Digital Solutions combines creative marketing and technical development under one roof.
+      Over 9 years of proven success through Egypt and Saudi Arabia, every project driven by measurable outcomes.
+    </p>
+    <div class="intro-facts">
+      <div class="intro-fact"><i class="fa-solid fa-trophy intro-fact-icon"></i> {{ stats?.years_experience || stats?.years || '9' }}+ Years of Expertise</div>
+      <div class="intro-fact"><i class="fa-solid fa-globe intro-fact-icon"></i> Egypt &amp; Saudi Arabia</div>
+      <div class="intro-fact"><i class="fa-solid fa-users intro-fact-icon"></i> {{ stats?.team_count || stats?.team || '20' }}+ Specialists</div>
+    </div>
+    <a routerLink="/about" class="btn btn-glass">
+      Our Full Story <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <div class="intro-stats">
+    <div class="intro-stat">
+      <div class="intro-stat-val">{{ stats?.clients_count || stats?.clients || '2000' }}<span>+</span></div>
+      <div class="intro-stat-label">Happy Clients</div>
+    </div>
+    <div class="intro-stat">
+      <div class="intro-stat-val">{{ stats?.years_experience || stats?.years || '9' }}<span>+</span></div>
+      <div class="intro-stat-label">Years Active</div>
+    </div>
+    <div class="intro-stat">
+      <div class="intro-stat-val">{{ stats?.team_count || stats?.team || '20' }}<span>+</span></div>
+      <div class="intro-stat-label">Team Members</div>
+    </div>
+    <div class="intro-stat">
+      <div class="intro-stat-val">{{ stats?.projects_count || stats?.projects || '500' }}<span>+</span></div>
+      <div class="intro-stat-label">Projects Done</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- SERVICES -->
+<section class="svc-section" id="services">
+  <div class="container">
+
+    <div class="svc-header">
+      <div>
+        <div class="intro-eyebrow">What We Do</div>
+        <h2 class="intro-heading" style="margin-bottom: 0;">
+          Six Ways We<br><span>Grow You</span>
+        </h2>
+      </div>
+      <a routerLink="/services" class="btn btn-glass" style="flex-shrink:0;">
+        All Services <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="svc-grid">
+      <a [routerLink]="['/services']" [fragment]="s.id?.toString()" class="svc-card"
+         *ngFor="let s of services | slice:0:3; let i = index">
+        <div class="svc-card-num">0{{ i + 1 }}</div>
+        <div class="svc-card-icon"><i [class]="s.iconClass"></i></div>
+        <div class="svc-card-title">{{ s.title | translate }}</div>
+        <div class="svc-card-desc">{{ s.description | translate }}</div>
+        <div class="svc-card-link">
+          Explore <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </a>
+    </div>
+
+    <div style="text-align: center; margin-top: 48px;">
+      <a routerLink="/services" class="btn btn-primary">
+        Show All Services <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- FEATURED WORK -->
+<section class="work-section" id="portfolio">
+  <div class="container">
+
+    <div class="work-header">
+      <div>
+        <div class="intro-eyebrow">Selected Work</div>
+        <h2 class="intro-heading" style="margin-bottom: 0;">
+          Projects We're<br><span>Proud Of</span>
+        </h2>
+      </div>
+      <a routerLink="/portfolio" class="btn btn-primary" style="flex-shrink:0;">
+        View All Projects
+      </a>
+    </div>
+
+    <div class="work-grid" *ngIf="projects.length">
+      <a [routerLink]="['/project', p.id]" class="work-card"
+         *ngFor="let p of projects | slice:0:3">
+        <img class="work-img"
+             *ngIf="p.image || p.main_image"
+             [src]="p.image || p.main_image"
+             [alt]="p.title | translate" />
+        <div class="work-emoji-bg"
+             *ngIf="!(p.image || p.main_image)"
+             [style.background]="p.color || '#12121e'">
+          {{ p.emoji || '🚀' }}
+        </div>
+        <div class="work-overlay"></div>
+        <div class="work-info">
+          <div class="work-tag">{{ p.category?.name | translate }}</div>
+          <div class="work-title">{{ p.title | translate }}</div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="voices-section" id="testimonials" *ngIf="testimonials?.length">
+  <div class="container">
+
+    <div class="svc-header" style="margin-bottom: 0;">
+      <div>
+        <div class="intro-eyebrow">Client Stories</div>
+        <h2 class="intro-heading" style="margin-bottom: 0;">
+          Trusted by<br><span>2,000+ Businesses</span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="voices-grid">
+      <div class="voice-card" *ngFor="let t of testimonials | slice:0:3">
+        <div>
+          <div class="voice-quote">&ldquo;</div>
+          <div class="voice-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="voice-text">{{ t.feedback | translate }}</p>
+        </div>
+        <div class="voice-foot">
+          <div class="voice-ava" [style.background]="t.avatar_color || 'rgba(232,98,10,0.12)'">
+            <img *ngIf="t.avatar" [src]="t.avatar" [alt]="t.client_name" />
+            <span *ngIf="!t.avatar">{{ t.client_name?.charAt(0) }}</span>
+          </div>
+          <div>
+            <div class="voice-name">{{ t.client_name }}</div>
+            <div class="voice-role">{{ t.job_title }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="finale-section">
+  <div class="finale-bg"></div>
+  <div class="finale-glow"></div>
+  <div class="finale-inner">
+    <div class="intro-eyebrow" style="justify-content: center;">Ready?</div>
+    <h2 class="finale-heading">
+      Let's Build Something<br>
+      <span>Remarkable</span>
+    </h2>
+    <p class="finale-sub">
+      Whether you need a brand refresh, more leads, or a full digital transformation &mdash;
+      we're your partner from first idea to final result.
+    </p>
+    <div class="finale-btns">
+      <a routerLink="/contact" class="btn btn-primary" style="padding: 18px 48px; font-size: 1.05rem;">
+        Start Your Project <i class="fa-solid fa-arrow-right"></i>
+      </a>
+      <a routerLink="/services" class="btn btn-glass" style="padding: 18px 48px; font-size: 1.05rem;">
+        Explore Services
+      </a>
+    </div>
+  </div>
+</section>
