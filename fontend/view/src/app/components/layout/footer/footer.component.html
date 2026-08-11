@@ -8,14 +8,23 @@
         </a>
         <p class="footer-brand-desc">{{ (footerData?.desc | translate) || ('footer_desc' | translate) }}</p>
         <div class="footer-social">
-          <a *ngIf="footerData?.socials?.facebook" [href]="footerData.socials.facebook" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
-          <a *ngIf="!footerData || !footerData.socials" href="https://www.facebook.com/mediaglow" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+          @if (footerData?.socials?.facebook) {
+            <a [href]="footerData.socials.facebook" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+          } @else {
+            <a href="https://www.facebook.com/mediaglow" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+          }
           
-          <a *ngIf="footerData?.socials?.instagram" [href]="footerData.socials.instagram" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
-          <a *ngIf="!footerData || !footerData.socials" href="https://www.instagram.com/mediaglow" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+          @if (footerData?.socials?.instagram) {
+            <a [href]="footerData.socials.instagram" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+          } @else {
+            <a href="https://www.instagram.com/mediaglow" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+          }
           
-          <a *ngIf="footerData?.socials?.twitter" [href]="footerData.socials.twitter" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
-          <a *ngIf="!footerData || !footerData.socials" href="https://x.com/mediaglow" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+          @if (footerData?.socials?.twitter) {
+            <a [href]="footerData.socials.twitter" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+          } @else {
+            <a href="https://x.com/mediaglow" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+          }
         </div>
       </div>
       <div>

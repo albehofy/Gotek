@@ -1,28 +1,61 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { AboutComponent } from './components/about/about.component';
-import { ServicesComponent } from './components/services/services.component';
-import { PortfolioComponent } from './components/portfolio/portfolio.component';
-import { ProjectDetailsComponent } from './components/project-details/project-details.component';
-import { BlogsComponent } from './components/blogs/blogs.component';
-import { BlogDetailsComponent } from './components/blog-details/blog-details.component';
-import { ContactComponent } from './components/contact/contact.component';
-import { LoginComponent } from './components/login/login.component';
-import { ControllerDashboardComponent } from './components/controller-dashboard/controller-dashboard.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'home', redirectTo: '', pathMatch: 'full' },
-  { path: 'about', component: AboutComponent },
-  { path: 'services', component: ServicesComponent },
-  { path: 'portfolio', component: PortfolioComponent },
-  { path: 'project/:id', component: ProjectDetailsComponent },
-  { path: 'project', component: ProjectDetailsComponent }, // for query params
-  { path: 'blogs', component: BlogsComponent },
-  { path: 'blog-details/:id', component: BlogDetailsComponent },
-  { path: 'blog-details', component: BlogDetailsComponent }, // for query params
-  { path: 'contact', component: ContactComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'controller-dashboard', component: ControllerDashboardComponent },
-  { path: '**', redirectTo: '' }
+  { 
+    path: '', 
+    loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent) 
+  },
+  { 
+    path: 'home', 
+    redirectTo: '', 
+    pathMatch: 'full' 
+  },
+  { 
+    path: 'about', 
+    loadComponent: () => import('./components/about/about.component').then(m => m.AboutComponent) 
+  },
+  { 
+    path: 'services', 
+    loadComponent: () => import('./components/services/services.component').then(m => m.ServicesComponent) 
+  },
+  { 
+    path: 'portfolio', 
+    loadComponent: () => import('./components/portfolio/portfolio.component').then(m => m.PortfolioComponent) 
+  },
+  { 
+    path: 'project/:id', 
+    loadComponent: () => import('./components/project-details/project-details.component').then(m => m.ProjectDetailsComponent) 
+  },
+  { 
+    path: 'project', 
+    loadComponent: () => import('./components/project-details/project-details.component').then(m => m.ProjectDetailsComponent) 
+  },
+  { 
+    path: 'blogs', 
+    loadComponent: () => import('./components/blogs/blogs.component').then(m => m.BlogsComponent) 
+  },
+  { 
+    path: 'blog-details/:id', 
+    loadComponent: () => import('./components/blog-details/blog-details.component').then(m => m.BlogDetailsComponent) 
+  },
+  { 
+    path: 'blog-details', 
+    loadComponent: () => import('./components/blog-details/blog-details.component').then(m => m.BlogDetailsComponent) 
+  },
+  { 
+    path: 'contact', 
+    loadComponent: () => import('./components/contact/contact.component').then(m => m.ContactComponent) 
+  },
+  { 
+    path: 'login', 
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) 
+  },
+  { 
+    path: 'controller-dashboard', 
+    loadComponent: () => import('./components/controller-dashboard/controller-dashboard.component').then(m => m.ControllerDashboardComponent) 
+  },
+  { 
+    path: '**', 
+    redirectTo: '' 
+  }
 ];

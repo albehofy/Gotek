@@ -3,14 +3,14 @@
   <div class="glow-orb primary"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ (aboutContent?.content?.hero | translate)?.label || ('about_hero_label' | translate) }}
+      {{ (aboutContent?.content?.hero?.label | translate) || ('about_hero_label' | translate) }}
     </div>
     <h1 class="sec-title about-hero-title animate-up delay-2">
-      {{ (aboutContent?.content?.hero | translate)?.title1 || ('about_hero_1' | translate) }} <br />
-      <span>{{ (aboutContent?.content?.hero | translate)?.title2 || ('about_hero_2' | translate) }}</span>
+      {{ (aboutContent?.content?.hero?.title1 | translate) || ('about_hero_1' | translate) }} <br />
+      <span>{{ (aboutContent?.content?.hero?.title2 | translate) || ('about_hero_2' | translate) }}</span>
     </h1>
     <p class="sec-desc about-hero-desc animate-up delay-3">
-      {{ (aboutContent?.content?.hero | translate)?.desc || ('about_hero_desc' | translate) }}
+      {{ (aboutContent?.content?.hero?.desc | translate) || ('about_hero_desc' | translate) }}
     </p>
   </div>
 </section>
@@ -25,20 +25,20 @@
         <div class="glow-orb"></div>
         <div class="about-story-card-content">
           <h3 class="sec-title about-story-card-title">
-            {{ (aboutContent?.content?.story | translate)?.heading || ('why_built_1' | translate) }} <span>Media Glow</span>
+            {{ (aboutContent?.content?.story?.heading | translate) || ('why_built_1' | translate) }} <span>Media Glow</span>
           </h3>
           <p class="about-story-card-text">
-            {{ (aboutContent?.content?.story | translate)?.text1 || ('why_built_desc_1' | translate) }}
+            {{ (aboutContent?.content?.story?.text1 | translate) || ('why_built_desc_1' | translate) }}
           </p>
           <p class="about-story-card-text">
-            {{ (aboutContent?.content?.story | translate)?.text2 || ('why_built_desc_2' | translate) }}
+            {{ (aboutContent?.content?.story?.text2 | translate) || ('why_built_desc_2' | translate) }}
           </p>
           <div class="about-story-quote-box">
             <p class="about-story-quote-text">
-              "{{ (aboutContent?.content?.story | translate)?.quote || ('quote_text' | translate) }}"
+              "{{ (aboutContent?.content?.story?.quote | translate) || ('quote_text' | translate) }}"
             </p>
             <span class="about-story-quote-cite">
-              — {{ (aboutContent?.content?.story | translate)?.quote_author || ('quote_cite' | translate) }}
+              — {{ (aboutContent?.content?.story?.quote_author | translate) || ('quote_cite' | translate) }}
             </span>
           </div>
         </div>
@@ -52,24 +52,23 @@
         </h2>
         
         <div class="about-timeline-container">
-          <!-- Vertical Line -->
           <div class="about-timeline-line"></div>
           
-          <div *ngFor="let item of aboutContent?.timeline; let i = index" class="about-timeline-item">
-            <!-- Dot -->
-            <div class="about-timeline-dot"></div>
-            
-            <div class="glass-panel about-timeline-card">
-              <div class="about-timeline-year">{{ item.year }}</div>
-              <h4 class="about-timeline-title">{{ item.title | translate }}</h4>
-              <p class="about-timeline-desc">{{ item.description | translate }}</p>
+          @for (item of aboutContent?.timeline; track item.year || $index) {
+            <div class="about-timeline-item">
+              <div class="about-timeline-dot"></div>
+              
+              <div class="glass-panel about-timeline-card">
+                <div class="about-timeline-year">{{ item.year }}</div>
+                <h4 class="about-timeline-title">{{ item.title | translate }}</h4>
+                <p class="about-timeline-desc">{{ item.description | translate }}</p>
+              </div>
             </div>
-          </div>
-
-          <!-- Fallback if no timeline -->
-          <div *ngIf="!aboutContent?.timeline?.length" style="color: var(--text-muted); font-style: italic;">
-            {{ 'our_story' | translate }}...
-          </div>
+          } @empty {
+            <div style="color: var(--text-muted); font-style: italic;">
+              {{ 'our_story' | translate }}...
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -87,31 +86,28 @@
     </div>
     <div class="about-foundation-grid">
       
-      <!-- Vision -->
       <div class="glass-panel about-foundation-card">
         <div class="about-foundation-icon">
           <i class="fa-solid fa-compass"></i>
         </div>
-        <h3 class="about-foundation-title">{{ (aboutContent?.content?.vision | translate)?.title || ('vision_title' | translate) }}</h3>
-        <p class="about-foundation-desc">{{ (aboutContent?.content?.vision | translate)?.desc || ('vision_desc' | translate) }}</p>
+        <h3 class="about-foundation-title">{{ (aboutContent?.content?.vision?.title | translate) || ('vision_title' | translate) }}</h3>
+        <p class="about-foundation-desc">{{ (aboutContent?.content?.vision?.desc | translate) || ('vision_desc' | translate) }}</p>
       </div>
 
-      <!-- Mission -->
       <div class="glass-panel about-foundation-card featured">
         <div class="about-foundation-icon">
           <i class="fa-solid fa-bullseye"></i>
         </div>
-        <h3 class="about-foundation-title">{{ (aboutContent?.content?.mission | translate)?.title || ('mission_title' | translate) }}</h3>
-        <p class="about-foundation-desc">{{ (aboutContent?.content?.mission | translate)?.desc || ('mission_desc' | translate) }}</p>
+        <h3 class="about-foundation-title">{{ (aboutContent?.content?.mission?.title | translate) || ('mission_title' | translate) }}</h3>
+        <p class="about-foundation-desc">{{ (aboutContent?.content?.mission?.desc | translate) || ('mission_desc' | translate) }}</p>
       </div>
 
-      <!-- Values -->
       <div class="glass-panel about-foundation-card">
         <div class="about-foundation-icon">
           <i class="fa-solid fa-gem"></i>
         </div>
-        <h3 class="about-foundation-title">{{ (aboutContent?.content?.values | translate)?.title || ('values_title' | translate) }}</h3>
-        <p class="about-foundation-desc">{{ (aboutContent?.content?.values | translate)?.desc || ('values_desc' | translate) }}</p>
+        <h3 class="about-foundation-title">{{ (aboutContent?.content?.values?.title | translate) || ('values_title' | translate) }}</h3>
+        <p class="about-foundation-desc">{{ (aboutContent?.content?.values?.desc | translate) || ('values_desc' | translate) }}</p>
       </div>
 
     </div>
@@ -129,18 +125,20 @@
     </div>
     
     <div class="about-founders-grid">
-      <div class="glass-panel about-founder-card" *ngFor="let f of founders">
-        <div class="about-founder-avatar">
-          {{ f?.name ? f.name.charAt(0) : 'M' }}
-        </div>
-        <div>
-          <h3 class="about-founder-name">{{ f?.name }}</h3>
-          <div class="about-founder-role">
-            {{ f?.job_title | translate }}
+      @for (f of founders; track f.id || $index) {
+        <div class="glass-panel about-founder-card">
+          <div class="about-founder-avatar">
+            {{ f?.name ? f.name.charAt(0) : 'M' }}
           </div>
-          <p class="about-founder-bio">{{ f?.bio | translate }}</p>
+          <div>
+            <h3 class="about-founder-name">{{ f?.name }}</h3>
+            <div class="about-founder-role">
+              {{ f?.job_title | translate }}
+            </div>
+            <p class="about-founder-bio">{{ f?.bio | translate }}</p>
+          </div>
         </div>
-      </div>
+      }
     </div>
   </div>
 </section>
@@ -151,22 +149,24 @@
     <div style="text-align: center; margin-bottom: 64px;">
       <div class="sec-tag">{{ 'the_team' | translate }}</div>
       <h2 class="sec-title" style="font-size: clamp(2rem, 4vw, 3rem);">
-        {{ (aboutContent?.content?.team_text | translate)?.heading || ('team_count' | translate) }} <br/>
-        <span>{{ (aboutContent?.content?.team_text | translate)?.subheading || ('team_goal' | translate) }}</span>
+        {{ (aboutContent?.content?.team_text?.heading | translate) || ('team_count' | translate) }} <br/>
+        <span>{{ (aboutContent?.content?.team_text?.subheading | translate) || ('team_goal' | translate) }}</span>
       </h2>
-      <p class="sec-desc" style="margin: 0 auto;">{{ (aboutContent?.content?.team_text | translate)?.desc || ('team_desc' | translate) }}</p>
+      <p class="sec-desc" style="margin: 0 auto;">{{ (aboutContent?.content?.team_text?.desc | translate) || ('team_desc' | translate) }}</p>
     </div>
 
     <div class="about-team-grid">
-      <div class="glass-panel about-team-card" *ngFor="let t of team">
-        <div class="about-team-avatar">
-          <i class="fa-solid fa-user"></i>
+      @for (t of team; track t.id || $index) {
+        <div class="glass-panel about-team-card">
+          <div class="about-team-avatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <h4 class="about-team-name">{{ t?.name }}</h4>
+          <div class="about-team-role">
+            {{ t?.job_title | translate }}
+          </div>
         </div>
-        <h4 class="about-team-name">{{ t?.name }}</h4>
-        <div class="about-team-role">
-          {{ t?.job_title | translate }}
-        </div>
-      </div>
+      }
     </div>
   </div>
 </section>

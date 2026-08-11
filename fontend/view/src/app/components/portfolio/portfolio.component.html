@@ -3,14 +3,14 @@
   <div class="glow-orb primary"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ (portfolioData?.hero | translate)?.tag || ('our_port' | translate) }}
+      {{ (portfolioData?.hero?.tag | translate) || ('our_port' | translate) }}
     </div>
     <h1 class="sec-title portfolio-hero-title animate-up delay-2">
-      {{ (portfolioData?.hero | translate)?.title || ('port_title_1' | translate) }}<br/>
-      <span>{{ (portfolioData?.hero | translate)?.subtitle || ('port_title_2' | translate) }}</span>
+      {{ (portfolioData?.hero?.title | translate) || ('port_title_1' | translate) }}<br/>
+      <span>{{ (portfolioData?.hero?.subtitle | translate) || ('port_title_2' | translate) }}</span>
     </h1>
     <p class="sec-desc portfolio-hero-desc animate-up delay-3">
-      {{ (portfolioData?.hero | translate)?.desc || ('port_title_3' | translate) }}
+      {{ (portfolioData?.hero?.desc | translate) || ('port_title_3' | translate) }}
     </p>
   </div>
 </section>
@@ -24,46 +24,61 @@
       <button class="btn" [ngClass]="activeCategory === 'all' ? 'btn-primary' : 'btn-glass'" (click)="setCategory('all')">
         {{ 'all_proj' | translate }}
       </button>
-      <button *ngFor="let cat of categories" class="btn" [ngClass]="activeCategory === cat.id ? 'btn-primary' : 'btn-glass'" (click)="setCategory(cat.id)">
-        {{ cat.name | translate }}
-      </button>
+      @for (cat of categories; track cat.id) {
+        <button class="btn" [ngClass]="activeCategory === cat.id ? 'btn-primary' : 'btn-glass'" (click)="setCategory(cat.id)">
+          {{ cat.name | translate }}
+        </button>
+      }
     </div>
 
     <!-- Loader -->
-    <div *ngIf="loading" style="text-align: center; padding: 100px 0;">
-      <div style="font-size: 3rem; color: var(--orange); animation: pulse-glow 1.5s infinite;"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
-    </div>
+    @if (loading) {
+      <div style="text-align: center; padding: 100px 0;">
+        <div style="font-size: 3rem; color: var(--orange); animation: pulse-glow 1.5s infinite;"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+      </div>
+    }
 
     <!-- Grid -->
-    <div class="portfolio-grid" *ngIf="!loading && filteredProjects.length">
-      <div class="glass-panel portfolio-card" *ngFor="let p of filteredProjects" [routerLink]="['/project', p.id]">
-        
-        <div class="portfolio-img-box" [style.background]="p.color">
-          <img *ngIf="p.image || p.main_image" [src]="p.image || p.main_image" [alt]="p.title | translate" />
-          <div class="overlay"></div>
-          <div class="portfolio-emoji-box" *ngIf="!(p.image || p.main_image)">{{ p.emoji || '🚀' }}</div>
-        </div>
-        
-        <div class="portfolio-card-info">
-          <div class="portfolio-card-meta">
-            <span class="portfolio-card-tag">{{ p.category?.name | translate }}</span>
-            <span class="portfolio-card-date" *ngIf="p.completion_date">{{ p.completion_date | date:'yyyy' }}</span>
+    @if (!loading && filteredProjects.length) {
+      <div class="portfolio-grid">
+        @for (p of filteredProjects; track p.id) {
+          <div class="glass-panel portfolio-card" [routerLink]="['/project', p.id]">
+            
+            <div class="portfolio-img-box" [style.background]="p.color">
+              @if (p.image || p.main_image) {
+                <img [src]="p.image || p.main_image" [alt]="p.title | translate" />
+              } @else {
+                <div class="portfolio-emoji-box"><i class="fa-solid fa-rocket"></i></div>
+              }
+              <div class="overlay"></div>
+            </div>
+            
+            <div class="portfolio-card-info">
+              <div class="portfolio-card-meta">
+                <span class="portfolio-card-tag">{{ p.category?.name | translate }}</span>
+                @if (p.completion_date) {
+                  <span class="portfolio-card-date">{{ p.completion_date | date:'yyyy' }}</span>
+                }
+              </div>
+              
+              <h3 class="portfolio-card-title">{{ p.title | translate }}</h3>
+              
+              <p class="portfolio-card-desc">
+                {{ p.description | translate }}
+              </p>
+            </div>
           </div>
-          
-          <h3 class="portfolio-card-title">{{ p.title | translate }}</h3>
-          
-          <p class="portfolio-card-desc">
-            {{ p.description | translate }}
-          </p>
-        </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- Empty State -->
-    <div class="portfolio-empty" *ngIf="!loading && !filteredProjects.length">
-      <i class="fa-solid fa-folder-open"></i>
-      <p>{{ 'no_projects' | translate }}</p>
-    </div>
+    @if (!loading && !filteredProjects.length) {
+      <div class="portfolio-empty">
+        <i class="fa-solid fa-folder-open"></i>
+        <p>{{ 'no_projects' | translate }}</p>
+      </div>
+    }
 
   </div>
 </section>

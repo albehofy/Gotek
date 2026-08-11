@@ -37,18 +37,22 @@
     </div>
   </div>
 
-  <div class="hero-strip container" *ngIf="projects.length">
-    <a class="hero-strip-item"
-       *ngFor="let p of projects | slice:0:4"
-       [routerLink]="['/project', p.id]">
-      <img *ngIf="p.image || p.main_image"
-           [src]="p.image || p.main_image" [alt]="p.title | translate" />
-      <span class="hero-strip-emoji" *ngIf="!(p.image || p.main_image)">{{ p.emoji || '🚀' }}</span>
-      <div class="hero-strip-overlay">
-        <div class="hero-strip-label">{{ p.title | translate }}</div>
-      </div>
-    </a>
-  </div>
+  @if (projects.length) {
+    <div class="hero-strip container">
+      @for (p of projects | slice:0:4; track p.id || $index) {
+        <a class="hero-strip-item" [routerLink]="['/project', p.id]">
+          @if (p.image || p.main_image) {
+            <img [src]="p.image || p.main_image" [alt]="p.title | translate" />
+          } @else {
+            <span class="hero-strip-emoji"><i class="fa-solid fa-rocket"></i></span>
+          }
+          <div class="hero-strip-overlay">
+            <div class="hero-strip-label">{{ p.title | translate }}</div>
+          </div>
+        </a>
+      }
+    </div>
+  }
 
 </section>
 
@@ -111,16 +115,17 @@
     </div>
 
     <div class="svc-grid">
-      <a [routerLink]="['/services']" [fragment]="s.id?.toString()" class="svc-card"
-         *ngFor="let s of services | slice:0:3; let i = index">
-        <div class="svc-card-num">0{{ i + 1 }}</div>
-        <div class="svc-card-icon"><i [class]="s.iconClass"></i></div>
-        <div class="svc-card-title">{{ s.title | translate }}</div>
-        <div class="svc-card-desc">{{ s.description | translate }}</div>
-        <div class="svc-card-link">
-          {{ 'explore' | translate }} <i class="fa-solid fa-arrow-right"></i>
-        </div>
-      </a>
+      @for (s of services | slice:0:3; track s.id || $index) {
+        <a [routerLink]="['/services']" [fragment]="s.id?.toString()" class="svc-card">
+          <div class="svc-card-num">0{{ $index + 1 }}</div>
+          <div class="svc-card-icon"><i [class]="s.iconClass"></i></div>
+          <div class="svc-card-title">{{ s.title | translate }}</div>
+          <div class="svc-card-desc">{{ s.description | translate }}</div>
+          <div class="svc-card-link">
+            {{ 'explore' | translate }} <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      }
     </div>
 
     <div style="text-align: center; margin-top: 48px;">
@@ -148,64 +153,72 @@
       </a>
     </div>
 
-    <div class="work-grid" *ngIf="projects.length">
-      <a [routerLink]="['/project', p.id]" class="work-card"
-         *ngFor="let p of projects | slice:0:3">
-        <img class="work-img"
-             *ngIf="p.image || p.main_image"
-             [src]="p.image || p.main_image"
-             [alt]="p.title | translate" />
-        <div class="work-emoji-bg"
-             *ngIf="!(p.image || p.main_image)"
-             [style.background]="p.color || '#12121e'">
-          {{ p.emoji || '🚀' }}
-        </div>
-        <div class="work-overlay"></div>
-        <div class="work-info">
-          <div class="work-tag">{{ p.category?.name | translate }}</div>
-          <div class="work-title">{{ p.title | translate }}</div>
-        </div>
-      </a>
-    </div>
+    @if (projects.length) {
+      <div class="work-grid">
+        @for (p of projects | slice:0:3; track p.id || $index) {
+          <a [routerLink]="['/project', p.id]" class="work-card">
+            @if (p.image || p.main_image) {
+              <img class="work-img" [src]="p.image || p.main_image" [alt]="p.title | translate" />
+            } @else {
+              <div class="work-emoji-bg" [style.background]="p.color || '#12121e'">
+                <i class="fa-solid fa-rocket"></i>
+              </div>
+            }
+            <div class="work-overlay"></div>
+            <div class="work-info">
+              <div class="work-tag">{{ p.category?.name | translate }}</div>
+              <div class="work-title">{{ p.title | translate }}</div>
+            </div>
+          </a>
+        }
+      </div>
+    }
 
   </div>
 </section>
 
 <!-- TESTIMONIALS -->
-<section class="voices-section" id="testimonials" *ngIf="testimonials?.length">
-  <div class="container">
+@if (testimonials?.length) {
+  <section class="voices-section" id="testimonials">
+    <div class="container">
 
-    <div class="svc-header" style="margin-bottom: 0;">
-      <div>
-        <div class="intro-eyebrow">{{ 'client_say' | translate }}</div>
-        <h2 class="intro-heading" style="margin-bottom: 0;">
-          {{ 'testi_title_1' | translate }}<br><span>{{ 'testi_title_2' | translate }}</span>
-        </h2>
-      </div>
-    </div>
-
-    <div class="voices-grid">
-      <div class="voice-card" *ngFor="let t of testimonials | slice:0:3">
+      <div class="svc-header" style="margin-bottom: 0;">
         <div>
-          <div class="voice-quote">&ldquo;</div>
-          <div class="voice-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p class="voice-text">{{ t.feedback | translate }}</p>
-        </div>
-        <div class="voice-foot">
-          <div class="voice-ava" [style.background]="t.avatar_color || 'rgba(232,98,10,0.12)'">
-            <img *ngIf="t.avatar" [src]="t.avatar" [alt]="t.client_name" />
-            <span *ngIf="!t.avatar">{{ t.client_name?.charAt(0) }}</span>
-          </div>
-          <div>
-            <div class="voice-name">{{ t.client_name }}</div>
-            <div class="voice-role">{{ t.job_title }}</div>
-          </div>
+          <div class="intro-eyebrow">{{ 'client_say' | translate }}</div>
+          <h2 class="intro-heading" style="margin-bottom: 0;">
+            {{ 'testi_title_1' | translate }}<br><span>{{ 'testi_title_2' | translate }}</span>
+          </h2>
         </div>
       </div>
-    </div>
 
-  </div>
-</section>
+      <div class="voices-grid">
+        @for (t of testimonials | slice:0:3; track t.id || $index) {
+          <div class="voice-card">
+            <div>
+              <div class="voice-quote">&ldquo;</div>
+              <div class="voice-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <p class="voice-text">{{ t.feedback | translate }}</p>
+            </div>
+            <div class="voice-foot">
+              <div class="voice-ava" [style.background]="t.avatar_color || 'rgba(232,98,10,0.12)'">
+                @if (t.avatar) {
+                  <img [src]="t.avatar" [alt]="t.client_name" />
+                } @else {
+                  <span>{{ t.client_name?.charAt(0) }}</span>
+                }
+              </div>
+              <div>
+                <div class="voice-name">{{ t.client_name }}</div>
+                <div class="voice-role">{{ t.job_title }}</div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+}
 
 <!-- FINAL CTA -->
 <section class="finale-section">

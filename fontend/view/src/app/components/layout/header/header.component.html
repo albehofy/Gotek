@@ -15,7 +15,11 @@
 
     <div class="nav-actions">
       <button class="btn btn-glass" (click)="toggleLang()">
-        {{ translationService.currentLang() === 'ar' ? 'EN' : 'AR' }}
+        @if (translationService.currentLang() === 'ar') {
+          EN
+        } @else {
+          AR
+        }
       </button>
       <a routerLink="/contact" class="btn btn-primary">{{ 'get_started' | translate }}</a>
       <div class="hamburger" [class.open]="isMenuOpen" (click)="toggleMenu()">
