@@ -23,7 +23,7 @@ class SetLanguage
         }
 
         // اللغة الافتراضية إذا لم يرسل شيئاً أو أرسل لغة غير مدعومة
-        app()->setLocale(config('app.fallback_locale', 'en'));
+        app()->setLocale(config('app.fallback_locale', 'ar'));
 
         return $next($request);
     }

@@ -5,33 +5,32 @@
 
       <div class="hero-eyebrow">
         <span class="hero-eyebrow-line"></span>
-        Integrated Digital Agency
+        {{ (homeData?.hero?.tag | translate) || ('hero_badge' | translate) }}
       </div>
 
       <h1 class="hero-headline">
-        We Build Brands<br>
-        That <em>Move</em> People
+        {{ (homeData?.hero?.title1 | translate) || ('hero_title_1' | translate) }}<br>
+        <em>{{ (homeData?.hero?.title2 | translate) || ('hero_title_2' | translate) }}</em> {{ (homeData?.hero?.title3 | translate) || ('hero_title_3' | translate) }}
       </h1>
 
       <div class="hero-subrow">
         <div class="hero-desc-col">
           <p class="hero-desc-text">
-            From brand identity to paid media, web development to POS &mdash;
-            we're the digital partner for businesses ready to dominate their market.
+            {{ (homeData?.hero?.subtitle | translate) || ('hero_desc' | translate) }}
           </p>
           <div class="hero-cta-group">
             <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 40px;">
-              Start a Project <i class="fa-solid fa-arrow-right"></i>
+              {{ 'get_started' | translate }} <i class="fa-solid fa-arrow-right"></i>
             </a>
             <a routerLink="/portfolio" class="btn btn-glass" style="padding: 16px 40px;">
-              View Our Work
+              {{ 'view_work' | translate }}
             </a>
           </div>
         </div>
 
         <div class="hero-scroll-col">
           <div class="scroll-indicator"></div>
-          <span class="scroll-text">Scroll</span>
+          <span class="scroll-text">{{ 'scroll' | translate }}</span>
         </div>
       </div>
 
@@ -57,40 +56,39 @@
 <section class="intro-section">
 
   <div class="intro-left">
-    <div class="intro-eyebrow">Who We Are</div>
+    <div class="intro-eyebrow">{{ 'who_we' | translate }}</div>
     <h2 class="intro-heading">
-      The Agency Built<br>For <span>Real Results</span>
+      {{ (homeData?.about?.title | translate) || ('about_title_1' | translate) }}<br><span>{{ 'about_title_2' | translate }}</span>
     </h2>
     <p class="intro-body">
-      Media Glow Digital Solutions combines creative marketing and technical development under one roof.
-      Over 9 years of proven success through Egypt and Saudi Arabia, every project driven by measurable outcomes.
+      {{ (homeData?.about?.subtitle | translate) || ('about_desc_1' | translate) }}
     </p>
     <div class="intro-facts">
-      <div class="intro-fact"><i class="fa-solid fa-trophy intro-fact-icon"></i> {{ stats?.years_experience || stats?.years || '9' }}+ Years of Expertise</div>
-      <div class="intro-fact"><i class="fa-solid fa-globe intro-fact-icon"></i> Egypt &amp; Saudi Arabia</div>
-      <div class="intro-fact"><i class="fa-solid fa-users intro-fact-icon"></i> {{ stats?.team_count || stats?.team || '20' }}+ Specialists</div>
+      <div class="intro-fact"><i class="fa-solid fa-trophy intro-fact-icon"></i> {{ stats?.years_experience || stats?.years || '9' }}+ {{ 'years_exp' | translate }}</div>
+      <div class="intro-fact"><i class="fa-solid fa-globe intro-fact-icon"></i> {{ 'fact_regions' | translate }}</div>
+      <div class="intro-fact"><i class="fa-solid fa-users intro-fact-icon"></i> {{ stats?.team_count || stats?.team || '20' }}+ {{ 'team_spec' | translate }}</div>
     </div>
     <a routerLink="/about" class="btn btn-glass">
-      Our Full Story <i class="fa-solid fa-arrow-right"></i>
+      {{ 'full_story' | translate }} <i class="fa-solid fa-arrow-right"></i>
     </a>
   </div>
 
   <div class="intro-stats">
     <div class="intro-stat">
       <div class="intro-stat-val">{{ stats?.clients_count || stats?.clients || '2000' }}<span>+</span></div>
-      <div class="intro-stat-label">Happy Clients</div>
+      <div class="intro-stat-label">{{ 'stat_clients' | translate }}</div>
     </div>
     <div class="intro-stat">
       <div class="intro-stat-val">{{ stats?.years_experience || stats?.years || '9' }}<span>+</span></div>
-      <div class="intro-stat-label">Years Active</div>
+      <div class="intro-stat-label">{{ 'stat_years' | translate }}</div>
     </div>
     <div class="intro-stat">
       <div class="intro-stat-val">{{ stats?.team_count || stats?.team || '20' }}<span>+</span></div>
-      <div class="intro-stat-label">Team Members</div>
+      <div class="intro-stat-label">{{ 'stat_team' | translate }}</div>
     </div>
     <div class="intro-stat">
       <div class="intro-stat-val">{{ stats?.projects_count || stats?.projects || '500' }}<span>+</span></div>
-      <div class="intro-stat-label">Projects Done</div>
+      <div class="intro-stat-label">{{ 'stat_svc' | translate }}</div>
     </div>
   </div>
 
@@ -102,13 +100,13 @@
 
     <div class="svc-header">
       <div>
-        <div class="intro-eyebrow">What We Do</div>
+        <div class="intro-eyebrow">{{ 'what_we' | translate }}</div>
         <h2 class="intro-heading" style="margin-bottom: 0;">
-          Six Ways We<br><span>Grow You</span>
+          {{ 'svc_title_1' | translate }}<br><span>{{ 'svc_title_2' | translate }} {{ 'svc_title_3' | translate }}</span>
         </h2>
       </div>
       <a routerLink="/services" class="btn btn-glass" style="flex-shrink:0;">
-        All Services <i class="fa-solid fa-arrow-right"></i>
+        {{ 'all_svc' | translate }} <i class="fa-solid fa-arrow-right"></i>
       </a>
     </div>
 
@@ -120,14 +118,14 @@
         <div class="svc-card-title">{{ s.title | translate }}</div>
         <div class="svc-card-desc">{{ s.description | translate }}</div>
         <div class="svc-card-link">
-          Explore <i class="fa-solid fa-arrow-right"></i>
+          {{ 'explore' | translate }} <i class="fa-solid fa-arrow-right"></i>
         </div>
       </a>
     </div>
 
     <div style="text-align: center; margin-top: 48px;">
       <a routerLink="/services" class="btn btn-primary">
-        Show All Services <i class="fa-solid fa-arrow-right"></i>
+        {{ 'all_svc' | translate }} <i class="fa-solid fa-arrow-right"></i>
       </a>
     </div>
 
@@ -140,13 +138,13 @@
 
     <div class="work-header">
       <div>
-        <div class="intro-eyebrow">Selected Work</div>
+        <div class="intro-eyebrow">{{ 'our_port' | translate }}</div>
         <h2 class="intro-heading" style="margin-bottom: 0;">
-          Projects We're<br><span>Proud Of</span>
+          {{ 'port_title_1' | translate }}<br><span>{{ 'port_title_2' | translate }} {{ 'port_title_3' | translate }}</span>
         </h2>
       </div>
       <a routerLink="/portfolio" class="btn btn-primary" style="flex-shrink:0;">
-        View All Projects
+        {{ 'view_all' | translate }}
       </a>
     </div>
 
@@ -179,9 +177,9 @@
 
     <div class="svc-header" style="margin-bottom: 0;">
       <div>
-        <div class="intro-eyebrow">Client Stories</div>
+        <div class="intro-eyebrow">{{ 'client_say' | translate }}</div>
         <h2 class="intro-heading" style="margin-bottom: 0;">
-          Trusted by<br><span>2,000+ Businesses</span>
+          {{ 'testi_title_1' | translate }}<br><span>{{ 'testi_title_2' | translate }}</span>
         </h2>
       </div>
     </div>
@@ -214,21 +212,20 @@
   <div class="finale-bg"></div>
   <div class="finale-glow"></div>
   <div class="finale-inner">
-    <div class="intro-eyebrow" style="justify-content: center;">Ready?</div>
+    <div class="intro-eyebrow" style="justify-content: center;">{{ 'ready_start' | translate }}</div>
     <h2 class="finale-heading">
-      Let's Build Something<br>
-      <span>Remarkable</span>
+      {{ 'cta_title_1' | translate }}<br>
+      <span>{{ 'cta_title_2' | translate }}</span>
     </h2>
     <p class="finale-sub">
-      Whether you need a brand refresh, more leads, or a full digital transformation &mdash;
-      we're your partner from first idea to final result.
+      {{ 'cta_desc' | translate }}
     </p>
     <div class="finale-btns">
       <a routerLink="/contact" class="btn btn-primary" style="padding: 18px 48px; font-size: 1.05rem;">
-        Start Your Project <i class="fa-solid fa-arrow-right"></i>
+        {{ 'start_proj' | translate }} <i class="fa-solid fa-arrow-right"></i>
       </a>
       <a routerLink="/services" class="btn btn-glass" style="padding: 18px 48px; font-size: 1.05rem;">
-        Explore Services
+        {{ 'explore_services' | translate }}
       </a>
     </div>
   </div>

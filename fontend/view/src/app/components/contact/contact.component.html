@@ -31,9 +31,9 @@
             </div>
             <div class="contact-info-content">
               <div class="contact-info-label">{{ info.label | translate }}</div>
-              <div class="contact-info-value">{{ info.value }}</div>
-              <div class="contact-info-sub" *ngIf="info.sub">{{ info.sub }}</div>
-              <a *ngIf="info.link" [href]="info.link.url" class="btn btn-glass contact-info-link" [target]="info.link.target">{{ info.link.text }}</a>
+              <div class="contact-info-value">{{ info.value | translate }}</div>
+              <div class="contact-info-sub" *ngIf="info.sub">{{ info.sub | translate }}</div>
+              <a *ngIf="info.link" [href]="info.link.url" class="btn btn-glass contact-info-link" [target]="info.link.target">{{ info.link.text | translate }}</a>
             </div>
           </div>
         </div>
@@ -53,29 +53,29 @@
               
               <div class="contact-form-group">
                 <label class="contact-form-label">{{ 'contact_label_name' | translate }} <span>*</span></label>
-                <input type="text" formControlName="name" placeholder="Your full name" class="form-control" />
+                <input type="text" formControlName="name" [placeholder]="'name_placeholder' | translate" class="form-control" />
               </div>
               
               <div class="contact-form-group">
                 <label class="contact-form-label">{{ 'contact_label_phone_form' | translate }} <span>*</span></label>
-                <input type="tel" formControlName="phone" placeholder="+966 5X XXX XXXX" class="form-control" />
+                <input type="tel" formControlName="phone" [placeholder]="'phone_placeholder' | translate" class="form-control" />
               </div>
               
               <div class="contact-form-group full-width">
                 <label class="contact-form-label">{{ 'contact_label_email_form' | translate }} <span>*</span></label>
-                <input type="email" formControlName="email" placeholder="you@company.com" class="form-control" />
+                <input type="email" formControlName="email" [placeholder]="'email_placeholder' | translate" class="form-control" />
               </div>
               
               <div class="contact-form-group full-width">
-                <label class="contact-form-label">Company / Brand Name</label>
-                <input type="text" formControlName="company" placeholder="Your company name" class="form-control" />
+                <label class="contact-form-label">{{ 'company_name' | translate }}</label>
+                <input type="text" formControlName="company" [placeholder]="'company_placeholder' | translate" class="form-control" />
               </div>
               
               <div class="contact-form-group full-width">
                 <label class="contact-form-label">{{ 'contact_label_service' | translate }} <span>*</span></label>
                 <select formControlName="service" class="form-control" style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a0a0ab%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
-                  <option value="" disabled selected>Select a service...</option>
-                  <option *ngFor="let s of services" [value]="s">{{ s }}</option>
+                  <option value="" disabled selected>{{ 'select_service' | translate }}</option>
+                  <option *ngFor="let s of services" [value]="s">{{ s | translate }}</option>
                 </select>
               </div>
               
@@ -90,7 +90,7 @@
               
               <div class="contact-form-group full-width">
                 <label class="contact-form-label">{{ 'contact_label_details' | translate }} <span>*</span></label>
-                <textarea formControlName="details" placeholder="Tell us about your project, goals, timeline, and any specific requirements..." class="form-control" style="min-height: 150px; resize: vertical;"></textarea>
+                <textarea formControlName="details" [placeholder]="'message_placeholder' | translate" class="form-control" style="min-height: 150px; resize: vertical;"></textarea>
               </div>
               
               <div class="contact-submit-row">
@@ -109,7 +109,7 @@
             </div>
             <h3 class="contact-success-title">{{ 'contact_success_title' | translate }}</h3>
             <p class="contact-success-desc">{{ 'contact_success_desc' | translate }}</p>
-            <button (click)="resetForm()" class="btn btn-primary">Send Another Message</button>
+            <button (click)="resetForm()" class="btn btn-primary">{{ 'send_another' | translate }}</button>
           </div>
 
         </div>

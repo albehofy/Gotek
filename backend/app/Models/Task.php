@@ -32,8 +32,13 @@ use LogsActivity;
         'department_id', 
         'priority', 
         'status', 
+        'due_date',
         'estimated_hours',
         'user_id' // منشئ التاسك
+    ];
+
+    protected $casts = [
+        'due_date' => 'date',
     ];
 
     // 1. علاقة المشروع الداخلي

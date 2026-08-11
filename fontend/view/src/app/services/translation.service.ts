@@ -5,10 +5,10 @@ import { translations } from './translations';
   providedIn: 'root'
 })
 export class TranslationService {
-  currentLang = signal<string>('en');
+  currentLang = signal<string>('ar');
 
   constructor() {
-    const savedLang = localStorage.getItem('mediaglow_lang') || 'en';
+    const savedLang = localStorage.getItem('mediaglow_lang') || 'ar';
     this.setLanguage(savedLang);
   }
 

@@ -25,6 +25,8 @@ class Deal extends Model
         'paid_amount' => 'float',
     ];
 
+    protected $appends = ['progress', 'remaining_balance'];
+
     // relations
     public function client()
     {

@@ -6,7 +6,7 @@
           <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 36px; filter: brightness(0) invert(1);" />
           Media Glow<span>.</span>
         </a>
-        <p class="footer-brand-desc">{{ footerData?.desc?.en || ('footer_desc' | translate) }}</p>
+        <p class="footer-brand-desc">{{ (footerData?.desc | translate) || ('footer_desc' | translate) }}</p>
         <div class="footer-social">
           <a *ngIf="footerData?.socials?.facebook" [href]="footerData.socials.facebook" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
           <a *ngIf="!footerData || !footerData.socials" href="https://www.facebook.com/mediaglow" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
@@ -44,7 +44,7 @@
     </div>
     <div class="footer-bottom" style="border-top: 1px solid var(--border-light); padding-top: 24px;">
       <div class="footer-copy">
-        <span>{{ footerData?.copy?.en || ('footer_copy' | translate) }}</span>
+        <span>{{ (footerData?.copy | translate) || ('footer_copy' | translate) }}</span>
       </div>
       <div class="footer-legal">
         <a href="#">{{ 'footer_privacy' | translate }}</a>

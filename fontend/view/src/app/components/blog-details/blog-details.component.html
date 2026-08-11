@@ -10,11 +10,11 @@
     
     <!-- Breadcrumb -->
     <div class="bd-breadcrumbs">
-      <a routerLink="/">Home</a>
+      <a routerLink="/">{{ 'home' | translate }}</a>
       <span>/</span>
-      <a routerLink="/blogs">Blogs</a>
+      <a routerLink="/blogs">{{ 'blogs' | translate }}</a>
       <span>/</span>
-      <span class="current">{{ blog?.category?.en || blog?.category || 'Article' }}</span>
+      <span class="current">{{ blog?.category | translate }}</span>
     </div>
 
     <!-- Title -->
@@ -24,7 +24,7 @@
     <div class="bd-meta">
       <div class="bd-author-box">
         <div class="bd-author-avatar">
-          {{ blog?.author?.charAt(0) || 'G' }}
+          {{ blog?.author?.charAt(0) || 'M' }}
         </div>
         <span class="bd-author-name">{{ blog?.author || 'Media Glow Team' }}</span>
       </div>
@@ -34,7 +34,7 @@
 
     <!-- Featured Image -->
     <div *ngIf="blog?.image_url" class="glass-panel bd-image-box">
-      <img [src]="blog.image_url" [alt]="blog.title" />
+      <img [src]="blog.image_url" [alt]="blog.title | translate" />
     </div>
 
     <!-- Content -->
@@ -46,7 +46,7 @@
     <div class="bd-actions">
       
       <div class="bd-share-box">
-        <span class="bd-share-title">Share:</span>
+        <span class="bd-share-title">{{ 'share' | translate }}</span>
         <button class="btn btn-glass bd-share-btn"><i class="fa-brands fa-linkedin"></i></button>
         <button class="btn btn-glass bd-share-btn"><i class="fa-brands fa-twitter"></i></button>
         <button class="btn btn-glass bd-share-btn"><i class="fa-solid fa-link"></i></button>
@@ -54,7 +54,7 @@
 
       <button class="btn bd-love-btn" [ngClass]="isLoved ? 'btn-primary' : 'btn-glass'" (click)="toggleLove()">
         <i class="fa-solid fa-heart" [style.color]="isLoved ? '#fff' : '#ef4444'"></i>
-        <span>{{ isLoved ? 'Loved It!' : 'Love This Article' }}</span>
+        <span>{{ isLoved ? ('loved_it' | translate) : ('love_article' | translate) }}</span>
         <span style="background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; margin-left: 8px;">{{ blog.likes + (isLoved ? 1 : 0) || (isLoved ? 1 : 0) }}</span>
       </button>
       
@@ -62,7 +62,7 @@
 
     <div class="bd-back-btn-box">
       <a routerLink="/blogs" class="btn btn-glass">
-        <i class="fa-solid fa-arrow-left"></i> Back to all articles
+        <i class="fa-solid fa-arrow-left"></i> {{ 'back_to_blogs' | translate }}
       </a>
     </div>
 

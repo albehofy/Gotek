@@ -3,14 +3,14 @@
   <div class="glow-orb primary"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ portfolioData?.hero?.tag?.en || ('our_port' | translate) }}
+      {{ (portfolioData?.hero | translate)?.tag || ('our_port' | translate) }}
     </div>
     <h1 class="sec-title portfolio-hero-title animate-up delay-2">
-      {{ portfolioData?.hero?.title?.en || ('port_title_1' | translate) }}<br/>
-      <span>{{ portfolioData?.hero?.subtitle?.en || ('port_title_2' | translate) }}</span>
+      {{ (portfolioData?.hero | translate)?.title || ('port_title_1' | translate) }}<br/>
+      <span>{{ (portfolioData?.hero | translate)?.subtitle || ('port_title_2' | translate) }}</span>
     </h1>
     <p class="sec-desc portfolio-hero-desc animate-up delay-3">
-      {{ portfolioData?.hero?.desc?.en || ('Explore our selected works and see how we have helped brands achieve their goals.') }}
+      {{ (portfolioData?.hero | translate)?.desc || ('port_title_3' | translate) }}
     </p>
   </div>
 </section>
@@ -62,7 +62,7 @@
     <!-- Empty State -->
     <div class="portfolio-empty" *ngIf="!loading && !filteredProjects.length">
       <i class="fa-solid fa-folder-open"></i>
-      <p>No projects found in this category.</p>
+      <p>{{ 'no_projects' | translate }}</p>
     </div>
 
   </div>

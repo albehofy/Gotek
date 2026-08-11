@@ -19,7 +19,7 @@
 
     <div class="proj-tags">
       <span class="proj-tag">{{ project?.category?.name | translate }}</span>
-      <span class="proj-tag" style="background: transparent; color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2);" *ngFor="let tag of project?.tags">{{ tag }}</span>
+      <span class="proj-tag" style="background: transparent; color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2);" *ngFor="let tag of project?.tags">{{ tag | translate }}</span>
     </div>
 
     <h1 class="proj-hero-title">
@@ -30,11 +30,11 @@
     <div class="proj-hero-meta">
       <div class="phm-item" *ngIf="project?.client">
         <span class="phm-label">{{ 'proj_label_client' | translate }}</span>
-        <span class="phm-value">{{ project.client }}</span>
+        <span class="phm-value">{{ project.client | translate }}</span>
       </div>
       <div class="phm-item" *ngIf="project?.timeline">
         <span class="phm-label">{{ 'proj_label_timeline' | translate }}</span>
-        <span class="phm-value">{{ project.timeline }}</span>
+        <span class="phm-value">{{ project.timeline | translate }}</span>
       </div>
     </div>
   </div>
@@ -79,12 +79,12 @@
         <div class="csrg">
           <div class="csr-card" *ngIf="project?.challenge">
             <div class="csr-icon"><i class="fa-solid fa-times-circle" style="color: #ef4444;"></i></div>
-            <div class="csr-title">The Challenge</div>
+            <div class="csr-title">{{ 'proj_challenge_title' | translate }}</div>
             <div class="csr-text">{{ project.challenge | translate }}</div>
           </div>
           <div class="csr-card" *ngIf="project?.solution">
             <div class="csr-icon"><i class="fa-solid fa-check-circle" style="color: #22c55e;"></i></div>
-            <div class="csr-title">Our Solution</div>
+            <div class="csr-title">{{ 'proj_solution_title' | translate }}</div>
             <div class="csr-text">{{ project.solution | translate }}</div>
           </div>
         </div>
@@ -95,8 +95,8 @@
         <div class="proj-section-label">{{ 'proj_results' | translate }}</div>
         <div class="results-grid">
           <div class="result-card" *ngFor="let res of project.results">
-            <div class="result-val">{{ res.value }}</div>
-            <div class="result-lbl">{{ res.label }}</div>
+            <div class="result-val">{{ res.value | translate }}</div>
+            <div class="result-lbl">{{ res.label | translate }}</div>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
         <div class="sb-title">{{ 'proj_deliverables' | translate }}</div>
         <ul class="del-list">
           <li class="del-item" *ngFor="let del of project.deliverables">
-            <i class="fa-solid fa-check"></i> {{ del }}
+            <i class="fa-solid fa-check"></i> {{ del | translate }}
           </li>
         </ul>
       </div>
@@ -119,23 +119,23 @@
       <!-- Testimonial -->
       <div class="sidebar-box" *ngIf="project?.testimonial">
         <div style="color: var(--text-primary); font-size: 1rem; font-style: italic; line-height: 1.7; margin-bottom: 20px;">
-          "{{ project.testimonial.text }}"
+          "{{ project.testimonial.text | translate }}"
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
           <img *ngIf="project.testimonial.avatar" [src]="project.testimonial.avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
           <div>
             <div style="color: #fff; font-weight: 600; font-size: 0.95rem;">{{ project.testimonial.name }}</div>
-            <div style="color: var(--text-muted); font-size: 0.8rem;">{{ project.testimonial.role }}</div>
+            <div style="color: var(--text-muted); font-size: 0.8rem;">{{ project.testimonial.role | translate }}</div>
           </div>
         </div>
       </div>
 
       <!-- CTA -->
       <div class="sidebar-box sb-cta">
-        <div class="sb-title" style="margin-bottom: 12px;">Ready to start?</div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Let's build something similar for your business.</p>
-        <a routerLink="/contact" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">Start a Project</a>
-        <a routerLink="/portfolio" class="btn btn-glass" style="width: 100%;">Back to Portfolio</a>
+        <div class="sb-title" style="margin-bottom: 12px;">{{ 'proj_cta_title' | translate }}</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">{{ 'proj_cta_sub' | translate }}</p>
+        <a routerLink="/contact" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">{{ 'start_proj' | translate }}</a>
+        <a routerLink="/portfolio" class="btn btn-glass" style="width: 100%;">{{ 'back_to_portfolio' | translate }}</a>
       </div>
 
     </div>
