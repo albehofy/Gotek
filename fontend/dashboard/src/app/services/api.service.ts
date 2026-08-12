@@ -142,6 +142,19 @@ export class ApiService {
     return this.http.get<any>(`${API_BASE_URL}/tasks/${taskId}/activity`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTaskActivity', [])));
   }
 
+  createSubtask(parentId: string | number, payload: any): Observable<any> {
+    const body = payload instanceof FormData ? payload : (typeof payload === 'string' ? { title: payload } : payload);
+    return this.http.post<any>(`${API_BASE_URL}/tasks/${parentId}/subtasks`, body, { headers: this.getHeaders() });
+  }
+
+  toggleSubtask(id: string | number): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/tasks/subtasks/${id}/toggle`, {}, { headers: this.getHeaders() });
+  }
+
+  deleteSubtask(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/tasks/subtasks/${id}`, { headers: this.getHeaders() });
+  }
+
   getTaskCustomFields(): Observable<any> {
     return this.http.get<any>(`${API_BASE_URL}/tasks/custom-fields`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTaskCustomFields', [])));
   }

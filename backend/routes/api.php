@@ -87,6 +87,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/activity', [TaskController::class, 'getActivity']);
         Route::delete('/{id}', [TaskController::class, 'destroy']);
 
+        // Subtasks
+        Route::post('/{id}/subtasks', [TaskController::class, 'storeSubtask']);
+        Route::put('/subtasks/{id}/toggle', [TaskController::class, 'toggleSubtask']);
+        Route::delete('/subtasks/{id}', [TaskController::class, 'deleteSubtask']);
+
         // Checklist
         Route::post('/{taskId}/checklist', [ChecklistController::class, 'store']);
         Route::delete('/checklist/{checkListId}', [ChecklistController::class, 'destroy']);

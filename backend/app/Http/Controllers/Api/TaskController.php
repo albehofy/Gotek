@@ -19,7 +19,7 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Task::with(['deal', 'department', 'subCategory', 'users', 'subtasks', 'attachments', 'customFieldValues.field', 'notes.user'])->latest();
+        $query = Task::with(['deal', 'department', 'subCategory', 'users', 'subtasks.users', 'subtasks.attachments', 'attachments', 'customFieldValues.field', 'notes.user', 'parent'])->latest();
 
         // Scope filtering based on role
         if ($user->role === 'employee') {
@@ -46,8 +46,8 @@ class TaskController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Return parent tasks only for main board views, subtasks nested
-        if ($request->get('parents_only', 'true') === 'true') {
+        // Return parent tasks only if explicitly requested
+        if ($request->has('parents_only') && ($request->get('parents_only') === 'true' || $request->get('parents_only') === true)) {
             $query->whereNull('parent_id');
         }
 
@@ -135,6 +135,7 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         $task = Task::findOrFail($id);
+        $oldStatus = $task->status;
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -155,6 +156,7 @@ class TaskController extends Controller
         $clientPrice = (float) ($validated['client_price'] ?? $task->client_price);
         $employeePrice = (float) ($validated['employee_price'] ?? $task->employee_price);
         $margin = max(0, $clientPrice - $employeePrice);
+        $newStatus = $validated['status'];
 
         $task->update([
             'title' => $validated['title'],
@@ -164,7 +166,7 @@ class TaskController extends Controller
             'department_id' => $validated['department_id'] ?? $task->department_id,
             'sub_category_id' => $validated['sub_category_id'] ?? $task->sub_category_id,
             'priority' => $validated['priority'],
-            'status' => $validated['status'],
+            'status' => $newStatus,
             'estimated_hours' => $validated['estimated_hours'] ?? $task->estimated_hours,
             'client_price' => $clientPrice,
             'employee_price' => $employeePrice,
@@ -173,6 +175,10 @@ class TaskController extends Controller
 
         if (isset($validated['user_ids'])) {
             $task->users()->sync($validated['user_ids']);
+        }
+
+        if ($oldStatus !== $newStatus) {
+            $this->notifyTaskStatusChange($task, $oldStatus, $newStatus);
         }
 
         if (!empty($validated['custom_fields'])) {
@@ -190,25 +196,68 @@ class TaskController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $task = Task::findOrFail($id);
+        $oldStatus = $task->status;
+
         $request->validate([
             'status' => 'required|in:new,in_progress,content_creator,in_review,client_feedback,done,cancelled'
         ]);
 
-        $task->update(['status' => $request->status]);
+        $newStatus = $request->status;
+        $task->update(['status' => $newStatus]);
 
-        // Notify assigned staff of status change
-        foreach ($task->users as $u) {
+        if ($oldStatus !== $newStatus) {
+            $this->notifyTaskStatusChange($task, $oldStatus, $newStatus);
+        }
+
+        return response()->json(['status' => 'success', 'data' => $task]);
+    }
+
+    private function notifyTaskStatusChange(Task $task, $oldStatus, $newStatus)
+    {
+        if ($oldStatus === $newStatus) {
+            return;
+        }
+
+        $statusLabels = [
+            'new'             => 'جديد',
+            'in_progress'     => 'قيد التنفيذ',
+            'content_creator' => 'صناعة المحتوى',
+            'in_review'       => 'قيد المراجعة',
+            'client_feedback' => 'ملاحظات العميل',
+            'done'            => 'مكتمل',
+            'cancelled'       => 'ملغاة'
+        ];
+
+        $newStatusName = $statusLabels[$newStatus] ?? $newStatus;
+
+        $recipientIds = $task->users->pluck('id')->toArray();
+        if (isset($task->created_by) && $task->created_by) {
+            $recipientIds[] = $task->created_by;
+        }
+        if (isset($task->user_id) && $task->user_id) {
+            $recipientIds[] = $task->user_id;
+        }
+        if (isset($task->client_id) && $task->client_id) {
+            $recipientIds[] = $task->client_id;
+        }
+
+        $recipientIds = array_unique(array_filter($recipientIds));
+        $currentUserId = auth()->id();
+
+        foreach ($recipientIds as $uid) {
+            if ($currentUserId && (int)$uid === (int)$currentUserId) {
+                continue;
+            }
+
             NotificationModel::create([
-                'user_id' => $u->id,
+                'user_id' => $uid,
                 'type' => 'status_change',
-                'title' => 'تغيير حالة المهمة',
-                'message' => 'تم تغيير حالة المهمة (' . $task->title . ') إلى: ' . $task->status,
+                'title' => 'تحديث حالة المهمة',
+                'message' => 'تم تغيير حالة المهمة (' . $task->title . ') إلى: ' . $newStatusName,
                 'notifiable_type' => Task::class,
                 'notifiable_id' => $task->id
             ]);
         }
-
-        return response()->json(['status' => 'success', 'data' => $task]);
     }
 
     public function assignMembers(Request $request, $id)
@@ -322,15 +371,114 @@ class TaskController extends Controller
 
     public function getActivity($id)
     {
-        $activities = \DB::table('activity_log')
-            ->leftJoin('users', 'activity_log.causer_id', '=', 'users.id')
-            ->where('subject_type', 'App\\Models\\Task')
-            ->where('subject_id', $id)
-            ->select('activity_log.*', 'users.name as user_name')
-            ->orderBy('activity_log.id', 'desc')
-            ->get();
+        $task = Task::with(['notes.user', 'attachments.uploader', 'users'])->find($id);
+        if (!$task) {
+            return response()->json(['status' => 'error', 'message' => 'المهمة غير موجودة'], 404);
+        }
 
-        return response()->json(['status' => 'success', 'data' => $activities]);
+        $items = collect([]);
+
+        // 1. Task Creation Event
+        $items->push([
+            'id' => 'creation_' . $task->id,
+            'type' => 'creation',
+            'action_title' => 'إنشاء المهمة',
+            'icon' => 'fa-circle-plus',
+            'color' => '#818cf8',
+            'description' => "تم إنشاء المهمة في النظام بعنوان: \"{$task->title}\"",
+            'user_name' => 'نظام CRM',
+            'created_at' => $task->created_at ? $task->created_at->toDateTimeString() : now()->toDateTimeString()
+        ]);
+
+        // 2. Activity Log DB Table entries
+        try {
+            $logEntries = \DB::table('activity_log')
+                ->leftJoin('users', 'activity_log.causer_id', '=', 'users.id')
+                ->where('subject_type', 'App\\Models\\Task')
+                ->where('subject_id', $id)
+                ->select('activity_log.*', 'users.name as user_name')
+                ->get();
+
+            foreach ($logEntries as $entry) {
+                $type = 'general';
+                $icon = 'fa-clock-rotate-left';
+                $color = '#a855f7';
+                $desc = $entry->description ?? '';
+
+                if (str_contains($desc, 'حذف')) {
+                    $type = 'delete';
+                    $icon = 'fa-trash-can';
+                    $color = '#f43f5e';
+                } elseif (str_contains($desc, 'رفع') || str_contains($desc, 'مرفق')) {
+                    $type = 'attachment';
+                    $icon = 'fa-paperclip';
+                    $color = '#06b6d4';
+                } elseif (str_contains($desc, 'تعليق') || str_contains($desc, 'ملاحظة')) {
+                    $type = 'note';
+                    $icon = 'fa-comments';
+                    $color = '#3b82f6';
+                } elseif (str_contains($desc, 'حالة')) {
+                    $type = 'status';
+                    $icon = 'fa-bars-progress';
+                    $color = '#f59e0b';
+                } elseif (str_contains($desc, 'أعضاء') || str_contains($desc, 'إسناد')) {
+                    $type = 'assignment';
+                    $icon = 'fa-user-plus';
+                    $color = '#10b981';
+                }
+
+                $items->push([
+                    'id' => 'act_' . $entry->id,
+                    'type' => $type,
+                    'action_title' => 'تحديث نشاط',
+                    'icon' => $icon,
+                    'color' => $color,
+                    'description' => $desc,
+                    'user_name' => $entry->user_name ?? 'مستخدم',
+                    'created_at' => $entry->created_at ?? now()->toDateTimeString()
+                ]);
+            }
+        } catch (\Exception $e) {}
+
+        // 3. Notes / Comments
+        foreach ($task->notes as $note) {
+            $author = $note->user ? $note->user->name : 'مستخدم';
+            $items->push([
+                'id' => 'note_' . $note->id,
+                'type' => 'note',
+                'action_title' => 'إضافة تعليق',
+                'icon' => 'fa-comments',
+                'color' => '#3b82f6',
+                'description' => "قام {$author} بإضافة ملاحظة: \"{$note->note}\"",
+                'user_name' => $author,
+                'created_at' => $note->created_at ? $note->created_at->toDateTimeString() : now()->toDateTimeString()
+            ]);
+        }
+
+        // 4. Attachments
+        foreach ($task->attachments as $att) {
+            $uploader = $att->uploader ? $att->uploader->name : 'مستخدم';
+            $fileName = $att->file_name ?? 'مستند';
+            $items->push([
+                'id' => 'att_' . $att->id,
+                'type' => 'attachment',
+                'action_title' => 'رفع ملف',
+                'icon' => 'fa-paperclip',
+                'color' => '#06b6d4',
+                'description' => "قام {$uploader} برفع المرفق: {$fileName}",
+                'user_name' => $uploader,
+                'created_at' => $att->created_at ? $att->created_at->toDateTimeString() : now()->toDateTimeString()
+            ]);
+        }
+
+        // Sort descending by created_at timestamp & remove duplicate descriptions
+        $unique = $items->unique(function ($i) {
+            return $i['type'] . '_' . $i['description'];
+        });
+
+        $sorted = $unique->sortByDesc('created_at')->values()->all();
+
+        return response()->json(['status' => 'success', 'data' => $sorted]);
     }
 
     private function logActivity($taskId, $description)
@@ -349,6 +497,95 @@ class TaskController extends Controller
         } catch (\Exception $e) {
             // ignore
         }
+    }
+
+    // --- Subtask Management API ---
+    public function storeSubtask(Request $request, $parentId)
+    {
+        $parent = Task::findOrFail($parentId);
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'scope' => 'nullable|string',
+            'priority' => 'nullable|in:low,medium,high,urgent',
+            'file' => 'nullable|file|max:20480',
+        ]);
+
+        $subtask = Task::create([
+            'title' => $request->title,
+            'description' => $request->description ?? $request->scope ?? '',
+            'scope' => $request->scope ?? $request->description ?? null,
+            'parent_id' => $parent->id,
+            'status' => 'new',
+            'priority' => $request->priority ?? $parent->priority ?? 'medium',
+            'deal_id' => $parent->deal_id,
+            'department_id' => $parent->department_id,
+            'client_price' => 0,
+            'employee_price' => 0,
+        ]);
+
+        // Process user_ids from array or JSON string (if sent via FormData)
+        $userIds = $request->user_ids;
+        if (is_string($userIds)) {
+            $userIds = json_decode($userIds, true);
+        }
+        if (is_array($userIds) && count($userIds) > 0) {
+            $subtask->users()->sync($userIds);
+        }
+
+        // Process file upload if provided
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            $mimeType = $file->getClientMimeType();
+            $size = $file->getSize();
+            $path = $file->store('task_attachments', 'public');
+            $type = str_contains($mimeType, 'image') ? 'image' : (str_contains($mimeType, 'video') ? 'video' : 'document');
+
+            TaskAttachment::create([
+                'task_id' => $subtask->id,
+                'file_path' => $path,
+                'file_type' => $type,
+                'file_name' => $originalName,
+                'file_size' => $size,
+                'uploaded_by' => Auth::id()
+            ]);
+        }
+
+        $userName = Auth::user() ? Auth::user()->name : 'مستخدم';
+        $this->logActivity($parent->id, "قام {$userName} بإضافة مهمة فرعية جديدة: {$subtask->title}");
+
+        return response()->json(['status' => 'success', 'data' => $subtask->load(['users', 'attachments'])], 201);
+    }
+
+    public function toggleSubtask(Request $request, $id)
+    {
+        $subtask = Task::findOrFail($id);
+        $newStatus = $subtask->status === 'done' ? 'new' : 'done';
+        $subtask->update(['status' => $newStatus]);
+
+        if ($subtask->parent_id) {
+            $userName = Auth::user() ? Auth::user()->name : 'مستخدم';
+            $stLabel = $newStatus === 'done' ? 'مكتملة' : 'قيد التنفيذ';
+            $this->logActivity($subtask->parent_id, "قام {$userName} بتحديث حالة المهمة الفرعية ({$subtask->title}) إلى {$stLabel}");
+        }
+
+        return response()->json(['status' => 'success', 'data' => $subtask]);
+    }
+
+    public function deleteSubtask($id)
+    {
+        $subtask = Task::findOrFail($id);
+        $parentId = $subtask->parent_id;
+        $title = $subtask->title;
+        $subtask->delete();
+
+        if ($parentId) {
+            $userName = Auth::user() ? Auth::user()->name : 'مستخدم';
+            $this->logActivity($parentId, "قام {$userName} بحذف المهمة الفرعية: {$title}");
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'تم حذف المهمة الفرعية بنجاح']);
     }
 
     // --- Custom Fields Metadata API ---

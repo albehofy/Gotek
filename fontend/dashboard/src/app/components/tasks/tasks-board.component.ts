@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-picker-select.component';
 import { DialogModule } from 'primeng/dialog';
@@ -87,7 +88,10 @@ import { DropdownModule } from 'primeng/dropdown';
               <div class="priority-ribbon" [class]="'p-' + (task.priority || 'medium')"></div>
 
               <!-- Top tags -->
-              <div class="tk-tags" *ngIf="task.deal || task.sub_category">
+              <div class="tk-tags" *ngIf="task.parent_id || task.parent || task.deal || task.sub_category">
+                <span class="tag tag-subtask" *ngIf="task.parent_id || task.parent">
+                  <i class="fa-solid fa-code-branch"></i> مهمة فرعية{{ task.parent ? ': ' + (task.parent.title | slice:0:15) : '' }}
+                </span>
                 <span class="tag tag-deal" *ngIf="task.deal">
                   <i class="fa-solid fa-handshake"></i> {{ task.deal.title | slice:0:18 }}{{ task.deal.title?.length > 18 ? '...' : '' }}
                 </span>
@@ -137,6 +141,10 @@ import { DropdownModule } from 'primeng/dropdown';
                   </div>
                 </div>
                 <div class="tk-foot-right">
+                  <!-- Subtasks Progress Tag -->
+                  <span class="tk-subtasks-tag" *ngIf="(task.subtasks || []).length > 0" title="المهام الفرعية الإجمالية والمكتملة">
+                    <i class="fa-solid fa-list-check"></i> {{ getCompletedSubtasksCount(task) }}/{{ task.subtasks.length }}
+                  </span>
                   <span class="tk-attach" *ngIf="(task.attachments || []).length > 0">
                     <i class="fa-solid fa-paperclip"></i> {{ (task.attachments || []).length }}
                   </span>
@@ -158,7 +166,7 @@ import { DropdownModule } from 'primeng/dropdown';
 
       <!-- ── TASK DETAIL SIDE DRAWER ────────────────────────────── -->
       <div class="drawer-backdrop" *ngIf="selectedTask" (click)="closeDetail($event)">
-        <div class="detail-drawer" (click)="$event.stopPropagation()">
+        <div class="detail-drawer" [class.is-wide]="isWideDrawer" (click)="$event.stopPropagation()">
 
           <!-- Drawer Header -->
           <div class="drawer-hd">
@@ -167,10 +175,18 @@ import { DropdownModule } from 'primeng/dropdown';
                 <i class="fa-solid fa-list-check"></i>
               </div>
               <div class="drawer-hd-text">
-                <h3 class="drawer-title">{{ selectedTask.title }}</h3>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <button class="btn-parent-crumb" *ngIf="selectedTask.parent_id || selectedTask.parent" (click)="openTaskDetail(selectedTask.parent || findParentTask(selectedTask.parent_id))" title="العودة للمهمة الرئيسية">
+                    <i class="fa-solid fa-arrow-right"></i> المهمة الرئيسية: {{ (selectedTask.parent?.title || getTaskTitle(selectedTask.parent_id)) | slice:0:22 }}
+                  </button>
+                  <h3 class="drawer-title">{{ selectedTask.title }}</h3>
+                </div>
                 <div class="drawer-meta">
                   <span class="priority-badge" [class]="'pb-' + (selectedTask.priority || 'medium')">
                     <i class="fa-solid fa-bolt"></i> {{ selectedTask.priority | uppercase }}
+                  </span>
+                  <span class="tag tag-subtask" *ngIf="selectedTask.parent_id || selectedTask.parent">
+                    <i class="fa-solid fa-code-branch"></i> مهمة فرعية
                   </span>
                   <span class="deal-tag" *ngIf="selectedTask.deal">
                     <i class="fa-solid fa-handshake"></i> {{ selectedTask.deal.title }}
@@ -178,168 +194,439 @@ import { DropdownModule } from 'primeng/dropdown';
                 </div>
               </div>
             </div>
-            <button class="close-btn" (click)="selectedTask = null" title="إغلاق">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
 
-          <!-- Pipeline Progress Switcher -->
-          <div class="pipeline-switcher">
-            <div class="ps-label"><i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (الحالة):</div>
-            <div class="ps-grid">
-              <button
-                *ngFor="let col of columns"
-                class="ps-step"
-                [class.active]="selectedTask.status === col.key"
-                (click)="updateTaskStatus(selectedTask, col.key)"
-              >
-                <span class="ps-dot" [style.background]="col.color"></span>
-                <span class="ps-name">{{ col.title }}</span>
-                <i class="fa-solid fa-check ps-check" *ngIf="selectedTask.status === col.key"></i>
+            <!-- Header Action Buttons -->
+            <div class="drawer-hd-actions">
+              <!-- Width Expand/Compress Toggle Button -->
+              <button class="icon-action-btn" (click)="isWideDrawer = !isWideDrawer" [title]="isWideDrawer ? 'تصغير العرض' : 'توسيع العرض (90%)'">
+                <i class="fa-solid" [class.fa-expand]="!isWideDrawer" [class.fa-compress]="isWideDrawer"></i>
+              </button>
+
+              <!-- Close Drawer Button -->
+              <button class="close-btn" (click)="closeTaskDrawer()" title="إغلاق">
+                <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
+          </div>
+
+          <!-- Drawer Navigation Tabs Bar -->
+          <div class="drawer-nav-tabs">
+            <button
+              class="dnav-tab"
+              [class.active]="activeDrawerTab === 'details'"
+              (click)="activeDrawerTab = 'details'"
+            >
+              <i class="fa-solid fa-rectangle-list"></i> تفاصيل المهمة والملفات
+            </button>
+            <button
+              class="dnav-tab"
+              [class.active]="activeDrawerTab === 'subtasks'"
+              (click)="activeDrawerTab = 'subtasks'"
+            >
+              <i class="fa-solid fa-list-check"></i> المهام الفرعية
+              <span class="dnav-badge" *ngIf="(selectedTask.subtasks || []).length">{{ selectedTask.subtasks.length }}</span>
+            </button>
+            <button
+              class="dnav-tab"
+              [class.active]="activeDrawerTab === 'history'"
+              (click)="activeDrawerTab = 'history'"
+            >
+              <i class="fa-solid fa-clock-rotate-left"></i> سجل التغييرات والتاريخ
+              <span class="dnav-badge" *ngIf="taskActivities.length">{{ taskActivities.length }}</span>
+            </button>
           </div>
 
           <!-- Drawer Body -->
           <div class="drawer-body">
 
-            <!-- Pricing Margin Hero Card -->
-            <div class="pricing-hero-card" *ngIf="selectedTask.client_price > 0">
-              <div class="ph-stat">
-                <span class="ph-lbl"><i class="fa-solid fa-user-tie"></i> سعر العميل</span>
-                <strong class="ph-val teal">{{ selectedTask.client_price | number:'1.2-2' }} <small>EGP</small></strong>
-              </div>
-              <div class="ph-divider"></div>
-              <div class="ph-stat">
-                <span class="ph-lbl"><i class="fa-solid fa-laptop-code"></i> تكلفة الموظف</span>
-                <strong class="ph-val amber">{{ selectedTask.employee_price | number:'1.2-2' }} <small>EGP</small></strong>
-              </div>
-              <div class="ph-divider"></div>
-              <div class="ph-stat ph-margin">
-                <span class="ph-lbl"><i class="fa-solid fa-chart-line"></i> صافي الربح</span>
-                <strong class="ph-val emerald">+{{ (selectedTask.client_price - selectedTask.employee_price) | number:'1.2-2' }} <small>EGP</small></strong>
-              </div>
-            </div>
+            <!-- TAB 1: TASK DETAILS -->
+            <div class="drawer-tab-content" *ngIf="activeDrawerTab === 'details'">
 
-            <!-- Scope / Description Card -->
-            <div class="drawer-card" *ngIf="selectedTask.scope">
-              <div class="dc-head"><i class="fa-solid fa-file-lines"></i> وصف ومواصفات المهمة</div>
-              <div class="dc-body scope-text">{{ selectedTask.scope }}</div>
-            </div>
+              <!-- Parent Task Info Card (When viewing a subtask) -->
+              <div class="drawer-card parent-task-link-card" *ngIf="selectedTask.parent_id || selectedTask.parent" (click)="openTaskDetail(selectedTask.parent || findParentTask(selectedTask.parent_id))" style="cursor:pointer; background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.25); transition:all 0.2s;" title="انقر لعرض المهمة الرئيسية المرتبطة">
+                <div class="dc-head flex align-items-center justify-content-between" style="margin-bottom:6px;">
+                  <span style="color:var(--violet-light, #818cf8); font-weight:800; font-size:0.88rem;">
+                    <i class="fa-solid fa-code-branch"></i> المهمة الرئيسية المرتبطة
+                  </span>
+                  <span style="font-size:0.75rem; color:var(--text-2); display:flex; align-items:center; gap:4px;">
+                    انقر للفتح <i class="fa-solid fa-chevron-left"></i>
+                  </span>
+                </div>
+                <div style="font-size:0.95rem; font-weight:800; color:var(--text);">
+                  {{ selectedTask.parent?.title || getTaskTitle(selectedTask.parent_id) }}
+                </div>
+              </div>
 
-            <!-- Team Assignment Section -->
-            <div class="drawer-card">
-              <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الفريق المكلف بالمهمة</div>
-              <div class="team-assign-container">
-                <div class="team-chips-grid">
-                  <div class="team-chip-card" *ngFor="let u of (selectedTask.users || [])">
-                    <div class="tc-av">{{ u.name?.charAt(0) }}</div>
-                    <div class="tc-info">
-                      <span class="tc-name">{{ u.name }}</span>
-                      <small class="tc-role">{{ u.email || 'عضو الفريق' }}</small>
+              <!-- Pipeline Progress Switcher (الحالة / مرحلة التنفيذ - بالقمة) -->
+              <div class="drawer-card pipeline-card">
+                <div class="dc-head"><i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (تعديل الحالة)</div>
+                <div class="ps-grid">
+                  <button
+                    *ngFor="let col of columns"
+                    class="ps-step"
+                    [class.active]="selectedTask.status === col.key"
+                    (click)="updateTaskStatus(selectedTask, col.key)"
+                  >
+                    <span class="ps-dot" [style.background]="col.color"></span>
+                    <span class="ps-name">{{ col.title }}</span>
+                    <i class="fa-solid fa-check ps-check" *ngIf="selectedTask.status === col.key"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Full Pricing Margin Hero Card (للإدارة والأدمن فقط) -->
+              <div class="pricing-hero-card" *ngIf="isAdminOrManager() && (selectedTask.client_price > 0 || selectedTask.employee_price > 0)">
+                <div class="ph-stat">
+                  <span class="ph-lbl"><i class="fa-solid fa-user-tie"></i> سعر العميل</span>
+                  <strong class="ph-val teal">{{ selectedTask.client_price | number:'1.2-2' }} <small>EGP</small></strong>
+                </div>
+                <div class="ph-divider"></div>
+                <div class="ph-stat">
+                  <span class="ph-lbl"><i class="fa-solid fa-laptop-code"></i> تكلفة الموظف</span>
+                  <strong class="ph-val amber">{{ selectedTask.employee_price | number:'1.2-2' }} <small>EGP</small></strong>
+                </div>
+                <div class="ph-divider"></div>
+                <div class="ph-stat ph-margin">
+                  <span class="ph-lbl"><i class="fa-solid fa-chart-line"></i> صافي الربح</span>
+                  <strong class="ph-val emerald">+{{ (selectedTask.client_price - selectedTask.employee_price) | number:'1.2-2' }} <small>EGP</small></strong>
+                </div>
+              </div>
+
+              <!-- Employee-Only Pricing Card (للموظف فقط) -->
+              <div class="drawer-card" *ngIf="isEmployee() && selectedTask.employee_price > 0">
+                <div class="dc-head"><i class="fa-solid fa-laptop-code" style="color:var(--amber)"></i> المستحق المالي للمهمة</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--amber); margin-top:4px;">
+                  {{ selectedTask.employee_price | number:'1.2-2' }} <small style="font-size:0.75rem;">EGP</small>
+                </div>
+              </div>
+
+              <!-- Client-Only Pricing Card (للعميل فقط) -->
+              <div class="drawer-card" *ngIf="isClient() && selectedTask.client_price > 0">
+                <div class="dc-head"><i class="fa-solid fa-user-tie" style="color:var(--teal)"></i> سعر المهمة</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--teal); margin-top:4px;">
+                  {{ selectedTask.client_price | number:'1.2-2' }} <small style="font-size:0.75rem;">EGP</small>
+                </div>
+              </div>
+
+              <!-- Scope / Description Card -->
+              <div class="drawer-card" *ngIf="selectedTask.scope">
+                <div class="dc-head"><i class="fa-solid fa-file-lines"></i> وصف ومواصفات المهمة</div>
+                <div class="dc-body scope-text">{{ selectedTask.scope }}</div>
+              </div>
+
+              <!-- Team Assignment Section -->
+              <div class="drawer-card">
+                <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الفريق المكلف بالمهمة</div>
+                <div class="team-assign-container" style="display:flex; flex-direction:column; gap:12px; margin-top:6px;">
+
+                  <!-- PrimeNG Grouped & Searchable Dropdown (Placed ON TOP) -->
+                  <div class="assign-user-picker">
+                    <p-dropdown
+                      [options]="groupedUsers"
+                      [group]="true"
+                      [filter]="true"
+                      filterBy="label"
+                      placeholder="+ اختر موظف لإسناد المهمة (بحث بالاسم أو القسم)..."
+                      styleClass="w-full prime-grouped-dropdown"
+                      (onChange)="onPrimeUserSelect($event)"
+                    >
+                      <ng-template let-group pTemplate="group">
+                        <div class="p-group-header">
+                          <i class="fa-solid fa-layer-group"></i>
+                          <span>{{ group.label }}</span>
+                        </div>
+                      </ng-template>
+                      <ng-template let-item pTemplate="item">
+                        <div class="p-item-row">
+                          <span class="p-item-name">{{ item.label }}</span>
+                          <small class="p-item-email" *ngIf="item.email">{{ item.email }}</small>
+                        </div>
+                      </ng-template>
+                    </p-dropdown>
+                  </div>
+
+                  <!-- Assigned Team Members Chips (Placed ON BOTTOM) -->
+                  <div class="team-chips-grid">
+                    <div class="team-chip-card" *ngFor="let u of (selectedTask.users || [])">
+                      <div class="tc-av">{{ u.name?.charAt(0) }}</div>
+                      <div class="tc-info">
+                        <span class="tc-name">{{ u.name }}</span>
+                        <small class="tc-role">{{ u.email || 'عضو الفريق' }}</small>
+                      </div>
+                      <button class="tc-remove-btn" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
                     </div>
-                    <button class="tc-remove-btn" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
-                      <i class="fa-solid fa-xmark"></i>
+                    <div class="notes-empty" *ngIf="!(selectedTask.users || []).length" style="padding:4px 0;">
+                      لا يوجد أعضاء مكلفين حالياً
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Attachments -->
+              <div class="drawer-card">
+                <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والملفات</div>
+                <div class="att-grid" *ngIf="(selectedTask.attachments || []).length > 0">
+                  <div *ngFor="let att of selectedTask.attachments" class="att-item">
+                    <div class="att-img-wrap" *ngIf="isImage(att)">
+                      <img
+                        [src]="getFileUrl(att)"
+                        class="att-img"
+                        (click)="expandImage(getFileUrl(att), $event)"
+                        (error)="handleImageError($event)"
+                        alt="مرفق"
+                      />
+                      <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                    <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
+                      <i class="fa-solid fa-file-pdf"></i>
+                      <span>{{ att.file_name || att.name || 'مستند' }}</span>
+                      <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="upload-zone-modern" (click)="fileInput.click()">
+                  <input type="file" #fileInput (change)="onFileSelected($event)" style="display:none" />
+                  <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                  <div class="uz-text">
+                    <strong>اضغط لرفع ملف أو سحب وإسقاط المستند هنا</strong>
+                    <small>يدعم الصور والملفات المرفقة (PNG, JPG, PDF)</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Comments & Discussion -->
+              <div class="drawer-card">
+                <div class="dc-head"><i class="fa-solid fa-comments"></i> التعليقات والملاحظات</div>
+                <div class="notes-timeline">
+                  <div class="note-bubble" *ngFor="let note of (selectedTask.notes || [])">
+                    <div class="note-av">{{ note.user?.name?.charAt(0) || 'U' }}</div>
+                    <div class="note-content">
+                      <div class="note-meta">
+                        <strong class="note-author">{{ note.user?.name || 'مستخدم' }}</strong>
+                        <span class="note-time">{{ note.created_at | date:'short' }}</span>
+                      </div>
+                      <div class="note-text">{{ note.note }}</div>
+                    </div>
+                  </div>
+                  <div class="notes-empty" *ngIf="!(selectedTask.notes || []).length">
+                    <i class="fa-regular fa-comments"></i> لا توجد تعليقات بعد... كن أول من يضيف تعليقاً!
+                  </div>
+                </div>
+                <div class="add-note-box">
+                  <textarea
+                    [(ngModel)]="newNoteText"
+                    placeholder="اكتب تعليقاً أو ملاحظة..."
+                    rows="2"
+                    dir="rtl"
+                  ></textarea>
+                  <button class="btn-send-note-modern" (click)="submitNote()" [disabled]="!newNoteText.trim()">
+                    <i class="fa-solid fa-paper-plane"></i> إرسال التعليق
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- TAB 2: SUBTASKS MANAGEMENT IN DRAWER -->
+            <div class="drawer-tab-content" *ngIf="activeDrawerTab === 'subtasks'">
+              <div class="subtasks-drawer-view" dir="rtl" style="display:flex; flex-direction:column; gap:16px;">
+
+                <!-- Progress & Stats Header -->
+                <div class="subtask-progress-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius:16px; border:1px solid rgba(99,102,241,0.2);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong style="font-size:0.92rem; color:var(--text);"><i class="fa-solid fa-list-check" style="color:var(--violet-light)"></i> إنجاز المهام الفرعية</strong>
+                    <span class="subtask-progress-pill" *ngIf="(selectedTask.subtasks || []).length">
+                      {{ getCompletedSubtasksCount(selectedTask) }} من {{ selectedTask.subtasks.length }} مكتملة ({{ getSubtasksProgressPercent(selectedTask) }}%)
+                    </span>
+                  </div>
+                  <div class="subtask-progress-bar" style="height:8px; margin:0;" *ngIf="(selectedTask.subtasks || []).length">
+                    <div class="subtask-progress-fill" [style.width.%]="getSubtasksProgressPercent(selectedTask)"></div>
+                  </div>
+                </div>
+
+                <!-- Subtasks List (Clickable items to view details right inside drawer) -->
+                <div class="drawer-card">
+                  <div class="dc-head flex align-items-center justify-content-between">
+                    <span>قائمة المهام الفرعية</span>
+                    <button class="btn-open-st-modal" (click)="showNewSubtaskForm = !showNewSubtaskForm" title="إضافة مهمة فرعية جديدة">
+                      <i class="fa-solid fa-plus"></i> مهمة فرعية جديدة
                     </button>
                   </div>
-                  <div class="notes-empty" *ngIf="!(selectedTask.users || []).length" style="padding:4px 0;">
-                    لا يوجد أعضاء مكلفين حالياً
+
+                  <div class="subtask-list" *ngIf="(selectedTask.subtasks || []).length">
+                    <div
+                      class="subtask-item-clean"
+                      *ngFor="let st of selectedTask.subtasks"
+                      [class.active-st]="selectedSubtask?.id === st.id"
+                      [class.completed]="st.status === 'done'"
+                    >
+                      <label class="st-checkbox-label">
+                        <input
+                          type="checkbox"
+                          [checked]="st.status === 'done'"
+                          (change)="toggleSubtaskStatus(selectedTask, st)"
+                        />
+                        <span class="st-checkmark"><i class="fa-solid fa-check"></i></span>
+                      </label>
+                      <span class="st-title-clean" (click)="selectSubtaskInDrawer(st)">
+                        {{ st.title }}
+                      </span>
+                      <span class="priority-badge pb-mini" [class]="'pb-' + (st.priority || 'medium')">
+                        {{ st.priority | uppercase }}
+                      </span>
+                      <button class="st-open-btn" (click)="selectSubtaskInDrawer(st)" title="عرض التفاصيل في نفس اللوحة">
+                        <i class="fa-solid fa-chevron-left"></i>
+                      </button>
+                      <button class="st-del-btn" (click)="deleteSubtask(selectedTask, st)" title="حذف المهمة الفرعية">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <!-- Add Team Member Dropdown -->
-                <div class="assign-user-picker">
-                  <select class="user-select-input" #userSelect (change)="assignUserFromSelect(userSelect)">
-                    <option value="" disabled selected>+ إضافة عضو جديد من أي فريق...</option>
-                    <option *ngFor="let u of allUsers" [value]="u.id">{{ u.name }} ({{ u.email || 'فريق العمل' }})</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Attachments -->
-            <div class="drawer-card">
-              <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والملفات</div>
-              <div class="att-grid" *ngIf="(selectedTask.attachments || []).length > 0">
-                <div *ngFor="let att of selectedTask.attachments" class="att-item">
-                  <div class="att-img-wrap" *ngIf="isImage(att)">
-                    <img
-                      [src]="getFileUrl(att)"
-                      class="att-img"
-                      (click)="expandImage(getFileUrl(att), $event)"
-                      (error)="handleImageError($event)"
-                      alt="مرفق"
+                  <!-- Add Step / Action Input Box -->
+                  <div class="add-subtask-box">
+                    <input
+                      type="text"
+                      class="st-input"
+                      [(ngModel)]="newSubtaskTitle"
+                      (keyup.enter)="addSubtask()"
+                      placeholder="+ إضافة خطوة تنفيذ / بند جديد (Steps & Actions)..."
                     />
-                    <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
-                      <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                  </div>
-                  <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
-                    <i class="fa-solid fa-file-pdf"></i>
-                    <span>{{ att.file_name || att.name || 'مستند' }}</span>
-                    <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
-                      <i class="fa-solid fa-trash-can"></i>
+                    <button class="btn-add-st" (click)="addSubtask()" [disabled]="!newSubtaskTitle.trim()">
+                      <i class="fa-solid fa-plus"></i> إضافة خطوة
                     </button>
                   </div>
                 </div>
-              </div>
-              <div class="upload-zone-modern" (click)="fileInput.click()">
-                <input type="file" #fileInput (change)="onFileSelected($event)" style="display:none" />
-                <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                <div class="uz-text">
-                  <strong>اضغط لرفع ملف أو سحب وإسقاط المستند هنا</strong>
-                  <small>يدعم الصور والملفات المرفقة (PNG, JPG, PDF)</small>
+
+                <!-- Selected Subtask Full Details (Displayed right inside the same drawer) -->
+                <div class="drawer-card" *ngIf="selectedSubtask" style="border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.03);">
+                  <div class="dc-head flex align-items-center justify-content-between">
+                    <span><i class="fa-solid fa-circle-info" style="color:var(--violet-light)"></i> تفاصيل المهمة الفرعية: {{ selectedSubtask.title }}</span>
+                    <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
+                      <i class="fa-solid fa-bolt"></i> {{ (selectedSubtask.priority || 'medium') | uppercase }}
+                    </span>
+                  </div>
+
+                  <!-- Subtask Description -->
+                  <div class="scope-text" *ngIf="selectedSubtask.description || selectedSubtask.scope" style="font-size:0.86rem; line-height:1.5;">
+                    {{ selectedSubtask.description || selectedSubtask.scope }}
+                  </div>
+
+                  <!-- Subtask Team Members -->
+                  <div style="margin-top:8px;">
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-user"></i> الموظفون المكلفون:</div>
+                    <div class="st-users-chips" *ngIf="(selectedSubtask.users || []).length">
+                      <span class="st-user-tag" *ngFor="let u of selectedSubtask.users" style="padding:4px 8px; font-size:0.75rem;">
+                        <i class="fa-solid fa-user"></i> {{ u.name }}
+                      </span>
+                    </div>
+                    <div class="notes-empty" *ngIf="!(selectedSubtask.users || []).length" style="padding:2px 0;">
+                      لا يوجد موظفين مكلفين حالياً
+                    </div>
+                  </div>
+
+                  <!-- Subtask Attachments Grid -->
+                  <div style="margin-top:8px;">
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-paperclip"></i> المرفقات والصور:</div>
+                    <div class="att-grid" *ngIf="(selectedSubtask.attachments || []).length > 0">
+                      <div *ngFor="let att of selectedSubtask.attachments" class="att-item">
+                        <div class="att-img-wrap" *ngIf="isImage(att)">
+                          <img [src]="getFileUrl(att)" class="att-img" (click)="expandImage(getFileUrl(att), $event)" (error)="handleImageError($event)" alt="مرفق" />
+                          <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                        <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
+                          <i class="fa-solid fa-file-pdf"></i>
+                          <span>{{ att.file_name || att.name || 'مستند' }}</span>
+                          <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Upload attachment to subtask -->
+                    <div class="upload-zone-modern" (click)="drawerSubtaskFileInput.click()" style="margin-top:8px; padding:10px;">
+                      <input type="file" #drawerSubtaskFileInput (change)="onSubtaskDetailFileSelected($event)" style="display:none" />
+                      <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                      <div class="uz-text">
+                        <strong>اضغط لرفع صورة أو مستند لهذه المهمة الفرعية</strong>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                <!-- Add New Detailed Subtask Section (In Drawer) -->
+                <div class="drawer-card" *ngIf="showNewSubtaskForm">
+                  <div class="dc-head"><i class="fa-solid fa-plus-circle"></i> إضافة مهمة فرعية تفصيلية جديدة</div>
+                  <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="fg full">
+                      <label class="fg-lbl">عنوان المهمة الفرعية <span class="req">*</span></label>
+                      <input type="text" [(ngModel)]="subtaskForm.title" placeholder="أدخل العنوان..." class="w-full st-dialog-input">
+                    </div>
+                    <div class="fg full">
+                      <label class="fg-lbl">الوصف والتفاصيل</label>
+                      <textarea [(ngModel)]="subtaskForm.description" placeholder="اكتب المواصفات والتفاصيل..." rows="2" class="w-full st-dialog-textarea"></textarea>
+                    </div>
+                    <div class="form-grid">
+                      <div class="fg">
+                        <label class="fg-lbl">الأولوية</label>
+                        <select [(ngModel)]="subtaskForm.priority" class="w-full st-dialog-select">
+                          <option value="low">منخفض</option>
+                          <option value="medium">متوسط</option>
+                          <option value="high">مرتفع</option>
+                          <option value="urgent">عاجل</option>
+                        </select>
+                      </div>
+                      <div class="fg">
+                        <label class="fg-lbl">إسناد لموظف</label>
+                        <p-dropdown [options]="groupedUsers" [group]="true" [filter]="true" filterBy="label" placeholder="+ اختر موظف..." styleClass="w-full prime-grouped-dropdown" (onChange)="onSubtaskUserSelect($event)"></p-dropdown>
+                      </div>
+                    </div>
+                    <div class="modal-ft" style="padding:10px 0 0 0; display:flex; justify-content:flex-end; gap:8px;">
+                      <button class="btn-cancel" (click)="showNewSubtaskForm = false">إلغاء</button>
+                      <button class="btn-save" (click)="saveFullSubtask()" [disabled]="!subtaskForm.title.trim()"><i class="fa-solid fa-check"></i> حفظ المهمة الفرعية</button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            <!-- Comments & Discussion -->
-            <div class="drawer-card">
-              <div class="dc-head"><i class="fa-solid fa-comments"></i> التعليقات والملاحظات</div>
-              <div class="notes-timeline">
-                <div class="note-bubble" *ngFor="let note of (selectedTask.notes || [])">
-                  <div class="note-av">{{ note.user?.name?.charAt(0) || 'U' }}</div>
-                  <div class="note-content">
-                    <div class="note-meta">
-                      <strong class="note-author">{{ note.user?.name || 'مستخدم' }}</strong>
-                      <span class="note-time">{{ note.created_at | date:'short' }}</span>
-                    </div>
-                    <div class="note-text">{{ note.note }}</div>
-                  </div>
-                </div>
-                <div class="notes-empty" *ngIf="!(selectedTask.notes || []).length">
-                  <i class="fa-regular fa-comments"></i> لا توجد تعليقات بعد... كن أول من يضيف تعليقاً!
-                </div>
-              </div>
-              <div class="add-note-box">
-                <textarea
-                  [(ngModel)]="newNoteText"
-                  placeholder="اكتب تعليقاً أو ملاحظة..."
-                  rows="2"
-                  dir="rtl"
-                ></textarea>
-                <button class="btn-send-note-modern" (click)="submitNote()" [disabled]="!newNoteText.trim()">
-                  <i class="fa-solid fa-paper-plane"></i> إرسال التعليق
-                </button>
-              </div>
-            </div>
+            <!-- TAB 2: TASK ACTIVITY HISTORY -->
+            <div class="drawer-tab-content" *ngIf="activeDrawerTab === 'history'">
+              <div class="history-dialog-container" dir="rtl">
 
-            <!-- Activity History Timeline -->
-            <div class="drawer-card">
-              <div class="dc-head"><i class="fa-solid fa-clock-rotate-left"></i> سجل النشاط والتغييرات (Task History)</div>
-              <div class="activity-timeline">
-                <div class="act-bubble" *ngFor="let act of taskActivities">
-                  <div class="act-icon"><i class="fa-solid fa-circle-dot"></i></div>
-                  <div class="act-body">
-                    <div class="act-desc">{{ act.description }}</div>
-                    <div class="act-meta">
-                      <span class="act-user"><i class="fa-solid fa-user-gear"></i> {{ act.user_name || 'النظام' }}</span>
-                      <span class="act-time"><i class="fa-solid fa-clock"></i> {{ act.created_at | date:'medium' }}</span>
+                <div class="history-subhd">
+                  <span class="hist-count-pill"><i class="fa-solid fa-list-check"></i> {{ taskActivities.length }} أحداث مسجلة</span>
+                  <span class="hist-tip"><i class="fa-solid fa-circle-info"></i> سجل التاريخ الشامل للمهمة الحالية</span>
+                </div>
+
+                <div class="activity-timeline-enhanced" *ngIf="taskActivities.length > 0">
+                  <div class="act-enhanced-card" *ngFor="let act of taskActivities">
+                    <div class="act-icon-box" [style.background]="act.color || '#6366f1'">
+                      <i class="fa-solid" [class]="act.icon || 'fa-clock-rotate-left'"></i>
+                    </div>
+                    <div class="act-enhanced-content">
+                      <div class="act-enhanced-head">
+                        <span class="act-title-tag" [style.color]="act.color || '#818cf8'">{{ act.action_title || 'نشاط' }}</span>
+                        <span class="act-time-pill"><i class="fa-regular fa-clock"></i> {{ act.created_at | date:'yyyy-MM-dd | hh:mm a' }}</span>
+                      </div>
+                      <div class="act-enhanced-desc">{{ act.description }}</div>
+                      <div class="act-enhanced-footer">
+                        <span class="act-author-chip"><i class="fa-solid fa-user"></i> {{ act.user_name || 'النظام' }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="notes-empty" *ngIf="taskActivities.length === 0">
-                  <i class="fa-solid fa-history"></i> لا توجد سجلات تغييرات حتى الآن
+
+                <div class="notes-empty" *ngIf="taskActivities.length === 0" style="padding: 40px 0;">
+                  <i class="fa-solid fa-history" style="font-size: 2rem; color: var(--violet-light); margin-bottom: 10px;"></i>
+                  <p>لا توجد سجلات تغييرات حتى الآن للمهمة الحالية</p>
                 </div>
               </div>
             </div>
@@ -347,6 +634,241 @@ import { DropdownModule } from 'primeng/dropdown';
           </div>
         </div>
       </div>
+
+      <!-- History Audit Log Modal Dialog -->
+      <p-dialog
+        header="سجل النشاط والتاريخ المفصل للمهمة - {{ selectedTask?.title }}"
+        [(visible)]="showHistoryModal"
+        [modal]="true"
+        [appendTo]="'body'"
+        [dismissableMask]="true"
+        [style]="{ width: '680px', 'max-width': '95vw' }"
+        styleClass="crm-modal"
+      >
+        <div class="history-dialog-container" dir="rtl">
+
+          <div class="history-subhd">
+            <span class="hist-count-pill"><i class="fa-solid fa-list-check"></i> {{ taskActivities.length }} أحداث مسجلة</span>
+            <span class="hist-tip"><i class="fa-solid fa-circle-info"></i> يعرض جميع الأنشطة والتعليقات والمرفقات بترتيب زمني</span>
+          </div>
+
+          <div class="activity-timeline-enhanced" *ngIf="taskActivities.length > 0">
+            <div class="act-enhanced-card" *ngFor="let act of taskActivities">
+              <div class="act-icon-box" [style.background]="act.color || '#6366f1'">
+                <i class="fa-solid" [class]="act.icon || 'fa-clock-rotate-left'"></i>
+              </div>
+              <div class="act-enhanced-content">
+                <div class="act-enhanced-head">
+                  <span class="act-title-tag" [style.color]="act.color || '#818cf8'">{{ act.action_title || 'نشاط' }}</span>
+                  <span class="act-time-pill"><i class="fa-regular fa-clock"></i> {{ act.created_at | date:'yyyy-MM-dd | hh:mm a' }}</span>
+                </div>
+                <div class="act-enhanced-desc">{{ act.description }}</div>
+                <div class="act-enhanced-footer">
+                  <span class="act-author-chip"><i class="fa-solid fa-user"></i> {{ act.user_name || 'النظام' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notes-empty" *ngIf="taskActivities.length === 0" style="padding: 40px 0;">
+            <i class="fa-solid fa-history" style="font-size: 2rem; color: var(--violet-light); margin-bottom: 10px;"></i>
+            <p>لا توجد سجلات تغييرات حتى الآن للمهمة الحالية</p>
+          </div>
+        </div>
+      </p-dialog>
+
+      <!-- Subtask View & Edit Detail Modal Dialog -->
+      <p-dialog
+        [header]="'تفاصيل المهمة الفرعية - ' + (selectedSubtask?.title || '')"
+        [(visible)]="showSubtaskDetailModal"
+        [modal]="true"
+        [appendTo]="'body'"
+        [dismissableMask]="true"
+        [style]="{ width: '600px', maxWidth: '95vw' }"
+        styleClass="custom-dark-dialog"
+      >
+        <div class="subtask-detail-modal-body" *ngIf="selectedSubtask" dir="rtl" style="display:flex; flex-direction:column; gap:16px; padding-top:8px;">
+
+          <!-- Title & Priority Header Card -->
+          <div class="st-hd-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius:14px; border:1px solid rgba(99,102,241,0.2); display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h4 style="margin:0 0 6px 0; font-size:1.05rem; font-weight:800; color:var(--text);">{{ selectedSubtask.title }}</h4>
+              <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
+                <i class="fa-solid fa-bolt"></i> {{ (selectedSubtask.priority || 'medium') | uppercase }}
+              </span>
+            </div>
+            <button
+              class="ps-step"
+              [class.active]="selectedSubtask.status === 'done'"
+              (click)="toggleSubtaskStatus(selectedTask, selectedSubtask)"
+              style="padding:8px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px;"
+            >
+              <i class="fa-solid" [class.fa-check-double]="selectedSubtask.status === 'done'" [class.fa-circle]="selectedSubtask.status !== 'done'"></i>
+              {{ selectedSubtask.status === 'done' ? 'مكتملة' : 'قيد التنفيذ' }}
+            </button>
+          </div>
+
+          <!-- Description Section -->
+          <div class="drawer-card" *ngIf="selectedSubtask.description || selectedSubtask.scope">
+            <div class="dc-head"><i class="fa-solid fa-file-lines"></i> الوصف والمواصفات التفصيلية</div>
+            <div class="dc-body scope-text" style="font-size:0.88rem; line-height:1.6; white-space:pre-wrap;">{{ selectedSubtask.description || selectedSubtask.scope }}</div>
+          </div>
+
+          <!-- Assigned Team Section -->
+          <div class="drawer-card">
+            <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الموظفون المكلفون بالمهمة الفرعية</div>
+            <div class="team-chips-grid" style="display:flex; flex-wrap:wrap; gap:8px;">
+              <div class="team-chip-card" *ngFor="let u of (selectedSubtask.users || [])">
+                <div class="tc-av">{{ u.name?.charAt(0) }}</div>
+                <div class="tc-info">
+                  <span class="tc-name">{{ u.name }}</span>
+                  <small class="tc-role">{{ u.email || 'عضو الفريق' }}</small>
+                </div>
+              </div>
+              <div class="notes-empty" *ngIf="!(selectedSubtask.users || []).length" style="padding:4px 0;">
+                لا يوجد موظف مكلف حالياً بهذه المهمة الفرعية
+              </div>
+            </div>
+          </div>
+
+          <!-- Subtask Attachments Grid & Upload -->
+          <div class="drawer-card">
+            <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والصور للمهمة الفرعية</div>
+            <div class="att-grid" *ngIf="(selectedSubtask.attachments || []).length > 0">
+              <div *ngFor="let att of selectedSubtask.attachments" class="att-item">
+                <div class="att-img-wrap" *ngIf="isImage(att)">
+                  <img
+                    [src]="getFileUrl(att)"
+                    class="att-img"
+                    (click)="expandImage(getFileUrl(att), $event)"
+                    (error)="handleImageError($event)"
+                    alt="مرفق"
+                  />
+                  <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+                <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>{{ att.file_name || att.name || 'مستند' }}</span>
+                  <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subtask File Upload Zone -->
+            <div class="upload-zone-modern" (click)="subtaskDetailFileInput.click()">
+              <input type="file" #subtaskDetailFileInput (change)="onSubtaskDetailFileSelected($event)" style="display:none" />
+              <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+              <div class="uz-text">
+                <strong>اضغط لرفع صورة أو مستند للمهمة الفرعية الحالية</strong>
+                <small>يدعم جميع أنواع الصور والملفات</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </p-dialog>
+
+      <!-- Subtask Creation Modal Dialog -->
+      <p-dialog
+        header="إضافة مهمة فرعية جديدة (Sub-Task)"
+        [(visible)]="showSubtaskModal"
+        [modal]="true"
+        [appendTo]="'body'"
+        [dismissableMask]="true"
+        [style]="{ width: '560px', maxWidth: '95vw' }"
+        styleClass="custom-dark-dialog"
+      >
+        <div class="subtask-dialog-content" dir="rtl" style="display:flex; flex-direction:column; gap:14px; padding-top:8px;">
+          <!-- Title -->
+          <div class="fg full">
+            <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-heading" style="color:var(--violet-light)"></i> اسم المهمة الفرعية <span class="req" style="color:#f43f5e">*</span></label>
+            <input type="text" [(ngModel)]="subtaskForm.title" placeholder="أدخل اسم وعنوان المهمة الفرعية..." class="w-full st-dialog-input">
+          </div>
+
+          <!-- Description -->
+          <div class="fg full">
+            <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-file-lines" style="color:var(--violet-light)"></i> الوصف والتفاصيل</label>
+            <textarea [(ngModel)]="subtaskForm.description" placeholder="أدخل تفاصيل ومواصفات هذه المهمة الفرعية..." rows="3" class="w-full st-dialog-textarea"></textarea>
+          </div>
+
+          <!-- Priority & Assign Grid -->
+          <div class="form-grid">
+            <!-- Priority Selector -->
+            <div class="fg">
+              <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-bolt" style="color:var(--amber)"></i> الأولوية</label>
+              <select [(ngModel)]="subtaskForm.priority" class="w-full st-dialog-select">
+                <option value="low">منخفض (Low)</option>
+                <option value="medium">متوسط (Medium)</option>
+                <option value="high">مرتفع (High)</option>
+                <option value="urgent">عاجل (Urgent)</option>
+              </select>
+            </div>
+
+            <!-- Employee Assign Dropdown -->
+            <div class="fg">
+              <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-user-plus" style="color:var(--teal)"></i> إسناد لموظف</label>
+              <p-dropdown
+                [options]="groupedUsers"
+                [group]="true"
+                [filter]="true"
+                filterBy="label"
+                placeholder="+ اختر موظف..."
+                styleClass="w-full prime-grouped-dropdown"
+                (onChange)="onSubtaskUserSelect($event)"
+              >
+                <ng-template let-group pTemplate="group">
+                  <div class="p-group-header">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>{{ group.label }}</span>
+                  </div>
+                </ng-template>
+                <ng-template let-item pTemplate="item">
+                  <div class="p-item-row">
+                    <span class="p-item-name">{{ item.label }}</span>
+                    <small class="p-item-email" *ngIf="item.email">{{ item.email }}</small>
+                  </div>
+                </ng-template>
+              </p-dropdown>
+            </div>
+          </div>
+
+          <!-- Selected Assignees Chips -->
+          <div class="subtask-assigned-chips" *ngIf="subtaskForm.user_ids.length" style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="tc-chip" *ngFor="let uid of subtaskForm.user_ids" style="background:rgba(99,102,241,0.15); color:#818cf8; padding:4px 10px; border-radius:8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:6px;">
+              <i class="fa-solid fa-user"></i> {{ getUserName(uid) }}
+              <i class="fa-solid fa-xmark remove-chip" (click)="removeSubtaskUser(uid)" style="cursor:pointer; color:#f43f5e"></i>
+            </span>
+          </div>
+
+          <!-- File / Image Attachment Upload -->
+          <div class="fg full">
+            <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-image" style="color:var(--cyan)"></i> صورة أو مرفق المهمة الفرعية</label>
+            <div class="upload-zone-modern" (click)="stFileInput.click()">
+              <input type="file" #stFileInput (change)="onSubtaskFileSelected($event)" style="display:none" />
+              <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+              <div class="uz-text">
+                <strong *ngIf="!subtaskForm.file">اضغط لرفع صورة أو مرفق للمهمة الفرعية</strong>
+                <strong *ngIf="subtaskForm.file" class="teal" style="color:#2dd4bf">{{ subtaskForm.file.name }}</strong>
+                <small>يدعم جميع أنواع الصور والملفات</small>
+              </div>
+            </div>
+            <div class="st-img-preview" *ngIf="subtaskFilePreview" style="margin-top:10px; text-align:center;">
+              <img [src]="subtaskFilePreview" style="max-height:120px; border-radius:10px; border:1px solid rgba(99,102,241,0.3);" alt="Preview">
+            </div>
+          </div>
+
+          <div class="modal-ft" style="padding:16px 0 0 0; margin-top:10px; display:flex; justify-content:flex-end; gap:10px;">
+            <button class="btn-cancel" (click)="showSubtaskModal = false">إلغاء</button>
+            <button class="btn-save" (click)="saveFullSubtask()" [disabled]="!subtaskForm.title.trim()">
+              <i class="fa-solid fa-check"></i> حفظ المهمة الفرعية
+            </button>
+          </div>
+        </div>
+      </p-dialog>
 
       <!-- ── CREATE TASK MODAL (PrimeNG Dialog) ─────────────────── -->
       <p-dialog [(visible)]="showCreateModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="مهمة جديدة" [style]="{ width: '640px' }">
@@ -613,6 +1135,16 @@ import { DropdownModule } from 'primeng/dropdown';
       font-size: 0.65rem; padding: 2px 7px; border-radius: 100px;
       font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
     }
+    .tag-subtask {
+      background: rgba(168, 85, 247, 0.18);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+    body.light-theme .tag-subtask {
+      background: rgba(147, 51, 234, 0.1) !important;
+      color: #7e22ce !important;
+      border-color: rgba(147, 51, 234, 0.25) !important;
+    }
     .tag-deal { background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(99,102,241,0.2); }
     .tag-cat  { background: var(--teal-soft);   color: var(--teal-light);   border: 1px solid rgba(6,182,212,0.2); }
 
@@ -706,22 +1238,177 @@ import { DropdownModule } from 'primeng/dropdown';
       display: flex; align-items: center; justify-content: center;
       font-size: 0.68rem; font-weight: 700; color: var(--violet-light);
     }
+    .tk-subtasks-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.68rem; font-weight: 800;
+      color: var(--violet-light, #818cf8);
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 2px 7px; border-radius: 6px;
+    }
+    body.light-theme .tk-subtasks-tag {
+      background: rgba(99, 102, 241, 0.1) !important;
+      color: #4f46e5 !important;
+      border-color: rgba(99, 102, 241, 0.3) !important;
+    }
 
     .drawer-backdrop {
       position: fixed; inset: 0; z-index: 1200;
-      background: rgba(4, 5, 15, 0.75);
-      backdrop-filter: blur(10px);
+      background: rgba(9, 9, 24, 0.2);
+      backdrop-filter: blur(2px);
       display: flex; justify-content: flex-start;
       direction: rtl;
     }
     .detail-drawer {
-      width: 520px; max-width: 95vw;
+      width: 680px; max-width: 95vw;
       height: 100vh;
       background: linear-gradient(165deg, rgba(15, 16, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
       border-left: 1px solid rgba(99, 102, 241, 0.25);
       display: flex; flex-direction: column;
       animation: drawerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 25px 0 70px rgba(0, 0, 0, 0.7);
+      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.35);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body.light-theme .detail-drawer {
+      background: #ffffff !important;
+      border-left: 1px solid rgba(99, 102, 241, 0.2) !important;
+      box-shadow: -15px 0 50px rgba(15, 23, 42, 0.15) !important;
+    }
+    .detail-drawer.is-wide {
+      width: 90vw !important;
+      max-width: 90vw !important;
+    }
+
+    /* Drawer Header Actions */
+    .drawer-hd-actions {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .icon-action-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: var(--violet-light); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; position: relative;
+      transition: all 0.2s;
+    }
+    .icon-action-btn:hover {
+      background: var(--violet); color: #ffffff;
+      transform: translateY(-2px);
+    }
+    .icon-action-btn.active-btn {
+      background: var(--violet, #6366f1) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 12px var(--violet-glow);
+    }
+    .btn-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: #f43f5e; color: #ffffff;
+      font-size: 0.62rem; font-weight: 800;
+      padding: 2px 5px; border-radius: 10px;
+      line-height: 1; min-width: 16px; text-align: center;
+    }
+    .btn-parent-crumb {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      color: var(--violet-light, #818cf8);
+      font-size: 0.74rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-parent-crumb:hover {
+      background: var(--violet, #6366f1);
+      color: #ffffff;
+    }
+    body.light-theme .btn-parent-crumb {
+      background: rgba(99, 102, 241, 0.1) !important;
+      color: #4f46e5 !important;
+      border-color: rgba(99, 102, 241, 0.3) !important;
+    }
+    .parent-task-link-card:hover {
+      border-color: var(--violet, #6366f1) !important;
+      background: rgba(99, 102, 241, 0.14) !important;
+      transform: translateY(-2px);
+    }
+    body.light-theme .parent-task-link-card {
+      background: rgba(99, 102, 241, 0.05) !important;
+      border-color: rgba(99, 102, 241, 0.25) !important;
+    }
+    body.light-theme .parent-task-link-card:hover {
+      background: rgba(99, 102, 241, 0.12) !important;
+      border-color: #6366f1 !important;
+    }
+
+    /* Drawer Navigation Tabs */
+    .drawer-nav-tabs {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 24px;
+      background: rgba(0, 0, 0, 0.15);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    body.light-theme .drawer-nav-tabs {
+      background: #f8fafc !important;
+      border-bottom-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    .dnav-tab {
+      padding: 8px 16px; border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-2, #94a3b8);
+      font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s; font-family: inherit;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .dnav-tab:hover {
+      color: var(--text, #ffffff);
+      background: rgba(99, 102, 241, 0.08);
+    }
+    .dnav-tab.active {
+      background: var(--violet, #6366f1) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px var(--violet-glow, rgba(99, 102, 241, 0.4));
+    }
+    body.light-theme .dnav-tab.active {
+      background: #6366f1 !important;
+      color: #ffffff !important;
+    }
+    .dnav-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff; font-size: 0.65rem; font-weight: 800;
+      padding: 2px 6px; border-radius: 10px; line-height: 1;
+    }
+
+    /* PrimeNG Grouped Dropdown Custom Overrides */
+    ::ng-deep .prime-grouped-dropdown {
+      width: 100% !important;
+    }
+    ::ng-deep .prime-grouped-dropdown .p-dropdown {
+      width: 100% !important;
+      background: rgba(99, 102, 241, 0.04) !important;
+      border: 1px solid var(--border, rgba(99, 102, 241, 0.2)) !important;
+      border-radius: 12px !important;
+    }
+    body.light-theme ::ng-deep .prime-grouped-dropdown .p-dropdown {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: #0f172a !important;
+    }
+    ::ng-deep .p-group-header {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 800; font-size: 0.8rem;
+      color: var(--violet-light, #6366f1); padding: 8px 12px;
+      background: rgba(99, 102, 241, 0.08); border-radius: 6px;
+    }
+    ::ng-deep .p-item-row {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; font-size: 0.84rem; padding: 4px 0;
+    }
+    ::ng-deep .p-item-email {
+      color: var(--text-2, #64748b); font-size: 0.72rem;
     }
     @keyframes drawerFadeIn {
       from { opacity: 0; }
@@ -806,6 +1493,7 @@ import { DropdownModule } from 'primeng/dropdown';
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
       border: 1px solid rgba(99, 102, 241, 0.2);
       border-radius: 16px; padding: 16px 18px; gap: 10px;
+      margin-bottom: 16px;
     }
     .ph-stat { display: flex; flex-direction: column; gap: 4px; }
     .ph-lbl { font-size: 0.68rem; font-weight: 700; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
@@ -818,12 +1506,170 @@ import { DropdownModule } from 'primeng/dropdown';
       border: 1px solid rgba(16, 185, 129, 0.25);
     }
 
+    .subtask-item-clean {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+      transition: all 0.2s; margin-bottom: 8px;
+    }
+    body.light-theme .subtask-item-clean {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    .subtask-item-clean.completed {
+      opacity: 0.65; background: rgba(16, 185, 129, 0.04);
+    }
+    .subtask-item-clean.completed .st-title-clean {
+      text-decoration: line-through; color: var(--text-2);
+    }
+    .st-title-clean {
+      flex: 1; font-size: 0.86rem; font-weight: 700; color: var(--text);
+      cursor: pointer; transition: color 0.2s;
+    }
+    .st-title-clean:hover {
+      color: var(--violet-light, #818cf8);
+    }
+    body.light-theme .st-title-clean { color: #0f172a !important; }
+    .st-open-btn {
+      background: none; border: none; color: var(--text-2);
+      cursor: pointer; font-size: 0.8rem; padding: 4px 6px; border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .st-open-btn:hover {
+      color: var(--violet-light); background: rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-open-st-modal {
+      padding: 4px 12px; border-radius: 8px;
+      background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--violet-light, #818cf8); font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .btn-open-st-modal:hover {
+      background: var(--violet); color: #ffffff;
+    }
+    .subtask-item-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+      border-radius: 12px; padding: 10px 14px;
+      transition: all 0.2s; margin-bottom: 8px;
+    }
+    .st-item-main { display: flex; align-items: flex-start; gap: 10px; }
+    .st-info-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .st-title-row { display: flex; align-items: center; gap: 8px; }
+    .pb-mini { font-size: 0.6rem !important; padding: 1px 6px !important; }
+    .st-desc { font-size: 0.78rem; color: var(--text-2); margin: 0; line-height: 1.4; }
+    .st-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .st-users-chips, .st-atts-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .st-user-tag, .st-att-tag {
+      font-size: 0.68rem; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .st-user-tag { background: rgba(99, 102, 241, 0.12); color: #a5b4fc; }
+    .st-att-tag { background: rgba(6, 182, 212, 0.12); color: #67e8f9; cursor: pointer; }
+    .st-att-tag:hover { text-decoration: underline; }
+    .st-dialog-input, .st-dialog-textarea, .st-dialog-select {
+      background: rgba(99, 102, 241, 0.05) !important;
+      border: 1px solid var(--border, rgba(99, 102, 241, 0.2)) !important;
+      border-radius: 10px !important; padding: 10px 14px !important;
+      color: var(--text) !important; font-size: 0.85rem !important; font-family: inherit;
+    }
+    body.light-theme .st-dialog-input,
+    body.light-theme .st-dialog-textarea,
+    body.light-theme .st-dialog-select {
+      background: #ffffff !important; border-color: rgba(99, 102, 241, 0.2) !important; color: #0f172a !important;
+    }
+    .subtask-progress-pill {
+      font-size: 0.72rem; font-weight: 800;
+      color: var(--violet-light); background: rgba(99, 102, 241, 0.1);
+      padding: 3px 10px; border-radius: 100px; border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    .subtask-progress-bar {
+      width: 100%; height: 6px; border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08); overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .subtask-progress-fill {
+      height: 100%; border-radius: 10px;
+      background: linear-gradient(90deg, var(--violet), var(--teal));
+      transition: width 0.3s ease;
+    }
+    .subtask-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .subtask-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+      transition: all 0.2s;
+    }
+    body.light-theme .subtask-item {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    .subtask-item.completed {
+      opacity: 0.7; background: rgba(16, 185, 129, 0.04);
+    }
+    .subtask-item.completed .st-title {
+      text-decoration: line-through; color: var(--text-2);
+    }
+    .st-checkbox-label { position: relative; cursor: pointer; display: flex; align-items: center; }
+    .st-checkbox-label input { display: none; }
+    .st-checkmark {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 2px solid var(--violet-light);
+      display: flex; align-items: center; justify-content: center;
+      color: transparent; font-size: 0.75rem; transition: all 0.2s;
+    }
+    .st-checkbox-label input:checked + .st-checkmark {
+      background: #10b981; border-color: #10b981; color: #ffffff;
+    }
+    .st-title { flex: 1; font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    body.light-theme .st-title { color: #0f172a !important; }
+    .st-del-btn {
+      background: none; border: none; color: var(--text-2);
+      cursor: pointer; font-size: 0.8rem; padding: 4px; transition: color 0.2s;
+    }
+    .st-del-btn:hover { color: #f43f5e; }
+    .add-subtask-box { display: flex; gap: 8px; }
+    .st-input {
+      flex: 1; padding: 10px 14px; border-radius: 12px;
+      background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border);
+      color: var(--text); font-size: 0.82rem; outline: none; font-family: inherit;
+    }
+    body.light-theme .st-input {
+      background: #ffffff !important; border-color: rgba(99, 102, 241, 0.2) !important; color: #0f172a !important;
+    }
+    .btn-add-st {
+      padding: 10px 16px; border-radius: 12px; border: none;
+      background: var(--violet); color: #ffffff; font-size: 0.82rem;
+      font-weight: 700; cursor: pointer; display: inline-flex; align-items: center;
+      gap: 6px; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-add-st:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .btn-add-st:disabled { opacity: 0.4; cursor: not-allowed; }
+
     /* Drawer Card Section */
+    .drawer-tab-content {
+      padding-top: 6px;
+      padding-bottom: 24px;
+    }
     .drawer-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 18px;
+      border-radius: 16px; padding: 18px 20px;
       display: flex; flex-direction: column; gap: 12px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+    .drawer-card:last-child {
+      margin-bottom: 0;
+    }
+    body.light-theme .drawer-card {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
     }
     .dc-head {
       font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
@@ -929,24 +1775,48 @@ import { DropdownModule } from 'primeng/dropdown';
       color: var(--violet-light);
     }
 
-    /* Activity History Timeline */
-    .activity-timeline { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; }
-    .act-bubble {
-      display: flex; gap: 10px; align-items: flex-start;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border);
-      border-radius: 12px; padding: 10px 14px;
+    /* Enhanced History Timeline & Dialog */
+    .history-dialog-container { display: flex; flex-direction: column; gap: 16px; }
+    .history-subhd {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: rgba(99, 102, 241, 0.06);
+      border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.18);
     }
-    body.light-theme .act-bubble {
+    .hist-count-pill { font-size: 0.82rem; font-weight: 800; color: var(--violet-light); display: flex; align-items: center; gap: 6px; }
+    .hist-tip { font-size: 0.72rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
+    .activity-timeline-enhanced {
+      display: flex; flex-direction: column; gap: 12px;
+      max-height: 480px; overflow-y: auto; padding-left: 4px;
+    }
+    .act-enhanced-card {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+      border-radius: 14px; padding: 14px 16px;
+      transition: all 0.2s;
+    }
+    body.light-theme .act-enhanced-card {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
     }
-    .act-icon { color: var(--violet-light); font-size: 0.8rem; margin-top: 2px; }
-    .act-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .act-desc { font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.4; }
-    body.light-theme .act-desc { color: #0f172a !important; }
-    .act-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--text-2); }
-    .act-user { font-weight: 700; color: var(--violet-light); }
+    .act-icon-box {
+      width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #ffffff; font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .act-enhanced-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .act-enhanced-head { display: flex; justify-content: space-between; align-items: center; }
+    .act-title-tag { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    .act-time-pill { font-size: 0.7rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
+    .act-enhanced-desc { font-size: 0.88rem; font-weight: 600; color: var(--text); line-height: 1.5; }
+    body.light-theme .act-enhanced-desc { color: #0f172a !important; }
+    .act-enhanced-footer { display: flex; align-items: center; }
+    .act-author-chip {
+      font-size: 0.72rem; font-weight: 700; color: var(--violet-light);
+      background: rgba(99, 102, 241, 0.08); padding: 3px 10px; border-radius: 100px;
+    }
 
     /* Modern Upload Zone */
     .upload-zone-modern {
@@ -1215,6 +2085,9 @@ import { DropdownModule } from 'primeng/dropdown';
 export class TasksBoardComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private pendingTaskIdFromUrl: number | null = null;
 
   tasks: any[] = [];
   deals: any[] = [];
@@ -1237,13 +2110,35 @@ export class TasksBoardComponent implements OnInit {
   loading = false;
   taskForm!: FormGroup;
 
-  // Drag & Drop state
   draggingTask: any = null;
   dragOverCol: string | null = null;
 
+  currentUser: any = null;
+
   ngOnInit(): void {
+    try {
+      const uStr = localStorage.getItem('mediaglow_user');
+      if (uStr) this.currentUser = JSON.parse(uStr);
+    } catch(e){}
+
+    this.route.queryParams.subscribe(params => {
+      const tid = params['taskId'] ? Number(params['taskId']) : null;
+      if (tid) {
+        this.pendingTaskIdFromUrl = tid;
+        this.checkAndOpenTaskFromUrl();
+      }
+    });
+
     this.initForm();
     this.loadData();
+  }
+
+  isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
+  isClient(): boolean { return this.currentUser?.role === 'client'; }
+  isAdminOrManager(): boolean {
+    if (!this.currentUser) return true;
+    const role = this.currentUser.role || '';
+    return !['employee', 'client'].includes(role);
   }
 
   initForm(): void {
@@ -1259,18 +2154,211 @@ export class TasksBoardComponent implements OnInit {
     });
   }
 
+  showHistoryModal = false;
+  isWideDrawer = false;
+  activeDrawerTab: 'details' | 'subtasks' | 'history' = 'details';
+  newSubtaskTitle = '';
+  showNewSubtaskForm = false;
+  selectedSubtask: any = null;
+  showSubtaskDetailModal = false;
+
+  selectSubtaskInDrawer(st: any): void { this.openTaskDetail(st); }
+  openSubtaskDetail(subtask: any): void { this.openTaskDetail(subtask); }
+
+  findParentTask(parentId: number): any {
+    return (this.tasks || []).find(t => t.id === parentId) || { id: parentId, title: 'المهمة الرئيسية' };
+  }
+
+  getTaskTitle(parentId: number): string {
+    const p = (this.tasks || []).find(t => t.id === parentId);
+    return p ? p.title : 'المهمة الرئيسية';
+  }
+
+  deleteSubtaskAttachment(subtask: any, att: any, event: Event): void {
+    event.stopPropagation();
+    if (!confirm('هل أنت تأكد من حذف هذا المرفق للمهمة الفرعية؟')) return;
+    this.apiService.deleteTaskAttachment(subtask.id, att.id).subscribe(() => {
+      subtask.attachments = (subtask.attachments || []).filter((a: any) => a.id !== att.id);
+    });
+  }
+
+  onSubtaskDetailFileSelected(event: any): void {
+    const file = event.target.files && event.target.files[0];
+    if (file && this.selectedSubtask) {
+      this.apiService.addTaskAttachment(this.selectedSubtask.id, file).subscribe(res => {
+        if (res && res.data) {
+          if (!this.selectedSubtask.attachments) this.selectedSubtask.attachments = [];
+          this.selectedSubtask.attachments.push(res.data);
+        }
+      });
+    }
+  }
+
+  showSubtaskModal = false;
+  subtaskForm = { title: '', description: '', priority: 'medium', user_ids: [] as number[], file: null as File | null };
+  subtaskFilePreview: string | null = null;
+
+  openSubtaskModal(): void {
+    this.subtaskForm = { title: '', description: '', priority: 'medium', user_ids: [], file: null };
+    this.subtaskFilePreview = null;
+    this.showSubtaskModal = true;
+  }
+
+  onSubtaskUserSelect(event: any): void {
+    if (!event || !event.value) return;
+    const uid = Number(event.value);
+    if (uid && !this.subtaskForm.user_ids.includes(uid)) {
+      this.subtaskForm.user_ids.push(uid);
+    }
+  }
+
+  removeSubtaskUser(uid: number): void {
+    this.subtaskForm.user_ids = this.subtaskForm.user_ids.filter(id => id !== uid);
+  }
+
+  getUserName(uid: number): string {
+    const u = this.allUsers.find(x => x.id === uid);
+    return u ? u.name : 'موظف';
+  }
+
+  onSubtaskFileSelected(event: any): void {
+    const file = event.target.files && event.target.files[0];
+    if (file) {
+      this.subtaskForm.file = file;
+      if (file.type.includes('image')) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => this.subtaskFilePreview = e.target.result;
+        reader.readAsDataURL(file);
+      } else {
+        this.subtaskFilePreview = null;
+      }
+    }
+  }
+
+  saveFullSubtask(): void {
+    if (!this.subtaskForm.title.trim() || !this.selectedTask) return;
+    const formData = new FormData();
+    formData.append('title', this.subtaskForm.title.trim());
+    if (this.subtaskForm.description.trim()) {
+      formData.append('description', this.subtaskForm.description.trim());
+    }
+    formData.append('priority', this.subtaskForm.priority);
+    if (this.subtaskForm.user_ids.length) {
+      formData.append('user_ids', JSON.stringify(this.subtaskForm.user_ids));
+    }
+    if (this.subtaskForm.file) {
+      formData.append('file', this.subtaskForm.file);
+    }
+
+    this.apiService.createSubtask(this.selectedTask.id, formData).subscribe(res => {
+      if (res && res.data) {
+        const newSt = res.data;
+        newSt.parent = { id: this.selectedTask.id, title: this.selectedTask.title };
+        if (!this.selectedTask.subtasks) this.selectedTask.subtasks = [];
+        this.selectedTask.subtasks.push(newSt);
+        if (!this.tasks.some(t => t.id === newSt.id)) {
+          this.tasks.push(newSt);
+        }
+        this.showSubtaskModal = false;
+        this.showNewSubtaskForm = false;
+        this.loadTaskActivities(this.selectedTask.id);
+      }
+    });
+  }
+
   allUsers: any[] = [];
+  groupedUsers: any[] = [];
   taskActivities: any[] = [];
 
+  addSubtask(): void {
+    if (!this.newSubtaskTitle.trim() || !this.selectedTask) return;
+    const title = this.newSubtaskTitle.trim();
+    this.apiService.createSubtask(this.selectedTask.id, title).subscribe(res => {
+      if (res && res.data) {
+        const newSt = res.data;
+        newSt.parent = { id: this.selectedTask.id, title: this.selectedTask.title };
+        if (!this.selectedTask.subtasks) this.selectedTask.subtasks = [];
+        this.selectedTask.subtasks.push(newSt);
+        if (!this.tasks.some(t => t.id === newSt.id)) {
+          this.tasks.push(newSt);
+        }
+        this.newSubtaskTitle = '';
+        this.loadTaskActivities(this.selectedTask.id);
+      }
+    });
+  }
+
+  toggleSubtaskStatus(task: any, subtask: any): void {
+    subtask.status = subtask.status === 'done' ? 'new' : 'done';
+    this.apiService.toggleSubtask(subtask.id).subscribe(() => {
+      this.loadTaskActivities(task.id);
+    });
+  }
+
+  deleteSubtask(task: any, subtask: any): void {
+    this.apiService.deleteSubtask(subtask.id).subscribe(() => {
+      if (task.subtasks) {
+        task.subtasks = task.subtasks.filter((s: any) => s.id !== subtask.id);
+      }
+      this.tasks = (this.tasks || []).filter(t => t.id !== subtask.id);
+      this.loadTaskActivities(task.id);
+    });
+  }
+
+  getCompletedSubtasksCount(task: any): number {
+    if (!task || !task.subtasks) return 0;
+    return task.subtasks.filter((s: any) => s.status === 'done').length;
+  }
+
+  getSubtasksProgressPercent(task: any): number {
+    if (!task || !task.subtasks || !task.subtasks.length) return 0;
+    const doneCount = this.getCompletedSubtasksCount(task);
+    return Math.round((doneCount / task.subtasks.length) * 100);
+  }
+
   loadData(): void {
-    this.apiService.getTasks({ parents_only: 'true' }).subscribe(res => this.tasks = res || []);
+    this.apiService.getTasks().subscribe(res => {
+      this.tasks = res || [];
+      this.checkAndOpenTaskFromUrl();
+    });
     this.apiService.getDeals().subscribe(res => this.deals = res || []);
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
-    this.apiService.getUsers().subscribe(res => this.allUsers = (res && res.data ? res.data : res) || []);
+    this.apiService.getUsers().subscribe(res => {
+      this.allUsers = (res && res.data ? res.data : res) || [];
+      this.buildGroupedUsers();
+    });
+  }
+
+  buildGroupedUsers(): void {
+    if (!this.allUsers || !this.allUsers.length) {
+      this.groupedUsers = [];
+      return;
+    }
+
+    const deptMap: { [key: string]: any[] } = {};
+
+    this.allUsers.forEach(u => {
+      const deptName = u.department?.name || u.department_name || 'عام / بدون قسم';
+      if (!deptMap[deptName]) {
+        deptMap[deptName] = [];
+      }
+      deptMap[deptName].push({
+        label: u.name,
+        value: u.id,
+        email: u.email || '',
+        user: u
+      });
+    });
+
+    this.groupedUsers = Object.keys(deptMap).map(deptName => ({
+      label: deptName,
+      value: deptName,
+      items: deptMap[deptName]
+    }));
   }
 
   getTasksForColumn(colKey: string) {
-    return this.tasks.filter(t => t.status === colKey);
+    return (this.tasks || []).filter(t => t.status === colKey);
   }
 
   computeMargin(): void {
@@ -1294,10 +2382,47 @@ export class TasksBoardComponent implements OnInit {
     });
   }
 
+  checkAndOpenTaskFromUrl(): void {
+    if (!this.pendingTaskIdFromUrl || !this.tasks || !this.tasks.length) return;
+    const targetTask = this.tasks.find(t => t.id === Number(this.pendingTaskIdFromUrl));
+    if (targetTask) {
+      this.selectedTask = targetTask;
+      this.activeDrawerTab = 'details';
+      this.loadTaskActivities(targetTask.id);
+    }
+  }
+
   openTaskDetail(task: any): void {
-    if (this.draggingTask) return; // don't open during drag
+    if (this.draggingTask || !task) return;
     this.selectedTask = task;
+    this.activeDrawerTab = 'details';
+    this.selectedSubtask = null;
     this.loadTaskActivities(task.id);
+
+    if (task.id) {
+      this.pendingTaskIdFromUrl = task.id;
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { taskId: task.id },
+        queryParamsHandling: 'merge'
+      });
+    }
+  }
+
+  closeTaskDrawer(): void {
+    this.selectedTask = null;
+    this.pendingTaskIdFromUrl = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { taskId: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  closeDetail(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) {
+      this.closeTaskDrawer();
+    }
   }
 
   loadTaskActivities(taskId: number): void {
@@ -1306,6 +2431,30 @@ export class TasksBoardComponent implements OnInit {
         this.taskActivities = res.data;
       }
     });
+  }
+
+  onPrimeUserSelect(event: any): void {
+    if (!event || !event.value) return;
+    const userId = Number(event.value);
+    if (userId) {
+      this.assignUserById(userId);
+    }
+  }
+
+  assignUserById(userId: number): void {
+    if (!this.selectedTask) return;
+    if (!this.selectedTask.users) this.selectedTask.users = [];
+    const exists = this.selectedTask.users.some((u: any) => u.id === userId);
+    if (!exists) {
+      const userObj = this.allUsers.find((u: any) => u.id === userId);
+      const userIds = [...this.selectedTask.users.map((u: any) => u.id), userId];
+      this.apiService.assignTaskMembers(this.selectedTask.id, userIds).subscribe(() => {
+        if (userObj) {
+          this.selectedTask.users.push(userObj);
+        }
+        this.loadTaskActivities(this.selectedTask.id);
+      });
+    }
   }
 
   assignUserFromSelect(selectElem: HTMLSelectElement): void {
@@ -1348,12 +2497,7 @@ export class TasksBoardComponent implements OnInit {
     });
   }
 
-  closeDetail(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (target.classList.contains('drawer-backdrop')) {
-      this.selectedTask = null;
-    }
-  }
+
 
   persistStatusUpdate(task: any, newStatus: string, rollbackCallback?: () => void): void {
     const payload = {

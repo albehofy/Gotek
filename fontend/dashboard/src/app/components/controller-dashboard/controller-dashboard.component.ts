@@ -89,7 +89,17 @@ export class ControllerDashboardComponent implements OnInit {
     testimonials: 0,
     inquiries: 0
   };
+  crmStats = {
+    clients: 0,
+    deals: 0,
+    tasks: 0,
+    departments: 0,
+    totalRevenue: 0,
+    totalMargin: 0
+  };
   recentProjects: any[] = [];
+  recentTasks: any[] = [];
+  recentDeals: any[] = [];
   projectsChartData: any[] = [];
   inquiriesChartData: any[] = [];
 
@@ -328,6 +338,36 @@ export class ControllerDashboardComponent implements OnInit {
     this.apiService.getTestimonials().subscribe(res => {
       const testimonialsArr = Array.isArray(res) ? res : (res?.data || []);
       this.overviewStats.testimonials = testimonialsArr.length || 0;
+    });
+
+    // CRM Overview Data Fetching
+    this.apiService.getUsers().subscribe((res: any) => {
+      const arr = Array.isArray(res) ? res : (res?.data || []);
+      const clientUsers = arr.filter((u: any) => u.role === 'client');
+      this.crmStats.clients = clientUsers.length > 0 ? clientUsers.length : arr.length;
+    });
+
+    this.apiService.getDeals().subscribe(res => {
+      const arr = Array.isArray(res) ? res : (res?.data || []);
+      this.crmStats.deals = arr.length || 0;
+      this.recentDeals = arr.slice(0, 5);
+      let totalVal = 0;
+      arr.forEach((d: any) => totalVal += Number(d.value || d.amount || 0));
+      this.crmStats.totalRevenue = totalVal;
+    });
+
+    this.apiService.getTasks().subscribe(res => {
+      const arr = Array.isArray(res) ? res : (res?.data || []);
+      this.crmStats.tasks = arr.length || 0;
+      this.recentTasks = arr.slice(0, 5);
+      let marginSum = 0;
+      arr.forEach((t: any) => marginSum += Number(t.company_margin || 0));
+      this.crmStats.totalMargin = marginSum;
+    });
+
+    this.apiService.getDepartments().subscribe(res => {
+      const arr = Array.isArray(res) ? res : (res?.data || []);
+      this.crmStats.departments = arr.length || 0;
     });
   }
 

@@ -69,19 +69,43 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       align-items: center;
       justify-content: space-between;
       padding: 10px 16px;
-      background: var(--surface-2, rgba(255,255,255,0.06));
-      border: 1px solid var(--border-light, rgba(255,255,255,0.12));
-      border-radius: var(--radius-sm, 10px);
-      color: var(--text-primary, #fff);
-      font-size: 0.95rem;
+      background: rgba(99, 102, 241, 0.04);
+      border: 1px solid var(--border, rgba(99, 102, 241, 0.2));
+      border-radius: 12px;
+      color: var(--text, #ffffff);
+      font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.25s ease;
     }
     .picker-trigger:hover {
-      border-color: var(--orange, #e8620a);
+      border-color: var(--violet, #6366f1);
+      background: rgba(99, 102, 241, 0.08);
+    }
+    :host-context(body.light-theme) .picker-trigger {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: #0f172a !important;
+    }
+    :host-context(body.light-theme) .picker-trigger:hover {
+      border-color: #6366f1 !important;
+      background: rgba(99, 102, 241, 0.04) !important;
     }
     .placeholder-text {
-      color: var(--text-muted, #71717a);
+      color: var(--text-2, #94a3b8);
+    }
+    :host-context(body.light-theme) .placeholder-text {
+      color: #64748b !important;
+    }
+    .toggle-icon {
+      font-size: 0.8rem;
+      color: var(--violet-light, #818cf8);
+      transition: transform 0.2s;
+    }
+    :host-context(body.light-theme) .toggle-icon {
+      color: #6366f1 !important;
+    }
+    .open .toggle-icon {
+      transform: rotate(180deg);
     }
     .picker-dropdown-panel {
       position: absolute;
@@ -89,90 +113,139 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       left: 0;
       right: 0;
       z-index: 1050;
-      background: #12121c;
-      border: 1px solid var(--border-light, rgba(255,255,255,0.15));
-      border-radius: 12px;
-      box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+      background: #111228;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       max-height: 320px;
     }
+    :host-context(body.light-theme) .picker-dropdown-panel {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.25) !important;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15) !important;
+    }
     .picker-search-box {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.2);
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    :host-context(body.light-theme) .picker-search-box {
+      background: #f8fafc !important;
+      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
     }
     .picker-search-box input {
       flex: 1;
       background: transparent;
       border: none;
       outline: none;
-      color: #fff;
+      color: var(--text, #ffffff);
       font-size: 0.88rem;
+      font-family: inherit;
+    }
+    :host-context(body.light-theme) .picker-search-box input {
+      color: #0f172a !important;
+    }
+    .search-icon, .clear-icon {
+      color: var(--text-2, #94a3b8);
+      font-size: 0.85rem;
+    }
+    :host-context(body.light-theme) .search-icon,
+    :host-context(body.light-theme) .clear-icon {
+      color: #64748b !important;
     }
     .picker-options-list {
       list-style: none;
       margin: 0;
-      padding: 4px 0;
+      padding: 6px 0;
       overflow-y: auto;
       max-height: 200px;
     }
     .picker-options-list li {
       padding: 10px 16px;
-      font-size: 0.9rem;
-      color: var(--text-secondary, #e4e4e7);
+      font-size: 0.88rem;
+      color: var(--text, #e2e8f0);
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       transition: background 0.2s;
     }
+    :host-context(body.light-theme) .picker-options-list li {
+      color: #1e293b !important;
+    }
     .picker-options-list li:hover {
-      background: rgba(232, 98, 10, 0.15);
-      color: #fff;
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--violet-light, #818cf8);
+    }
+    :host-context(body.light-theme) .picker-options-list li:hover {
+      background: rgba(99, 102, 241, 0.08) !important;
+      color: #4f46e5 !important;
     }
     .picker-options-list li.active {
-      background: var(--orange, #e8620a);
-      color: #fff;
-      font-weight: bold;
+      background: var(--violet, #6366f1);
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+    :host-context(body.light-theme) .picker-options-list li.active {
+      background: #6366f1 !important;
+      color: #ffffff !important;
     }
     .item-sublabel {
       font-size: 0.75rem;
       opacity: 0.7;
     }
     .no-results {
+      padding: 12px 16px;
       text-align: center;
-      color: var(--text-muted, #71717a);
+      color: var(--text-2, #94a3b8);
       font-style: italic;
+      font-size: 0.84rem;
     }
     .picker-footer-action {
-      padding: 8px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      background: rgba(0,0,0,0.25);
+      padding: 8px 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.15);
+    }
+    :host-context(body.light-theme) .picker-footer-action {
+      background: #f8fafc !important;
+      border-top-color: rgba(99, 102, 241, 0.12) !important;
     }
     .btn-inline-add {
       width: 100%;
       padding: 8px 12px;
-      background: rgba(232, 98, 10, 0.15);
-      border: 1px dashed var(--orange, #e8620a);
-      border-radius: 8px;
-      color: var(--orange-light, #ff7a1f);
-      font-weight: 600;
-      font-size: 0.85rem;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px dashed rgba(99, 102, 241, 0.4);
+      border-radius: 10px;
+      color: var(--violet-light, #818cf8);
+      font-weight: 700;
+      font-size: 0.84rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       transition: all 0.2s;
+      font-family: inherit;
     }
     .btn-inline-add:hover {
-      background: var(--orange, #e8620a);
-      color: #fff;
+      background: var(--violet, #6366f1);
+      color: #ffffff !important;
+      border-style: solid;
+    }
+    :host-context(body.light-theme) .btn-inline-add {
+      background: rgba(99, 102, 241, 0.08) !important;
+      color: #4f46e5 !important;
+      border-color: rgba(99, 102, 241, 0.4) !important;
+    }
+    :host-context(body.light-theme) .btn-inline-add:hover {
+      background: #6366f1 !important;
+      color: #ffffff !important;
     }
   `]
 })

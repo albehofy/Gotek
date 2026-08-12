@@ -1,5 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 
 @Component({
@@ -99,101 +100,73 @@ import { ApiService } from '../../../services/api.service';
       top: -4px; right: -4px;
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: #fff;
-      font-size: 0.62rem;
+      font-size: 0.65rem;
       font-weight: 800;
-      min-width: 18px; height: 18px;
-      padding: 0 4px;
+      min-width: 18px;
+      height: 18px;
       border-radius: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(239,68,68,0.55);
-      border: 2px solid var(--bg);
+      padding: 0 4px;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+      border: 2px solid var(--bg-surface, #0b0c1b);
     }
-    body.light-theme .unread-badge,
-    :host-context(body.light-theme) .unread-badge {
+    body.light-theme .unread-badge {
       border-color: #ffffff;
     }
 
-    /* ─── Dropdown Panel ───────────────────────────────────────── */
+    /* ─── Notification Dropdown ───────────────────────────────── */
     .notification-dropdown {
       position: absolute;
-      top: calc(100% + 10px);
+      top: calc(100% + 8px);
       left: 0;
-      right: auto;
       width: 360px;
-      direction: rtl;
-      text-align: right;
-      background: var(--bg-card);
-      border: 1px solid var(--border-v);
-      border-radius: 18px;
-      box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.65),
-        0 0 0 1px rgba(99,102,241,0.12);
-      z-index: 1100;
+      max-width: 90vw;
+      background: linear-gradient(165deg, rgba(16, 17, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 16px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+      z-index: 1300;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      animation: notifSlideIn 0.22s cubic-bezier(0.16,1,0.3,1);
+      max-height: 480px;
     }
-
-    @keyframes notifSlideIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     body.light-theme .notification-dropdown,
     :host-context(body.light-theme) .notification-dropdown {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
-      box-shadow:
-        0 20px 50px rgba(15, 23, 42, 0.15),
-        0 4px 16px rgba(99, 102, 241, 0.08) !important;
+      box-shadow: 0 15px 40px rgba(15, 23, 42, 0.15) !important;
     }
 
-    /* ─── Header ───────────────────────────────────────────────── */
     .notification-header {
-      padding: 16px 18px;
-      background: var(--violet-soft);
-      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(99, 102, 241, 0.05);
     }
     body.light-theme .notification-header,
     :host-context(body.light-theme) .notification-header {
-      background: rgba(99, 102, 241, 0.06);
-      border-bottom-color: rgba(99, 102, 241, 0.12);
+      background: #f8fafc !important;
+      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
     }
 
     .header-title {
-      font-weight: 800;
-      font-size: 0.92rem;
-      color: var(--text);
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text, #ffffff);
     }
-    body.light-theme .header-title,
-    :host-context(body.light-theme) .header-title {
-      color: #0f172a !important;
-    }
+    body.light-theme .header-title { color: #0f172a !important; }
 
     .count-pill {
       font-size: 0.68rem;
       font-weight: 700;
-      background: var(--violet-soft);
-      color: var(--violet-light);
-      padding: 2px 9px;
-      border-radius: 100px;
-      border: 1px solid var(--border-v);
-    }
-    body.light-theme .count-pill,
-    :host-context(body.light-theme) .count-pill {
-      background: rgba(99,102,241,0.1);
       color: #4f46e5;
       border-color: rgba(99,102,241,0.25);
     }
@@ -360,15 +333,26 @@ import { ApiService } from '../../../services/api.service';
     }
   `]
 })
-export class NotificationCenterComponent implements OnInit {
+export class NotificationCenterComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
+  private router = inject(Router);
 
   notifications: any[] = [];
   unreadCount = 0;
   isOpen = false;
+  private pollInterval: any = null;
 
   ngOnInit(): void {
     this.loadNotifications();
+    this.pollInterval = setInterval(() => {
+      this.loadNotifications();
+    }, 25000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
   }
 
   loadNotifications(): void {
@@ -383,7 +367,6 @@ export class NotificationCenterComponent implements OnInit {
     });
   }
 
-
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
@@ -396,6 +379,15 @@ export class NotificationCenterComponent implements OnInit {
       notif.is_read = true;
       if (this.unreadCount > 0) this.unreadCount--;
       this.apiService.markNotificationAsRead(notif.id).subscribe();
+    }
+
+    this.isOpen = false;
+
+    const taskId = notif.notifiable_id || notif.task_id || notif.data?.task_id;
+    if (taskId && (notif.notifiable_type?.includes('Task') || notif.type === 'status_change' || notif.type === 'assignment')) {
+      this.router.navigate(['/tasks'], { queryParams: { taskId: taskId } });
+    } else if (notif.link) {
+      this.router.navigateByUrl(notif.link);
     }
   }
 
