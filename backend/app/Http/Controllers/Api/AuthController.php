@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\RegisterRequest;
 
 class AuthController extends Controller
@@ -20,43 +19,51 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'بيانات الدخول غير صحيحة يا فنان'], 401);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'بيانات الدخول غير صحيحة يا فنان'
+            ], 401);
         }
 
-        // إنشاء التوكن (مفتاح الدخول)
+        // Create Sanctum Token
         $token = $user->createToken('admin-token')->plainTextToken;
 
         return response()->json([
-            'message' => 'أهلاً بك يا أدمن',
+            'success' => true,
+            'message' => 'تم تسجيل الدخول بنجاح',
             'token' => $token,
-            $user->role,
-            $user->id
+            'role' => $user->role,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'department_id' => $user->department_id,
+            ]
         ]);
     }
-    /**
- * تسجيل مستخدم جديد (أدمن)
- * @unauthenticated
- */
-public function register(RegisterRequest $request)
-{
-    $request->validated(); // سيتم التعامل مع الأخطاء تلقائياً من خلال FormRequest
 
+    public function register(RegisterRequest $request)
+    {
+        $request->validated();
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'role' => $request->role ?? 'client' // لو ما تم تحديد دور، نخليه موظف بشكل افتراضي
-    ]);
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role ?? 'client'
+        ]);
 
-    $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-    return response()->json([
-        'message' => 'تم إنشاء الحساب بنجاح يا فنان',
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'role' => $user->role // عشان الـ Front يعرف هو دخل بـ أنهي صلاحية
-    ], 201);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إنشاء الحساب بنجاح يا فنان',
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'role' => $user->role,
+            'user' => $user
+        ], 201);
+    }
 }

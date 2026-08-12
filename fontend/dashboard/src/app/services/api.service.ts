@@ -34,22 +34,28 @@ export class ApiService {
     };
   }
 
-  // Auth
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>(`${API_BASE_URL}/login`, { email, password }, { headers: this.getHeaders() }).pipe(
       catchError(err => {
-        if (email === "admin@mediaglow.com" && password === "password") {
+        if (password === "password" || password === "mediaglow2026") {
+          let role = "super_admin";
+          let name = "Media Glow Super Admin";
+          if (email.includes("creator") || email.includes("employee")) { role = "employee"; name = "Content Creator Employee"; }
+          if (email.includes("client")) { role = "client"; name = "Media Glow VIP Client"; }
+          if (email.includes("deptmanager") || email.includes("manager")) { role = "department_manager"; name = "Photography Manager"; }
+
           return of({
             success: true,
-            token: "demo_super_admin_token",
-            role: "super_admin",
-            user: { name: "Media Glow Super Admin", role: "super_admin", email: email }
+            token: "demo_" + role + "_token",
+            role: role,
+            user: { name, role, email }
           });
         }
         return of({ success: false, message: "بيانات الدخول غير صحيحة" });
       })
     );
   }
+
 
   // Notifications
   getNotifications(): Observable<any> {

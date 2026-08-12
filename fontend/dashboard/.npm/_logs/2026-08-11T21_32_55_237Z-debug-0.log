@@ -1,0 +1,17 @@
+0 verbose cli /home/devoryx/.nvm/versions/node/v22.23.2/bin/node /home/devoryx/.nvm/versions/node/v22.23.2/bin/npm
+1 info using npm@10.9.8
+2 info using node@v22.23.2
+3 silly config load:file:/home/devoryx/.nvm/versions/node/v22.23.2/lib/node_modules/npm/npmrc
+4 silly config load:file:/run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npmrc
+5 silly config load:file:/home/devoryx/.nvm/versions/node/v22.23.2/etc/npmrc
+6 verbose title npm run build
+7 verbose argv "run" "build"
+8 verbose logfile logs-max:10 dir:/run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-11T21_32_55_237Z-
+9 verbose logfile /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-11T21_32_55_237Z-debug-0.log
+10 silly logfile done cleaning log files
+11 verbose cwd /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard
+12 verbose os Linux 7.0.0-29-generic
+13 verbose node v22.23.2
+14 verbose npm  v10.9.8
+15 verbose exit 0
+16 info ok

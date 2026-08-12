@@ -229,10 +229,16 @@ export class NotificationCenterComponent implements OnInit {
 
   loadNotifications(): void {
     this.apiService.getNotifications().subscribe(res => {
-      this.unreadCount = res.unread_count || 0;
-      this.notifications = res.data?.data || res.data || [];
+      if (res) {
+        this.unreadCount = res.unread_count || 0;
+        this.notifications = res.data?.data || res.data || [];
+      } else {
+        this.unreadCount = 0;
+        this.notifications = [];
+      }
     });
   }
+
 
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;

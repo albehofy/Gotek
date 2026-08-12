@@ -12,11 +12,11 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-tasks text-orange"></i> لوحة المهام المتقدمة (Task Board & Pipeline)</h2>
-          <p class="subtitle">توزيع المهام، حساب الهامش الربحي تلقائياً، المرفقات والصور Inline، وتنبيهات الإشارة &#64;mentions</p>
+          <h2><i class="fa-solid fa-list-check" style="color:var(--violet-light);"></i> Task Board & Pipeline</h2>
+          <p class="subtitle">Workflow management, auto-calculated margins, inline attachments & team mentions</p>
         </div>
         <button class="btn btn-primary" (click)="openCreateModal()">
-          <i class="fa-solid fa-plus"></i> إضافة مهمة جديدة
+          <i class="fa-solid fa-plus"></i> Add New Task
         </button>
       </div>
 
@@ -250,55 +250,59 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
     </div>
   `,
   styles: [`
-    .crm-module-container { padding: 24px; }
-    .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
-    .kanban-pipeline { display: grid; grid-template-columns: repeat(6, minmax(260px, 1fr)); gap: 16px; overflow-x: auto; padding-bottom: 16px; }
-    .kanban-column { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; display: flex; flex-direction: column; max-height: 80vh; }
-    .column-header { padding: 14px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--orange); }
-    .column-header.new { border-color: #3b82f6; }
-    .column-header.in_progress { border-color: #f59e0b; }
-    .column-header.content_creator { border-color: #a855f7; }
-    .column-header.in_review { border-color: #06b6d4; }
-    .column-header.client_feedback { border-color: #ec4899; }
-    .column-header.done { border-color: #10b981; }
-    .count-badge { background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
-    .column-body { padding: 12px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
-    .task-card { padding: 14px; border-radius: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-    .task-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.5); }
-    .card-top { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .deal-tag, .subcat-tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,0.08); color: var(--orange-light); }
-    .task-title { font-size: 0.95rem; color: #fff; margin-bottom: 6px; }
-    .task-desc { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4; }
-    .margin-row { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.78rem; }
-    .margin-badge { color: #10b981; font-weight: bold; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 4px; }
-    .attachments-preview-grid { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-    .inline-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
-    .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; }
-    .avatar-circle { width: 24px; height: 24px; border-radius: 50%; background: var(--orange); color: #fff; font-size: 0.7rem; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; }
-    .empty-column { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0; }
-    .crm-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1200; }
-    .crm-modal-card { width: 100%; max-width: 520px; padding: 24px; background: #12121e; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; }
+    :host { display: block; font-family: 'Inter','Cairo',sans-serif; }
+    .crm-module-container { padding: 28px 32px; min-height: 100vh; background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; }
+    .module-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .module-header h2 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
+    .subtitle { color: var(--text-2); font-size: 0.85rem; margin-top: 4px; }
+    .kanban-pipeline { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 14px; align-items: flex-start; -webkit-overflow-scrolling: touch; }
+    .kanban-column { flex: 0 0 270px; min-width: 270px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); display: flex; flex-direction: column; max-height: calc(100vh - 180px); overflow: hidden; transition: border-color 0.2s; }
+    .kanban-column:hover { border-color: var(--border-v); }
+    .column-header { padding: 13px 16px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid transparent; font-size: 0.84rem; background: rgba(0,0,0,0.18); }
+    .column-header.new { border-color: var(--violet-light); }
+    .column-header.in_progress { border-color: var(--amber-light); }
+    .column-header.content_creator { border-color: var(--pink-light); }
+    .column-header.in_review { border-color: var(--teal-light); }
+    .column-header.client_feedback { border-color: var(--blue-light); }
+    .column-header.done { border-color: var(--emerald-light); }
+    .count-badge { background: rgba(255,255,255,0.08); border: 1px solid var(--border); padding: 2px 8px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; color: var(--text-2); }
+    .column-body { padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 9px; }
+    .task-card { padding: 14px; border-radius: var(--r); cursor: pointer; background: rgba(255,255,255,0.025); border: 1px solid var(--border); transition: all 0.2s var(--ease); }
+    .task-card:hover { background: rgba(124,58,237,0.07); border-color: var(--border-v); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+    .card-top { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+    .deal-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 100px; background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(124,58,237,0.2); font-weight: 600; }
+    .subcat-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 100px; background: var(--teal-soft); color: var(--teal-light); border: 1px solid rgba(13,148,136,0.2); font-weight: 600; }
+    .task-title { font-size: 0.88rem; color: #fff; margin-bottom: 6px; font-weight: 600; line-height: 1.35; }
+    .task-desc { font-size: 0.8rem; color: var(--text-2); margin-bottom: 10px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .margin-row { background: var(--emerald-soft); border: 1px solid rgba(5,150,105,0.15); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 3px; }
+    .margin-badge { color: var(--emerald-light); font-weight: 700; font-size: 0.76rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(5,150,105,0.15); text-align: right; }
+    .attachments-preview-grid { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+    .inline-thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 7px; border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s; }
+    .inline-thumb:hover { transform: scale(1.08); }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+    .avatar-circle { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--teal)); color: #fff; font-size: 0.65rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; margin-right: -4px; border: 2px solid var(--bg); }
+    .empty-column { text-align: center; color: var(--text-3); font-size: 0.82rem; padding: 24px 12px; }
+    .crm-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px; }
+    .crm-modal-card { width: 100%; max-width: 520px; background: #10101e; border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: 0 24px 80px rgba(0,0,0,0.7); animation: modalIn 0.22s var(--ease); max-height: 90vh; overflow-y: auto; }
     .wide-modal { max-width: 680px; }
-    .extra-wide-modal { max-width: 840px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .extra-wide-modal { max-width: 860px; }
+    @keyframes modalIn { from { opacity:0; transform: translateY(16px) scale(0.97); } to { opacity:1; transform:none; } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 9px; }
+    .close-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); font-size: 0.9rem; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .close-btn:hover { background: var(--rose-soft); color: var(--rose-light); border-color: rgba(225,29,72,0.2); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px 24px; }
     .full-width { grid-column: span 2; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .close-btn { background: transparent; border: none; color: #a0a0ab; font-size: 1.2rem; cursor: pointer; }
-    .margin-calc-box { background: rgba(16, 185, 129, 0.1); border: 1px dashed #10b981; padding: 12px; border-radius: 12px; text-align: center; }
-    .calculated-margin-val { font-size: 1.5rem; font-weight: 800; color: #10b981; }
-    .pricing-banner { display: flex; justify-content: space-around; padding: 16px; border-radius: 12px; margin-bottom: 20px; }
-    .margin-highlight h4 { color: #10b981; }
-    .image-previews-container { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .inline-preview-img { width: 90px; height: 90px; object-fit: cover; border-radius: 12px; border: 2px solid var(--orange); cursor: pointer; }
-    .notes-thread { max-height: 200px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .note-item { background: rgba(255,255,255,0.04); padding: 10px; border-radius: 8px; }
-    .add-note-box textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; margin-bottom: 8px; }
-    .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .lightbox-img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-    .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #fff; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; outline: none; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--violet); background: rgba(124,58,237,0.06); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    .form-group select option { background: #12121e; color: var(--text); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+    .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1500; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .lightbox-img { max-width: 90vw; max-height: 90vh; border-radius: 12px; box-shadow: 0 0 60px rgba(0,0,0,0.8); }
+    .required { color: var(--rose-light); }
+    .subtask-indicator { font-size: 0.72rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
   `]
 })
 export class TasksBoardComponent implements OnInit {
@@ -310,12 +314,12 @@ export class TasksBoardComponent implements OnInit {
   departments: any[] = [];
 
   columns = [
-    { key: 'new', title: 'جديد (New)' },
-    { key: 'in_progress', title: 'قيد التنفيذ' },
-    { key: 'content_creator', title: 'صانع المحتوى' },
-    { key: 'in_review', title: 'قيد المراجعة' },
-    { key: 'client_feedback', title: 'ملاحظات العميل' },
-    { key: 'done', title: 'مكتمل (Done)' }
+    { key: 'new', title: 'New' },
+    { key: 'in_progress', title: 'In Progress' },
+    { key: 'content_creator', title: 'Content Creation' },
+    { key: 'in_review', title: 'In Review' },
+    { key: 'client_feedback', title: 'Client Feedback' },
+    { key: 'done', title: 'Completed' }
   ];
 
   showCreateModal = false;

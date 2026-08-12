@@ -1,0 +1,22 @@
+{
+  "name": "media-glow-crm-platform",
+  "version": "1.0.0",
+  "description": "Media Glow Agency CRM & ERP System (Laravel + Angular + SQL)",
+  "scripts": {
+    "start": "./start.sh",
+    "dev": "./start.sh",
+    "backend": "cd backend && php artisan serve",
+    "dashboard": "cd fontend/dashboard && npm start",
+    "website": "cd fontend/view && npm start",
+    "test": "cd backend && php artisan test"
+  },
+  "keywords": [
+    "crm",
+    "erp",
+    "laravel",
+    "angular",
+    "agency"
+  ],
+  "author": "Media Glow",
+  "license": "MIT"
+}

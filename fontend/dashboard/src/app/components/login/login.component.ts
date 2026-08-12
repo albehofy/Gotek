@@ -4,12 +4,10 @@ import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
-import { TranslatePipe } from '../../pipes/translate.pipe';
-
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -23,16 +21,31 @@ export class LoginComponent implements OnInit {
   showError = false;
   showPassword = false;
 
+  demoAccounts = [
+    { role: 'super_admin', label: 'سوبر أدمن', email: 'admin@mediaglow.com', pass: 'password', icon: 'fa-user-shield', color: '#e8620a' },
+    { role: 'employee', label: 'صانع محتوى', email: 'creator@mediaglow.com', pass: 'password', icon: 'fa-pen-nib', color: '#10b981' },
+    { role: 'client', label: 'عميل VIP', email: 'client@mediaglow.com', pass: 'password', icon: 'fa-building', color: '#3b82f6' }
+  ];
+
+
   ngOnInit() {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      rememberMe: [false]
+      email: ['admin@mediaglow.com', [Validators.required, Validators.email]],
+      password: ['password', Validators.required],
+      rememberMe: [true]
     });
   }
 
   togglePassword() {
     this.showPassword = !this.showPassword;
+  }
+
+  quickFill(acc: any) {
+    this.loginForm.patchValue({
+      email: acc.email,
+      password: acc.pass
+    });
+    this.onSubmit();
   }
 
   onSubmit() {
@@ -51,7 +64,7 @@ export class LoginComponent implements OnInit {
           if (res.user) {
             localStorage.setItem('mediaglow_user', JSON.stringify(res.user));
           }
-          this.router.navigate(['/controller-dashboard']);
+          this.router.navigate(['/dashboard']);
         } else {
           this.showError = true;
         }

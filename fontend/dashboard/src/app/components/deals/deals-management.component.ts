@@ -12,142 +12,133 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-handshake text-orange"></i> إدارة الصفقات والعقود (Deals Flow & Sales)</h2>
-          <p class="subtitle">إنشاء الصفقات، تحديد قسم المنشأ، العمولة البيعية، ومتابعة التحصيلات الأقساط</p>
+          <h2><i class="fa-solid fa-handshake" style="color:var(--violet-light);"></i> Deals &amp; Sales Contracts</h2>
+          <p class="subtitle">Contract pipeline, sales commission attribution & installment tracking</p>
         </div>
         <button class="btn btn-primary" (click)="openAddDealModal()">
-          <i class="fa-solid fa-plus"></i> إنشاء صفقة جديدة
+          <i class="fa-solid fa-plus"></i> New Deal
         </button>
       </div>
 
       <!-- Deals Table -->
       <div class="table-card glass-panel">
-        <table class="crm-table">
-          <thead>
-            <tr>
-              <th>عنوان الصفقة</th>
-              <th>العميل</th>
-              <th>القسم الأولي</th>
-              <th>مندوب المبيعات والعمولة</th>
-              <th>إجمالي الصفقة</th>
-              <th>المحصل</th>
-              <th>المتبقي</th>
-              <th>الحالة</th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let deal of deals">
-              <td class="font-bold text-white">
-                <div>{{ deal.title }}</div>
-                <small class="text-muted" *ngIf="deal.agreed_scope">نطاق العمل: {{ deal.agreed_scope }}</small>
-              </td>
-              <td>{{ deal.client?.name || 'عميل عام' }}</td>
-              <td><span class="dept-badge">{{ deal.department?.name || 'General' }}</span></td>
-              <td>
-                <div *ngIf="deal.sales_person">{{ deal.sales_person.name }}</div>
-                <small class="text-orange" *ngIf="deal.sales_commission_value > 0">
-                  عمولة: {{ deal.sales_commission_value }} {{ deal.sales_commission_type === 'percentage' ? '%' : 'EGP' }}
-                </small>
-                <div *ngIf="!deal.sales_person" class="text-muted">-</div>
-              </td>
-              <td class="font-bold">{{ deal.calculated_total | number:'1.2-2' }} EGP</td>
-              <td class="text-success">{{ deal.calculated_paid | number:'1.2-2' }} EGP</td>
-              <td class="text-danger">{{ deal.remaining_balance | number:'1.2-2' }} EGP</td>
-              <td><span class="badge" [ngClass]="deal.status">{{ deal.status }}</span></td>
-              <td>
-                <button class="btn-action primary" (click)="openPaymentModal(deal)" title="تسجيل دفعة جزئية / قسط">
-                  <i class="fa-solid fa-money-bill-wave"></i> تسجيل دفعة
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="deals.length === 0">
-              <td colspan="9" class="text-center py-4 text-muted">لا توجد صفقات حالية</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="crm-table">
+            <thead>
+              <tr>
+                <th>Deal Title</th>
+                <th>Client</th>
+                <th>Department</th>
+                <th>Sales Rep &amp; Commission</th>
+                <th>Total Value</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let deal of deals">
+                <td style="font-weight:700; color:#fff;">
+                  <div>{{ deal.title }}</div>
+                  <small style="color:var(--text-2); font-weight:normal;" *ngIf="deal.agreed_scope">Scope: {{ deal.agreed_scope }}</small>
+                </td>
+                <td style="color:var(--text-2);">{{ deal.client?.name || 'General Client' }}</td>
+                <td><span class="dept-badge">{{ deal.department?.name || 'General' }}</span></td>
+                <td>
+                  <div *ngIf="deal.sales_person" style="font-weight:600; color:#fff;">{{ deal.sales_person.name }}</div>
+                  <small style="color:var(--teal-light);" *ngIf="deal.sales_commission_value > 0">
+                    Commission: {{ deal.sales_commission_value }} {{ deal.sales_commission_type === 'percentage' ? '%' : 'EGP' }}
+                  </small>
+                  <div *ngIf="!deal.sales_person" style="color:var(--text-3);">-</div>
+                </td>
+                <td style="font-weight:700; color:#fff;">{{ deal.calculated_total | number:'1.2-2' }} EGP</td>
+                <td style="color:var(--emerald-light); font-weight:700;">{{ deal.calculated_paid | number:'1.2-2' }} EGP</td>
+                <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} EGP</td>
+                <td><span class="badge badge-v">{{ deal.status }}</span></td>
+                <td>
+                  <button class="btn-action primary" (click)="openPaymentModal(deal)" title="Record payment installment">
+                    <i class="fa-solid fa-money-bill-wave"></i> Record Payment
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="deals.length === 0">
+                <td colspan="9" style="text-align:center; padding:36px; color:var(--text-2);">No active deals found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Add Deal Modal -->
       <div class="crm-modal-backdrop" *ngIf="showAddModal">
         <div class="crm-modal-card glass-panel wide-modal">
           <div class="modal-header">
-            <h3><i class="fa-solid fa-handshake text-orange"></i> إنشاء صفقة وعقد جديد</h3>
+            <h3><i class="fa-solid fa-handshake" style="color:var(--violet-light);"></i> Create New Deal &amp; Contract</h3>
             <button class="close-btn" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i></button>
           </div>
           <form [formGroup]="dealForm" (ngSubmit)="saveDeal()">
             <div class="form-grid">
               <div class="form-group full-width">
-                <label>عنوان الصفقة <span class="required">*</span></label>
-                <input type="text" formControlName="title" placeholder="مثال: حملة هوية بصرية وتصوير 20 ريلز" />
+                <label>Deal Title <span class="required">*</span></label>
+                <input type="text" formControlName="title" placeholder="e.g. Brand Identity & Video Campaign" />
               </div>
-
-              <!-- Client Picker with Inline Add -->
               <div class="form-group">
-                <label>العميل المستهدف</label>
+                <label>Target Client</label>
                 <app-prime-picker-select
                   formControlName="client_id"
                   [items]="clients"
                   optionLabel="name"
                   optionValue="id"
-                  placeholder="اختر العميل..."
-                  addNewLabel="+ إضافة عميل جديد inline"
+                  placeholder="Select client..."
+                  addNewLabel="+ Quick add client"
                   (addNew)="triggerQuickAddClient()"
                 ></app-prime-picker-select>
               </div>
-
-              <!-- Primary Department Picker -->
               <div class="form-group">
-                <label>القسم الرئيسي المسؤول</label>
+                <label>Primary Department</label>
                 <app-prime-picker-select
                   formControlName="department_id"
                   [items]="departments"
                   optionLabel="name"
                   optionValue="id"
-                  placeholder="اختر القسم..."
+                  placeholder="Select department..."
                 ></app-prime-picker-select>
               </div>
-
-              <!-- Salesperson Picker -->
               <div class="form-group">
-                <label>مسؤول المبيعات (Sales Attribution)</label>
+                <label>Sales Representative</label>
                 <app-prime-picker-select
                   formControlName="sales_person_id"
                   [items]="employees"
                   optionLabel="name"
                   optionValue="id"
-                  placeholder="اختر مسؤول المبيعات..."
+                  placeholder="Select sales rep..."
                 ></app-prime-picker-select>
               </div>
-
               <div class="form-group">
-                <label>نوع العمولة البيعية</label>
+                <label>Commission Type</label>
                 <select formControlName="sales_commission_type">
-                  <option value="fixed">مبلغ ثابت (Fixed Amount)</option>
-                  <option value="percentage">نسبة مئوية (%)</option>
+                  <option value="fixed">Fixed Amount (EGP)</option>
+                  <option value="percentage">Percentage (%)</option>
                 </select>
               </div>
-
               <div class="form-group">
-                <label>قيمة العمولة</label>
-                <input type="number" formControlName="sales_commission_value" placeholder="مثال: 500 أو 10" />
+                <label>Commission Value</label>
+                <input type="number" formControlName="sales_commission_value" placeholder="e.g. 500 or 10" />
               </div>
-
               <div class="form-group">
-                <label>القيمة الكلية المبدئية للصفقة (EGP) <span class="required">*</span></label>
-                <input type="number" formControlName="total_price" placeholder="1200" />
+                <label>Total Contract Value (EGP) <span class="required">*</span></label>
+                <input type="number" formControlName="total_price" placeholder="12000" />
               </div>
-
               <div class="form-group full-width">
-                <label>نطاق العمل المتفق عليه (Agreed Scope)</label>
-                <textarea formControlName="agreed_scope" rows="3" placeholder="مثال: 20 فيديو ريلز + 10 تصاميم سوشيال ميديا + إدارة الحملة"></textarea>
+                <label>Agreed Scope</label>
+                <textarea formControlName="agreed_scope" rows="3" placeholder="Scope of work details..."></textarea>
               </div>
             </div>
-
             <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="closeAddModal()">إلغاء</button>
+              <button type="button" class="btn btn-glass" (click)="closeAddModal()">Cancel</button>
               <button type="submit" class="btn btn-primary" [disabled]="dealForm.invalid || loading">
-                {{ loading ? 'جاري الحفظ...' : 'حفظ ونشر الصفقة' }}
+                {{ loading ? 'Saving...' : 'Save & Publish Deal' }}
               </button>
             </div>
           </form>
@@ -158,41 +149,38 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
       <div class="crm-modal-backdrop" *ngIf="showPaymentModal && selectedDeal">
         <div class="crm-modal-card glass-panel">
           <div class="modal-header">
-            <h3><i class="fa-solid fa-money-bill-wave text-orange"></i> تسجيل دفعة قسط: {{ selectedDeal.title }}</h3>
+            <h3><i class="fa-solid fa-money-bill-wave" style="color:var(--emerald-light);"></i> Record Payment: {{ selectedDeal.title }}</h3>
             <button class="close-btn" (click)="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
           </div>
           <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
-            <div class="form-group">
-              <label>المبلغ المدفوع (EGP) <span class="required">*</span></label>
-              <input type="number" formControlName="amount" [placeholder]="selectedDeal.remaining_balance" />
-              <small class="text-muted">المتبقي المستحق: {{ selectedDeal.remaining_balance | number:'1.2-2' }} EGP</small>
+            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
+              <div class="form-group">
+                <label>Payment Amount (EGP) <span class="required">*</span></label>
+                <input type="number" formControlName="amount" [placeholder]="selectedDeal.remaining_balance" />
+                <small style="color:var(--text-2);">Outstanding Balance: {{ selectedDeal.remaining_balance | number:'1.2-2' }} EGP</small>
+              </div>
+              <div class="form-group">
+                <label>Payment Date</label>
+                <input type="date" formControlName="payment_date" />
+              </div>
+              <div class="form-group">
+                <label>Payment Method <span class="required">*</span></label>
+                <select formControlName="payment_method">
+                  <option value="cash">Cash (Local Safe)</option>
+                  <option value="cash_hand">Direct Cash-in-hand</option>
+                  <option value="instapay">InstaPay</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Receipt / Reference Number</label>
+                <input type="text" formControlName="receipt_ref" placeholder="e.g. TXN-998811" />
+              </div>
             </div>
-
-            <div class="form-group">
-              <label>تاريخ السداد</label>
-              <input type="date" formControlName="payment_date" />
-            </div>
-
-            <!-- 4 Payment Methods -->
-            <div class="form-group">
-              <label>طريقة الدفع (Payment Method) <span class="required">*</span></label>
-              <select formControlName="payment_method">
-                <option value="cash">كاش / الخزنة المحلية (Cash - Local Safe)</option>
-                <option value="cash_hand">نقدي / تسليم يدوي (Direct Cash-in-hand)</option>
-                <option value="instapay">انستا باي (Instapay)</option>
-                <option value="bank_transfer">تحويل بنكي / حساب بنك (Bank Transfer)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>رقم المرجع / الإيصال</label>
-              <input type="text" formControlName="receipt_ref" placeholder="مثال: TXN-998811" />
-            </div>
-
             <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="closePaymentModal()">إلغاء</button>
+              <button type="button" class="btn btn-glass" (click)="closePaymentModal()">Cancel</button>
               <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid || loading">
-                {{ loading ? 'جاري التسجيل...' : 'تأكيد السداد' }}
+                {{ loading ? 'Processing...' : 'Confirm Payment' }}
               </button>
             </div>
           </form>
@@ -201,29 +189,39 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
     </div>
   `,
   styles: [`
-    .crm-module-container { padding: 24px; }
-    .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
-    .table-card { padding: 0; overflow: hidden; border-radius: 16px; }
-    .crm-table { width: 100%; border-collapse: collapse; text-align: right; }
-    .crm-table th, .crm-table td { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.9rem; }
-    .crm-table th { background: rgba(255,255,255,0.03); color: #fff; font-weight: 700; }
-    .dept-badge { background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; }
-    .btn-action { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-action.primary:hover { background: var(--orange); border-color: var(--orange); }
-    .text-orange { color: var(--orange); }
-    .text-success { color: #10b981; }
-    .text-danger { color: #ef4444; }
-    .crm-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1200; }
-    .crm-modal-card { width: 100%; max-width: 520px; padding: 24px; background: #12121e; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; }
+    :host { display: block; font-family: 'Inter','Cairo',sans-serif; }
+    .crm-module-container { padding: 28px 32px; min-height: 100vh; background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; }
+    .module-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .module-header h2 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
+    .subtitle { color: var(--text-2); font-size: 0.85rem; margin-top: 4px; }
+    .table-card { padding: 0; overflow: hidden; border-radius: var(--r-lg); background: var(--bg-card); border: 1px solid var(--border); }
+    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; direction: ltr; }
+    .crm-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.15); white-space: nowrap; }
+    .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; }
+    .crm-table tr:last-child td { border-bottom: none; }
+    .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
+    .dept-badge { background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(124,58,237,0.2); padding: 3px 9px; border-radius: 100px; font-size: 0.68rem; font-weight: 700; }
+    .btn-action { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); padding: 6px 12px; border-radius: var(--r); font-size: 0.76rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
+    .btn-action:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .btn-action.primary { color: var(--emerald-light); background: var(--emerald-soft); border-color: rgba(5,150,105,0.2); }
+    .btn-action.primary:hover { background: rgba(5,150,105,0.22); }
+    .crm-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px; }
+    .crm-modal-card { width: 100%; max-width: 520px; background: #10101e; border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: 0 24px 80px rgba(0,0,0,0.7); animation: modalIn 0.22s var(--ease); max-height: 90vh; overflow-y: auto; }
     .wide-modal { max-width: 680px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @keyframes modalIn { from { opacity:0; transform: translateY(16px) scale(0.97); } to { opacity:1; transform:none; } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 9px; }
+    .close-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); font-size: 0.9rem; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .close-btn:hover { background: var(--rose-soft); color: var(--rose-light); border-color: rgba(225,29,72,0.2); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px 24px; }
     .full-width { grid-column: span 2; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .close-btn { background: transparent; border: none; color: #a0a0ab; font-size: 1.2rem; cursor: pointer; }
-    .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #fff; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; outline: none; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: #fff; outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--violet); background: rgba(124,58,237,0.06); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    .form-group select option { background: #12121e; color: var(--text); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+    .required { color: var(--rose-light); }
   `]
 })
 export class DealsManagementComponent implements OnInit {

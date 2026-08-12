@@ -1,86 +1,151 @@
-<div style="min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: var(--bg-main);">
+<div class="login-wrapper">
   
-  <!-- LEFT: Form -->
-  <div style="display: flex; align-items: center; justify-content: center; padding: 40px; position: relative;">
-    <div class="glow-orb primary" style="top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.3;"></div>
-    
-    <div class="glass-panel" style="width: 100%; max-width: 480px; padding: 48px; border-radius: var(--radius-lg); position: relative; z-index: 2;">
-      <a routerLink="/" style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; margin-bottom: 32px; transition: color 0.3s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-secondary)'">
-        <i class="fa-solid fa-arrow-left"></i> {{ 'proj_breadcrumb_home' | translate }}
+  <!-- LEFT: CINEMATIC VISUAL PANEL -->
+  <div class="login-visual-panel">
+    <div class="glow-bg-orb"></div>
+    <div class="glow-bg-orb-2"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="visual-content">
+      <!-- Top Brand Logo -->
+      <a routerLink="/" class="brand-logo">
+        <div class="logo-badge">
+          <i class="fa-solid fa-sparkles text-orange"></i>
+        </div>
+        <div class="logo-text">
+          <span>Media Glow</span>
+          <small>Agency CRM & ERP</small>
+        </div>
       </a>
 
-      <div class="sec-tag">{{ 'login' | translate }}</div>
-      <h1 class="sec-title" style="font-size: 2.5rem; margin-bottom: 16px;">{{ 'login' | translate }}</h1>
-      <p style="color: var(--text-secondary); margin-bottom: 32px;">{{ 'hero_desc' | translate }}</p>
+      <!-- Center Hero Message -->
+      <div class="hero-text-box">
+        <div class="badge-pill">
+          <span class="live-dot"></span> منصة إدارة الوكالة المتكاملة 2.0
+        </div>
+        <h1 class="hero-title">
+          نظام التحكم الإداري <br />
+          <span class="gradient-text">والربط المالي الشامل</span>
+        </h1>
+        <p class="hero-subtitle">
+          إدارة الصفقات، المهام، المراكز، الأرباح الشريكة، وبنود العهدة في بيئة ديناميكية موحدة.
+        </p>
 
-      <div style="background: rgba(232, 98, 10, 0.1); border: 1px solid rgba(232, 98, 10, 0.2); padding: 16px; border-radius: var(--radius-sm); display: flex; gap: 16px; margin-bottom: 32px;">
-        <i class="fa-solid fa-lightbulb" style="color: var(--orange); font-size: 1.2rem; margin-top: 4px;"></i>
-        <div>
-          <div style="color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 8px;">Demo Access</div>
-          <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 4px;"><strong>Email:</strong> demo&#64;mediaglow.com</div>
-          <div style="color: var(--text-secondary); font-size: 0.85rem;"><strong>Password:</strong> mediaglow2026</div>
+        <!-- Stats Chips -->
+        <div class="stats-row">
+          <div class="stat-box">
+            <span class="stat-val">+100%</span>
+            <span class="stat-lbl">ديناميكي ومربوط بالكامل</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val">4 طرق</span>
+            <span class="stat-lbl">تحصيل مالي وأقساط</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-val">RBAC</span>
+            <span class="stat-lbl">صلاحيات أدوار محكمة</span>
+          </div>
         </div>
       </div>
 
-      @if (showError) {
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.9rem; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-          <i class="fa-solid fa-triangle-exclamation"></i> Invalid credentials.
-        </div>
-      }
+      <!-- Footer Info -->
+      <div class="visual-footer">
+        <small>© 2026 Media Glow Agency. جميع الحقوق محفوظة.</small>
+      </div>
+    </div>
+  </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 24px;">
+  <!-- RIGHT: PREMIUM GLASS FORM PANEL -->
+  <div class="login-form-panel">
+    <div class="form-container glass-card">
+
+      <!-- Form Header -->
+      <div class="form-header">
+        <div class="eyebrow-line">
+          <span class="dot"></span> مرحباً بك مجدداً
+        </div>
+        <h2>تسجيل الدخول للنظام</h2>
+        <p class="subtitle-text">أدخل بيانات الحساب أو اختر حسام تجريبي سريع للدخول بنقرة واحدة</p>
+      </div>
+
+      <!-- Quick Fill Demo Accounts -->
+      <div class="demo-quick-section">
+        <span class="section-tag"><i class="fa-solid fa-bolt text-orange"></i> دخول تجريبي سريع بنقرة واحدة:</span>
+        <div class="quick-chips-grid">
+          <button 
+            type="button" 
+            class="demo-chip" 
+            *ngFor="let acc of demoAccounts" 
+            (click)="quickFill(acc)"
+            [title]="acc.email"
+          >
+            <i class="fa-solid" [ngClass]="acc.icon" [style.color]="acc.color"></i>
+            <span>{{ acc.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Alert Banner -->
+      <div class="error-alert-banner" *ngIf="showError">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور.</span>
+      </div>
+
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
         
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: var(--text-primary); font-size: 0.95rem; font-weight: 600;">{{ 'contact_label_email_form' | translate }} <span style="color: var(--orange);">*</span></label>
-          <div style="position: relative;">
-            <i class="fa-solid fa-envelope" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-            <input type="email" formControlName="email" [placeholder]="'email_placeholder' | translate" class="form-control" style="padding-left: 48px;" autocomplete="email" />
+        <div class="form-group">
+          <label>البريد الإلكتروني <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input 
+              type="email" 
+              formControlName="email" 
+              placeholder="name@mediaglow.com" 
+              class="form-control"
+              autocomplete="email"
+            />
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: var(--text-primary); font-size: 0.95rem; font-weight: 600;">Password <span style="color: var(--orange);">*</span></label>
-          <div style="position: relative;">
-            <i class="fa-solid fa-lock" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-            <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="******" class="form-control" style="padding-left: 48px; padding-right: 48px;" autocomplete="current-password" />
-            <button type="button" (click)="togglePassword()" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+        <div class="form-group">
+          <div class="label-row">
+            <label>كلمة المرور <span class="required">*</span></label>
+          </div>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              formControlName="password" 
+              placeholder="••••••••" 
+              class="form-control"
+              autocomplete="current-password"
+            />
+            <button type="button" class="eye-toggle-btn" (click)="togglePassword()">
               <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
             </button>
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || loading" style="width: 100%; padding: 16px; font-size: 1.05rem; justify-content: center;">
-          @if (loading) {
-            ...
-          } @else {
-            {{ 'login' | translate }} <i class="fa-solid fa-arrow-right"></i>
-          }
+        <div class="remember-row">
+          <label class="custom-checkbox">
+            <input type="checkbox" formControlName="rememberMe" />
+            <span class="checkmark"></span>
+            <span>تذكر بيانات الدخول</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-submit-login" [disabled]="loginForm.invalid || loading">
+          <span *ngIf="!loading">تأكيد وتأمين الدخول <i class="fa-solid fa-arrow-left"></i></span>
+          <span *ngIf="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري التحقق والدخول...</span>
         </button>
 
       </form>
 
-      <div style="text-align: center; margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border-light);">
-        <p style="color: var(--text-secondary); font-size: 0.95rem;"><a routerLink="/contact" style="color: var(--orange); text-decoration: none; font-weight: 600;">{{ 'contact' | translate }}</a></p>
+      <div class="form-footer-nav">
+        <a routerLink="/" class="back-home-link"><i class="fa-solid fa-house"></i> العودة للموقع الرئيسي</a>
       </div>
 
-    </div>
-  </div>
-
-  <!-- RIGHT: Visual -->
-  <div style="background: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1600&q=80') center/cover no-repeat; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 64px;">
-    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(5,5,7,0.9) 0%, rgba(232,98,10,0.3) 100%);"></div>
-    
-    <div style="position: relative; z-index: 2;">
-      <a routerLink="/" style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-        <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 48px; filter: brightness(0) invert(1);" />
-        Media Glow<span style="color: var(--orange);">.</span>
-      </a>
-    </div>
-
-    <div style="position: relative; z-index: 2;">
-      <div class="sec-tag" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff;">{{ 'hero_badge' | translate }}</div>
-      <h2 style="font-family: 'Outfit', sans-serif; font-size: 4rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 24px;">{{ 'hero_title_1' | translate }}<br/><span style="color: var(--orange);">{{ 'hero_title_2' | translate }}</span></h2>
-      <p style="color: rgba(255,255,255,0.8); font-size: 1.25rem; max-width: 500px; line-height: 1.6;">{{ 'hero_desc' | translate }}</p>
     </div>
   </div>
 

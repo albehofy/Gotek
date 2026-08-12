@@ -11,141 +11,129 @@ import { ApiService } from '../../services/api.service';
     <div class="client-portal-container" *ngIf="portalData">
       <div class="portal-header">
         <div>
-          <h2><i class="fa-solid fa-building text-orange"></i> بوابة العميل المخصصة (Client Portal)</h2>
-          <p class="subtitle">أهلاً بك {{ portalData.client_name }} — متابعة العقود، الحسابات، واعتماد المهام</p>
+          <h2><i class="fa-solid fa-id-card" style="color:var(--violet-light);"></i> Client Portal</h2>
+          <p class="subtitle">Welcome {{ portalData.client_name }} — Track contracts, financial balances &amp; approve deliverables</p>
         </div>
       </div>
 
       <!-- Financial Account Summary -->
       <div class="metrics-grid">
         <div class="metric-card glass-panel">
-          <span class="label">إجمالي قيمة العقود والخدمات</span>
-          <h3 class="value text-white">{{ portalData.financial_summary.total_billed | number:'1.2-2' }} EGP</h3>
+          <span class="label">Total Billed &amp; Services</span>
+          <h3 class="value" style="color:#fff;">{{ portalData.financial_summary.total_billed | number:'1.2-2' }} EGP</h3>
         </div>
 
         <div class="metric-card glass-panel">
-          <span class="label">إجمالي المبالغ المسددة</span>
-          <h3 class="value text-success">{{ portalData.financial_summary.total_paid | number:'1.2-2' }} EGP</h3>
+          <span class="label">Total Paid Amount</span>
+          <h3 class="value" style="color:var(--emerald-light);">{{ portalData.financial_summary.total_paid | number:'1.2-2' }} EGP</h3>
         </div>
 
         <div class="metric-card glass-panel">
-          <span class="label">المتبقي المستحق للسداد</span>
-          <h3 class="value text-danger">{{ portalData.financial_summary.remaining_balance | number:'1.2-2' }} EGP</h3>
+          <span class="label">Outstanding Balance</span>
+          <h3 class="value" style="color:var(--rose-light);">{{ portalData.financial_summary.remaining_balance | number:'1.2-2' }} EGP</h3>
         </div>
       </div>
 
       <!-- Contracts & Deals Section -->
       <div class="section-card glass-panel margin-top">
-        <h3><i class="fa-solid fa-file-contract text-orange"></i> عقودك والصفقات النشطة</h3>
-        <table class="crm-table margin-top">
-          <thead>
-            <tr>
-              <th>عنوان العقد / الصفقة</th>
-              <th>إجمالي العقد</th>
-              <th>المدفوع حتى الآن</th>
-              <th>المتبقي</th>
-              <th>نسبة الإنجاز</th>
-              <th>الحالة</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let deal of portalData.deals">
-              <td class="font-bold text-white">{{ deal.title }}</td>
-              <td>{{ deal.calculated_total | number:'1.2-2' }} EGP</td>
-              <td class="text-success">{{ deal.calculated_paid | number:'1.2-2' }} EGP</td>
-              <td class="text-danger">{{ deal.remaining_balance | number:'1.2-2' }} EGP</td>
-              <td>
-                <div class="progress-bar-bg">
-                  <div class="progress-bar-fill" [style.width.%]="deal.progress"></div>
-                </div>
-                <small class="text-muted">{{ deal.progress }}%</small>
-              </td>
-              <td><span class="badge" [ngClass]="deal.status">{{ deal.status }}</span></td>
-            </tr>
-          </tbody>
-        </table>
+        <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-contract" style="color:var(--violet-light);"></i> Your Active Contracts &amp; Deals</h3>
+        <div class="table-responsive margin-top">
+          <table class="crm-table">
+            <thead>
+              <tr>
+                <th>Deal Title</th>
+                <th>Total Value</th>
+                <th>Paid Amount</th>
+                <th>Balance</th>
+                <th>Progress</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let deal of portalData.deals">
+                <td style="font-weight:700; color:#fff;">{{ deal.title }}</td>
+                <td style="color:#fff;">{{ deal.calculated_total | number:'1.2-2' }} EGP</td>
+                <td style="color:var(--emerald-light); font-weight:700;">{{ deal.calculated_paid | number:'1.2-2' }} EGP</td>
+                <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} EGP</td>
+                <td>
+                  <div class="progress-bar-bg" style="background:rgba(255,255,255,0.06); height:6px; border-radius:10px; overflow:hidden; width:100px; display:inline-block; vertical-align:middle; margin-right:6px;">
+                    <div class="progress-bar-fill" [style.width.%]="deal.progress" style="height:100%; background:linear-gradient(90deg, var(--violet), var(--teal)); border-radius:10px;"></div>
+                  </div>
+                  <small style="color:var(--text-2); font-size:0.75rem;">{{ deal.progress }}%</small>
+                </td>
+                <td><span class="badge badge-v">{{ deal.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Client Tasks List (Completed & In-Progress) -->
       <div class="section-card glass-panel margin-top">
-        <h3><i class="fa-solid fa-list-check text-orange"></i> متابعة وإعتماد المهام المطلوبة</h3>
-        <div class="tasks-portal-list margin-top">
-          <div class="task-portal-card glass-panel" *ngFor="let task of portalData.tasks">
-            <div class="card-header">
-              <h4>{{ task.title }}</h4>
-              <span class="badge" [ngClass]="task.status">{{ task.status }}</span>
+        <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-list-check" style="color:var(--teal-light);"></i> Deliverables &amp; Task Approvals</h3>
+        <div class="tasks-portal-list margin-top" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="task-portal-card glass-panel" *ngFor="let task of portalData.tasks" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-lg); padding:20px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h4 style="color:#fff; font-size:1rem; font-weight:700;">{{ task.title }}</h4>
+              <span class="badge badge-v">{{ task.status }}</span>
             </div>
-            <p class="task-scope" *ngIf="task.scope">{{ task.scope }}</p>
+            <p class="task-scope" *ngIf="task.scope" style="font-size:0.86rem; color:var(--text-2); margin-bottom:12px;">{{ task.scope }}</p>
 
             <!-- Attachments / Deliverables -->
-            <div class="deliverables-preview" *ngIf="task.attachments && task.attachments.length > 0">
-              <small class="text-muted">المرفقات والنتائج المسلمة:</small>
-              <div class="attachments-grid">
-                <img *ngFor="let att of task.attachments" [src]="att.file_url" class="thumb-img" />
+            <div class="deliverables-preview" *ngIf="task.attachments && task.attachments.length > 0" style="margin-bottom:12px;">
+              <small style="color:var(--text-2); font-size:0.75rem;">Deliverables &amp; Attachments:</small>
+              <div class="attachments-grid" style="display:flex; gap:8px; margin-top:6px;">
+                <img *ngFor="let att of task.attachments" [src]="att.file_url" class="thumb-img" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" />
               </div>
             </div>
 
             <!-- Notes & Feedback Thread -->
-            <div class="notes-section">
-              <div class="note-bubble" *ngFor="let note of task.notes">
-                <span class="author font-bold">{{ note.user?.name }}:</span> {{ note.note }}
+            <div class="notes-section" style="margin:12px 0; display:flex; flex-direction:column; gap:6px;">
+              <div class="note-bubble" *ngFor="let note of task.notes" style="background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:8px; font-size:0.84rem; color:var(--text-2); border:1px solid var(--border);">
+                <span class="author font-bold" style="color:#fff; font-weight:700;">{{ note.user?.name }}:</span> {{ note.note }}
               </div>
             </div>
 
             <!-- Client Action Buttons (Approve / Leave Note) -->
-            <div class="card-actions">
-              <button class="btn btn-primary btn-sm" (click)="approveTask(task)" *ngIf="task.status !== 'approved' && task.status !== 'done'">
-                <i class="fa-solid fa-check-double"></i> اعتماد هذه المهمة (Approve Task)
+            <div class="card-actions" style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+              <button class="btn btn-primary" (click)="approveTask(task)" *ngIf="task.status !== 'approved' && task.status !== 'done'">
+                <i class="fa-solid fa-check-double"></i> Approve Deliverable
               </button>
-
-              <button class="btn btn-glass btn-sm" (click)="openNoteInput(task)">
-                <i class="fa-solid fa-comment"></i> إضافة ملاحظات / ملاحظة تعديل
+              <button class="btn btn-glass" (click)="openNoteInput(task)">
+                <i class="fa-solid fa-comment"></i> Add Revision Notes
               </button>
             </div>
 
-            <div class="note-input-box" *ngIf="task.showNoteInput">
-              <textarea [(ngModel)]="task.tempNoteText" placeholder="اكتب ملاحظاتك وفيدباك التعديل..." rows="2"></textarea>
-              <button class="btn btn-primary btn-sm" (click)="submitNote(task)">إرسال الملاحظة</button>
+            <div class="note-input-box" *ngIf="task.showNoteInput" style="margin-top:12px;">
+              <textarea [(ngModel)]="task.tempNoteText" placeholder="Type your feedback / revision notes..." rows="2" style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border); border-radius:8px; color:#fff; font-family:inherit; outline:none; margin-bottom:8px;"></textarea>
+              <button class="btn btn-primary" (click)="submitNote(task)">Submit Feedback</button>
             </div>
           </div>
 
-          <div *ngIf="!portalData.tasks || portalData.tasks.length === 0" class="text-center text-muted py-4">
-            لا توجد مهام حالية متصلة بحسابك
+          <div *ngIf="!portalData.tasks || portalData.tasks.length === 0" style="text-align:center; padding:32px; color:var(--text-2);">
+            No active deliverables currently assigned to your account.
           </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .client-portal-container { padding: 24px; }
+    :host { display: block; font-family: 'Inter','Cairo',sans-serif; }
+    .client-portal-container { padding: 28px 32px; min-height: 100vh; background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; }
     .portal-header { margin-bottom: 24px; }
-    .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .metric-card { padding: 20px; text-align: right; }
-    .metric-card .label { color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 8px; }
-    .metric-card .value { font-size: 1.6rem; font-weight: 800; }
-    .section-card { padding: 24px; border-radius: 16px; }
-    .margin-top { margin-top: 24px; }
-    .crm-table { width: 100%; border-collapse: collapse; text-align: right; }
-    .crm-table th, .crm-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.88rem; }
-    .crm-table th { background: rgba(255,255,255,0.03); color: #fff; }
-    .progress-bar-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 4px; overflow: hidden; width: 100px; display: inline-block; }
-    .progress-bar-fill { background: var(--orange); height: 100%; border-radius: 4px; }
-    .tasks-portal-list { display: flex; flex-direction: column; gap: 16px; }
-    .task-portal-card { padding: 20px; border-radius: 16px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .card-header h4 { color: #fff; font-size: 1.05rem; }
-    .task-scope { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px; }
-    .attachments-grid { display: flex; gap: 8px; margin-top: 6px; }
-    .thumb-img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); }
-    .notes-section { margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }
-    .note-bubble { background: rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 8px; font-size: 0.84rem; color: #fff; }
-    .card-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-    .note-input-box { margin-top: 12px; }
-    .note-input-box textarea { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; margin-bottom: 8px; }
-    .text-orange { color: var(--orange); }
-    .text-success { color: #10b981; }
-    .text-danger { color: #ef4444; }
+    .portal-header h2 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
+    .subtitle { color: var(--text-2); font-size: 0.85rem; margin-top: 4px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .metric-card { padding: 22px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); position: relative; overflow: hidden; }
+    .metric-card .label { color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+    .metric-card .value { font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+    .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
+    .margin-top { margin-top: 20px; }
+    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; direction: ltr; }
+    .crm-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.15); white-space: nowrap; }
+    .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; }
+    .crm-table tr:last-child td { border-bottom: none; }
+    .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
   `]
 })
 export class ClientPortalViewComponent implements OnInit {
