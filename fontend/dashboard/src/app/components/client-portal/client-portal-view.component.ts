@@ -8,7 +8,13 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="client-portal-container" *ngIf="portalData">
+    <!-- Loading Spinner -->
+    <div class="loading-shell" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>جاري تحميل بوابة العملاء...</p>
+    </div>
+
+    <div class="client-portal-container" *ngIf="!loading && portalData">
       <div class="portal-header">
         <div>
           <h2><i class="fa-solid fa-id-card" style="color:var(--violet-light);"></i> بوابة العملاء</h2>
@@ -20,23 +26,23 @@ import { ApiService } from '../../services/api.service';
       <div class="metrics-grid">
         <div class="metric-card glass-panel">
           <span class="label">إجمالي الفواتير والخدمات</span>
-          <h3 class="value" style="color:#fff;">{{ portalData.financial_summary.total_billed | number:'1.2-2' }} ج.م</h3>
+          <h3 class="value" style="color:var(--text);">{{ portalData.financial_summary?.total_billed || 0 | number:'1.2-2' }} ج.م</h3>
         </div>
 
         <div class="metric-card glass-panel">
           <span class="label">المبلغ المدفوع</span>
-          <h3 class="value" style="color:var(--emerald-light);">{{ portalData.financial_summary.total_paid | number:'1.2-2' }} ج.م</h3>
+          <h3 class="value" style="color:var(--emerald-light);">{{ portalData.financial_summary?.total_paid || 0 | number:'1.2-2' }} ج.م</h3>
         </div>
 
         <div class="metric-card glass-panel">
           <span class="label">الرصيد المتبقي</span>
-          <h3 class="value" style="color:var(--rose-light);">{{ portalData.financial_summary.remaining_balance | number:'1.2-2' }} ج.م</h3>
+          <h3 class="value" style="color:var(--rose-light);">{{ portalData.financial_summary?.remaining_balance || 0 | number:'1.2-2' }} ج.م</h3>
         </div>
       </div>
 
       <!-- Contracts & Deals Section -->
       <div class="section-card glass-panel margin-top">
-        <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-contract" style="color:var(--violet-light);"></i> العقود والصفقات النشطة</h3>
+        <h3 style="font-size:1rem; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-contract" style="color:var(--violet-light);"></i> العقود والصفقات النشطة</h3>
         <div class="table-responsive margin-top">
           <table class="crm-table">
             <thead>
@@ -51,8 +57,8 @@ import { ApiService } from '../../services/api.service';
             </thead>
             <tbody>
               <tr *ngFor="let deal of portalData.deals">
-                <td style="font-weight:700; color:#fff;">{{ deal.title }}</td>
-                <td style="color:#fff;">{{ deal.calculated_total | number:'1.2-2' }} ج.م</td>
+                <td style="font-weight:700; color:var(--text);">{{ deal.title }}</td>
+                <td style="color:var(--text);">{{ deal.calculated_total | number:'1.2-2' }} ج.م</td>
                 <td style="color:var(--emerald-light); font-weight:700;">{{ deal.calculated_paid | number:'1.2-2' }} ج.م</td>
                 <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} ج.م</td>
                 <td>
@@ -62,6 +68,9 @@ import { ApiService } from '../../services/api.service';
                   <small style="color:var(--text-2); font-size:0.75rem;">{{ deal.progress }}%</small>
                 </td>
                 <td><span class="badge badge-v">{{ deal.status }}</span></td>
+              </tr>
+              <tr *ngIf="!portalData.deals || portalData.deals.length === 0">
+                <td colspan="6" style="text-align:center; padding:24px; color:var(--text-2);">لا توجد عقود أو صفقات مسجلة حالياً.</td>
               </tr>
             </tbody>
           </table>
@@ -119,9 +128,12 @@ import { ApiService } from '../../services/api.service';
   `,
   styles: [`
     :host { display: block; font-family: 'Cairo','Inter',sans-serif; direction: rtl; text-align: right; }
+    .loading-shell { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; color: var(--text-2); }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--violet-soft); border-top-color: var(--violet); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .client-portal-container { padding: 28px 32px; min-height: 100vh; background: var(--bg); background-image: var(--bg-gradient); background-attachment: fixed; direction: rtl; text-align: right; }
     .portal-header { margin-bottom: 24px; }
-    .portal-header h2 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
+    .portal-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
     .subtitle { color: var(--text-2); font-size: 0.85rem; margin-top: 4px; }
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .metric-card { padding: 22px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); position: relative; overflow: hidden; }
@@ -129,7 +141,7 @@ import { ApiService } from '../../services/api.service';
     .metric-card .value { font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; line-height: 1; }
     .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
     .crm-table th { text-align: right; padding: 14px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
-    .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; text-align: right; }
+    .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: var(--text); vertical-align: middle; text-align: right; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
   `]
@@ -138,14 +150,22 @@ export class ClientPortalViewComponent implements OnInit {
   private apiService = inject(ApiService);
 
   portalData: any = null;
+  loading = true;
 
   ngOnInit(): void {
     this.loadPortalData();
   }
 
   loadPortalData(): void {
-    this.apiService.getClientPortalDashboard().subscribe(res => {
-      this.portalData = res.data || res;
+    this.loading = true;
+    this.apiService.getClientPortalDashboard().subscribe({
+      next: (res) => {
+        this.portalData = res?.data || res;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
     });
   }
 
@@ -162,7 +182,7 @@ export class ClientPortalViewComponent implements OnInit {
   submitNote(task: any): void {
     if (!task.tempNoteText || !task.tempNoteText.trim()) return;
     this.apiService.addClientTaskNote(task.id, task.tempNoteText).subscribe(res => {
-      if (res.data) {
+      if (res && res.data) {
         if (!task.notes) task.notes = [];
         task.notes.push(res.data);
         task.status = 'client_feedback';

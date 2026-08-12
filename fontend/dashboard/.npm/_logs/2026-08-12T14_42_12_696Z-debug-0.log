@@ -1,0 +1,18 @@
+0 verbose cli /home/devoryx/.nvm/versions/node/v22.23.2/bin/node /home/devoryx/.nvm/versions/node/v22.23.2/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@10.9.8
+2 info using node@v22.23.2
+3 silly config load:file:/home/devoryx/.nvm/versions/node/v22.23.2/lib/node_modules/npm/npmrc
+4 silly config load:file:/run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npmrc
+5 silly config load:file:/home/devoryx/.nvm/versions/node/v22.23.2/etc/npmrc
+6 verbose title npm exec ng build
+7 verbose argv "exec" "--" "ng" "build"
+8 verbose logfile logs-max:10 dir:/run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-12T14_42_12_696Z-
+9 verbose logfile /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-12T14_42_12_696Z-debug-0.log
+10 silly logfile start cleaning logs, removing 1 files
+11 silly logfile done cleaning log files
+12 verbose cwd /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard
+13 verbose os Linux 7.0.0-29-generic
+14 verbose node v22.23.2
+15 verbose npm  v10.9.8
+16 verbose exit 0
+17 info ok

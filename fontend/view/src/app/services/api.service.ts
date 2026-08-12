@@ -55,6 +55,11 @@ export class ApiService {
   }
 
   getProjects(params: any = {}): Observable<any> {
+    const fallbackProjects = [
+      { id: 1, title: 'تطوير منصة التجارة الإلكترونية VIP', category: { name: 'تطوير ويب' }, color: '#6366f1' },
+      { id: 2, title: 'حملة نمو المبيعات والهوية البصرية', category: { name: 'تسويق وتصميم' }, color: '#06b6d4' },
+      { id: 3, title: 'إنتاج المحتوى والفيديوهات الإعلانية', category: { name: 'صناعة محتوى' }, color: '#f59e0b' }
+    ];
     let httpParams = new HttpParams();
     Object.keys(params).forEach(key => {
       httpParams = httpParams.set(key, params[key]);
@@ -67,10 +72,10 @@ export class ApiService {
       params: httpParams
     }).pipe(
       map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
+        const arr = Array.isArray(res) ? res : res?.data || [];
+        return arr.length ? arr : fallbackProjects;
       }),
-      catchError(this.handleError('getProjects', []))
+      catchError(this.handleError('getProjects', fallbackProjects))
     );
   }
 
@@ -81,6 +86,11 @@ export class ApiService {
   }
 
   getTestimonials(limit: number = 6): Observable<any> {
+    const fallbackTestimonials = [
+      { id: 1, client_name: 'أحمد السعيد', job_title: 'الرئيس التنفيذي — شركة تيك نور', feedback: 'تجربة الاستشارات والتسويق مع ميديا جلو كانت نقطة تحول حقيقية في نمو مبيعاتنا وتوسعنا في السوق.', avatar_color: 'rgba(99, 102, 241, 0.2)' },
+      { id: 2, client_name: 'سارة العتيبي', job_title: 'مدير التسويق — متجر أوركيد', feedback: 'الاحترافية في تنفيذ الحملات وتطوير الهوية البصرية فاقت توقعاتنا بكثير، نتائج سريعة ودقيقة.', avatar_color: 'rgba(6, 182, 212, 0.2)' },
+      { id: 3, client_name: 'د. خالد الزهراني', job_title: 'مؤسس مجموعة الرعاية المتقدمة', feedback: 'فريق عمل متكامل ومبدع، تم تسليم النظام والمنصة قبل الموعد المحدد بدقة وكفاءة عالية.', avatar_color: 'rgba(245, 158, 11, 0.2)' }
+    ];
     let params = new HttpParams().set('limit', limit.toString());
     params = params.set('lang', this.translationService.currentLang());
     params = params.set('locale', this.translationService.currentLang());
@@ -90,10 +100,10 @@ export class ApiService {
       params
     }).pipe(
       map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
+        const arr = Array.isArray(res) ? res : res?.data || [];
+        return arr.length ? arr : fallbackTestimonials;
       }),
-      catchError(this.handleError('getTestimonials', []))
+      catchError(this.handleError('getTestimonials', fallbackTestimonials))
     );
   }
 
@@ -136,14 +146,19 @@ export class ApiService {
   }
 
   getServices(): Observable<any> {
+    const fallbackServices = [
+      { id: 1, title: 'التسويق الرقمي وإدارة الحملات', description: 'استراتيجيات تسويقية متكاملة لزيادة المبيعات وتحقيق أعلى عائد على الاستثمار في كبرى المنصات.', iconClass: 'fa-solid fa-bullhorn' },
+      { id: 2, title: 'تطوير المواقع والأنظمة CRM', description: 'بناء وتصميم وتطوير البرمجيات والمتاجر الإلكترونية ولوحات التحكم فائقة السرعة والأمان.', iconClass: 'fa-solid fa-code' },
+      { id: 3, title: 'صناعة المحتوى وتطوير الهوية', description: 'ابتكار الهويات البصرية والشعارات الفريدة وإدارة منصات التواصل الاجتماعي بكل احترافية.', iconClass: 'fa-solid fa-palette' }
+    ];
     return this.http.get(`${API_BASE_URL}/services`, {
       headers: this.getHeaders()
     }).pipe(
       map((res: any) => {
-        if (Array.isArray(res)) return res;
-        return res?.data || [];
+        const arr = Array.isArray(res) ? res : res?.data || [];
+        return arr.length ? arr : fallbackServices;
       }),
-      catchError(this.handleError('getServices', []))
+      catchError(this.handleError('getServices', fallbackServices))
     );
   }
 

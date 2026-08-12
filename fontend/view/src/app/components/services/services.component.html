@@ -3,7 +3,7 @@
   <div class="glow-orb primary"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ (servicesPageData?.hero?.tag | translate) || ('services' | translate) }}
+      <p-tag [value]="(servicesPageData?.hero?.tag | translate) || ('services' | translate)" severity="warn" [rounded]="true" icon="pi pi-cog"></p-tag>
     </div>
     <h1 class="sec-title services-hero-title animate-up delay-2">
       {{ (servicesPageData?.hero?.title | translate) || ('what_we' | translate) }}<br/>
@@ -19,14 +19,13 @@
 <section class="section services-grid-section">
   <div class="container">
     <div class="services-grid">
-      
       @for (s of services; track s.id || $index) {
         <div class="glass-panel services-card" [id]="s.id">
           <div class="services-card-number">0{{ $index + 1 }}</div>
           
           <div class="services-card-content">
             <div class="services-icon-box">
-              <i [class]="s.iconClass || s.icon"></i>
+              <i [class]="s.iconClass || 'pi pi-sparkles'"></i>
             </div>
             <h3 class="services-card-title">{{ s.title | translate }}</h3>
             <p class="services-card-description">{{ s.description | translate }}</p>
@@ -37,16 +36,23 @@
                 <ul class="services-feat-list">
                   @for (feat of s.features; track $index) {
                     <li class="services-feat-item">
-                      <i class="fa-solid fa-check"></i> {{ feat | translate }}
+                      <i class="pi pi-check-circle" style="color: var(--teal-light);"></i>
+                      <span>{{ feat | translate }}</span>
                     </li>
                   }
                 </ul>
               </div>
             }
+
+            <div style="margin-top: 24px; padding-top: 16px;">
+              <a [routerLink]="['/contact']" [queryParams]="{ service: s.title }" class="btn btn-primary" style="width: 100%;">
+                <span>طلب الخدمة الآن</span>
+                <i class="pi pi-arrow-left"></i>
+              </a>
+            </div>
           </div>
         </div>
       }
-      
     </div>
   </div>
 </section>
@@ -55,8 +61,14 @@
 <section class="section services-cta-section">
   <div class="container">
     <div class="glass-panel services-cta-box">
+      <div style="margin-bottom: 16px;">
+        <p-tag [value]="'جاهز للبدء؟' | translate" severity="contrast" [rounded]="true" icon="pi pi-send"></p-tag>
+      </div>
       <h2 class="sec-title services-cta-title">{{ 'ready_start' | translate }} <span>{{ 'start_proj' | translate }}</span></h2>
-      <a routerLink="/contact" class="btn btn-primary">{{ 'contact' | translate }}</a>
+      <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 48px;">
+        <span>{{ 'contact' | translate }}</span>
+        <i class="pi pi-arrow-left"></i>
+      </a>
     </div>
   </div>
 </section>

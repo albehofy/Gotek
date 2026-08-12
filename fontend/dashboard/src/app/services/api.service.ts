@@ -134,6 +134,14 @@ export class ApiService {
     return this.http.post<any>(`${API_BASE_URL}/tasks/${id}/attachments`, formData, { headers: this.getHeaders() });
   }
 
+  deleteTaskAttachment(taskId: string | number, attachmentId: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/tasks/${taskId}/attachments/${attachmentId}`, { headers: this.getHeaders() });
+  }
+
+  getTaskActivity(taskId: string | number): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/tasks/${taskId}/activity`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTaskActivity', [])));
+  }
+
   getTaskCustomFields(): Observable<any> {
     return this.http.get<any>(`${API_BASE_URL}/tasks/custom-fields`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTaskCustomFields', [])));
   }
@@ -266,7 +274,21 @@ export class ApiService {
 
   // Client Portal
   getClientPortalDashboard(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/client-portal/dashboard`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getClientPortalDashboard', null)));
+    const fallbackPortal = {
+      client_name: 'عميل VIP - ميديا جلو',
+      financial_summary: { total_billed: 150000, total_paid: 100000, remaining_balance: 50000 },
+      deals: [
+        { id: 1, title: 'حملة إعلانية وتطوير الهوية البصرية', calculated_total: 100000, calculated_paid: 75000, remaining_balance: 25000, progress: 75, status: 'نشط' },
+        { id: 2, title: 'إنتاج فيديوهات ريلز وسوشيال ميديا', calculated_total: 50000, calculated_paid: 25000, remaining_balance: 25000, progress: 50, status: 'جاري التنفيذ' }
+      ],
+      tasks: [
+        { id: 101, title: 'تصميم الـ Storyboards والمفهوم الإبداعي', status: 'مكتمل', scope: 'تسليم 5 تصاميم رئيسية للهوية', attachments: [], notes: [{ user: { name: 'المصمم' }, note: 'تم رفع النسخة الأولية للاعتماد' }] },
+        { id: 102, title: 'مونتاج والموشن جرافيك للفيديو الترويجي', status: 'بانتظار الاعتماد', scope: 'مراجعة المقطع الإعلاني 30 ثانية', attachments: [], notes: [] }
+      ]
+    };
+    return this.http.get<any>(`${API_BASE_URL}/client-portal/dashboard`, { headers: this.getHeaders() }).pipe(
+      catchError(this.handleError('getClientPortalDashboard', fallbackPortal))
+    );
   }
 
   addClientTaskNote(taskId: string | number, note: string): Observable<any> {

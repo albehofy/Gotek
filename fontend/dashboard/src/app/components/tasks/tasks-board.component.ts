@@ -113,10 +113,11 @@ import { DropdownModule } from 'primeng/dropdown';
               <div class="tk-thumbs" *ngIf="getImageAttachments(task).length > 0">
                 <img
                   *ngFor="let img of getImageAttachments(task).slice(0,3)"
-                  [src]="img.file_url"
+                  [src]="getFileUrl(img)"
                   class="thumb"
-                  (click)="expandImage(img.file_url, $event)"
-                  alt=""
+                  (click)="expandImage(getFileUrl(img), $event)"
+                  (error)="handleImageError($event)"
+                  alt="مرفق"
                 />
                 <span class="thumb-more" *ngIf="getImageAttachments(task).length > 3">
                   +{{ getImageAttachments(task).length - 3 }}
@@ -162,125 +163,184 @@ import { DropdownModule } from 'primeng/dropdown';
           <!-- Drawer Header -->
           <div class="drawer-hd">
             <div class="drawer-hd-left">
-              <div class="drawer-task-av">{{ selectedTask.title?.charAt(0) }}</div>
-              <div>
-                <div class="drawer-title">{{ selectedTask.title }}</div>
+              <div class="drawer-task-av">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div class="drawer-hd-text">
+                <h3 class="drawer-title">{{ selectedTask.title }}</h3>
                 <div class="drawer-meta">
-                  <span class="badge" [ngClass]="selectedTask.status">{{ selectedTask.status?.replace('_', ' ') }}</span>
-                  <span class="priority-badge" [class]="'pb-' + (selectedTask.priority || 'medium')">{{ selectedTask.priority }}</span>
+                  <span class="priority-badge" [class]="'pb-' + (selectedTask.priority || 'medium')">
+                    <i class="fa-solid fa-bolt"></i> {{ selectedTask.priority | uppercase }}
+                  </span>
+                  <span class="deal-tag" *ngIf="selectedTask.deal">
+                    <i class="fa-solid fa-handshake"></i> {{ selectedTask.deal.title }}
+                  </span>
                 </div>
               </div>
             </div>
-            <button class="close-btn" (click)="selectedTask = null">
+            <button class="close-btn" (click)="selectedTask = null" title="إغلاق">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
 
-          <!-- Status quick-change -->
-          <div class="status-switcher">
-            <button
-              *ngFor="let col of columns"
-              class="status-btn"
-              [class.active]="selectedTask.status === col.key"
-              [style.--col-c]="col.color"
-              (click)="updateTaskStatus(selectedTask, col.key)"
-            >{{ col.title }}</button>
+          <!-- Pipeline Progress Switcher -->
+          <div class="pipeline-switcher">
+            <div class="ps-label"><i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (الحالة):</div>
+            <div class="ps-grid">
+              <button
+                *ngFor="let col of columns"
+                class="ps-step"
+                [class.active]="selectedTask.status === col.key"
+                (click)="updateTaskStatus(selectedTask, col.key)"
+              >
+                <span class="ps-dot" [style.background]="col.color"></span>
+                <span class="ps-name">{{ col.title }}</span>
+                <i class="fa-solid fa-check ps-check" *ngIf="selectedTask.status === col.key"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Drawer Body -->
           <div class="drawer-body">
 
-            <!-- Pricing banner -->
-            <div class="pricing-banner" *ngIf="selectedTask.client_price > 0">
-              <div class="pricing-item">
-                <small>Client Price</small>
-                <strong class="teal">{{ selectedTask.client_price | number:'1.2-2' }} EGP</strong>
+            <!-- Pricing Margin Hero Card -->
+            <div class="pricing-hero-card" *ngIf="selectedTask.client_price > 0">
+              <div class="ph-stat">
+                <span class="ph-lbl"><i class="fa-solid fa-user-tie"></i> سعر العميل</span>
+                <strong class="ph-val teal">{{ selectedTask.client_price | number:'1.2-2' }} <small>EGP</small></strong>
               </div>
-              <div class="pricing-sep"><i class="fa-solid fa-arrow-right"></i></div>
-              <div class="pricing-item">
-                <small>Employee Cost</small>
-                <strong class="amber">{{ selectedTask.employee_price | number:'1.2-2' }} EGP</strong>
+              <div class="ph-divider"></div>
+              <div class="ph-stat">
+                <span class="ph-lbl"><i class="fa-solid fa-laptop-code"></i> تكلفة الموظف</span>
+                <strong class="ph-val amber">{{ selectedTask.employee_price | number:'1.2-2' }} <small>EGP</small></strong>
               </div>
-              <div class="pricing-sep"><i class="fa-solid fa-equals"></i></div>
-              <div class="pricing-item highlight">
-                <small>Company Margin</small>
-                <strong class="emerald">+{{ (selectedTask.client_price - selectedTask.employee_price) | number:'1.2-2' }} EGP</strong>
+              <div class="ph-divider"></div>
+              <div class="ph-stat ph-margin">
+                <span class="ph-lbl"><i class="fa-solid fa-chart-line"></i> صافي الربح</span>
+                <strong class="ph-val emerald">+{{ (selectedTask.client_price - selectedTask.employee_price) | number:'1.2-2' }} <small>EGP</small></strong>
               </div>
             </div>
 
-            <!-- Scope -->
-            <div class="drawer-section" *ngIf="selectedTask.scope">
-              <div class="ds-label"><i class="fa-solid fa-file-lines"></i> Scope</div>
-              <div class="ds-text">{{ selectedTask.scope }}</div>
+            <!-- Scope / Description Card -->
+            <div class="drawer-card" *ngIf="selectedTask.scope">
+              <div class="dc-head"><i class="fa-solid fa-file-lines"></i> وصف ومواصفات المهمة</div>
+              <div class="dc-body scope-text">{{ selectedTask.scope }}</div>
             </div>
 
-            <!-- Team -->
-            <div class="drawer-section" *ngIf="(selectedTask.users || []).length > 0">
-              <div class="ds-label"><i class="fa-solid fa-users"></i> Assigned Team</div>
-              <div class="team-chips">
-                <div class="team-chip" *ngFor="let u of selectedTask.users">
-                  <div class="tc-av">{{ u.name?.charAt(0) }}</div>
-                  <span>{{ u.name }}</span>
+            <!-- Team Assignment Section -->
+            <div class="drawer-card">
+              <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الفريق المكلف بالمهمة</div>
+              <div class="team-assign-container">
+                <div class="team-chips-grid">
+                  <div class="team-chip-card" *ngFor="let u of (selectedTask.users || [])">
+                    <div class="tc-av">{{ u.name?.charAt(0) }}</div>
+                    <div class="tc-info">
+                      <span class="tc-name">{{ u.name }}</span>
+                      <small class="tc-role">{{ u.email || 'عضو الفريق' }}</small>
+                    </div>
+                    <button class="tc-remove-btn" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                  <div class="notes-empty" *ngIf="!(selectedTask.users || []).length" style="padding:4px 0;">
+                    لا يوجد أعضاء مكلفين حالياً
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- Deal info -->
-            <div class="drawer-section" *ngIf="selectedTask.deal">
-              <div class="ds-label"><i class="fa-solid fa-handshake"></i> Linked Deal</div>
-              <div class="deal-chip">
-                <i class="fa-solid fa-link"></i> {{ selectedTask.deal.title }}
+                <!-- Add Team Member Dropdown -->
+                <div class="assign-user-picker">
+                  <select class="user-select-input" #userSelect (change)="assignUserFromSelect(userSelect)">
+                    <option value="" disabled selected>+ إضافة عضو جديد من أي فريق...</option>
+                    <option *ngFor="let u of allUsers" [value]="u.id">{{ u.name }} ({{ u.email || 'فريق العمل' }})</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             <!-- Attachments -->
-            <div class="drawer-section">
-              <div class="ds-label"><i class="fa-solid fa-images"></i> Attachments</div>
-              <div class="att-grid">
-                <div
-                  *ngFor="let att of (selectedTask.attachments || [])"
-                  class="att-item"
-                >
-                  <img *ngIf="att.is_image" [src]="att.file_url" class="att-img" (click)="expandImage(att.file_url, $event)" />
-                  <div *ngIf="!att.is_image" class="att-doc">
-                    <i class="fa-solid fa-file-lines"></i>
-                    <span>{{ att.file_name || 'File' }}</span>
+            <div class="drawer-card">
+              <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والملفات</div>
+              <div class="att-grid" *ngIf="(selectedTask.attachments || []).length > 0">
+                <div *ngFor="let att of selectedTask.attachments" class="att-item">
+                  <div class="att-img-wrap" *ngIf="isImage(att)">
+                    <img
+                      [src]="getFileUrl(att)"
+                      class="att-img"
+                      (click)="expandImage(getFileUrl(att), $event)"
+                      (error)="handleImageError($event)"
+                      alt="مرفق"
+                    />
+                    <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>{{ att.file_name || att.name || 'مستند' }}</span>
+                    <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
                   </div>
                 </div>
               </div>
-              <div class="upload-zone" (click)="fileInput.click()">
+              <div class="upload-zone-modern" (click)="fileInput.click()">
                 <input type="file" #fileInput (change)="onFileSelected($event)" style="display:none" />
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                <span>Click to upload attachment</span>
+                <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div class="uz-text">
+                  <strong>اضغط لرفع ملف أو سحب وإسقاط المستند هنا</strong>
+                  <small>يدعم الصور والملفات المرفقة (PNG, JPG, PDF)</small>
+                </div>
               </div>
             </div>
 
-            <!-- Comments -->
-            <div class="drawer-section">
-              <div class="ds-label"><i class="fa-solid fa-comments"></i> التعليقات والملاحظات</div>
-              <div class="notes-list">
-                <div class="note-item" *ngFor="let note of (selectedTask.notes || [])">
+            <!-- Comments & Discussion -->
+            <div class="drawer-card">
+              <div class="dc-head"><i class="fa-solid fa-comments"></i> التعليقات والملاحظات</div>
+              <div class="notes-timeline">
+                <div class="note-bubble" *ngFor="let note of (selectedTask.notes || [])">
                   <div class="note-av">{{ note.user?.name?.charAt(0) || 'U' }}</div>
-                  <div class="note-body">
-                    <div class="note-author">{{ note.user?.name || 'مستخدم' }}</div>
+                  <div class="note-content">
+                    <div class="note-meta">
+                      <strong class="note-author">{{ note.user?.name || 'مستخدم' }}</strong>
+                      <span class="note-time">{{ note.created_at | date:'short' }}</span>
+                    </div>
                     <div class="note-text">{{ note.note }}</div>
-                    <small class="note-time">{{ note.created_at | date:'short' }}</small>
                   </div>
                 </div>
                 <div class="notes-empty" *ngIf="!(selectedTask.notes || []).length">
-                  <i class="fa-regular fa-comment"></i> لا توجد تعليقات بعد
+                  <i class="fa-regular fa-comments"></i> لا توجد تعليقات بعد... كن أول من يضيف تعليقاً!
                 </div>
               </div>
-              <div class="add-note">
+              <div class="add-note-box">
                 <textarea
                   [(ngModel)]="newNoteText"
-                  placeholder="اكتب تعليقاً... يمكنك استخدام @ لإشارة أي عضو"
+                  placeholder="اكتب تعليقاً أو ملاحظة..."
                   rows="2"
                   dir="rtl"
                 ></textarea>
-                <button class="btn-send-note" (click)="submitNote()" [disabled]="!newNoteText.trim()">
-                  <i class="fa-solid fa-paper-plane"></i> إرسال
+                <button class="btn-send-note-modern" (click)="submitNote()" [disabled]="!newNoteText.trim()">
+                  <i class="fa-solid fa-paper-plane"></i> إرسال التعليق
                 </button>
+              </div>
+            </div>
+
+            <!-- Activity History Timeline -->
+            <div class="drawer-card">
+              <div class="dc-head"><i class="fa-solid fa-clock-rotate-left"></i> سجل النشاط والتغييرات (Task History)</div>
+              <div class="activity-timeline">
+                <div class="act-bubble" *ngFor="let act of taskActivities">
+                  <div class="act-icon"><i class="fa-solid fa-circle-dot"></i></div>
+                  <div class="act-body">
+                    <div class="act-desc">{{ act.description }}</div>
+                    <div class="act-meta">
+                      <span class="act-user"><i class="fa-solid fa-user-gear"></i> {{ act.user_name || 'النظام' }}</span>
+                      <span class="act-time"><i class="fa-solid fa-clock"></i> {{ act.created_at | date:'medium' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="notes-empty" *ngIf="taskActivities.length === 0">
+                  <i class="fa-solid fa-history"></i> لا توجد سجلات تغييرات حتى الآن
+                </div>
               </div>
             </div>
 
@@ -444,7 +504,7 @@ import { DropdownModule } from 'primeng/dropdown';
       box-shadow: 0 4px 20px var(--violet-glow);
       font-family: inherit;
     }
-    .btn-new-task:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--violet-glow); }
+    .btn-new-task:hover { box-shadow: 0 8px 28px var(--violet-glow); }
 
     /* ── KANBAN BOARD ───────────────────────────────────────────── */
     .kanban-board {
@@ -462,22 +522,22 @@ import { DropdownModule } from 'primeng/dropdown';
     .kanban-board::-webkit-scrollbar { display: none; } /* Hide bottom scrollbar */
 
     /* ── COLUMN ─────────────────────────────────────────────────── */
+    /* ── COLUMN ─────────────────────────────────────────────────── */
     .kanban-col {
       flex: 0 0 280px; min-width: 280px;
-      background: rgba(12,12,26,0.7);
-      border: 1px solid var(--border);
+      background: linear-gradient(90deg, rgba(9, 9, 24, 0.85) 0%, rgba(9, 9, 24, 0.4) 60%, rgba(9, 9, 24, 0.7) 100%);
+      border: 1px solid var(--border-v);
       border-radius: 18px;
       display: flex; flex-direction: column;
       height: 100%;
       max-height: 100%;
       overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
       backdrop-filter: blur(12px);
     }
     .kanban-col.drag-over {
       border-color: rgba(99,102,241,0.6);
       box-shadow: 0 0 0 2px rgba(99,102,241,0.25), 0 8px 32px rgba(99,102,241,0.15);
-      transform: scale(1.01);
     }
 
     /* Column Header */
@@ -485,18 +545,19 @@ import { DropdownModule } from 'primeng/dropdown';
       padding: 14px 16px;
       display: flex; align-items: center; justify-content: space-between;
       border-bottom: 1px solid var(--border);
-      background: rgba(0,0,0,0.2);
+      background: rgba(99, 102, 241, 0.08);
       border-radius: 18px 18px 0 0;
       border-top: 3px solid var(--col-accent, var(--violet));
     }
     .col-hd-left { display: flex; align-items: center; gap: 9px; }
     .col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
-    .col-title { font-size: 0.82rem; font-weight: 700; color: #fff; }
+    .col-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
     .col-count {
       font-size: 0.72rem; font-weight: 800;
       padding: 3px 9px; border-radius: 100px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: var(--violet-soft);
+      border: 1px solid var(--border-v);
+      color: var(--violet-light);
     }
 
     /* Column Body */
@@ -510,25 +571,25 @@ import { DropdownModule } from 'primeng/dropdown';
     .col-empty {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 6px; padding: 28px 12px;
-      color: rgba(255,255,255,0.15); font-size: 0.78rem;
-      border: 2px dashed rgba(255,255,255,0.07);
+      color: var(--text-2); font-size: 0.78rem;
+      border: 2px dashed var(--border-v);
       border-radius: 12px; min-height: 80px;
+      background: rgba(99, 102, 241, 0.03);
     }
-    .col-empty i { font-size: 1.2rem; }
+    .col-empty i { font-size: 1.2rem; color: var(--violet-light); opacity: 0.85; }
 
     /* ── TASK CARD ──────────────────────────────────────────────── */
     .tk-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: linear-gradient(90deg, rgba(15, 15, 35, 0.9) 0%, rgba(12, 12, 28, 0.6) 60%, rgba(15, 15, 35, 0.8) 100%);
+      border: 1px solid var(--border);
       border-radius: 14px; padding: 12px 13px;
-      cursor: grab; transition: all 0.2s var(--ease);
+      cursor: grab; transition: border-color 0.2s, box-shadow 0.2s;
       position: relative; overflow: hidden;
       user-select: none;
     }
     .tk-card:hover {
-      background: rgba(99,102,241,0.07);
-      border-color: rgba(99,102,241,0.3);
-      transform: translateY(-2px);
+      background: linear-gradient(90deg, rgba(20, 20, 45, 0.95) 0%, rgba(15, 15, 35, 0.75) 60%, rgba(20, 20, 45, 0.88) 100%);
+      border-color: var(--border-v);
       box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
     .tk-card:active { cursor: grabbing; }
@@ -557,7 +618,7 @@ import { DropdownModule } from 'primeng/dropdown';
 
     /* Card content */
     .tk-title {
-      font-size: 0.85rem; font-weight: 700; color: #eee;
+      font-size: 0.85rem; font-weight: 700; color: var(--text);
       line-height: 1.3; margin-bottom: 5px;
     }
     .tk-scope {
@@ -565,6 +626,58 @@ import { DropdownModule } from 'primeng/dropdown';
       margin-bottom: 8px;
       display: -webkit-box; -webkit-line-clamp: 2;
       -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* Light Mode Overrides for Kanban Board */
+    body.light-theme .kanban-col,
+    :host-context(body.light-theme) .kanban-col {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.08) !important;
+    }
+    body.light-theme .col-hd,
+    :host-context(body.light-theme) .col-hd {
+      background: rgba(99, 102, 241, 0.05) !important;
+      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
+    }
+    body.light-theme .col-title,
+    :host-context(body.light-theme) .col-title {
+      color: #0f172a !important;
+    }
+    body.light-theme .col-count,
+    :host-context(body.light-theme) .col-count {
+      color: #4f46e5 !important;
+      background: rgba(99, 102, 241, 0.1) !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+    }
+    body.light-theme .col-empty,
+    :host-context(body.light-theme) .col-empty {
+      background: rgba(248, 250, 252, 0.8) !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: #64748b !important;
+    }
+    body.light-theme .col-empty i,
+    :host-context(body.light-theme) .col-empty i {
+      color: #4f46e5 !important;
+    }
+    body.light-theme .tk-card,
+    :host-context(body.light-theme) .tk-card {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.18) !important;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+    }
+    body.light-theme .tk-card:hover,
+    :host-context(body.light-theme) .tk-card:hover {
+      background: #f8fafc !important;
+      border-color: rgba(99, 102, 241, 0.35) !important;
+    }
+    body.light-theme .tk-title,
+    :host-context(body.light-theme) .tk-title {
+      color: #0f172a !important;
+    }
+    body.light-theme .tk-scope,
+    :host-context(body.light-theme) .tk-scope {
+      color: #475569 !important;
     }
 
     /* Margin chip */
@@ -594,225 +707,397 @@ import { DropdownModule } from 'primeng/dropdown';
       font-size: 0.68rem; font-weight: 700; color: var(--violet-light);
     }
 
-    /* Card footer */
-    .tk-foot {
-      display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 4px;
-    }
-    .tk-avatars { display: flex; }
-    .av-sm {
-      width: 22px; height: 22px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--violet), var(--teal));
-      color: #fff; font-size: 0.6rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      border: 2px solid var(--bg-sidebar); margin-right: -5px;
-      position: relative;
-    }
-    .av-more { background: rgba(255,255,255,0.1); color: var(--text-2); font-size: 0.55rem; }
-    .tk-foot-right { display: flex; align-items: center; gap: 6px; }
-    .tk-attach { font-size: 0.68rem; color: var(--text-3); display: flex; align-items: center; gap: 3px; }
-
-    /* Priority badge */
-    .priority-badge {
-      font-size: 0.6rem; font-weight: 700; padding: 2px 6px;
-      border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .pb-low    { background: var(--emerald-soft); color: var(--emerald-light); }
-    .pb-medium { background: var(--amber-soft);   color: var(--amber-light); }
-    .pb-high   { background: var(--rose-soft);    color: var(--rose-light); }
-    .pb-urgent { background: rgba(255,0,80,0.15); color: #ff4488; border: 1px solid rgba(255,0,80,0.25); }
-
-    /* ── DETAIL DRAWER ──────────────────────────────────────────── */
     .drawer-backdrop {
       position: fixed; inset: 0; z-index: 1200;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(6px);
-      display: flex; justify-content: flex-end;
+      background: rgba(4, 5, 15, 0.75);
+      backdrop-filter: blur(10px);
+      display: flex; justify-content: flex-start;
+      direction: rtl;
     }
     .detail-drawer {
-      width: 480px; max-width: 95vw;
+      width: 520px; max-width: 95vw;
       height: 100vh;
-      background: #0e0e22;
-      border-left: 1px solid rgba(99,102,241,0.2);
+      background: linear-gradient(165deg, rgba(15, 16, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
+      border-left: 1px solid rgba(99, 102, 241, 0.25);
       display: flex; flex-direction: column;
-      animation: drawerSlideIn 0.28s cubic-bezier(0.16,1,0.3,1);
-      box-shadow: -20px 0 60px rgba(0,0,0,0.6);
+      animation: drawerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 25px 0 70px rgba(0, 0, 0, 0.7);
     }
-    @keyframes drawerSlideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to   { transform: translateX(0);   opacity: 1; }
+    @keyframes drawerFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     /* Drawer Header */
     .drawer-hd {
       display: flex; align-items: flex-start; justify-content: space-between;
-      padding: 20px 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
-      background: rgba(99,102,241,0.06); flex-shrink: 0;
-    }
-    .drawer-hd-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 0; }
-    .drawer-task-av {
-      width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--violet), var(--teal));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; font-weight: 800; color: #fff;
-      box-shadow: 0 0 16px var(--violet-glow);
-    }
-    .drawer-title {
-      font-size: 0.95rem; font-weight: 700; color: #fff;
-      line-height: 1.3; margin-bottom: 6px;
-      word-break: break-word;
-    }
-    .drawer-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-
-    /* Status switcher */
-    .status-switcher {
-      display: flex; gap: 5px; overflow-x: auto; padding: 12px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 22px 26px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(6, 182, 212, 0.04) 100%);
       flex-shrink: 0;
     }
-    .status-switcher::-webkit-scrollbar { height: 0; }
-    .status-btn {
-      padding: 5px 11px; border-radius: 100px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04);
-      color: var(--text-2); font-size: 0.72rem; font-weight: 600;
-      cursor: pointer; white-space: nowrap; transition: all 0.2s;
-      font-family: inherit;
+    .drawer-hd-left { display: flex; align-items: flex-start; gap: 14px; flex: 1; min-width: 0; }
+    .drawer-task-av {
+      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--violet), var(--teal));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; color: #fff;
+      box-shadow: 0 0 20px var(--violet-glow);
     }
-    .status-btn.active {
-      background: var(--col-c, var(--violet));
-      border-color: var(--col-c, var(--violet));
-      color: #fff; opacity: 1;
-      box-shadow: 0 2px 12px var(--col-c, var(--violet-glow));
+    .drawer-hd-text { flex: 1; min-width: 0; }
+    .drawer-title {
+      font-size: 1.1rem; font-weight: 800; color: var(--text);
+      line-height: 1.35; margin-bottom: 8px;
+      word-break: break-word;
     }
-    .status-btn:not(.active):hover {
-      background: rgba(255,255,255,0.08); color: #fff;
+    .drawer-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .deal-tag {
+      font-size: 0.72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 100px;
+      background: var(--violet-soft); color: var(--violet-light);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    /* Pipeline Progress Switcher */
+    .pipeline-switcher {
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+    }
+    .ps-label {
+      font-size: 0.74rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-2); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ps-grid {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .ps-step {
+      padding: 6px 12px; border-radius: 100px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-2); font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .ps-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .ps-check { font-size: 0.7rem; color: #fff; }
+    .ps-step.active {
+      background: var(--violet); border-color: var(--violet);
+      color: #ffffff; box-shadow: 0 4px 16px var(--violet-glow);
+    }
+    .ps-step:not(.active):hover {
+      background: rgba(255, 255, 255, 0.08); color: var(--text);
     }
 
     /* Drawer body */
     .drawer-body {
-      flex: 1; overflow-y: auto; padding: 18px 22px;
-      display: flex; flex-direction: column; gap: 20px;
+      flex: 1; overflow-y: auto; padding: 22px 26px;
+      display: flex; flex-direction: column; gap: 18px;
     }
     .drawer-body::-webkit-scrollbar { width: 3px; }
-    .drawer-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 4px; }
+    .drawer-body::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 4px; }
 
-    /* Pricing banner */
-    .pricing-banner {
-      display: flex; align-items: center;
-      background: rgba(6,182,212,0.06);
-      border: 1px solid rgba(6,182,212,0.15);
-      border-radius: 12px; padding: 14px 16px; gap: 12px;
-      flex-wrap: wrap;
+    /* Pricing Hero Card */
+    .pricing-hero-card {
+      display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 16px; padding: 16px 18px; gap: 10px;
     }
-    .pricing-item { display: flex; flex-direction: column; gap: 3px; }
-    .pricing-item small { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-2); }
-    .pricing-item strong { font-size: 0.95rem; font-weight: 800; }
-    .pricing-item.highlight {
-      margin-left: auto;
-      background: rgba(16,185,129,0.1); padding: 8px 14px;
-      border-radius: 10px; border: 1px solid rgba(16,185,129,0.2);
+    .ph-stat { display: flex; flex-direction: column; gap: 4px; }
+    .ph-lbl { font-size: 0.68rem; font-weight: 700; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
+    .ph-val { font-size: 1.05rem; font-weight: 900; }
+    .ph-val small { font-size: 0.7rem; font-weight: 700; }
+    .ph-divider { width: 1px; height: 28px; background: rgba(255, 255, 255, 0.1); }
+    .ph-margin {
+      background: rgba(16, 185, 129, 0.1);
+      padding: 8px 12px; border-radius: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
     }
-    .pricing-sep { color: rgba(255,255,255,0.2); font-size: 0.9rem; }
-    .teal   { color: var(--teal-light) !important; }
-    .amber  { color: var(--amber-light) !important; }
-    .emerald { color: var(--emerald-light) !important; }
 
-    /* Drawer sections */
-    .drawer-section { display: flex; flex-direction: column; gap: 10px; }
-    .ds-label {
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; color: var(--text-2);
-      display: flex; align-items: center; gap: 7px;
+    /* Drawer Card Section */
+    .drawer-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px;
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .ds-text { font-size: 0.84rem; color: var(--text); line-height: 1.55; }
+    .dc-head {
+      font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--violet-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dc-body { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
 
-    /* Team chips */
-    .team-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .team-chip {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(99,102,241,0.08);
-      border: 1px solid rgba(99,102,241,0.2);
-      padding: 5px 10px; border-radius: 100px;
-      font-size: 0.78rem; font-weight: 600; color: var(--violet-light);
+    /* Team Chips & Assign */
+    .team-chips-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .team-chip-card {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 6px 12px; border-radius: 12px;
     }
     .tc-av {
-      width: 22px; height: 22px; border-radius: 50%;
+      width: 28px; height: 28px; border-radius: 50%;
       background: linear-gradient(135deg, var(--violet), var(--teal));
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 800; color: #fff; flex-shrink: 0;
+      font-size: 0.75rem; font-weight: 800; color: #fff;
+    }
+    .tc-info { display: flex; flex-direction: column; }
+    .tc-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .tc-role { font-size: 0.65rem; color: var(--text-2); }
+    .tc-remove-btn {
+      background: none; border: none; color: var(--text-2);
+      cursor: pointer; font-size: 0.85rem; margin-right: 4px;
+      padding: 2px 4px; transition: color 0.2s;
+    }
+    .tc-remove-btn:hover { color: #f43f5e; }
+    .team-assign-container { display: flex; flex-direction: column; gap: 12px; }
+    .assign-user-picker { width: 100%; }
+    .user-select-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--surface-1, rgba(255, 255, 255, 0.04));
+      border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text); font-size: 0.82rem; outline: none;
+      cursor: pointer; font-family: inherit;
+    }
+    body.light-theme .user-select-input {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: #0f172a !important;
     }
 
-    /* Deal chip */
-    .deal-chip {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--violet-soft); border: 1px solid var(--border-v);
-      padding: 6px 12px; border-radius: 10px;
-      font-size: 0.82rem; color: var(--violet-light); font-weight: 600;
+    /* Attachments Grid & Overlay Delete */
+    .att-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 6px;
     }
-
-    /* Attachments */
-    .att-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .att-item {
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+    .att-img-wrap { position: relative; width: 76px; height: 76px; flex-shrink: 0; }
     .att-img {
-      width: 70px; height: 70px; object-fit: cover;
-      border-radius: 10px; border: 1px solid var(--border);
-      cursor: pointer; transition: transform 0.2s;
-    }
-    .att-img:hover { transform: scale(1.05); }
-    .att-doc {
-      width: 70px; height: 70px; border-radius: 10px;
-      background: rgba(255,255,255,0.05);
+      width: 76px;
+      height: 76px;
+      object-fit: cover;
+      border-radius: 14px;
       border: 1px solid var(--border);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; font-size: 0.62rem; color: var(--text-2);
+      cursor: pointer;
+      transition: border-color 0.2s;
+      background: rgba(99, 102, 241, 0.05);
     }
-    .att-doc i { font-size: 1.2rem; }
-    .upload-zone {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 14px; border-radius: 10px;
-      border: 2px dashed rgba(99,102,241,0.25);
-      color: var(--text-2); font-size: 0.78rem; font-weight: 500;
+    .att-img:hover {
+      border-color: var(--violet);
+    }
+    .att-del-btn {
+      position: absolute; top: 4px; left: 4px;
+      width: 22px; height: 22px; border-radius: 6px;
+      background: rgba(225, 29, 72, 0.85); color: #fff;
+      border: none; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 0.65rem; transition: all 0.2s; z-index: 5;
+    }
+    .att-del-btn:hover { background: #e11d48; transform: scale(1.1); }
+    .att-doc {
+      width: 76px;
+      height: 76px;
+      border-radius: 14px;
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 6px;
+      font-size: 0.65rem;
+      color: var(--text-2);
+      text-align: center;
+      position: relative;
+    }
+    .att-doc i {
+      font-size: 1.3rem;
+      color: var(--violet-light);
+    }
+
+    /* Activity History Timeline */
+    .activity-timeline { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; }
+    .act-bubble {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 14px;
+    }
+    body.light-theme .act-bubble {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    .act-icon { color: var(--violet-light); font-size: 0.8rem; margin-top: 2px; }
+    .act-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .act-desc { font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.4; }
+    body.light-theme .act-desc { color: #0f172a !important; }
+    .act-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--text-2); }
+    .act-user { font-weight: 700; color: var(--violet-light); }
+
+    /* Modern Upload Zone */
+    .upload-zone-modern {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px; border-radius: 14px;
+      border: 2px dashed rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.03);
       cursor: pointer; transition: all 0.2s;
     }
-    .upload-zone:hover { border-color: rgba(99,102,241,0.5); color: var(--violet-light); background: var(--violet-soft); }
-    .upload-zone i { font-size: 1rem; }
+    .upload-zone-modern:hover {
+      border-color: var(--violet); background: rgba(99, 102, 241, 0.08);
+    }
+    .uz-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--violet-soft); color: var(--violet-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .uz-text { display: flex; flex-direction: column; gap: 2px; }
+    .uz-text strong { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .uz-text small { font-size: 0.7rem; color: var(--text-2); }
 
-    /* Notes */
-    .notes-list { display: flex; flex-direction: column; gap: 12px; max-height: 240px; overflow-y: auto; }
-    .notes-list::-webkit-scrollbar { width: 3px; }
-    .notes-list::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
-    .note-item { display: flex; gap: 10px; }
+    /* Notes & Activity Timeline */
+    .notes-timeline { display: flex; flex-direction: column; gap: 14px; max-height: 260px; overflow-y: auto; }
+    .note-bubble { display: flex; gap: 12px; align-items: flex-start; }
     .note-av {
-      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
       background: linear-gradient(135deg, var(--violet-2), var(--teal-2));
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: 700; color: #fff;
+      font-size: 0.75rem; font-weight: 800; color: #fff;
     }
-    .note-body { flex: 1; }
-    .note-author { font-size: 0.78rem; font-weight: 700; color: var(--violet-light); margin-bottom: 2px; }
-    .note-text { font-size: 0.82rem; color: var(--text); line-height: 1.45; }
-    .note-time { font-size: 0.65rem; color: var(--text-3); margin-top: 3px; display: block; }
-    .notes-empty { font-size: 0.78rem; color: var(--text-3); text-align: center; padding: 12px; }
+    .note-content {
+      flex: 1; background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .note-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .note-author { font-size: 0.8rem; font-weight: 800; color: var(--violet-light); }
+    .note-time { font-size: 0.65rem; color: var(--text-3); }
+    .note-text { font-size: 0.84rem; color: var(--text); line-height: 1.5; }
+    .notes-empty { font-size: 0.8rem; color: var(--text-2); text-align: center; padding: 18px; }
 
-    /* Add note */
-    .add-note { display: flex; flex-direction: column; gap: 8px; }
-    .add-note textarea {
-      width: 100%; padding: 10px 13px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-family: inherit; font-size: 0.84rem;
+    .add-note-box { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+    .add-note-box textarea {
+      width: 100%; padding: 12px 15px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text); font-family: inherit; font-size: 0.85rem;
       outline: none; resize: none; transition: all 0.2s;
     }
-    .add-note textarea:focus { border-color: var(--violet); background: rgba(99,102,241,0.05); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
-    .btn-send-note {
-      align-self: flex-end; display: inline-flex; align-items: center; gap: 7px;
-      padding: 8px 16px; border-radius: 10px; border: none;
+    .add-note-box textarea:focus { border-color: var(--violet); background: rgba(99, 102, 241, 0.06); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12); }
+    .btn-send-note-modern {
+      align-self: flex-end; display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 20px; border-radius: 12px; border: none;
       background: linear-gradient(135deg, var(--violet), var(--violet-2));
-      color: #fff; font-weight: 700; font-size: 0.8rem;
-      cursor: pointer; transition: all 0.2s; font-family: inherit;
-      box-shadow: 0 4px 14px var(--violet-glow);
+      color: #fff; font-weight: 700; font-size: 0.82rem; cursor: pointer;
+      box-shadow: 0 4px 16px var(--violet-glow); transition: all 0.2s;
     }
-    .btn-send-note:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px var(--violet-glow); }
+
+    /* ── LIGHT THEME OVERRIDES FOR DETAIL DRAWER ─────────────────────── */
+    body.light-theme .detail-drawer,
+    :host-context(body.light-theme) .detail-drawer {
+      background: #ffffff !important;
+      border-left-color: rgba(99, 102, 241, 0.2) !important;
+      box-shadow: 25px 0 70px rgba(15, 23, 42, 0.18) !important;
+    }
+    body.light-theme .drawer-hd,
+    :host-context(body.light-theme) .drawer-hd {
+      background: rgba(99, 102, 241, 0.05) !important;
+      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
+    }
+    body.light-theme .drawer-title,
+    :host-context(body.light-theme) .drawer-title {
+      color: #0f172a !important;
+    }
+    body.light-theme .pipeline-switcher,
+    :host-context(body.light-theme) .pipeline-switcher {
+      background: rgba(248, 250, 252, 0.8) !important;
+      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
+    }
+    body.light-theme .ps-step,
+    :host-context(body.light-theme) .ps-step {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: #475569 !important;
+    }
+    body.light-theme .ps-step.active,
+    :host-context(body.light-theme) .ps-step.active {
+      background: #4f46e5 !important;
+      border-color: #4f46e5 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3) !important;
+    }
+    body.light-theme .pricing-hero-card,
+    :host-context(body.light-theme) .pricing-hero-card {
+      background: rgba(99, 102, 241, 0.05) !important;
+      border-color: rgba(99, 102, 241, 0.18) !important;
+    }
+    body.light-theme .ph-lbl,
+    :host-context(body.light-theme) .ph-lbl {
+      color: #64748b !important;
+    }
+    body.light-theme .ph-val,
+    :host-context(body.light-theme) .ph-val {
+      color: #0f172a !important;
+    }
+    body.light-theme .drawer-card,
+    :host-context(body.light-theme) .drawer-card {
+      background: #f8fafc !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    body.light-theme .dc-head,
+    :host-context(body.light-theme) .dc-head {
+      color: #4f46e5 !important;
+    }
+    body.light-theme .dc-body,
+    :host-context(body.light-theme) .dc-body {
+      color: #0f172a !important;
+    }
+    body.light-theme .tc-name,
+    :host-context(body.light-theme) .tc-name {
+      color: #0f172a !important;
+    }
+    body.light-theme .upload-zone-modern,
+    :host-context(body.light-theme) .upload-zone-modern {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.25) !important;
+    }
+    body.light-theme .uz-text strong,
+    :host-context(body.light-theme) .uz-text strong {
+      color: #0f172a !important;
+    }
+    body.light-theme .note-content,
+    :host-context(body.light-theme) .note-content {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.15) !important;
+    }
+    body.light-theme .note-author,
+    :host-context(body.light-theme) .note-author {
+      color: #4f46e5 !important;
+    }
+    body.light-theme .note-text,
+    :host-context(body.light-theme) .note-text {
+      color: #0f172a !important;
+    }
+    body.light-theme .add-note-box textarea,
+    :host-context(body.light-theme) .add-note-box textarea {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      color: #0f172a !important;
+    }
     .btn-send-note:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── CREATE MODAL ───────────────────────────────────────────── */
@@ -825,7 +1110,7 @@ import { DropdownModule } from 'primeng/dropdown';
     }
     .create-modal {
       width: 100%; max-width: 640px;
-      background: #0e0e22;
+      background: linear-gradient(90deg, rgba(9, 9, 24, 0.95) 0%, rgba(9, 9, 24, 0.7) 60%, rgba(9, 9, 24, 0.9) 100%);
       border: 1px solid rgba(99,102,241,0.2);
       border-radius: 22px;
       box-shadow: 0 24px 80px rgba(0,0,0,0.7);
@@ -894,7 +1179,7 @@ import { DropdownModule } from 'primeng/dropdown';
       cursor: pointer; transition: all 0.25s; font-family: inherit;
       box-shadow: 0 4px 16px var(--violet-glow);
     }
-    .btn-save:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px var(--violet-glow); }
+    .btn-save:hover:not(:disabled) { box-shadow: 0 8px 24px var(--violet-glow); }
     .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── LIGHTBOX ────────────────────────────────────────────────── */
@@ -974,10 +1259,14 @@ export class TasksBoardComponent implements OnInit {
     });
   }
 
+  allUsers: any[] = [];
+  taskActivities: any[] = [];
+
   loadData(): void {
     this.apiService.getTasks({ parents_only: 'true' }).subscribe(res => this.tasks = res || []);
     this.apiService.getDeals().subscribe(res => this.deals = res || []);
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
+    this.apiService.getUsers().subscribe(res => this.allUsers = (res && res.data ? res.data : res) || []);
   }
 
   getTasksForColumn(colKey: string) {
@@ -1008,6 +1297,55 @@ export class TasksBoardComponent implements OnInit {
   openTaskDetail(task: any): void {
     if (this.draggingTask) return; // don't open during drag
     this.selectedTask = task;
+    this.loadTaskActivities(task.id);
+  }
+
+  loadTaskActivities(taskId: number): void {
+    this.apiService.getTaskActivity(taskId).subscribe(res => {
+      if (res && res.data) {
+        this.taskActivities = res.data;
+      }
+    });
+  }
+
+  assignUserFromSelect(selectElem: HTMLSelectElement): void {
+    if (!this.selectedTask || !selectElem.value) return;
+    const userId = Number(selectElem.value);
+    if (!userId) return;
+
+    if (!this.selectedTask.users) this.selectedTask.users = [];
+    const exists = this.selectedTask.users.some((u: any) => u.id === userId);
+    if (!exists) {
+      const userObj = this.allUsers.find((u: any) => u.id === userId);
+      const userIds = [...this.selectedTask.users.map((u: any) => u.id), userId];
+      this.apiService.assignTaskMembers(this.selectedTask.id, userIds).subscribe(res => {
+        if (userObj) {
+          this.selectedTask.users.push(userObj);
+        }
+        this.loadTaskActivities(this.selectedTask.id);
+      });
+    }
+    selectElem.value = '';
+  }
+
+  removeUserFromTask(userId: number): void {
+    if (!this.selectedTask || !this.selectedTask.users) return;
+    const userIds = this.selectedTask.users.filter((u: any) => u.id !== userId).map((u: any) => u.id);
+    this.apiService.assignTaskMembers(this.selectedTask.id, userIds).subscribe(() => {
+      this.selectedTask.users = this.selectedTask.users.filter((u: any) => u.id !== userId);
+      this.loadTaskActivities(this.selectedTask.id);
+    });
+  }
+
+  deleteAttachment(task: any, att: any, event: Event): void {
+    event.stopPropagation();
+    if (!confirm('هل أنت تأكد من حذف هذا المرفق؟')) return;
+    this.apiService.deleteTaskAttachment(task.id, att.id).subscribe(() => {
+      if (task.attachments) {
+        task.attachments = task.attachments.filter((a: any) => a.id !== att.id);
+      }
+      this.loadTaskActivities(task.id);
+    });
   }
 
   closeDetail(event: MouseEvent): void {
@@ -1047,14 +1385,46 @@ export class TasksBoardComponent implements OnInit {
     this.persistStatusUpdate(task, newStatus, () => task.status = oldStatus);
   }
 
+  isImage(att: any): boolean {
+    if (!att) return false;
+    if (att.is_image === true || att.is_image === 1 || att.is_image === '1') return true;
+    const path = (att.file_url || att.file_path || att.url || att.path || att.file_name || '').toLowerCase();
+    if (path.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)($|\?)/i)) return true;
+    if ((att.file_type && att.file_type.includes('image')) || (att.mime_type && att.mime_type.includes('image'))) return true;
+    return false;
+  }
+
+  getFileUrl(att: any): string {
+    if (!att) return '';
+    let url = typeof att === 'string' ? att : (att.file_url || att.url || att.file_path || att.path || '');
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    const apiHost = 'http://localhost:8000';
+    url = url.replace(/^\/+/, '');
+    if (!url.startsWith('storage/')) {
+      url = 'storage/' + url;
+    }
+    return `${apiHost}/${url}`;
+  }
+
+  handleImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.onerror = null;
+      target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="76" height="76" viewBox="0 0 76 76" fill="none"><rect width="76" height="76" rx="14" fill="%23f1f5f9"/><rect x="1" y="1" width="74" height="74" rx="13" stroke="%23cbd5e1" stroke-width="2"/><path d="M23 48L33 36L43 44L53 30L63 48H23Z" fill="%236366f1" opacity="0.6"/><circle cx="30" cy="28" r="5" fill="%236366f1" opacity="0.7"/></svg>';
+    }
+  }
+
   getImageAttachments(task: any) {
-    if (!task.attachments) return [];
-    return task.attachments.filter((a: any) => a.is_image || a.file_type === 'image');
+    if (!task || !task.attachments) return [];
+    return task.attachments.filter((a: any) => this.isImage(a));
   }
 
   expandImage(url: string, event: Event): void {
     event.stopPropagation();
-    this.expandedImageUrl = url;
+    this.expandedImageUrl = this.getFileUrl(url);
   }
 
   onFileSelected(event: any): void {
@@ -1066,6 +1436,7 @@ export class TasksBoardComponent implements OnInit {
         if (res.data) {
           if (!this.selectedTask.attachments) this.selectedTask.attachments = [];
           this.selectedTask.attachments.push(res.data);
+          this.loadTaskActivities(this.selectedTask.id);
         }
       });
     }
@@ -1078,6 +1449,7 @@ export class TasksBoardComponent implements OnInit {
         if (!this.selectedTask.notes) this.selectedTask.notes = [];
         this.selectedTask.notes.push(res.data);
         this.newNoteText = '';
+        this.loadTaskActivities(this.selectedTask.id);
       }
     });
   }

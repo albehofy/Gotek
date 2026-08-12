@@ -3,7 +3,7 @@
   <div class="glow-orb primary" style="top: 20%; left: 50%; transform: translateX(-50%); width: 700px; height: 700px; opacity: 0.4;"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ 'contact_hero_label' | translate }}
+      <p-tag [value]="'contact_hero_label' | translate" severity="warn" [rounded]="true" icon="pi pi-envelope"></p-tag>
     </div>
     <h1 class="sec-title contact-hero-title animate-up delay-2">
       {{ 'contact_hero_title_1' | translate }} <span>{{ 'contact_hero_title_2' | translate }}</span><br/>

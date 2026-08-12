@@ -2,9 +2,6 @@
    MEDIA GLOW — CONTROL HUB · Total Redesign 2026
    Design System: Electric Indigo · Cyan · Cosmic Dark
    ═══════════════════════════════════════════════════════════ */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 /* ── CSS DESIGN TOKENS ───────────────────────────────────── */
 :host {
   display: block;
@@ -37,13 +34,13 @@
   --emerald-soft:  rgba(16, 185, 129, 0.12);
 
   /* Backgrounds */
-  --bg:          #07070f;
-  --bg-2:        #0c0c1a;
-  --bg-3:        #101024;
-  --card:        rgba(12, 12, 26, 0.75);
-  --card-hover:  rgba(18, 18, 38, 0.85);
-  --sidebar:     #05050b;
-  --topbar:      rgba(7, 7, 15, 0.85);
+  --bg:          #050510;
+  --bg-2:        #090918;
+  --bg-3:        #0e0e24;
+  --card:        linear-gradient(90deg, rgba(9, 9, 24, 0.85) 0%, rgba(9, 9, 24, 0.4) 60%, rgba(9, 9, 24, 0.7) 100%);
+  --card-hover:  linear-gradient(90deg, rgba(14, 14, 32, 0.9) 0%, rgba(14, 14, 32, 0.5) 60%, rgba(14, 14, 32, 0.8) 100%);
+  --sidebar:     #040409;
+  --topbar:      linear-gradient(90deg, rgba(9, 9, 24, 0.95) 0%, rgba(9, 9, 24, 0.65) 60%, rgba(9, 9, 24, 0.9) 100%);
 
   /* Borders */
   --border:      rgba(255, 255, 255, 0.08);
@@ -68,10 +65,7 @@
 /* ── RESETS ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.25); border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: var(--violet); }
+::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
 
 /* ── ROOT SHELL ──────────────────────────────────────────── */
 .crm-shell {
@@ -387,8 +381,8 @@
 .tb-menu:hover { border-color: var(--border-v); color: var(--violet-light); background: var(--violet-soft); }
 
 .tb-bc { display: flex; align-items: center; gap: 8px; font-size: 0.84rem; color: var(--text-2); }
-.tb-bc .sep { color: rgba(255,255,255,0.18); font-size: 0.9rem; }
-.tb-bc .cur { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-bc .sep { color: var(--text-3); font-size: 0.9rem; }
+.tb-bc .cur { font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .tb-r { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 
@@ -429,12 +423,12 @@
   position: absolute;
   top: 70px; right: 32px;
   width: 260px;
-  background: #0c0c1e;
+  background: var(--bg-card);
   border: 1px solid var(--border-v);
   border-radius: var(--r-lg);
   padding: 12px;
   z-index: 250;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  box-shadow: var(--shadow-lg);
   backdrop-filter: blur(20px);
   display: none;
   animation: fadeInDown 0.25s var(--ease);
@@ -447,7 +441,7 @@
 }
 
 .ud-top { padding: 12px 14px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-.ud-name { font-size: 0.9rem; font-weight: 700; color: #fff; }
+.ud-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
 .ud-role { font-size: 0.72rem; color: var(--teal-light); margin-top: 2px; }
 .ud-email { font-size: 0.72rem; color: var(--text-2); margin-top: 2px; }
 .ud-divider { height: 1px; background: var(--border); margin: 8px 0; }
@@ -457,7 +451,7 @@
   border-radius: 10px; color: var(--text); font-size: 0.84rem;
   text-decoration: none; cursor: pointer; transition: all 0.2s;
 }
-.ud-row:hover { background: var(--violet-soft); color: #fff; }
+.ud-row:hover { background: var(--violet-soft); color: var(--text); }
 .ud-row.danger { color: var(--rose-light); }
 .ud-row.danger:hover { background: var(--rose-soft); }
 
@@ -598,7 +592,6 @@
   box-shadow: 0 6px 20px var(--violet-glow);
 }
 .wb-primary:hover {
-  transform: translateY(-2px);
   box-shadow: 0 10px 30px var(--violet-glow);
   background: linear-gradient(135deg, #6d70f8, var(--violet));
 }
@@ -613,7 +606,6 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--teal-light);
   color: var(--teal-light);
-  transform: translateY(-2px);
 }
 
 .wb-quick-stats {
@@ -638,7 +630,6 @@
 .wb-qs:hover {
   background: rgba(25, 25, 50, 0.8);
   border-color: var(--border-v);
-  transform: translateY(-3px) scale(1.02);
   box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
@@ -693,7 +684,6 @@
 .stat-card:hover {
   background: var(--card-hover);
   border-color: var(--border-2);
-  transform: translateY(-4px);
   box-shadow: 0 15px 35px rgba(0,0,0,0.6);
 }
 
@@ -876,7 +866,6 @@ tr:hover td {
   transition: all 0.25s var(--ease);
 }
 .save-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 25px var(--violet-glow);
   background: linear-gradient(135deg, #6d70f8, var(--violet));
 }

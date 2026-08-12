@@ -35,7 +35,9 @@ Route::get('services', [ServiceController::class, 'index']);
 Route::get('services/{service}', [ServiceController::class, 'show']);
 Route::get('/faqs', [FAQController::class, 'index']);
 Route::get('/contact-info', ContactInfoController::class);
+Route::get('/contact', [ContactMessageController::class, 'index']);
 Route::post('/contact', [ContactMessageController::class, 'store']);
+Route::delete('/contact/{id}', [ContactMessageController::class, 'destroy']);
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/assign', [TaskController::class, 'assignMembers']);
         Route::post('/{id}/notes', [TaskController::class, 'addNote']);
         Route::post('/{id}/attachments', [TaskController::class, 'addAttachment']);
+        Route::delete('/{id}/attachments/{attachmentId}', [TaskController::class, 'deleteAttachment']);
+        Route::get('/{id}/activity', [TaskController::class, 'getActivity']);
         Route::delete('/{id}', [TaskController::class, 'destroy']);
 
         // Checklist

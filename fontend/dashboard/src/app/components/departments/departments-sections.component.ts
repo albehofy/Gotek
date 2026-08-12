@@ -44,7 +44,7 @@ import { TextareaModule } from 'primeng/textarea';
 
           <div class="manager-row" *ngIf="dept.manager">
             <small>مسؤول القسم:</small>
-            <span style="font-weight:700; color:#fff;"><i class="fa-solid fa-user-shield" style="color:var(--violet-light); margin-right:4px;"></i> {{ dept.manager.name }}</span>
+            <span style="font-weight:700; color:var(--text);"><i class="fa-solid fa-user-shield" style="color:var(--violet-light); margin-right:4px;"></i> {{ dept.manager.name }}</span>
           </div>
 
           <!-- Subcategories list -->
@@ -83,7 +83,7 @@ import { TextareaModule } from 'primeng/textarea';
             </div>
             <!-- Partnerships on Sections -->
             <div class="form-group checkbox-group">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.86rem; color:#fff;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.86rem; color:var(--text);">
                 <input type="checkbox" formControlName="has_partner" (change)="togglePartnerFields()" />
                 شريك خارجي (شراكة قسم / مشروع مشترك)
               </label>
@@ -145,7 +145,7 @@ import { TextareaModule } from 'primeng/textarea';
     .depts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
     .dept-card { background: var(--bg-card); border: 1px solid var(--border); padding: 22px; border-radius: var(--r-lg); display: flex; flex-direction: column; gap: 14px; transition: all 0.25s var(--ease); position: relative; overflow: hidden; }
     .dept-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--violet), var(--teal)); border-radius: var(--r-lg) var(--r-lg) 0 0; }
-    .dept-card:hover { border-color: var(--border-v); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+    .dept-card:hover { border-color: var(--border-v); box-shadow: var(--shadow-sm); }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .card-header h3 { color: #fff; font-size: 1.05rem; font-weight: 700; }
     .partner-badge { font-size: 0.68rem; background: var(--amber-soft); color: var(--amber-light); border: 1px solid rgba(217,119,6,0.2); padding: 3px 9px; border-radius: 100px; font-weight: 700; }

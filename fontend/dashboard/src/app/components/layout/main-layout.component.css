@@ -491,7 +491,7 @@
   left: 0;
   right: auto;
   width: 260px;
-  background: #0c0c1e;
+  background: linear-gradient(90deg, rgba(9, 9, 24, 0.95) 0%, rgba(9, 9, 24, 0.7) 60%, rgba(9, 9, 24, 0.9) 100%);
   border: 1px solid var(--border-v);
   border-radius: var(--r-lg);
   padding: 12px;

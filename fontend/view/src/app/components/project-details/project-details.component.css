@@ -102,12 +102,12 @@
 }
 
 .proj-hero-title {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  letter-spacing: -1px;
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  letter-spacing: normal !important;
   color: white;
-  line-height: 1.1;
+  line-height: 1.4 !important;
   margin-bottom: 24px;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-ar);
   font-weight: 800;
 }
 

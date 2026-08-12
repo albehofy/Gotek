@@ -40,7 +40,7 @@ import { DropdownModule } from 'primeng/dropdown';
 
       <!-- Users Role Assignment Table -->
       <div class="section-card glass-panel margin-top">
-        <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-users-gear" style="color:var(--violet-light);"></i> تعيين أدوار المستخدمين</h3>
+        <h3 style="font-size:1rem; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-users-gear" style="color:var(--violet-light);"></i> تعيين أدوار المستخدمين</h3>
         <div class="table-responsive" style="margin-top:14px;">
           <table class="crm-table">
             <thead>
@@ -54,7 +54,7 @@ import { DropdownModule } from 'primeng/dropdown';
             </thead>
             <tbody>
               <tr *ngFor="let u of users">
-                <td style="font-weight:700; color:#fff;">{{ u.name }}</td>
+                <td style="font-weight:700; color:var(--text);">{{ u.name }}</td>
                 <td style="color:var(--text-2);">{{ u.email }}</td>
                 <td><span class="badge badge-v" style="text-transform:uppercase;">{{ u.role }}</span></td>
                 <td style="color:var(--text-2);">{{ u.department?.name || 'عام' }}</td>
@@ -100,7 +100,7 @@ import { DropdownModule } from 'primeng/dropdown';
     .roles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; margin-bottom: 24px; }
     .role-card { background: var(--bg-card); border: 1px solid var(--border); padding: 22px; border-radius: var(--r-lg); display: flex; flex-direction: column; gap: 12px; transition: all 0.25s var(--ease); position: relative; overflow: hidden; }
     .role-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--violet), var(--violet-light)); border-radius: var(--r-lg) var(--r-lg) 0 0; }
-    .role-card:hover { border-color: var(--border-v); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+    .role-card:hover { border-color: var(--border-v); box-shadow: var(--shadow-sm); }
     .card-header { display: flex; justify-content: space-between; align-items: center; }
     .card-header h3 { color: #fff; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .slug-badge { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-2); padding: 3px 9px; border-radius: 100px; font-size: 0.68rem; font-weight: 600; font-family: monospace; }

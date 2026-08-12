@@ -3,55 +3,63 @@
     <div class="footer-top">
       <div class="footer-brand">
         <a routerLink="/" class="nav-logo-txt" style="margin-bottom: 16px; display: inline-flex;">
-          <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 36px; filter: brightness(0) invert(1);" />
+          <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 36px; filter: brightness(0) invert(1);" onerror="this.style.display='none'"/>
           Media Glow<span>.</span>
         </a>
         <p class="footer-brand-desc">{{ (footerData?.desc | translate) || ('footer_desc' | translate) }}</p>
         <div class="footer-social">
           @if (footerData?.socials?.facebook) {
-            <a [href]="footerData.socials.facebook" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+            <a [href]="footerData.socials.facebook" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-facebook"></i></a>
           } @else {
-            <a href="https://www.facebook.com/mediaglow" class="fs-btn"><i class="fi fi-brands-facebook"></i></a>
+            <a href="https://www.facebook.com/mediaglow" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-facebook"></i></a>
           }
-          
           @if (footerData?.socials?.instagram) {
-            <a [href]="footerData.socials.instagram" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+            <a [href]="footerData.socials.instagram" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-instagram"></i></a>
           } @else {
-            <a href="https://www.instagram.com/mediaglow" class="fs-btn"><i class="fi fi-brands-instagram"></i></a>
+            <a href="https://www.instagram.com/mediaglow" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-instagram"></i></a>
           }
-          
           @if (footerData?.socials?.twitter) {
-            <a [href]="footerData.socials.twitter" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+            <a [href]="footerData.socials.twitter" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-twitter"></i></a>
           } @else {
-            <a href="https://x.com/mediaglow" class="fs-btn"><i class="fi fi-brands-twitter-alt"></i></a>
+            <a href="https://x.com/mediaglow" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-twitter"></i></a>
+          }
+          @if (footerData?.socials?.linkedin) {
+            <a [href]="footerData.socials.linkedin" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-linkedin"></i></a>
+          }
+          @if (footerData?.socials?.youtube) {
+            <a [href]="footerData.socials.youtube" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-youtube"></i></a>
           }
         </div>
       </div>
+
       <div>
         <div class="footer-col-title">{{ 'footer_svc' | translate }}</div>
         <ul class="footer-links">
-          <li><a routerLink="/services">{{ 'footer_ads' | translate }}</a></li>
-          <li><a routerLink="/services">{{ 'footer_brand' | translate }}</a></li>
-          <li><a routerLink="/services">{{ 'footer_social' | translate }}</a></li>
+          <li><a routerLink="/services"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_ads' | translate }}</a></li>
+          <li><a routerLink="/services"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_brand' | translate }}</a></li>
+          <li><a routerLink="/services"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_social' | translate }}</a></li>
         </ul>
       </div>
+
       <div>
         <div class="footer-col-title">{{ 'footer_company' | translate }}</div>
         <ul class="footer-links">
-          <li><a routerLink="/about">{{ 'footer_about' | translate }}</a></li>
-          <li><a routerLink="/portfolio">{{ 'footer_port' | translate }}</a></li>
-          <li><a routerLink="/contact">{{ 'footer_contact_link' | translate }}</a></li>
+          <li><a routerLink="/about"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_about' | translate }}</a></li>
+          <li><a routerLink="/portfolio"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_port' | translate }}</a></li>
+          <li><a routerLink="/contact"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_contact_link' | translate }}</a></li>
         </ul>
       </div>
+
       <div>
         <div class="footer-col-title">{{ 'footer_contact' | translate }}</div>
         <ul class="footer-links">
-          <li><a [href]="'mailto:' + (footerData?.email || 'hello@mediaglow.com')">{{ footerData?.email || ('footer_email' | translate) }}</a></li>
-          <li><a [href]="'https://wa.me/' + (footerData?.phone || '966500000000')">{{ footerData?.phone || ('footer_wa' | translate) }}</a></li>
+          <li><a [href]="'mailto:' + (footerData?.email || 'hello@mediaglow.com')"><i class="pi pi-envelope" style="margin-left:6px;color:#ff6b00;"></i> {{ footerData?.email || ('footer_email' | translate) }}</a></li>
+          <li><a [href]="'https://wa.me/' + (footerData?.phone || '966500000000')"><i class="pi pi-whatsapp" style="margin-left:6px;color:#25d366;"></i> {{ footerData?.phone || ('footer_wa' | translate) }}</a></li>
         </ul>
       </div>
     </div>
-    <div class="footer-bottom" style="border-top: 1px solid var(--border-light); padding-top: 24px;">
+
+    <div class="footer-bottom">
       <div class="footer-copy">
         <span>{{ (footerData?.copy | translate) || ('footer_copy' | translate) }}</span>
       </div>

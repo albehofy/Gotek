@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { ApiService } from '../../services/api.service';
+import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, TranslatePipe, TagModule, ButtonModule, BadgeModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -38,7 +41,6 @@ export class HomeComponent implements OnInit {
       this.blogs = Array.isArray(data) ? data.slice(0, 3) : [];
     });
 
-    // Load ALL services for the services grid
     this.apiService.getServices().subscribe((res: any) => {
       const data = res?.data ?? res ?? [];
       this.services = Array.isArray(data) ? data : [];
@@ -56,5 +58,26 @@ export class HomeComponent implements OnInit {
   setActiveTestimonial(i: number) {
     this.activeTestimonial = i;
   }
-}
 
+  prevTestimonial() {
+    this.activeTestimonial = this.activeTestimonial > 0
+      ? this.activeTestimonial - 1
+      : this.testimonials.length - 1;
+  }
+
+  nextTestimonial() {
+    this.activeTestimonial = this.activeTestimonial < this.testimonials.length - 1
+      ? this.activeTestimonial + 1
+      : 0;
+  }
+
+  // Get 3 testimonials starting from activeTestimonial
+  get visibleTestimonials() {
+    if (!this.testimonials.length) return [];
+    const result = [];
+    for (let i = 0; i < 3; i++) {
+      result.push(this.testimonials[(this.activeTestimonial + i) % this.testimonials.length]);
+    }
+    return result;
+  }
+}

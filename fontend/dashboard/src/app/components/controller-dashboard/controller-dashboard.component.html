@@ -267,8 +267,10 @@
                 <td><span class="badge badge-blue">{{ s.subtitle_ar || s.subtitle_en || s.category?.ar || s.category?.en }}</span></td>
                 <td>{{ s.order }}</td>
                 <td>
-                  <button class="action-btn" title="تعديل الخدمة" (click)="editService(s)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="حذف الخدمة" (click)="deleteService(s.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-amber" (click)="editService(s)" data-tooltip="تعديل الخدمة" title="تعديل الخدمة"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-icon-btn btn-rose" (click)="deleteService(s.id)" data-tooltip="حذف الخدمة" title="حذف الخدمة"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="servicesList.length === 0">
@@ -449,8 +451,10 @@
                 <td><span class="badge badge-blue">{{ p.category?.name_ar || p.category?.name_en || p.category?.name?.ar || 'عام' }}</span></td>
                 <td>{{ p.client || '—' }}</td>
                 <td>
-                  <button class="action-btn" title="تعديل المشروع" (click)="editProject(p)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="حذف المشروع" (click)="deleteProject(p.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-amber" (click)="editProject(p)" data-tooltip="تعديل بيانات المشروع" title="تعديل بيانات المشروع"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-icon-btn btn-rose" (click)="deleteProject(p.id)" data-tooltip="حذف المشروع" title="حذف المشروع"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="projects.length === 0">
@@ -536,8 +540,10 @@
                 <td>{{ cat.name_en || cat.name?.en || cat.name }}</td>
                 <td style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">{{ cat.description_ar || cat.description_en || cat.description?.ar || '—' }}</td>
                 <td>
-                  <button class="action-btn" title="تعديل التصنيف" (click)="editCategory(cat)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="حذف التصنيف" (click)="deleteCategory(cat.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-amber" (click)="editCategory(cat)" data-tooltip="تعديل التصنيف" title="تعديل التصنيف"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-icon-btn btn-rose" (click)="deleteCategory(cat.id)" data-tooltip="حذف التصنيف" title="حذف التصنيف"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="categories.length === 0">
@@ -629,8 +635,10 @@
                   <span class="badge badge-blue">{{ b.likes || 0 }} <i class="fa-solid fa-heart" style="color: red; margin-left: 2px;"></i></span>
                 </td>
                 <td>
-                  <button class="action-btn" title="تعديل المقال" (click)="editBlog(b)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="حذف المقال" (click)="deleteBlog(b.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-amber" (click)="editBlog(b)" data-tooltip="تعديل المقال" title="تعديل المقال"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-icon-btn btn-rose" (click)="deleteBlog(b.id)" data-tooltip="حذف المقال" title="حذف المقال"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="blogs.length === 0">
@@ -736,8 +744,10 @@
                 <td style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ t.feedback_ar || t.feedback_en }}</td>
                 <td style="text-align: center; color: gold; font-size: 0.85rem;">{{ '★'.repeat(t.rating || 5) }}</td>
                 <td>
-                  <button class="action-btn" title="تعديل الرأي" (click)="editTestimonial(t)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="حذف الرأي" (click)="deleteTestimonial(t.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-amber" (click)="editTestimonial(t)" data-tooltip="تعديل الرأي" title="تعديل الرأي"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-icon-btn btn-rose" (click)="deleteTestimonial(t.id)" data-tooltip="حذف الرأي" title="حذف الرأي"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="testimonials.length === 0">
@@ -828,8 +838,10 @@
                   </span>
                 </td>
                 <td>
-                  <button class="action-btn" title="تعديل السؤال" (click)="editFaq(faq)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="حذف السؤال" (click)="deleteFaq(faq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-amber" (click)="editFaq(faq)" data-tooltip="تعديل السؤال" title="تعديل السؤال"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="action-icon-btn btn-rose" (click)="deleteFaq(faq.id)" data-tooltip="حذف السؤال" title="حذف السؤال"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="faqs.length === 0">
@@ -895,7 +907,9 @@
                 </td>
                 <td>{{ inq.created_at | date:'short' }}</td>
                 <td>
-                  <button class="action-btn" title="حذف الرسالة" (click)="deleteInquiry(inq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <div class="table-actions">
+                    <button class="action-icon-btn btn-rose" (click)="deleteInquiry(inq.id)" data-tooltip="حذف الرسالة" title="حذف الرسالة"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="inquiries.length === 0">

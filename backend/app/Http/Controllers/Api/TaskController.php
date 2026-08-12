@@ -295,7 +295,60 @@ class TaskController extends Controller
             'uploaded_by' => Auth::id()
         ]);
 
+        $userName = Auth::user() ? Auth::user()->name : 'مستخدم';
+        $this->logActivity($task->id, "قام {$userName} برفع مرفق جديد: {$originalName}");
+
         return response()->json(['status' => 'success', 'data' => $attachment], 201);
+    }
+
+    public function deleteAttachment($id, $attachmentId)
+    {
+        $attachment = TaskAttachment::where('task_id', $id)->where('id', $attachmentId)->first();
+        if (!$attachment) {
+            return response()->json(['message' => 'المرفق غير موجود'], 404);
+        }
+
+        $fileName = $attachment->file_name ?? 'مرفق';
+        if ($attachment->file_path && Storage::disk('public')->exists($attachment->file_path)) {
+            Storage::disk('public')->delete($attachment->file_path);
+        }
+        $attachment->delete();
+
+        $userName = Auth::user() ? Auth::user()->name : 'مستخدم';
+        $this->logActivity($id, "قام {$userName} بحذف المرفق: {$fileName}");
+
+        return response()->json(['status' => 'success', 'message' => 'تم حذف المرفق بنجاح']);
+    }
+
+    public function getActivity($id)
+    {
+        $activities = \DB::table('activity_log')
+            ->leftJoin('users', 'activity_log.causer_id', '=', 'users.id')
+            ->where('subject_type', 'App\\Models\\Task')
+            ->where('subject_id', $id)
+            ->select('activity_log.*', 'users.name as user_name')
+            ->orderBy('activity_log.id', 'desc')
+            ->get();
+
+        return response()->json(['status' => 'success', 'data' => $activities]);
+    }
+
+    private function logActivity($taskId, $description)
+    {
+        try {
+            \DB::table('activity_log')->insert([
+                'log_name' => 'task',
+                'description' => $description,
+                'subject_type' => 'App\\Models\\Task',
+                'subject_id' => $taskId,
+                'causer_type' => 'App\\Models\\User',
+                'causer_id' => Auth::id() ?? 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        } catch (\Exception $e) {
+            // ignore
+        }
     }
 
     // --- Custom Fields Metadata API ---

@@ -45,10 +45,11 @@
 
 /* Title */
 .bd-title {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  margin-bottom: 32px;
-  line-height: 1.1;
-  letter-spacing: -1px;
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  margin-bottom: 28px;
+  line-height: 1.4 !important;
+  letter-spacing: normal !important;
+  font-family: var(--font-ar);
 }
 
 /* Meta */

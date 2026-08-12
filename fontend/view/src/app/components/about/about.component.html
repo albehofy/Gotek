@@ -3,7 +3,7 @@
   <div class="glow-orb primary"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ (aboutContent?.content?.hero?.label | translate) || ('about_hero_label' | translate) }}
+      <p-tag [value]="(aboutContent?.content?.hero?.label | translate) || ('about_hero_label' | translate)" severity="info" [rounded]="true" icon="pi pi-building"></p-tag>
     </div>
     <h1 class="sec-title about-hero-title animate-up delay-2">
       {{ (aboutContent?.content?.hero?.title1 | translate) || ('about_hero_1' | translate) }} <br />

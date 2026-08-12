@@ -61,11 +61,11 @@ import { DropdownModule } from 'primeng/dropdown';
 
           <div class="metric-card glass-panel">
             <span class="label">صافي السيولة النقدية</span>
-            <h3 class="value" style="color:#fff;">{{ summary.net_balance | number:'1.2-2' }} ج.م</h3>
+            <h3 class="value" style="color:var(--text);">{{ summary.net_balance | number:'1.2-2' }} ج.م</h3>
           </div>
 
           <div class="metric-card glass-panel highlight-orange">
-            <span class="label">رأس مال الشركة واحتياطي الأصول</span>
+            <span class="label">رأس مال الشركة وااحتياطي الأصول</span>
             <h3 class="value" style="color:var(--violet-light);">{{ summary.company_capital | number:'1.2-2' }} ج.م</h3>
             <small style="color:var(--text-2);">الأصول الثابتة: {{ summary.total_fixed_assets | number:'1.2-2' }} ج.م</small>
           </div>
@@ -73,7 +73,7 @@ import { DropdownModule } from 'primeng/dropdown';
 
         <!-- Client Outstanding Balances Table -->
         <div class="section-card glass-panel margin-top">
-          <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--amber-light);"></i> أرصدة العملاء المستحقة</h3>
+          <h3 style="font-size:1rem; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--amber-light);"></i> أرصدة العملاء المستحقة</h3>
           <div class="table-responsive" style="margin-top:14px;">
             <table class="crm-table">
               <thead>
@@ -87,7 +87,7 @@ import { DropdownModule } from 'primeng/dropdown';
               </thead>
               <tbody>
                 <tr *ngFor="let item of clientBalances">
-                  <td style="font-weight:700; color:#fff;">{{ item.client_name }}</td>
+                  <td style="font-weight:700; color:var(--text);">{{ item.client_name }}</td>
                   <td>{{ item.deals_count }} صفقات</td>
                   <td>{{ item.total_billed | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--emerald-light); font-weight:700;">{{ item.total_paid | number:'1.2-2' }} ج.م</td>
@@ -150,8 +150,8 @@ import { DropdownModule } from 'primeng/dropdown';
 
       <!-- TAB 3: CUSTODY (بند العهدة) -->
       <div class="tab-content" *ngIf="activeTab === 'custody'">
-        <div class="tab-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h3 style="font-size:1.05rem; color:#fff; font-weight:700;"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--teal-light);"></i> حسابات عهدة الموظفين</h3>
+        <div class="tab-header" style="display:flex; justify-space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:1.05rem; color:var(--text); font-weight:700;"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--teal-light);"></i> حسابات عهدة الموظفين</h3>
           <button class="btn btn-primary" (click)="openIssueCustodyModal()">
             <i class="fa-solid fa-handshake-angle"></i> صرف عهدة جديدة
           </button>
@@ -171,14 +171,14 @@ import { DropdownModule } from 'primeng/dropdown';
               </thead>
               <tbody>
                 <tr *ngFor="let custody of custodyAccounts">
-                  <td style="font-weight:700; color:#fff;">{{ custody.employee?.name }}</td>
+                  <td style="font-weight:700; color:var(--text);">{{ custody.employee?.name }}</td>
                   <td>{{ custody.issued_amount | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--emerald-light);">{{ custody.returned_amount | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--rose-light); font-weight:700;">{{ (custody.issued_amount - custody.returned_amount) | number:'1.2-2' }} ج.م</td>
                   <td><span class="badge badge-v">{{ custody.status }}</span></td>
                   <td>
-                    <button *ngIf="custody.status === 'open'" class="btn-action primary" (click)="openReturnCustodyModal(custody)">
-                      تصفية العهدة
+                    <button *ngIf="custody.status === 'open'" class="action-icon-btn btn-emerald" (click)="openReturnCustodyModal(custody)" data-tooltip="تسوية وتصفية حساب العهدة" title="تسوية وتصفية حساب العهدة">
+                      <i class="fa-solid fa-file-invoice-dollar"></i>
                     </button>
                   </td>
                 </tr>
@@ -191,7 +191,7 @@ import { DropdownModule } from 'primeng/dropdown';
       <!-- TAB 4: PARTNER SPLITS -->
       <div class="tab-content" *ngIf="activeTab === 'partners'">
         <div class="section-card glass-panel">
-          <h3 style="font-size:1rem; color:#fff; font-weight:700;"><i class="fa-solid fa-users-rectangle" style="color:var(--amber-light);"></i> تقرير توزيع أرباح الشركاء في المراكز والأقسام</h3>
+          <h3 style="font-size:1rem; color:var(--text); font-weight:700;"><i class="fa-solid fa-users-rectangle" style="color:var(--amber-light);"></i> تقرير توزيع أرباح الشركاء في المراكز والأقسام</h3>
           <div class="table-responsive margin-top">
             <table class="crm-table">
               <thead>
@@ -208,12 +208,12 @@ import { DropdownModule } from 'primeng/dropdown';
               </thead>
               <tbody>
                 <tr *ngFor="let ps of partnerSplits">
-                  <td style="font-weight:700; color:#fff;">{{ ps.department_name }}</td>
+                  <td style="font-weight:700; color:var(--text);">{{ ps.department_name }}</td>
                   <td style="color:var(--text-2);">{{ ps.partner_name }}</td>
                   <td><span class="badge badge-a">{{ ps.partner_percentage }}%</span></td>
                   <td style="color:var(--emerald-light);">{{ ps.total_income | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--rose-light);">{{ ps.total_expenses | number:'1.2-2' }} ج.م</td>
-                  <td style="font-weight:700; color:#fff;">{{ ps.net_profit | number:'1.2-2' }} ج.م</td>
+                  <td style="font-weight:700; color:var(--text);">{{ ps.net_profit | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--amber-light); font-weight:700;">{{ ps.partner_share | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--emerald-light); font-weight:700;">{{ ps.company_share | number:'1.2-2' }} ج.م</td>
                 </tr>
@@ -226,7 +226,7 @@ import { DropdownModule } from 'primeng/dropdown';
       <!-- TAB 5: PAYROLL DUE -->
       <div class="tab-content" *ngIf="activeTab === 'payroll'">
         <div class="section-card glass-panel">
-          <h3 style="font-size:1rem; color:#fff; font-weight:700;"><i class="fa-solid fa-money-check-dollar" style="color:var(--teal-light);"></i> ملخص المرتبات والمستحقات المالية للموظفين</h3>
+          <h3 style="font-size:1rem; color:var(--text); font-weight:700;"><i class="fa-solid fa-money-check-dollar" style="color:var(--teal-light);"></i> ملخص المرتبات والمستحقات المالية للموظفين</h3>
           <p style="font-size:0.78rem; color:var(--text-2); margin-top:4px;">المعادلة: المستحق الصافي = الراتب الأساسي + أرباح المهام + العمولات - السلف - الخصومات + المكافآت</p>
           <div class="table-responsive margin-top">
             <table class="crm-table">
@@ -245,7 +245,7 @@ import { DropdownModule } from 'primeng/dropdown';
               </thead>
               <tbody>
                 <tr *ngFor="let p of payrollSummary">
-                  <td style="font-weight:700; color:#fff;">{{ p.employee_name }}</td>
+                  <td style="font-weight:700; color:var(--text);">{{ p.employee_name }}</td>
                   <td><span class="badge badge-v">{{ p.payment_type }}</span></td>
                   <td>{{ p.base_salary | number:'1.2-2' }}</td>
                   <td>{{ p.task_earnings | number:'1.2-2' }}</td>
@@ -349,7 +349,7 @@ import { DropdownModule } from 'primeng/dropdown';
     .finance-tabs-nav button.active { background: linear-gradient(135deg, var(--emerald), var(--teal)); color: #fff; box-shadow: 0 4px 16px var(--emerald-soft); border-color: transparent; }
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .metric-card { padding: 22px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); position: relative; overflow: hidden; transition: all 0.3s var(--ease); }
-    .metric-card:hover { border-color: var(--border-v); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+    .metric-card:hover { border-color: var(--border-v); box-shadow: var(--shadow-sm); }
     .metric-card .label { color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
     .metric-card .value { font-size: 1.8rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
     .highlight-orange { border-top: 3px solid var(--violet-light) !important; }

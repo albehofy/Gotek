@@ -3,7 +3,7 @@
   <div class="glow-orb primary"></div>
   <div class="container">
     <div class="sec-tag animate-up delay-1">
-      {{ (portfolioData?.hero?.tag | translate) || ('our_port' | translate) }}
+      <p-tag [value]="(portfolioData?.hero?.tag | translate) || ('our_port' | translate)" severity="success" [rounded]="true" icon="pi pi-briefcase"></p-tag>
     </div>
     <h1 class="sec-title portfolio-hero-title animate-up delay-2">
       {{ (portfolioData?.hero?.title | translate) || ('port_title_1' | translate) }}<br/>
@@ -18,15 +18,16 @@
 <!-- PORTFOLIO FILTER & GRID -->
 <section class="section" style="padding-top: 0;">
   <div class="container">
-    
     <!-- Filters -->
-    <div class="portfolio-filter-bar">
+    <div class="portfolio-filter-bar" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 48px;">
       <button class="btn" [ngClass]="activeCategory === 'all' ? 'btn-primary' : 'btn-glass'" (click)="setCategory('all')">
-        {{ 'all_proj' | translate }}
+        <i class="pi pi-th-large"></i>
+        <span>{{ 'all_proj' | translate }}</span>
       </button>
       @for (cat of categories; track cat.id) {
         <button class="btn" [ngClass]="activeCategory === cat.id ? 'btn-primary' : 'btn-glass'" (click)="setCategory(cat.id)">
-          {{ cat.name | translate }}
+          <i class="pi pi-folder"></i>
+          <span>{{ cat.name | translate }}</span>
         </button>
       }
     </div>
@@ -34,7 +35,7 @@
     <!-- Loader -->
     @if (loading) {
       <div style="text-align: center; padding: 100px 0;">
-        <div style="font-size: 3rem; color: var(--orange); animation: pulse-glow 1.5s infinite;"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+        <div style="font-size: 3rem; color: var(--orange);"><i class="pi pi-spin pi-spinner"></i></div>
       </div>
     }
 
@@ -43,29 +44,30 @@
       <div class="portfolio-grid">
         @for (p of filteredProjects; track p.id) {
           <div class="glass-panel portfolio-card" [routerLink]="['/project', p.id]">
-            
-            <div class="portfolio-img-box" [style.background]="p.color">
+            <div class="portfolio-img-box" [style.background]="p.color || 'rgba(99, 102, 241, 0.1)'">
               @if (p.image || p.main_image) {
                 <img [src]="p.image || p.main_image" [alt]="p.title | translate" />
               } @else {
-                <div class="portfolio-emoji-box"><i class="fa-solid fa-rocket"></i></div>
+                <div class="portfolio-emoji-box"><i class="pi pi-bolt"></i></div>
               }
               <div class="overlay"></div>
             </div>
             
             <div class="portfolio-card-info">
-              <div class="portfolio-card-meta">
-                <span class="portfolio-card-tag">{{ p.category?.name | translate }}</span>
+              <div class="portfolio-card-meta" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <p-tag [value]="p.category?.name | translate" severity="info"></p-tag>
                 @if (p.completion_date) {
-                  <span class="portfolio-card-date">{{ p.completion_date | date:'yyyy' }}</span>
+                  <span class="portfolio-card-date" style="font-size: 0.8rem; color: var(--text-muted);"><i class="pi pi-calendar"></i> {{ p.completion_date | date:'yyyy' }}</span>
                 }
               </div>
               
               <h3 class="portfolio-card-title">{{ p.title | translate }}</h3>
+              <p class="portfolio-card-desc">{{ p.description | translate }}</p>
               
-              <p class="portfolio-card-desc">
-                {{ p.description | translate }}
-              </p>
+              <div style="margin-top: 20px; display: flex; align-items: center; gap: 8px; color: var(--orange); font-weight: 700; font-size: 0.88rem;">
+                <span>استعراض تفاصيل المشروع</span>
+                <i class="pi pi-arrow-left"></i>
+              </div>
             </div>
           </div>
         }
@@ -74,21 +76,26 @@
 
     <!-- Empty State -->
     @if (!loading && !filteredProjects.length) {
-      <div class="portfolio-empty">
-        <i class="fa-solid fa-folder-open"></i>
+      <div class="portfolio-empty" style="text-align: center; padding: 80px 0; color: var(--text-muted);">
+        <i class="pi pi-folder-open" style="font-size: 3rem; margin-bottom: 16px;"></i>
         <p>{{ 'no_projects' | translate }}</p>
       </div>
     }
-
   </div>
 </section>
 
 <!-- CTA -->
 <section class="section portfolio-cta">
   <div class="container">
-    <div class="glass-panel portfolio-cta-box">
+    <div class="glass-panel portfolio-cta-box" style="text-align: center; padding: 60px 40px;">
+      <div style="margin-bottom: 16px;">
+        <p-tag [value]="'مستعد لبدء مشروعك؟' | translate" severity="warn" [rounded]="true" icon="pi pi-rocket"></p-tag>
+      </div>
       <h2 class="sec-title">{{ 'ready_partner_1' | translate }} <span>{{ 'ready_partner_2' | translate }}</span></h2>
-      <a routerLink="/contact" class="btn btn-primary">{{ 'start_proj' | translate }}</a>
+      <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 48px;">
+        <span>{{ 'start_proj' | translate }}</span>
+        <i class="pi pi-arrow-left"></i>
+      </a>
     </div>
   </div>
 </section>

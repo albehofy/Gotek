@@ -75,22 +75,22 @@ import { ApiService } from '../../../services/api.service';
       font-size: 0.95rem;
     }
     .bell-btn:hover {
-      border-color: var(--border-v, rgba(99,102,241,0.4));
-      color: var(--violet-light, #a5b4fc);
-      background: var(--violet-soft, rgba(99,102,241,0.12));
-      transform: scale(1.05);
+      border-color: var(--border-v);
+      color: var(--violet-light);
+      background: var(--violet-soft);
     }
 
-    /* light mode bell */
+    body.light-theme .bell-btn,
     :host-context(body.light-theme) .bell-btn {
       background: rgba(99, 102, 241, 0.06);
-      border-color: rgba(99, 102, 241, 0.15);
-      color: #4a4a6a;
+      border-color: rgba(99, 102, 241, 0.18);
+      color: #334155;
     }
+    body.light-theme .bell-btn:hover,
     :host-context(body.light-theme) .bell-btn:hover {
       background: rgba(99, 102, 241, 0.12);
       border-color: rgba(99, 102, 241, 0.35);
-      color: var(--violet-2, #4f46e5);
+      color: #4f46e5;
     }
 
     /* ─── Unread Badge ─────────────────────────────────────────── */
@@ -108,10 +108,11 @@ import { ApiService } from '../../../services/api.service';
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 8px rgba(239,68,68,0.55);
-      border: 2px solid var(--bg, #07070f);
+      border: 2px solid var(--bg);
     }
+    body.light-theme .unread-badge,
     :host-context(body.light-theme) .unread-badge {
-      border-color: #f0f0f8;
+      border-color: #ffffff;
     }
 
     /* ─── Dropdown Panel ───────────────────────────────────────── */
@@ -123,13 +124,12 @@ import { ApiService } from '../../../services/api.service';
       width: 360px;
       direction: rtl;
       text-align: right;
-      background: #111128;
-      border: 1px solid rgba(99, 102, 241, 0.25);
+      background: var(--bg-card);
+      border: 1px solid var(--border-v);
       border-radius: 18px;
       box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.75),
-        0 0 0 1px rgba(99,102,241,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.06);
+        0 20px 60px rgba(0, 0, 0, 0.65),
+        0 0 0 1px rgba(99,102,241,0.12);
       z-index: 1100;
       overflow: hidden;
       display: flex;
@@ -140,66 +140,68 @@ import { ApiService } from '../../../services/api.service';
     }
 
     @keyframes notifSlideIn {
-      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0)    scale(1); }
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* light mode dropdown */
+    body.light-theme .notification-dropdown,
     :host-context(body.light-theme) .notification-dropdown {
-      background: #ffffff;
-      border-color: rgba(99, 102, 241, 0.2);
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
       box-shadow:
-        0 20px 50px rgba(99, 102, 241, 0.14),
-        0 4px 16px rgba(0, 0, 0, 0.08),
-        0 0 0 1px rgba(99, 102, 241, 0.06);
+        0 20px 50px rgba(15, 23, 42, 0.15),
+        0 4px 16px rgba(99, 102, 241, 0.08) !important;
     }
 
     /* ─── Header ───────────────────────────────────────────────── */
     .notification-header {
       padding: 16px 18px;
-      background: rgba(99, 102, 241, 0.06);
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      background: var(--violet-soft);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
     }
+    body.light-theme .notification-header,
     :host-context(body.light-theme) .notification-header {
-      background: rgba(99, 102, 241, 0.05);
-      border-bottom-color: rgba(99, 102, 241, 0.1);
+      background: rgba(99, 102, 241, 0.06);
+      border-bottom-color: rgba(99, 102, 241, 0.12);
     }
 
     .header-title {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #fff;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: var(--text);
       display: flex;
       align-items: center;
       gap: 8px;
     }
+    body.light-theme .header-title,
     :host-context(body.light-theme) .header-title {
-      color: #1a1a3a;
+      color: #0f172a !important;
     }
 
     .count-pill {
       font-size: 0.68rem;
       font-weight: 700;
-      background: rgba(99,102,241,0.18);
-      color: #a5b4fc;
+      background: var(--violet-soft);
+      color: var(--violet-light);
       padding: 2px 9px;
       border-radius: 100px;
-      border: 1px solid rgba(99,102,241,0.3);
+      border: 1px solid var(--border-v);
     }
+    body.light-theme .count-pill,
     :host-context(body.light-theme) .count-pill {
       background: rgba(99,102,241,0.1);
       color: #4f46e5;
-      border-color: rgba(99,102,241,0.2);
+      border-color: rgba(99,102,241,0.25);
     }
 
     .btn-mark-all {
       background: transparent;
       border: none;
-      color: #a5b4fc;
+      color: var(--violet-light);
       font-size: 0.76rem;
       font-weight: 600;
       cursor: pointer;
@@ -208,7 +210,8 @@ import { ApiService } from '../../../services/api.service';
       transition: background 0.2s;
       white-space: nowrap;
     }
-    .btn-mark-all:hover { background: rgba(99,102,241,0.12); }
+    .btn-mark-all:hover { background: var(--violet-soft); }
+    body.light-theme .btn-mark-all,
     :host-context(body.light-theme) .btn-mark-all { color: #4f46e5; }
 
     /* ─── Body / Items ─────────────────────────────────────────── */
@@ -216,40 +219,36 @@ import { ApiService } from '../../../services/api.service';
       max-height: 380px;
       overflow-y: auto;
     }
-    .notification-body::-webkit-scrollbar { width: 3px; }
-    .notification-body::-webkit-scrollbar-track { background: transparent; }
-    .notification-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 4px; }
 
     .notification-item {
-      padding: 13px 16px;
+      padding: 14px 18px;
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.045);
+      border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background 0.2s;
       position: relative;
     }
     .notification-item:last-child { border-bottom: none; }
-    .notification-item:hover { background: rgba(99,102,241,0.08); }
-    .notification-item.unread { background: rgba(99,102,241,0.07); }
+    .notification-item:hover { background: var(--violet-soft); }
+    .notification-item.unread { background: var(--violet-soft-2); }
     .notification-item.unread::before {
       content: '';
       position: absolute;
       left: 0; top: 20%; bottom: 20%;
       width: 3px;
-      background: linear-gradient(to bottom, #6366f1, #06b6d4);
+      background: linear-gradient(to bottom, var(--violet), var(--teal));
       border-radius: 0 4px 4px 0;
     }
 
+    body.light-theme .notification-item,
     :host-context(body.light-theme) .notification-item {
       border-bottom-color: rgba(99,102,241,0.08);
     }
+    body.light-theme .notification-item:hover,
     :host-context(body.light-theme) .notification-item:hover {
       background: rgba(99,102,241,0.06);
-    }
-    :host-context(body.light-theme) .notification-item.unread {
-      background: rgba(99,102,241,0.05);
     }
 
     /* ─── Notification Icon ────────────────────────────────────── */
@@ -261,61 +260,64 @@ import { ApiService } from '../../../services/api.service';
       justify-content: center;
       font-size: 0.88rem;
       flex-shrink: 0;
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.6);
+      background: var(--violet-soft);
+      color: var(--violet-light);
     }
     .notif-icon-col.assignment { background: rgba(59,130,246,0.18); color: #60a5fa; }
     .notif-icon-col.mention    { background: rgba(168,85,247,0.18); color: #c084fc; }
     .notif-icon-col.status_change { background: rgba(16,185,129,0.18); color: #34d399; }
     .notif-icon-col.client_note  { background: rgba(245,158,11,0.18); color: #fbbf24; }
 
-    :host-context(body.light-theme) .notif-icon-col {
-      background: rgba(99,102,241,0.08);
-      color: #4a4a6a;
-    }
+    body.light-theme .notif-icon-col.assignment,
     :host-context(body.light-theme) .notif-icon-col.assignment { background: rgba(59,130,246,0.1); color: #2563eb; }
-    :host-context(body.light-theme) .notif-icon-col.mention    { background: rgba(168,85,247,0.1); color: #7c3aed; }
+    body.light-theme .notif-icon-col.mention,
+    :host-context(body.light-theme) .notif-icon-col.mention { background: rgba(168,85,247,0.1); color: #7c3aed; }
+    body.light-theme .notif-icon-col.status_change,
     :host-context(body.light-theme) .notif-icon-col.status_change { background: rgba(16,185,129,0.1); color: #059669; }
-    :host-context(body.light-theme) .notif-icon-col.client_note  { background: rgba(245,158,11,0.1); color: #d97706; }
+    body.light-theme .notif-icon-col.client_note,
+    :host-context(body.light-theme) .notif-icon-col.client_note { background: rgba(217,119,6,0.1); color: #d97706; }
 
     /* ─── Notification Text ────────────────────────────────────── */
     .notif-content-col { flex: 1; min-width: 0; }
 
     .notif-title {
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       font-weight: 700;
-      color: #e8e8f8;
+      color: var(--text);
       line-height: 1.3;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    :host-context(body.light-theme) .notif-title { color: #1a1a3a; }
+    body.light-theme .notif-title,
+    :host-context(body.light-theme) .notif-title { color: #0f172a !important; }
 
     .notif-message {
-      font-size: 0.78rem;
-      color: rgba(180,180,210,0.8);
-      margin-top: 2px;
+      font-size: 0.8rem;
+      color: var(--text-2);
+      margin-top: 3px;
       line-height: 1.4;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    :host-context(body.light-theme) .notif-message { color: #4a4a6a; }
+    body.light-theme .notif-message,
+    :host-context(body.light-theme) .notif-message { color: #475569 !important; }
 
     .notif-time {
-      font-size: 0.68rem;
-      color: rgba(140,140,180,0.7);
+      font-size: 0.7rem;
+      color: var(--text-3);
       margin-top: 4px;
       display: block;
     }
-    :host-context(body.light-theme) .notif-time { color: #7a7a9a; }
+    body.light-theme .notif-time,
+    :host-context(body.light-theme) .notif-time { color: #94a3b8 !important; }
 
     /* ─── Delete Button ────────────────────────────────────────── */
     .btn-del-notif {
       background: transparent;
       border: none;
-      color: rgba(150,150,190,0.5);
+      color: var(--text-3);
       cursor: pointer;
       padding: 4px 6px;
       border-radius: 6px;
@@ -324,32 +326,38 @@ import { ApiService } from '../../../services/api.service';
       flex-shrink: 0;
     }
     .btn-del-notif:hover {
-      color: #f87171;
-      background: rgba(239,68,68,0.12);
-    }
-    :host-context(body.light-theme) .btn-del-notif { color: #9a9ab0; }
-    :host-context(body.light-theme) .btn-del-notif:hover {
-      color: #dc2626;
-      background: rgba(239,68,68,0.08);
+      color: var(--rose-light);
+      background: var(--rose-soft);
     }
 
     /* ─── Empty State ──────────────────────────────────────────── */
     .empty-state {
-      padding: 36px 16px;
+      padding: 42px 20px;
       text-align: center;
-      color: rgba(140,140,180,0.7);
+      color: var(--text-2);
     }
     .empty-state i {
-      font-size: 2rem;
-      margin-bottom: 10px;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
       display: block;
-      opacity: 0.35;
+      color: var(--violet-light);
+      opacity: 0.85;
     }
     .empty-state p {
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
       margin: 0;
     }
-    :host-context(body.light-theme) .empty-state { color: #7a7a9a; }
+    body.light-theme .empty-state i,
+    :host-context(body.light-theme) .empty-state i {
+      color: #4f46e5 !important;
+      opacity: 0.9 !important;
+    }
+    body.light-theme .empty-state p,
+    :host-context(body.light-theme) .empty-state p {
+      color: #0f172a !important;
+    }
   `]
 })
 export class NotificationCenterComponent implements OnInit {

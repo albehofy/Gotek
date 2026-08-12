@@ -4,11 +4,13 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { ApiService } from '../../services/api.service';
+import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, TranslatePipe, ReactiveFormsModule, TagModule, ButtonModule],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.css'
 })
@@ -64,56 +66,56 @@ export class ContactComponent implements OnInit {
         const info = res.data;
         this.contactInfo = [
           {
-            icon: 'fi fi-rr-comment-alt',
+            icon: 'fa-solid fa-comments',
             label: 'contact_label_wa',
             value: info.whatsapp_phone || '+966500000000',
-            sub: info.whatsapp_description || 'Available 24/7',
-            link: { url: `https://wa.me/${info.whatsapp_phone?.replace('+', '')}`, text: 'Open WhatsApp →', target: '_blank' }
+            sub: info.whatsapp_description || 'متاح 24/7 للرد الفوري',
+            link: { url: `https://wa.me/${info.whatsapp_phone?.replace('+', '')}`, text: 'فتح محادثة واتساب ←', target: '_blank' }
           },
           {
-            icon: 'fi fi-rr-envelope',
+            icon: 'fa-solid fa-envelope',
             label: 'contact_label_email',
             value: info.official_email || 'contact@mediaglow.com',
-            sub: 'We reply within 24 hours',
-            link: { url: `mailto:${info.official_email}`, text: 'Send Email →', target: '_self' }
+            sub: 'نرد خلال 24 ساعة عمل',
+            link: { url: `mailto:${info.official_email}`, text: 'إرسال بريد إلكتروني ←', target: '_self' }
           },
           {
-            icon: 'fi fi-rr-marker',
-            label: 'Company Address',
-            value: info.company_address || 'Riyadh, Saudi Arabia',
-            sub: 'View on Google Maps',
-            link: { url: info.google_map_location || 'https://maps.google.com', text: 'View Map →', target: '_blank' }
+            icon: 'fa-solid fa-location-dot',
+            label: 'العنوان والمقر الرئيسي',
+            value: info.company_address || 'المملكة العربية السعودية - الرياض',
+            sub: 'عرض على خرائط جوجل',
+            link: { url: info.google_map_location || 'https://maps.google.com', text: 'فتح الخريطة ←', target: '_blank' }
           },
           {
-            icon: 'fi fi-rr-phone-call',
-            label: 'Emergency Support',
+            icon: 'fa-solid fa-phone-volume',
+            label: 'الدعم العاجل والاستشارات',
             value: info.emergency_support || 'support@mediaglow.com',
-            sub: 'For urgent matters'
+            sub: 'للحالات الطارئة والمشاريع العاجلة'
           }
         ];
       } else {
         // Fallback placeholder data if backend fails
         this.contactInfo = [
           {
-            icon: 'fi fi-rr-comment-alt',
+            icon: 'fa-solid fa-comments',
             label: 'contact_label_wa',
             value: '+966500000000',
-            sub: 'Available 24/7',
-            link: { url: 'https://wa.me/966500000000', text: 'Open WhatsApp →', target: '_blank' }
+            sub: 'متاح 24/7 للرد الفوري',
+            link: { url: 'https://wa.me/966500000000', text: 'فتح محادثة واتساب ←', target: '_blank' }
           },
           {
-            icon: 'fi fi-rr-envelope',
+            icon: 'fa-solid fa-envelope',
             label: 'contact_label_email',
             value: 'contact@mediaglow.com',
-            sub: 'We reply within 24 hours',
-            link: { url: 'mailto:contact@mediaglow.com', text: 'Send Email →', target: '_self' }
+            sub: 'نرد خلال 24 ساعة عمل',
+            link: { url: 'mailto:contact@mediaglow.com', text: 'إرسال بريد إلكتروني ←', target: '_self' }
           },
           {
-            icon: 'fi fi-rr-marker',
-            label: 'Company Address',
-            value: 'Riyadh, Saudi Arabia',
-            sub: 'View on Google Maps',
-            link: { url: 'https://maps.google.com', text: 'View Map →', target: '_blank' }
+            icon: 'fa-solid fa-location-dot',
+            label: 'العنوان والمقر الرئيسي',
+            value: 'المملكة العربية السعودية - الرياض',
+            sub: 'عرض على خرائط جوجل',
+            link: { url: 'https://maps.google.com', text: 'فتح الخريطة ←', target: '_blank' }
           }
         ];
       }
