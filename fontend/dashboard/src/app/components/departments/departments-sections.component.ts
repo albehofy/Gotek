@@ -3,20 +3,31 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-picker-select.component';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-departments-sections',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, PrimePickerSelectComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PrimePickerSelectComponent,
+    DialogModule,
+    InputTextModule,
+    TextareaModule
+  ],
   template: `
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-sitemap" style="color:var(--violet-light);"></i> Departments &amp; Sections</h2>
-          <p class="subtitle">Dynamic department management, sub-categories &amp; joint venture partner profit sharing</p>
+          <h2><i class="fa-solid fa-sitemap" style="color:var(--violet-light);"></i> الأقسام والمراكز التشغيلية</h2>
+          <p class="subtitle">إدارة الأقسام الديناميكية، التصنيفات الفرعية، ونسب الشراكة الخارجية</p>
         </div>
         <button class="btn btn-primary" (click)="openAddModal()">
-          <i class="fa-solid fa-plus"></i> Add Department
+          <i class="fa-solid fa-plus"></i> إضافة قسم جديد
         </button>
       </div>
 
@@ -26,113 +37,103 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
           <div class="card-header">
             <h3>{{ dept.name }}</h3>
             <span class="partner-badge" *ngIf="dept.has_partner">
-              <i class="fa-solid fa-handshake"></i> Joint Venture: {{ dept.partner_percentage }}% Company / {{ 100 - dept.partner_percentage }}% Partner
+              <i class="fa-solid fa-handshake"></i> شراكة: {{ dept.partner_percentage }}% الشركة / {{ 100 - dept.partner_percentage }}% الشريك
             </span>
           </div>
           <p class="desc">{{ dept.description }}</p>
 
           <div class="manager-row" *ngIf="dept.manager">
-            <small>Department Lead:</small>
+            <small>مسؤول القسم:</small>
             <span style="font-weight:700; color:#fff;"><i class="fa-solid fa-user-shield" style="color:var(--violet-light); margin-right:4px;"></i> {{ dept.manager.name }}</span>
           </div>
 
           <!-- Subcategories list -->
           <div class="subcategories-section">
             <div class="sub-header">
-              <span>Sub-categories:</span>
-              <button class="btn-sm-add" (click)="openSubCategoryModal(dept)">+ Add Sub-category</button>
+              <span>التصنيفات الفرعية:</span>
+              <button class="btn-sm-add" (click)="openSubCategoryModal(dept)">+ إضافة تصنيف فرعي</button>
             </div>
             <div class="sub-chips">
               <span *ngFor="let sub of dept.sub_categories" class="sub-chip">
-                {{ sub.name_en || sub.name_ar }}
+                {{ sub.name_ar || sub.name_en }}
               </span>
-              <span *ngIf="!dept.sub_categories || dept.sub_categories.length === 0" style="color:var(--text-3); font-size:0.75rem;">No sub-categories yet</span>
+              <span *ngIf="!dept.sub_categories || dept.sub_categories.length === 0" style="color:var(--text-3); font-size:0.75rem;">لا توجد تصنيفات فرعية بعد</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Add Department Modal -->
-      <div class="crm-modal-backdrop" *ngIf="showAddModal">
-        <div class="crm-modal-card glass-panel">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-sitemap" style="color:var(--violet-light);"></i> Create Department</h3>
-            <button class="close-btn" (click)="showAddModal = false"><i class="fa-solid fa-xmark"></i></button>
+      <!-- PrimeNG Dialog: Add Department -->
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إنشاء قسم جديد" [style]="{ width: '520px' }">
+        <form [formGroup]="deptForm" (ngSubmit)="saveDepartment()">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group">
+              <label>اسم القسم <span class="required">*</span></label>
+              <input type="text" pInputText formControlName="name" placeholder="مثال: قسم إنتاج الفيديو والصوت" />
+            </div>
+            <div class="form-group">
+              <label>مسؤول القسم / المدير</label>
+              <app-prime-picker-select
+                formControlName="manager_id"
+                [items]="employees"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="اختر مسؤول القسم..."
+              ></app-prime-picker-select>
+            </div>
+            <!-- Partnerships on Sections -->
+            <div class="form-group checkbox-group">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.86rem; color:#fff;">
+                <input type="checkbox" formControlName="has_partner" (change)="togglePartnerFields()" />
+                شريك خارجي (شراكة قسم / مشروع مشترك)
+              </label>
+            </div>
+            <div *ngIf="deptForm.value.has_partner" class="partner-fields-box" style="background:rgba(217,119,6,0.06); padding:14px; border-radius:12px; border:1px dashed rgba(217,119,6,0.3); display:flex; flex-direction:column; gap:12px;">
+              <div class="form-group">
+                <label>اسم الشريك الخارجي</label>
+                <input type="text" pInputText formControlName="partner_name" placeholder="مثال: شركة بروتيك للإنتاج" />
+              </div>
+              <div class="form-group">
+                <label>نسبة أرباح الشركة (%)</label>
+                <input type="number" pInputText formControlName="partner_percentage" placeholder="50" />
+                <small style="color:var(--text-2);">تُقسم أرباح هذا القسم بناءً على هذه النسبة.</small>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>الوصف والمهام</label>
+              <textarea pTextarea formControlName="description" rows="2" placeholder="وصف مهام وتخصص هذا القسم..."></textarea>
+            </div>
           </div>
-          <form [formGroup]="deptForm" (ngSubmit)="saveDepartment()">
-            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
-              <div class="form-group">
-                <label>Department Name <span class="required">*</span></label>
-                <input type="text" formControlName="name" placeholder="e.g. Video Production Department" />
-              </div>
-              <div class="form-group">
-                <label>Department Lead / Manager</label>
-                <app-prime-picker-select
-                  formControlName="manager_id"
-                  [items]="employees"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select manager..."
-                ></app-prime-picker-select>
-              </div>
-              <!-- Partnerships on Sections -->
-              <div class="form-group checkbox-group">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.86rem; color:#fff;">
-                  <input type="checkbox" formControlName="has_partner" (change)="togglePartnerFields()" />
-                  External Joint Venture Partner (Section Partnership)
-                </label>
-              </div>
-              <div *ngIf="deptForm.value.has_partner" class="partner-fields-box" style="background:rgba(217,119,6,0.06); padding:14px; border-radius:12px; border:1px dashed rgba(217,119,6,0.3); display:flex; flex-direction:column; gap:12px;">
-                <div class="form-group">
-                  <label>External Partner Name</label>
-                  <input type="text" formControlName="partner_name" placeholder="e.g. ProTech Production Co." />
-                </div>
-                <div class="form-group">
-                  <label>Company Profit Share (%)</label>
-                  <input type="number" formControlName="partner_percentage" placeholder="50" />
-                  <small style="color:var(--text-2);">Department profits are split according to this percentage.</small>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Description</label>
-                <textarea formControlName="description" rows="2" placeholder="Department description..."></textarea>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="showAddModal = false">Cancel</button>
-              <button type="submit" class="btn btn-primary" [disabled]="deptForm.invalid || loading">
-                {{ loading ? 'Saving...' : 'Save Department' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
 
-      <!-- Add Sub-category Modal -->
-      <div class="crm-modal-backdrop" *ngIf="showSubModal && selectedDept">
-        <div class="crm-modal-card glass-panel">
-          <div class="modal-header">
-            <h3>Add Sub-category to: {{ selectedDept.name }}</h3>
-            <button class="close-btn" (click)="showSubModal = false"><i class="fa-solid fa-xmark"></i></button>
+          <ng-template pTemplate="footer">
+            <button type="button" class="btn btn-glass" (click)="showAddModal = false">إلغاء</button>
+            <button type="submit" class="btn btn-primary" [disabled]="deptForm.invalid || loading">
+              {{ loading ? 'جاري الحفظ...' : 'حفظ القسم' }}
+            </button>
+          </ng-template>
+        </form>
+      </p-dialog>
+
+      <!-- PrimeNG Dialog: Add Sub-category -->
+      <p-dialog [(visible)]="showSubModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'إضافة تصنيف فرعي إلى: ' + (selectedDept?.name || '')" [style]="{ width: '480px' }">
+        <form [formGroup]="subForm" (ngSubmit)="saveSubCategory()">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group">
+              <label>اسم التصنيف الفرعي (بالعربي) <span class="required">*</span></label>
+              <input type="text" pInputText formControlName="name_ar" placeholder="مثال: فيديو ريلز / Reels" />
+            </div>
+            <div class="form-group">
+              <label>اسم التصنيف الفرعي (بالإنجليزي)</label>
+              <input type="text" pInputText formControlName="name_en" placeholder="Reels Video" />
+            </div>
           </div>
-          <form [formGroup]="subForm" (ngSubmit)="saveSubCategory()">
-            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
-              <div class="form-group">
-                <label>Sub-category Name (Arabic) <span class="required">*</span></label>
-                <input type="text" formControlName="name_ar" placeholder="مثال: فيديو ريلز / Reels" />
-              </div>
-              <div class="form-group">
-                <label>Sub-category Name (English)</label>
-                <input type="text" formControlName="name_en" placeholder="Reels Video" />
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="showSubModal = false">Cancel</button>
-              <button type="submit" class="btn btn-primary" [disabled]="subForm.invalid || loading">Add Sub-category</button>
-            </div>
-          </form>
-        </div>
-      </div>
+
+          <ng-template pTemplate="footer">
+            <button type="button" class="btn btn-glass" (click)="showSubModal = false">إلغاء</button>
+            <button type="submit" class="btn btn-primary" [disabled]="subForm.invalid || loading">إضافة التصنيف</button>
+          </ng-template>
+        </form>
+      </p-dialog>
     </div>
   `,
   styles: [`

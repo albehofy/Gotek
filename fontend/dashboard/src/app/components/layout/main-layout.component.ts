@@ -18,6 +18,7 @@ export class MainLayoutComponent implements OnInit {
   apiService = inject(ApiService);
 
   sidebarOpen = false;
+  sidebarCollapsed = false;
   websiteMenuOpen = true;
   activeDropdown: string | null = null;
   isLightMode = false;
@@ -29,6 +30,15 @@ export class MainLayoutComponent implements OnInit {
   };
 
   ngOnInit() {
+    const savedTheme = localStorage.getItem('mediaglow_theme');
+    if (savedTheme === 'light') {
+      this.isLightMode = true;
+      document.body.classList.add('light-theme');
+    } else {
+      this.isLightMode = false;
+      document.body.classList.remove('light-theme');
+    }
+
     this.updateActiveTabAndPath();
 
     this.router.events.pipe(
@@ -57,7 +67,11 @@ export class MainLayoutComponent implements OnInit {
   }
 
   toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
+    if (window.innerWidth <= 992) {
+      this.sidebarOpen = !this.sidebarOpen;
+    } else {
+      this.sidebarCollapsed = !this.sidebarCollapsed;
+    }
   }
 
   toggleWebsiteMenu() {
@@ -71,6 +85,7 @@ export class MainLayoutComponent implements OnInit {
   toggleTheme() {
     this.isLightMode = !this.isLightMode;
     document.body.classList.toggle('light-theme', this.isLightMode);
+    localStorage.setItem('mediaglow_theme', this.isLightMode ? 'light' : 'dark');
   }
 
   logout() {
@@ -86,5 +101,17 @@ export class MainLayoutComponent implements OnInit {
 
   isDashboardTabActive(tabName: string): boolean {
     return (this.currentPath === 'dashboard' || this.currentPath === '') && this.currentTab === tabName;
+  }
+
+  getArabicPathLabel(path: string): string {
+    if (!path || path === 'dashboard') return 'لوحة التحكم';
+    if (path.startsWith('clients')) return 'العملاء';
+    if (path.startsWith('deals')) return 'الصفقات والعقود';
+    if (path.startsWith('tasks')) return 'لوحة المهام';
+    if (path.startsWith('departments')) return 'الأقسام والمراكز';
+    if (path.startsWith('finance')) return 'المالية والخزينة';
+    if (path.startsWith('client-portal')) return 'بوابة العملاء';
+    if (path.startsWith('roles')) return 'الأدوار والصلاحيات';
+    return path;
   }
 }

@@ -1,121 +1,164 @@
-<div class="crm-shell">
+<div class="crm-shell" [class.collapsed-sidebar]="sidebarCollapsed">
   <!-- Mobile sidebar overlay -->
   <div class="sb-overlay" [class.active]="sidebarOpen" (click)="toggleSidebar()"></div>
 
   <!-- SIDEBAR -->
-  <aside class="sb" [class.open]="sidebarOpen">
+  <aside class="sb" [class.open]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
     <div class="sb-content">
-      <!-- Logo -->
-      <a [routerLink]="['/dashboard']" class="sb-logo">
-        <div class="sb-logo-badge"><i class="fa-solid fa-bolt"></i></div>
-        <div>
-          <div class="sb-logo-text">Media<span>Glow</span></div>
-          <div class="sb-logo-sub">Agency Control Hub</div>
-        </div>
-      </a>
+      <!-- Logo & Desktop Toggle -->
+      <div class="sb-logo-wrapper">
+        <a [routerLink]="['/dashboard']" class="sb-logo">
+          <div class="sb-logo-badge"><i class="fa-solid fa-bolt"></i></div>
+          <div class="sb-logo-details">
+            <div class="sb-logo-text">Media<span>Glow</span></div>
+            <div class="sb-logo-sub">مركز التحكم وإدارة الوكالة</div>
+          </div>
+        </a>
+        <button class="sb-collapse-btn" (click)="toggleSidebar()" [title]="sidebarCollapsed ? 'توسيع القائمة' : 'طي القائمة'">
+          <i class="fa-solid" [ngClass]="sidebarCollapsed ? 'fa-indent' : 'fa-outdent'"></i>
+        </button>
+      </div>
 
       <nav class="sb-nav">
         <!-- CRM Section -->
-        <div class="sb-section">Agency CRM &amp; ERP</div>
-        <a class="sb-item" routerLink="/clients" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-users"></i></span><span>Clients</span>
+        <div class="sb-section">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>إدارة الوكالة والنظام المالي</span>
+        </div>
+        <a class="sb-item" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
+          <span class="sb-icon"><i class="fa-solid fa-users"></i></span>
+          <span class="sb-text">العملاء</span>
         </a>
-        <a class="sb-item" routerLink="/deals" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span><span>Deals &amp; Sales</span>
+        <a class="sb-item" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
+          <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span>
+          <span class="sb-text">الصفقات والعقود</span>
         </a>
-        <a class="sb-item" routerLink="/tasks" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-list-check"></i></span><span>Task Board</span>
+        <a class="sb-item" routerLink="/tasks" routerLinkActive="active" data-tooltip="لوحة المهام">
+          <span class="sb-icon"><i class="fa-solid fa-list-check"></i></span>
+          <span class="sb-text">لوحة المهام</span>
         </a>
-        <a class="sb-item" routerLink="/departments" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-sitemap"></i></span><span>Departments</span>
+        <a class="sb-item" routerLink="/departments" routerLinkActive="active" data-tooltip="الأقسام والمراكز">
+          <span class="sb-icon"><i class="fa-solid fa-sitemap"></i></span>
+          <span class="sb-text">الأقسام والمراكز</span>
         </a>
-        <a class="sb-item" routerLink="/finance" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-chart-line"></i></span><span>Finance &amp; Ledger</span>
+        <a class="sb-item" routerLink="/finance" routerLinkActive="active" data-tooltip="المالية والخزينة">
+          <span class="sb-icon"><i class="fa-solid fa-chart-line"></i></span>
+          <span class="sb-text">المالية والخزينة</span>
         </a>
-        <a class="sb-item" routerLink="/client-portal" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-id-card"></i></span><span>Client Portal</span>
+        <a class="sb-item" routerLink="/client-portal" routerLinkActive="active" data-tooltip="بوابة العملاء">
+          <span class="sb-icon"><i class="fa-solid fa-id-card"></i></span>
+          <span class="sb-text">بوابة العملاء</span>
         </a>
-        <a class="sb-item" routerLink="/roles" routerLinkActive="active">
-          <span class="sb-icon"><i class="fa-solid fa-shield-halved"></i></span><span>Roles &amp; Permissions</span>
+        <a class="sb-item" routerLink="/roles" routerLinkActive="active" data-tooltip="الأدوار والصلاحيات">
+          <span class="sb-icon"><i class="fa-solid fa-shield-halved"></i></span>
+          <span class="sb-text">الأدوار والصلاحيات</span>
         </a>
 
         <!-- Console Section -->
-        <div class="sb-section">Main Console</div>
-        <a class="sb-item" [class.active]="isDashboardTabActive('overview')" (click)="navigateToTab('overview')">
-          <span class="sb-icon"><i class="fa-solid fa-gauge-high"></i></span><span>Dashboard Overview</span>
+        <div class="sb-section">
+          <i class="fa-solid fa-sliders"></i>
+          <span>لوحة التحكم الرئيسية</span>
+        </div>
+        <a class="sb-item" [class.active]="isDashboardTabActive('overview')" (click)="navigateToTab('overview')" data-tooltip="الإحصائيات العامة">
+          <span class="sb-icon"><i class="fa-solid fa-gauge-high"></i></span>
+          <span class="sb-text">نظرة عامة على الإحصائيات</span>
         </a>
-        <a class="sb-item" [class.active]="isDashboardTabActive('contact-hub')" (click)="navigateToTab('contact-hub')">
-          <span class="sb-icon"><i class="fa-solid fa-inbox"></i></span><span>Contact Hub &amp; Leads</span>
+        <a class="sb-item" [class.active]="isDashboardTabActive('contact-hub')" (click)="navigateToTab('contact-hub')" data-tooltip="مركز الرسائل والطلبات">
+          <span class="sb-icon"><i class="fa-solid fa-inbox"></i></span>
+          <span class="sb-text">مركز الرسائل والطلبات</span>
           <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>
         </a>
 
         <!-- Website Content Dropdown -->
         <div class="nav-dropdown" [class.open]="websiteMenuOpen">
-          <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;">
+          <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;" data-tooltip="محتوى الموقع">
             <span class="sb-icon"><i class="fa-solid fa-globe"></i></span>
-            <span>Website Content</span>
+            <span class="sb-text">محتوى الموقع الإلكتروني</span>
             <i class="fa-solid fa-chevron-down arrow-icon" [style.transform]="websiteMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></i>
           </div>
           <div class="dropdown-menu-list">
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('projects')" (click)="navigateToTab('projects')">
-              <span class="sb-icon"><i class="fa-solid fa-folder-open"></i></span><span>Projects / Portfolio</span>
+            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('projects')" (click)="navigateToTab('projects')" data-tooltip="المشاريع والأعمال">
+              <span class="sb-icon"><i class="fa-solid fa-folder-open"></i></span>
+              <span class="sb-text">المشاريع والأعمال</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('categories')" (click)="navigateToTab('categories')">
-              <span class="sb-icon"><i class="fa-solid fa-tags"></i></span><span>Categories</span>
+            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('categories')" (click)="navigateToTab('categories')" data-tooltip="التصنيفات">
+              <span class="sb-icon"><i class="fa-solid fa-tags"></i></span>
+              <span class="sb-text">التصنيفات</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('services')" (click)="navigateToTab('services')">
-              <span class="sb-icon"><i class="fa-solid fa-gears"></i></span><span>Services Catalog</span>
+            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('services')" (click)="navigateToTab('services')" data-tooltip="دليل الخدمات">
+              <span class="sb-icon"><i class="fa-solid fa-gears"></i></span>
+              <span class="sb-text">دليل الخدمات</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('blogs')" (click)="navigateToTab('blogs')">
-              <span class="sb-icon"><i class="fa-solid fa-newspaper"></i></span><span>Blog Articles</span>
+            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('blogs')" (click)="navigateToTab('blogs')" data-tooltip="المقالات والمدونة">
+              <span class="sb-icon"><i class="fa-solid fa-newspaper"></i></span>
+              <span class="sb-text">المقالات والمدونة</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('testimonials')" (click)="navigateToTab('testimonials')">
-              <span class="sb-icon"><i class="fa-solid fa-comments"></i></span><span>Testimonials</span>
+            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('testimonials')" (click)="navigateToTab('testimonials')" data-tooltip="آراء العملاء">
+              <span class="sb-icon"><i class="fa-solid fa-comments"></i></span>
+              <span class="sb-text">آراء العملاء</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('faqs')" (click)="navigateToTab('faqs')">
-              <span class="sb-icon"><i class="fa-solid fa-circle-question"></i></span><span>FAQs</span>
+            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('faqs')" (click)="navigateToTab('faqs')" data-tooltip="الأسئلة الشائعة">
+              <span class="sb-icon"><i class="fa-solid fa-circle-question"></i></span>
+              <span class="sb-text">الأسئلة الشائعة</span>
             </a>
           </div>
         </div>
 
         <!-- Page Editors -->
-        <div class="sb-section">Page Editors</div>
-        <a class="sb-item" [class.active]="isDashboardTabActive('home-page')" (click)="navigateToTab('home-page')">
-          <span class="sb-icon"><i class="fa-solid fa-house"></i></span><span>Home Page</span>
+        <div class="sb-section">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>محرر صفحات الموقع</span>
+        </div>
+        <a class="sb-item" [class.active]="isDashboardTabActive('home-page')" (click)="navigateToTab('home-page')" data-tooltip="الصفحة الرئيسية">
+          <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
+          <span class="sb-text">الصفحة الرئيسية</span>
         </a>
-        <a class="sb-item" [class.active]="isDashboardTabActive('about-page')" (click)="navigateToTab('about-page')">
-          <span class="sb-icon"><i class="fa-solid fa-circle-info"></i></span><span>About Page</span>
+        <a class="sb-item" [class.active]="isDashboardTabActive('about-page')" (click)="navigateToTab('about-page')" data-tooltip="صفحة عن الوكالة">
+          <span class="sb-icon"><i class="fa-solid fa-circle-info"></i></span>
+          <span class="sb-text">صفحة عن الوكالة</span>
         </a>
-        <a class="sb-item" [class.active]="isDashboardTabActive('services-page')" (click)="navigateToTab('services-page')">
-          <span class="sb-icon"><i class="fa-solid fa-briefcase"></i></span><span>Services Page</span>
+        <a class="sb-item" [class.active]="isDashboardTabActive('services-page')" (click)="navigateToTab('services-page')" data-tooltip="صفحة الخدمات">
+          <span class="sb-icon"><i class="fa-solid fa-briefcase"></i></span>
+          <span class="sb-text">صفحة الخدمات</span>
         </a>
-        <a class="sb-item" [class.active]="isDashboardTabActive('portfolio-page')" (click)="navigateToTab('portfolio-page')">
-          <span class="sb-icon"><i class="fa-solid fa-images"></i></span><span>Portfolio Page</span>
+        <a class="sb-item" [class.active]="isDashboardTabActive('portfolio-page')" (click)="navigateToTab('portfolio-page')" data-tooltip="صفحة معرض الأعمال">
+          <span class="sb-icon"><i class="fa-solid fa-images"></i></span>
+          <span class="sb-text">صفحة معرض الأعمال</span>
         </a>
-        <a class="sb-item" [class.active]="isDashboardTabActive('blogs-page')" (click)="navigateToTab('blogs-page')">
-          <span class="sb-icon"><i class="fa-solid fa-blog"></i></span><span>Blogs Page</span>
+        <a class="sb-item" [class.active]="isDashboardTabActive('blogs-page')" (click)="navigateToTab('blogs-page')" data-tooltip="صفحة المدونة">
+          <span class="sb-icon"><i class="fa-solid fa-blog"></i></span>
+          <span class="sb-text">صفحة المدونة</span>
         </a>
-        <a class="sb-item" [class.active]="isDashboardTabActive('footer-section')" (click)="navigateToTab('footer-section')">
-          <span class="sb-icon"><i class="fa-solid fa-sliders"></i></span><span>Footer Content</span>
+        <a class="sb-item" [class.active]="isDashboardTabActive('footer-section')" (click)="navigateToTab('footer-section')" data-tooltip="تذييل الموقع">
+          <span class="sb-icon"><i class="fa-solid fa-sliders"></i></span>
+          <span class="sb-text">محتوى تذييل الموقع</span>
         </a>
 
-        <div class="sb-section">System</div>
-        <a class="sb-item" routerLink="/">
-          <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span><span>Visit Website</span>
+        <div class="sb-section">
+          <i class="fa-solid fa-gear"></i>
+          <span>النظام</span>
+        </div>
+        <a class="sb-item" routerLink="/" data-tooltip="الموقع الرئيسي">
+          <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+          <span class="sb-text">زيارة الموقع الرئيسي</span>
         </a>
-        <a class="sb-item danger" (click)="logout()" style="cursor:pointer;">
-          <span class="sb-icon"><i class="fa-solid fa-right-from-bracket"></i></span><span>Sign Out</span>
+        <a class="sb-item danger" (click)="logout()" style="cursor:pointer;" data-tooltip="تسجيل الخروج">
+          <span class="sb-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+          <span class="sb-text">تسجيل الخروج</span>
         </a>
       </nav>
 
       <div class="sb-foot">
-        <div class="sb-user" (click)="toggleDropdown('user')">
-          <div class="sb-av"><i class="fa-solid fa-user-shield"></i></div>
-          <div class="sb-uinfo">
-            <div class="sb-uname">Media Glow Admin</div>
-            <div class="sb-urole">Super Administrator</div>
+        <div class="sb-user-card" (click)="toggleDropdown('user')">
+          <div class="sb-av">
+            <i class="fa-solid fa-user-shield"></i>
+            <span class="user-status-dot"></span>
           </div>
-          <span class="sb-ucaret">▾</span>
+          <div class="sb-uinfo">
+            <div class="sb-uname">مدير النظام</div>
+            <div class="sb-urole">سوبر أدمن</div>
+          </div>
+          <span class="sb-ucaret"><i class="fa-solid fa-ellipsis-vertical"></i></span>
         </div>
       </div>
     </div>
@@ -128,36 +171,38 @@
       <div class="tb-l">
         <button class="tb-menu" (click)="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
         <div class="tb-bc">
-          <span style="color:rgba(255,255,255,0.3); font-size:0.78rem;">Control Hub</span>
-          <span class="sep" style="color:rgba(255,255,255,0.12); margin:0 5px;">›</span>
-          <span class="cur">{{ (currentPath || 'dashboard') | titlecase }}</span>
+          <span style="color:rgba(255,255,255,0.3); font-size:0.78rem;">مركز التحكم</span>
+          <span class="sep" style="color:rgba(255,255,255,0.2); margin:0 6px;">›</span>
+          <span class="cur">{{ getArabicPathLabel(currentPath) }}</span>
         </div>
       </div>
       <div class="tb-r">
         <app-notification-center></app-notification-center>
-        <button class="tb-btn" (click)="toggleTheme()" title="Toggle Theme">
+        <button class="tb-btn" (click)="toggleTheme()" title="تغيير الثيم">
           <i class="fa-solid" [ngClass]="isLightMode ? 'fa-moon' : 'fa-sun'"></i>
         </button>
-        <div class="tb-user" (click)="toggleDropdown('user')">
-          <div class="tb-av"><i class="fa-solid fa-user-shield"></i></div>
-          <span class="tb-uname">Admin</span>
-          <span class="tb-caret">▾</span>
+        <div class="tb-user-wrap">
+          <div class="tb-user" (click)="toggleDropdown('user')">
+            <div class="tb-av"><i class="fa-solid fa-user-shield"></i></div>
+            <span class="tb-uname">مدير النظام</span>
+            <span class="tb-caret">▾</span>
+          </div>
+
+          <!-- Dropdown menu -->
+          <div class="dropdown dd-user" [class.show]="activeDropdown === 'user'">
+            <div class="ud-top">
+              <div class="ud-name">مدير النظام</div>
+              <div class="ud-role">سوبر أدمن</div>
+              <div class="ud-email">admin&#64;mediaglow.com</div>
+            </div>
+            <a class="ud-row" (click)="navigateToTab('contact-hub')"><i class="fa-solid fa-inbox" style="color:var(--teal-2)"></i>&nbsp;&nbsp;إدارة الرسائل والطلبات</a>
+            <a class="ud-row" routerLink="/"><i class="fa-solid fa-globe" style="color:var(--teal-2)"></i>&nbsp;&nbsp;زيارة الموقع الرئيسي</a>
+            <div class="ud-divider"></div>
+            <a class="ud-row danger" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i>&nbsp;&nbsp;تسجيل الخروج</a>
+          </div>
         </div>
       </div>
     </header>
-
-    <!-- Dropdown menu -->
-    <div class="dropdown dd-user" [class.show]="activeDropdown === 'user'">
-      <div class="ud-top">
-        <div class="ud-name">Media Glow Admin</div>
-        <div class="ud-role">Super Administrator</div>
-        <div class="ud-email">admin&#64;mediaglow.com</div>
-      </div>
-      <a class="ud-row" (click)="navigateToTab('contact-hub')"><i class="fa-solid fa-inbox" style="color:var(--teal-2)"></i>&nbsp;&nbsp;Manage Leads</a>
-      <a class="ud-row" routerLink="/"><i class="fa-solid fa-globe" style="color:var(--teal-2)"></i>&nbsp;&nbsp;Visit Website</a>
-      <div class="ud-divider"></div>
-      <a class="ud-row danger" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i>&nbsp;&nbsp;Sign Out</a>
-    </div>
 
     <!-- ═══════════ CONTENT PANEL ═══════════ -->
     <main class="pc">

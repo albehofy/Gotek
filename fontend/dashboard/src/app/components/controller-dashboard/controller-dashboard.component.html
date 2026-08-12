@@ -8,30 +8,30 @@
         <div class="wb-overlay"></div>
         <div class="wb-inner">
           <div>
-            <div class="wb-tag"><span class="wb-dot"></span>&nbsp;Agency Hub · All Systems Live</div>
-            <div class="wb-greeting">Welcome to <span>Media Glow</span>&nbsp;<i class="fa-solid fa-bolt" style="font-size:1rem;"></i></div>
-            <div class="wb-sub">Your agency's complete control center — manage portfolio, leads, content &amp; CRM data in real time.</div>
+            <div class="wb-tag"><span class="wb-dot"></span>&nbsp;مركز الوكالة · جميع الأنظمة متصلة</div>
+            <div class="wb-greeting">مرحباً بك في <span>Media Glow</span>&nbsp;<i class="fa-solid fa-bolt" style="font-size:1rem;"></i></div>
+            <div class="wb-sub">مركز التحكم الكامل لوكالتك — إدارة معارض الأعمال، الطلبات، المحتوى وبيانات النظام المالي في وقت حقيقي.</div>
             <div class="wb-actions" style="margin-top:18px;">
-              <button class="wb-btn wb-primary" (click)="setTab('projects')"><i class="fa-solid fa-folder-open"></i> Portfolio</button>
-              <button class="wb-btn wb-secondary" (click)="setTab('contact-hub')"><i class="fa-solid fa-inbox"></i> View Leads</button>
+              <button class="wb-btn wb-primary" (click)="setTab('projects')"><i class="fa-solid fa-folder-open"></i> معرض الأعمال</button>
+              <button class="wb-btn wb-secondary" (click)="setTab('contact-hub')"><i class="fa-solid fa-inbox"></i> عرض الرسائل والطلبات</button>
             </div>
           </div>
           <div class="wb-quick-stats">
             <div class="wb-qs" (click)="setTab('projects')">
               <div class="wb-qs-num">{{ overviewStats.projects }}</div>
-              <div class="wb-qs-lbl">Projects</div>
+              <div class="wb-qs-lbl">المشاريع</div>
             </div>
             <div class="wb-qs" (click)="setTab('services')">
               <div class="wb-qs-num">{{ overviewStats.services }}</div>
-              <div class="wb-qs-lbl">Services</div>
+              <div class="wb-qs-lbl">الخدمات</div>
             </div>
             <div class="wb-qs" (click)="setTab('testimonials')">
               <div class="wb-qs-num">{{ overviewStats.testimonials }}</div>
-              <div class="wb-qs-lbl">Reviews</div>
+              <div class="wb-qs-lbl">التقييمات</div>
             </div>
             <div class="wb-qs" (click)="setTab('contact-hub')" style="border-color:rgba(225,29,72,0.25);">
               <div class="wb-qs-num" style="color:var(--rose-light);">{{ overviewStats.inquiries }}</div>
-              <div class="wb-qs-lbl">Leads</div>
+              <div class="wb-qs-lbl">الطلبات</div>
             </div>
           </div>
         </div>
@@ -41,27 +41,27 @@
       <div class="stats-grid">
         <div class="stat-card stat-c-violet" (click)="setTab('projects')">
           <div class="stat-card-icon"><i class="fa-solid fa-folder-open"></i></div>
-          <div class="stat-label">Portfolio Projects</div>
+          <div class="stat-label">مشاريع معرض الأعمال</div>
           <div class="stat-value">{{ overviewStats.projects }}</div>
-          <div class="stat-trend trend-v"><i class="fa-solid fa-arrow-trend-up"></i> Live items</div>
+          <div class="stat-trend trend-v"><i class="fa-solid fa-arrow-trend-up"></i> عناصر نشطة</div>
         </div>
         <div class="stat-card stat-c-teal" (click)="setTab('services')">
           <div class="stat-card-icon"><i class="fa-solid fa-gears"></i></div>
-          <div class="stat-label">Active Services</div>
+          <div class="stat-label">الخدمات المتاحة</div>
           <div class="stat-value">{{ overviewStats.services }}</div>
-          <div class="stat-trend trend-t"><i class="fa-solid fa-circle-check"></i> Catalog live</div>
+          <div class="stat-trend trend-t"><i class="fa-solid fa-circle-check"></i> دليل نشط</div>
         </div>
         <div class="stat-card stat-c-amber" (click)="setTab('testimonials')">
           <div class="stat-card-icon"><i class="fa-solid fa-star"></i></div>
-          <div class="stat-label">Testimonials</div>
+          <div class="stat-label">آراء وتوصيات العملاء</div>
           <div class="stat-value">{{ overviewStats.testimonials }}</div>
-          <div class="stat-trend trend-a"><i class="fa-solid fa-thumbs-up"></i> Approved</div>
+          <div class="stat-trend trend-a"><i class="fa-solid fa-thumbs-up"></i> معتمدة</div>
         </div>
         <div class="stat-card stat-c-rose" (click)="setTab('contact-hub')">
           <div class="stat-card-icon"><i class="fa-solid fa-envelope"></i></div>
-          <div class="stat-label">Open Inquiries</div>
+          <div class="stat-label">الرسائل والطلبات المفتوحة</div>
           <div class="stat-value">{{ overviewStats.inquiries }}</div>
-          <div class="stat-trend trend-v"><i class="fa-solid fa-bell"></i> Needs action</div>
+          <div class="stat-trend trend-v"><i class="fa-solid fa-bell"></i> تحتاج إجراء</div>
         </div>
       </div>
 
@@ -73,12 +73,12 @@
           <div class="card-header">
             <div class="card-title">
               <div class="card-title-icon cti-v"><i class="fa-solid fa-chart-pie"></i></div>
-              Projects by Category
+              توزيع المشاريع حسب التصنيف
             </div>
           </div>
           <div *ngIf="projectsChartData.length === 0" class="empty-state">
             <i class="fa-solid fa-chart-pie"></i>
-            <p>No category data yet</p>
+            <p>لا توجد بيانات تصنيفات بعد</p>
           </div>
           <div *ngIf="projectsChartData.length > 0" style="display:flex; flex-direction:column; gap:14px;">
             <div *ngFor="let item of projectsChartData">
@@ -98,12 +98,12 @@
           <div class="card-header">
             <div class="card-title">
               <div class="card-title-icon cti-t"><i class="fa-solid fa-chart-bar"></i></div>
-              Leads Distribution
+              توزيع الرسائل والطلبات
             </div>
           </div>
           <div *ngIf="inquiriesChartData.length === 0" class="empty-state">
             <i class="fa-solid fa-inbox"></i>
-            <p>No leads data yet</p>
+            <p>لا توجد بيانات طلبات بعد</p>
           </div>
           <div *ngIf="inquiriesChartData.length > 0" style="display:flex; flex-direction:column; gap:14px;">
             <div *ngFor="let item of inquiriesChartData">
@@ -124,17 +124,17 @@
         <div class="card-header">
           <div class="card-title">
             <div class="card-title-icon cti-v"><i class="fa-solid fa-rocket"></i></div>
-            Recent Projects
+            أحدث المشاريع
           </div>
-          <a class="card-action" (click)="setTab('projects')"><i class="fa-solid fa-arrow-right" style="font-size:0.65rem;"></i> View All</a>
+          <a class="card-action" (click)="setTab('projects')"><i class="fa-solid fa-arrow-left" style="font-size:0.65rem;"></i> عرض الكل</a>
         </div>
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>Project</th>
-                <th>Category</th>
-                <th>Client</th>
+                <th>المشروع</th>
+                <th>التصنيف</th>
+                <th>العميل</th>
               </tr>
             </thead>
             <tbody>
@@ -142,15 +142,15 @@
                 <td>
                   <div class="user-cell">
                     <img *ngIf="p.main_image_url || p.image" [src]="p.main_image_url || p.image" style="width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0;">
-                    <div *ngIf="!(p.main_image_url || p.image)" class="user-avatar" style="border-radius:6px;width:30px;height:30px;font-size:0.7rem;">{{ (p.title_en || p.title || '?')[0] }}</div>
-                    <span style="font-weight:600;">{{ p.title_en || p.title }}</span>
+                    <div *ngIf="!(p.main_image_url || p.image)" class="user-avatar" style="border-radius:6px;width:30px;height:30px;font-size:0.7rem;">{{ (p.title_ar || p.title_en || p.title || '?')[0] }}</div>
+                    <span style="font-weight:600;">{{ p.title_ar || p.title_en || p.title }}</span>
                   </div>
                 </td>
-                <td><span class="badge badge-v">{{ p.category?.name_en || p.category?.name?.en || 'N/A' }}</span></td>
+                <td><span class="badge badge-v">{{ p.category?.name_ar || p.category?.name_en || p.category?.name?.ar || 'عام' }}</span></td>
                 <td style="color:var(--text-2);">{{ p.client || '—' }}</td>
               </tr>
               <tr *ngIf="recentProjects.length === 0">
-                <td colspan="3" style="text-align:center; padding:24px; color:var(--text-2);">No recent projects found.</td>
+                <td colspan="3" style="text-align:center; padding:24px; color:var(--text-2);">لا توجد مشاريع حديثة.</td>
               </tr>
             </tbody>
           </table>
@@ -162,76 +162,76 @@
     <div class="view" [class.active]="activeTab === 'services'">
       <div class="card" *ngIf="showServiceForm" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">{{ isEditingService ? 'Edit Service' : 'Add New Service' }}</div>
-          <button class="action-btn" (click)="cancelEditService()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+          <div class="card-title">{{ isEditingService ? 'تعديل الخدمة' : 'إضافة خدمة جديدة' }}</div>
+          <button class="action-btn" (click)="cancelEditService()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
         </div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Service Title (English)</label>
+                <label class="s-label">عنوان الخدمة (بالإنجليزي)</label>
                 <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Web Development" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Service Title (Arabic)</label>
+                <label class="s-label">عنوان الخدمة (بالعربي)</label>
                 <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: تطوير مواقع الويب" dir="rtl" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Category / Badge (English)</label>
+                <label class="s-label">التصنيف / الشارة (بالإنجليزي)</label>
                 <input class="s-input" formControlName="subtitle_en" type="text" required placeholder="e.g. Technology" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Category / Badge (Arabic)</label>
+                <label class="s-label">التصنيف / الشارة (بالعربي)</label>
                 <input class="s-input" formControlName="subtitle_ar" type="text" required placeholder="مثلاً: التقنية" dir="rtl" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Description (English)</label>
+                <label class="s-label">الوصف التفصيلي (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="description_en" rows="3" required></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Description (Arabic)</label>
+                <label class="s-label">الوصف التفصيلي (بالعربي)</label>
                 <textarea class="s-input" formControlName="description_ar" rows="3" required dir="rtl"></textarea>
               </div>
               <div class="fgroup">
-                <label class="s-label">FontAwesome Icon Class</label>
-                <input class="s-input" formControlName="icon" type="text" placeholder="e.g. fa-solid fa-laptop-code" />
+                <label class="s-label">رمز الأيقونة (FontAwesome Icon Class)</label>
+                <input class="s-input" formControlName="icon" type="text" placeholder="مثال: fa-solid fa-laptop-code" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Display Order</label>
+                <label class="s-label">ترتيب العرض</label>
                 <input class="s-input" formControlName="order" type="number" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Features - English (Comma separated)</label>
+                <label class="s-label">المميزات - بالإنجليزي (مفصولة بفواصل)</label>
                 <input class="s-input" formControlName="features_en" type="text" placeholder="e.g. Fast Loading, Custom CMS, Responsive Design" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Features - Arabic (Comma separated)</label>
+                <label class="s-label">المميزات - بالعربي (مفصولة بفواصل)</label>
                 <input class="s-input" formControlName="features_ar" type="text" placeholder="مثلاً: تحميل سريع، لوحة تحكم مخصصة، تصميم متجاوب" dir="rtl" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Stats - English (Format: Label:SubText:OptionalBadge, separated by commas)</label>
+                <label class="s-label">الإحصائيات - بالإنجليزي (صيغة: Label:SubText:OptionalBadge مفصولة بفواصل)</label>
                 <input class="s-input" formControlName="stats_str_en" type="text" placeholder="e.g. 100%:Customized:New, 24/7:Support:N/A" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Stats - Arabic (Format: Label:SubText:OptionalBadge, separated by commas)</label>
+                <label class="s-label">الإحصائيات - بالعربي (صيغة: Label:SubText:OptionalBadge مفصولة بفواصل)</label>
                 <input class="s-input" formControlName="stats_str_ar" type="text" placeholder="مثلاً: %100:مخصص:جديد، 24/7:دعم متواصل" dir="rtl" />
               </div>
               <div class="fgroup">
-                <label class="s-label">CTA Text (English)</label>
+                <label class="s-label">نص زر الإجراء CTA (بالإنجليزي)</label>
                 <input class="s-input" formControlName="cta_text_en" type="text" />
               </div>
               <div class="fgroup">
-                <label class="s-label">CTA Text (Arabic)</label>
+                <label class="s-label">نص زر الإجراء CTA (بالعربي)</label>
                 <input class="s-input" formControlName="cta_text_ar" type="text" dir="rtl" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">CTA Link URL</label>
+                <label class="s-label">رابط زر الإجراء CTA</label>
                 <input class="s-input" formControlName="cta_url" type="text" placeholder="/contact" />
               </div>
             </div>
             <div style="margin-top: 30px; display: flex; gap: 15px;">
               <button type="submit" class="save-btn" [disabled]="loadingService || serviceForm.invalid">
-                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingService ? 'Update Service' : 'Create Service' }}
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingService ? 'تحديث الخدمة' : 'إنشاء الخدمة' }}
               </button>
             </div>
           </form>
@@ -240,11 +240,11 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">All Services</div>
+          <div class="card-title">دليل الخدمات الكلي</div>
           <div style="display: flex; gap: 10px;">
             <button class="save-btn font-small" (click)="showServiceForm = !showServiceForm">
               <i class="fa-solid" [class.fa-plus]="!showServiceForm" [class.fa-xmark]="showServiceForm"></i> 
-              {{ showServiceForm ? 'Close Form' : 'Add Service' }}
+              {{ showServiceForm ? 'إغلاق النموذج' : 'إضافة خدمة' }}
             </button>
             <button class="action-btn font-small" (click)="loadServices()"><i class="fa-solid fa-rotate"></i></button>
           </div>
@@ -253,26 +253,26 @@
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th style="width: 80px;">Icon</th>
-                <th>Service Title (EN)</th>
-                <th>Category (EN)</th>
-                <th style="width: 80px;">Order</th>
-                <th style="width: 140px;">Actions</th>
+                <th style="width: 80px;">الأيقونة</th>
+                <th>عنوان الخدمة</th>
+                <th>التصنيف</th>
+                <th style="width: 80px;">الترتيب</th>
+                <th style="width: 140px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let s of servicesList">
                 <td style="text-align: center; font-size: 1.2rem; padding: 15px;"><i [class]="s.iconClass || s.icon"></i></td>
-                <td><strong>{{ s.title_en || s.title?.en || s.title }}</strong></td>
-                <td><span class="badge badge-blue">{{ s.subtitle_en || s.category?.en || s.category }}</span></td>
+                <td><strong>{{ s.title_ar || s.title_en || s.title?.ar || s.title?.en }}</strong></td>
+                <td><span class="badge badge-blue">{{ s.subtitle_ar || s.subtitle_en || s.category?.ar || s.category?.en }}</span></td>
                 <td>{{ s.order }}</td>
                 <td>
-                  <button class="action-btn" title="Edit Service" (click)="editService(s)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="Delete Service" (click)="deleteService(s.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="تعديل الخدمة" (click)="editService(s)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="حذف الخدمة" (click)="deleteService(s.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="servicesList.length === 0">
-                <td colspan="5" style="text-align: center; padding: 20px;">No services found.</td>
+                <td colspan="5" style="text-align: center; padding: 20px;">لم يتم العثور على خدمات.</td>
               </tr>
             </tbody>
           </table>
@@ -284,58 +284,58 @@
     <div class="view" [class.active]="activeTab === 'projects'">
       <div class="card" *ngIf="showProjectForm" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">{{ isEditingProject ? 'Edit Project & Case Study' : 'Add New Project' }}</div>
-          <button class="action-btn" (click)="cancelEditProject()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+          <div class="card-title">{{ isEditingProject ? 'تعديل المشروع ودراسة الحالة' : 'إضافة مشروع جديد' }}</div>
+          <button class="action-btn" (click)="cancelEditProject()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
         </div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
             
-            <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">1. General Info</h3>
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">1. البيانات العامة</h3>
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Project Title (English)</label>
+                <label class="s-label">عنوان المشروع (بالإنجليزي)</label>
                 <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Media Glow E-Commerce Platform" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Project Title (Arabic)</label>
+                <label class="s-label">عنوان المشروع (بالعربي)</label>
                 <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: متجر ميديا جلو الإلكتروني" dir="rtl" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Category</label>
+                <label class="s-label">التصنيف</label>
                 <select class="s-input" formControlName="category_id" required>
-                  <option value="">Select Category</option>
-                  <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name_en || cat.name?.en || cat.name }}</option>
+                  <option value="">اختر التصنيف...</option>
+                  <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name_ar || cat.name_en || cat.name?.ar || cat.name }}</option>
                 </select>
               </div>
               <div class="fgroup">
-                <label class="s-label">Main Image Alt Text (SEO)</label>
-                <input class="s-input" formControlName="main_image_alt" type="text" placeholder="SEO Alt Text" />
+                <label class="s-label">النص البديل للصورة الرئيسية (SEO)</label>
+                <input class="s-input" formControlName="main_image_alt" type="text" placeholder="نص SEO البديل" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Description / Brief (English)</label>
+                <label class="s-label">الوصف / نبذة مختصرة (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="description_en" rows="3" required></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Description / Brief (Arabic)</label>
+                <label class="s-label">الوصف / نبذة مختصرة (بالعربي)</label>
                 <textarea class="s-input" formControlName="description_ar" rows="3" required dir="rtl"></textarea>
               </div>
             </div>
 
-            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">2. Branding & Visuals</h3>
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">2. الهوية البصرية والعرض</h3>
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Case Study Accent Color</label>
+                <label class="s-label">اللون المميز لدراسة الحالة</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                   <input type="color" formControlName="color" style="width: 45px; height: 45px; border: none; border-radius: 8px; cursor: pointer; background: transparent;" />
                   <input class="s-input" formControlName="color" type="text" placeholder="#000000" style="flex: 1;" />
                 </div>
               </div>
               <div class="fgroup">
-                <label class="s-label">Project Emoji Icon</label>
-                <input class="s-input" formControlName="emoji" type="text" placeholder="Icon class e.g. fa-solid fa-rocket or pi pi-rocket" />
+                <label class="s-label">رمز أيقونة المشروع</label>
+                <input class="s-input" formControlName="emoji" type="text" placeholder="مثال: fa-solid fa-rocket" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Main Image File</label>
+                <label class="s-label">الصورة الرئيسية للمشروع</label>
                 <input class="s-input" type="file" accept="image/*" (change)="onProjectImageSelected($event)" style="padding-top: 10px;" />
                 <div *ngIf="projectImagePreview" style="margin-top: 10px;">
                   <img [src]="projectImagePreview" style="max-height: 120px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
@@ -343,73 +343,73 @@
               </div>
             </div>
 
-            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">3. Case Study Meta</h3>
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">3. تفاصيل العميل والمدد</h3>
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Client Name</label>
-                <input class="s-input" formControlName="client" type="text" placeholder="e.g. Aura Cosmetics" />
+                <label class="s-label">اسم العميل</label>
+                <input class="s-input" formControlName="client" type="text" placeholder="مثال: شركة أورا للتجميل" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Timeline</label>
-                <input class="s-input" formControlName="timeline" type="text" placeholder="e.g. 3 Months" />
+                <label class="s-label">المدة الزمنية للتنفيذ</label>
+                <input class="s-input" formControlName="timeline" type="text" placeholder="مثال: 3 أشهر" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Project Tags (Comma separated)</label>
-                <input class="s-input" formControlName="tags" type="text" placeholder="e.g. E-Commerce, Angular, Laravel" />
+                <label class="s-label">وسوم المشروع (مفصولة بفواصل)</label>
+                <input class="s-input" formControlName="tags" type="text" placeholder="مثال: متجر إلكتروني، أنجولار، لارافيل" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Deliverables (Comma separated)</label>
-                <input class="s-input" formControlName="deliverables" type="text" placeholder="e.g. UI/UX Design, Payment Gateway, SEO" />
+                <label class="s-label">المخرجات والمتطلبات (مفصولة بفواصل)</label>
+                <input class="s-input" formControlName="deliverables" type="text" placeholder="مثال: تصميم UI/UX، بوابات الدفع، تحسين السيو" />
               </div>
             </div>
 
-            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">4. Challenge & Solution</h3>
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">4. التحدي والحل</h3>
             <div class="form-grid-custom">
               <div class="fgroup full-width">
-                <label class="s-label">Challenge (English)</label>
+                <label class="s-label">التحدي الرئيسي (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="challenge_en" rows="3"></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Challenge (Arabic)</label>
+                <label class="s-label">التحدي الرئيسي (بالعربي)</label>
                 <textarea class="s-input" formControlName="challenge_ar" rows="3" dir="rtl"></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Solution (English)</label>
+                <label class="s-label">الحل المقدم (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="solution_en" rows="3"></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Solution (Arabic)</label>
+                <label class="s-label">الحل المقدم (بالعربي)</label>
                 <textarea class="s-input" formControlName="solution_ar" rows="3" dir="rtl"></textarea>
               </div>
             </div>
 
-            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">5. Metrics & Testimonial</h3>
+            <h3 style="margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 5px; color: var(--orange);">5. النتائج ورأي العميل</h3>
             <div class="form-grid-custom">
               <div class="fgroup full-width">
-                <label class="s-label">Results / Stats (Format: Value:Label, separated by commas)</label>
-                <input class="s-input" formControlName="results_str" type="text" placeholder="e.g. 150%:Sales Growth, 99.9%:Uptime, 3x:Recall" />
+                <label class="s-label">النتائج والإحصائيات (صيغة: Value:Label مفصولة بفواصل)</label>
+                <input class="s-input" formControlName="results_str" type="text" placeholder="مثال: 150%:نمو المبيعات، %99.9:سرعة التشغيل" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Client Quote / Testimonial Text</label>
-                <textarea class="s-input" formControlName="testimonial_text" rows="2" placeholder="Feedback quote..."></textarea>
+                <label class="s-label">نص رأي وتوصية العميل</label>
+                <textarea class="s-input" formControlName="testimonial_text" rows="2" placeholder="اكتب اقتباس العميل..."></textarea>
               </div>
               <div class="fgroup">
-                <label class="s-label">Quote Author Name</label>
-                <input class="s-input" formControlName="testimonial_name" type="text" placeholder="e.g. Fahad Al-Mansoori" />
+                <label class="s-label">اسم صاحب الرأي</label>
+                <input class="s-input" formControlName="testimonial_name" type="text" placeholder="مثال: فهد المنصوري" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Quote Author Role</label>
-                <input class="s-input" formControlName="testimonial_role" type="text" placeholder="e.g. CEO, Media Glow Retail" />
+                <label class="s-label">المسمى الوظيفي والشركة</label>
+                <input class="s-input" formControlName="testimonial_role" type="text" placeholder="مثال: الرئيس التنفيذي" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Quote Author Avatar Image URL</label>
+                <label class="s-label">رابط صورة صاحب الرأي</label>
                 <input class="s-input" formControlName="testimonial_avatar" type="text" placeholder="HTTPS image URL" />
               </div>
             </div>
 
             <div style="margin-top: 30px; display: flex; gap: 15px;">
               <button type="submit" class="save-btn" [disabled]="loadingProject || projectForm.invalid">
-                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingProject ? 'Update Project & Case Study' : 'Create Project' }}
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingProject ? 'تحديث المشروع ودراسة الحالة' : 'إنشاء المشروع' }}
               </button>
             </div>
           </form>
@@ -418,11 +418,11 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">All Projects</div>
+          <div class="card-title">جميع مشاريع معرض الأعمال</div>
           <div style="display: flex; gap: 10px;">
             <button class="save-btn font-small" (click)="showProjectForm = !showProjectForm">
               <i class="fa-solid" [class.fa-plus]="!showProjectForm" [class.fa-xmark]="showProjectForm"></i> 
-              {{ showProjectForm ? 'Close Form' : 'Add Project' }}
+              {{ showProjectForm ? 'إغلاق النموذج' : 'إضافة مشروع' }}
             </button>
             <button class="action-btn font-small" (click)="loadProjects()"><i class="fa-solid fa-rotate"></i></button>
           </div>
@@ -431,12 +431,12 @@
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th style="width: 70px; text-align: center;">Emoji</th>
-                <th style="width: 90px;">Image</th>
-                <th>Project Title (EN)</th>
-                <th>Category</th>
-                <th>Client</th>
-                <th style="width: 140px;">Actions</th>
+                <th style="width: 70px; text-align: center;">الأيقونة</th>
+                <th style="width: 90px;">الصورة</th>
+                <th>عنوان المشروع</th>
+                <th>التصنيف</th>
+                <th>العميل</th>
+                <th style="width: 140px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -445,16 +445,16 @@
                 <td>
                   <img *ngIf="p.main_image_url || p.image" [src]="p.main_image_url || p.image" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
                 </td>
-                <td><strong>{{ p.title_en || p.title?.en || p.title }}</strong></td>
-                <td><span class="badge badge-blue">{{ p.category?.name_en || p.category?.name?.en || 'N/A' }}</span></td>
-                <td>{{ p.client || 'N/A' }}</td>
+                <td><strong>{{ p.title_ar || p.title_en || p.title?.ar || p.title?.en || p.title }}</strong></td>
+                <td><span class="badge badge-blue">{{ p.category?.name_ar || p.category?.name_en || p.category?.name?.ar || 'عام' }}</span></td>
+                <td>{{ p.client || '—' }}</td>
                 <td>
-                  <button class="action-btn" title="Edit Project" (click)="editProject(p)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="Delete Project" (click)="deleteProject(p.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="تعديل المشروع" (click)="editProject(p)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="حذف المشروع" (click)="deleteProject(p.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="projects.length === 0">
-                <td colspan="6" style="text-align: center; padding: 25px;">No projects found.</td>
+                <td colspan="6" style="text-align: center; padding: 25px;">لم يتم العثور على مشاريع.</td>
               </tr>
             </tbody>
           </table>
@@ -466,30 +466,30 @@
     <div class="view" [class.active]="activeTab === 'categories'">
       <div class="card" *ngIf="showCategoryForm" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">{{ isEditingCategory ? 'Edit Category' : 'Add New Category' }}</div>
-          <button class="action-btn" (click)="cancelEditCategory()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+          <div class="card-title">{{ isEditingCategory ? 'تعديل التصنيف' : 'إضافة تصنيف جديد' }}</div>
+          <button class="action-btn" (click)="cancelEditCategory()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
         </div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Category Name (English)</label>
+                <label class="s-label">اسم التصنيف (بالإنجليزي)</label>
                 <input class="s-input" formControlName="name_en" type="text" required placeholder="e.g. Mobile Apps" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Category Name (Arabic)</label>
+                <label class="s-label">اسم التصنيف (بالعربي)</label>
                 <input class="s-input" formControlName="name_ar" type="text" required placeholder="مثلاً: تطبيقات الجوال" dir="rtl" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Description (English)</label>
+                <label class="s-label">الوصف (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="description_en" rows="2"></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Description (Arabic)</label>
+                <label class="s-label">الوصف (بالعربي)</label>
                 <textarea class="s-input" formControlName="description_ar" rows="2" dir="rtl"></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Category Thumbnail / Image</label>
+                <label class="s-label">الصورة المصغرة للتصنيف</label>
                 <input class="s-input" type="file" accept="image/*" (change)="onCategoryImageSelected($event)" style="padding-top: 10px;" />
                 <div *ngIf="categoryImagePreview" style="margin-top: 10px;">
                   <img [src]="categoryImagePreview" style="max-height: 100px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
@@ -498,7 +498,7 @@
             </div>
             <div style="margin-top: 30px; display: flex; gap: 15px;">
               <button type="submit" class="save-btn" [disabled]="loadingCategory || categoryForm.invalid">
-                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingCategory ? 'Update Category' : 'Create Category' }}
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingCategory ? 'تحديث التصنيف' : 'إنشاء التصنيف' }}
               </button>
             </div>
           </form>
@@ -507,11 +507,11 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">All Portfolio Categories</div>
+          <div class="card-title">جميع تصنيفات معرض الأعمال</div>
           <div style="display: flex; gap: 10px;">
             <button class="save-btn font-small" (click)="showCategoryForm = !showCategoryForm">
               <i class="fa-solid" [class.fa-plus]="!showCategoryForm" [class.fa-xmark]="showCategoryForm"></i> 
-              {{ showCategoryForm ? 'Close Form' : 'Add Category' }}
+              {{ showCategoryForm ? 'إغلاق النموذج' : 'إضافة تصنيف' }}
             </button>
             <button class="action-btn font-small" (click)="loadCategories()"><i class="fa-solid fa-rotate"></i></button>
           </div>
@@ -520,11 +520,11 @@
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th style="width: 90px;">Thumbnail</th>
-                <th>Category Name (EN)</th>
-                <th>Category Name (AR)</th>
-                <th>Description (EN)</th>
-                <th style="width: 140px;">Actions</th>
+                <th style="width: 90px;">الصورة</th>
+                <th>اسم التصنيف (عربي)</th>
+                <th>اسم التصنيف (إنجليزي)</th>
+                <th>الوصف</th>
+                <th style="width: 140px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -532,16 +532,16 @@
                 <td>
                   <img *ngIf="cat.image_url || cat.image" [src]="cat.image_url || cat.image" style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover;">
                 </td>
-                <td><strong>{{ cat.name_en || cat.name?.en || cat.name }}</strong></td>
-                <td>{{ cat.name_ar || cat.name?.ar }}</td>
-                <td style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">{{ cat.description_en || cat.description?.en || 'N/A' }}</td>
+                <td><strong>{{ cat.name_ar || cat.name?.ar }}</strong></td>
+                <td>{{ cat.name_en || cat.name?.en || cat.name }}</td>
+                <td style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">{{ cat.description_ar || cat.description_en || cat.description?.ar || '—' }}</td>
                 <td>
-                  <button class="action-btn" title="Edit Category" (click)="editCategory(cat)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="Delete Category" (click)="deleteCategory(cat.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="تعديل التصنيف" (click)="editCategory(cat)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="حذف التصنيف" (click)="deleteCategory(cat.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="categories.length === 0">
-                <td colspan="5" style="text-align: center; padding: 20px;">No categories found.</td>
+                <td colspan="5" style="text-align: center; padding: 20px;">لم يتم العثور على تصنيفات.</td>
               </tr>
             </tbody>
           </table>
@@ -553,34 +553,34 @@
     <div class="view" [class.active]="activeTab === 'blogs'">
       <div class="card" *ngIf="showBlogForm" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">{{ isEditingBlog ? 'Edit Blog Article' : 'Write New Blog Article' }}</div>
-          <button class="action-btn" (click)="cancelEditBlog()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+          <div class="card-title">{{ isEditingBlog ? 'تعديل المقال' : 'كتابة مقال جديد' }}</div>
+          <button class="action-btn" (click)="cancelEditBlog()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
         </div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="blogForm" (ngSubmit)="saveBlog()">
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Article Title (English)</label>
+                <label class="s-label">عنوان المقال (بالإنجليزي)</label>
                 <input class="s-input" formControlName="title_en" type="text" required placeholder="e.g. Modern UI Design Trends" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Article Title (Arabic)</label>
+                <label class="s-label">عنوان المقال (بالعربي)</label>
                 <input class="s-input" formControlName="title_ar" type="text" required placeholder="مثلاً: اتجاهات تصميم واجهات المستخدم الحديثة" dir="rtl" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Content (English)</label>
+                <label class="s-label">محتوى المقال (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="description_en" rows="5" required placeholder="Write article content here..."></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Content (Arabic)</label>
+                <label class="s-label">محتوى المقال (بالعربي)</label>
                 <textarea class="s-input" formControlName="description_ar" rows="5" required placeholder="اكتب محتوى المقال هنا..." dir="rtl"></textarea>
               </div>
               <div class="fgroup">
-                <label class="s-label">Image Alternate Text (SEO)</label>
-                <input class="s-input" formControlName="img_alt" type="text" placeholder="e.g. Design Trends" />
+                <label class="s-label">النص البديل للصورة (SEO)</label>
+                <input class="s-input" formControlName="img_alt" type="text" placeholder="مثال: اتجاهات التصميم" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Media File (Image or Video)</label>
+                <label class="s-label">ملف الوسائط (صورة أو فيديو)</label>
                 <input class="s-input" type="file" accept="image/*,video/*" (change)="onBlogImageSelected($event)" style="padding-top: 10px;" />
                 <div *ngIf="blogImagePreview" style="margin-top: 10px;">
                   <img [src]="blogImagePreview" style="max-height: 100px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" />
@@ -589,7 +589,7 @@
             </div>
             <div style="margin-top: 30px; display: flex; gap: 15px;">
               <button type="submit" class="save-btn" [disabled]="loadingBlog || blogForm.invalid">
-                <i class="fa-solid fa-paper-plane"></i> {{ isEditingBlog ? 'Update Article' : 'Publish Article' }}
+                <i class="fa-solid fa-paper-plane"></i> {{ isEditingBlog ? 'تحديث المقال' : 'نشر المقال' }}
               </button>
             </div>
           </form>
@@ -598,11 +598,11 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Published Articles</div>
+          <div class="card-title">المقالات المنشورة</div>
           <div style="display: flex; gap: 10px;">
             <button class="save-btn font-small" (click)="showBlogForm = !showBlogForm">
               <i class="fa-solid" [class.fa-plus]="!showBlogForm" [class.fa-xmark]="showBlogForm"></i> 
-              {{ showBlogForm ? 'Close Form' : 'Write Article' }}
+              {{ showBlogForm ? 'إغلاق النموذج' : 'كتابة مقال' }}
             </button>
             <button class="action-btn font-small" (click)="loadBlogs()"><i class="fa-solid fa-rotate"></i></button>
           </div>
@@ -611,11 +611,11 @@
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th style="width: 90px;">Cover</th>
-                <th>Title (EN)</th>
-                <th>Title (AR)</th>
-                <th style="width: 90px; text-align: center;">Likes</th>
-                <th style="width: 140px;">Actions</th>
+                <th style="width: 90px;">الغلاف</th>
+                <th>العنوان (عربي)</th>
+                <th>العنوان (إنجليزي)</th>
+                <th style="width: 90px; text-align: center;">الإعجابات</th>
+                <th style="width: 140px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -623,18 +623,18 @@
                 <td>
                   <img *ngIf="b.media_url || b.image" [src]="b.media_url || b.image" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
                 </td>
-                <td><strong>{{ b.title_en || b.title?.en || b.title }}</strong></td>
-                <td>{{ b.title_ar || b.title?.ar }}</td>
+                <td><strong>{{ b.title_ar || b.title?.ar }}</strong></td>
+                <td>{{ b.title_en || b.title?.en || b.title }}</td>
                 <td style="text-align: center;">
                   <span class="badge badge-blue">{{ b.likes || 0 }} <i class="fa-solid fa-heart" style="color: red; margin-left: 2px;"></i></span>
                 </td>
                 <td>
-                  <button class="action-btn" title="Edit Article" (click)="editBlog(b)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="Delete Article" (click)="deleteBlog(b.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="تعديل المقال" (click)="editBlog(b)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="حذف المقال" (click)="deleteBlog(b.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="blogs.length === 0">
-                <td colspan="5" style="text-align: center; padding: 20px;">No articles found.</td>
+                <td colspan="5" style="text-align: center; padding: 20px;">لم يتم العثور على مقالات.</td>
               </tr>
             </tbody>
           </table>
@@ -646,36 +646,36 @@
     <div class="view" [class.active]="activeTab === 'testimonials'">
       <div class="card" *ngIf="showTestimonialForm" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">{{ isEditingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial' }}</div>
-          <button class="action-btn" (click)="cancelEditTestimonial()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+          <div class="card-title">{{ isEditingTestimonial ? 'تعديل التقييم' : 'إضافة رأي عميل جديد' }}</div>
+          <button class="action-btn" (click)="cancelEditTestimonial()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
         </div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="testimonialForm" (ngSubmit)="saveTestimonial()">
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Client Name</label>
-                <input class="s-input" formControlName="client_name" type="text" required placeholder="e.g. John Doe" />
+                <label class="s-label">اسم العميل</label>
+                <input class="s-input" formControlName="client_name" type="text" required placeholder="مثال: فهد المنصوري" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Job Title / Role</label>
-                <input class="s-input" formControlName="job_title" type="text" required placeholder="e.g. Founder & CEO" />
+                <label class="s-label">المسمى الوظيفي / الدور</label>
+                <input class="s-input" formControlName="job_title" type="text" required placeholder="مثال: المؤسس والرئيس التنفيذي" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Company Name (Optional)</label>
-                <input class="s-input" formControlName="company_name" type="text" placeholder="e.g. TechNova" />
+                <label class="s-label">اسم الشركة (اختياري)</label>
+                <input class="s-input" formControlName="company_name" type="text" placeholder="مثال: تك نوفا" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Rating (1 to 5 Stars)</label>
+                <label class="s-label">التقييم (من 1 إلى 5 نجوم)</label>
                 <select class="s-input" formControlName="rating" required>
-                  <option value="5">★★★★★ (5 Stars)</option>
-                  <option value="4">★★★★ (4 Stars)</option>
-                  <option value="3">★★★ (3 Stars)</option>
-                  <option value="2">★★ (2 Stars)</option>
-                  <option value="1">★ (1 Star)</option>
+                  <option value="5">★★★★★ (5 نجوم)</option>
+                  <option value="4">★★★★ (4 نجوم)</option>
+                  <option value="3">★★★ (3 نجوم)</option>
+                  <option value="2">★★ (2 نجوم)</option>
+                  <option value="1">★ (نجمة واحدة)</option>
                 </select>
               </div>
               <div class="fgroup">
-                <label class="s-label">Avatar Circle Color</label>
+                <label class="s-label">لون دائرة الصورة رمزية</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                   <input type="color" formControlName="avatar_color" style="width: 45px; height: 45px; border: none; border-radius: 8px; cursor: pointer; background: transparent;" />
                   <input class="s-input" formControlName="avatar_color" type="text" placeholder="#e8620a" style="flex: 1;" />
@@ -684,17 +684,17 @@
               <div></div> <!-- Spacer -->
               
               <div class="fgroup full-width">
-                <label class="s-label">Feedback Description (English)</label>
+                <label class="s-label">نص الرأي والتوصية (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="feedback_en" rows="3" required placeholder="Client feedback in English..."></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Feedback Description (Arabic)</label>
+                <label class="s-label">نص الرأي والتوصية (بالعربي)</label>
                 <textarea class="s-input" formControlName="feedback_ar" rows="3" required placeholder="رأي العميل باللغة العربية..." dir="rtl"></textarea>
               </div>
             </div>
             <div style="margin-top: 30px; display: flex; gap: 15px;">
               <button type="submit" class="save-btn" [disabled]="loadingTestimonial || testimonialForm.invalid">
-                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingTestimonial ? 'Update Testimonial' : 'Create Testimonial' }}
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingTestimonial ? 'تحديث الرأي' : 'إنشاء الرأي' }}
               </button>
             </div>
           </form>
@@ -703,11 +703,11 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">All Testimonials</div>
+          <div class="card-title">جميع آراء وتوصيات العملاء</div>
           <div style="display: flex; gap: 10px;">
             <button class="save-btn font-small" (click)="showTestimonialForm = !showTestimonialForm">
               <i class="fa-solid" [class.fa-plus]="!showTestimonialForm" [class.fa-xmark]="showTestimonialForm"></i> 
-              {{ showTestimonialForm ? 'Close Form' : 'Add Testimonial' }}
+              {{ showTestimonialForm ? 'إغلاق النموذج' : 'إضافة رأي' }}
             </button>
             <button class="action-btn font-small" (click)="loadTestimonials()"><i class="fa-solid fa-rotate"></i></button>
           </div>
@@ -716,12 +716,12 @@
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th style="width: 70px;">Avatar</th>
-                <th>Client Name</th>
-                <th>Role / Company</th>
-                <th>Feedback (EN)</th>
-                <th style="width: 90px; text-align: center;">Rating</th>
-                <th style="width: 140px;">Actions</th>
+                <th style="width: 70px;">الصورة</th>
+                <th>اسم العميل</th>
+                <th>المسمى الوظيفي / الشركة</th>
+                <th>الرأي</th>
+                <th style="width: 90px; text-align: center;">التقييم</th>
+                <th style="width: 140px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -733,15 +733,15 @@
                 </td>
                 <td><strong>{{ t.client_name }}</strong></td>
                 <td>{{ t.job_title }} {{ t.company_name ? '@ ' + t.company_name : '' }}</td>
-                <td style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ t.feedback_en }}</td>
+                <td style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ t.feedback_ar || t.feedback_en }}</td>
                 <td style="text-align: center; color: gold; font-size: 0.85rem;">{{ '★'.repeat(t.rating || 5) }}</td>
                 <td>
-                  <button class="action-btn" title="Edit Testimonial" (click)="editTestimonial(t)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="Delete Testimonial" (click)="deleteTestimonial(t.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="تعديل الرأي" (click)="editTestimonial(t)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="حذف الرأي" (click)="deleteTestimonial(t.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="testimonials.length === 0">
-                <td colspan="6" style="text-align: center; padding: 20px;">No testimonials found.</td>
+                <td colspan="6" style="text-align: center; padding: 20px;">لم يتم العثور على آراء للعملاء.</td>
               </tr>
             </tbody>
           </table>
@@ -753,42 +753,42 @@
     <div class="view" [class.active]="activeTab === 'faqs'">
       <div class="card" *ngIf="showFaqForm" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">{{ isEditingFaq ? 'Edit FAQ' : 'Add New FAQ' }}</div>
-          <button class="action-btn" (click)="cancelEditFaq()"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+          <div class="card-title">{{ isEditingFaq ? 'تعديل السؤال الشائع' : 'إضافة سؤال شائع جديد' }}</div>
+          <button class="action-btn" (click)="cancelEditFaq()"><i class="fa-solid fa-xmark"></i> إلغاء التعديل</button>
         </div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="faqForm" (ngSubmit)="saveFaq()">
             <div class="form-grid-custom">
               <div class="fgroup">
-                <label class="s-label">Question (English)</label>
+                <label class="s-label">السؤال (بالإنجليزي)</label>
                 <input class="s-input" formControlName="question_en" type="text" required placeholder="e.g. How long does a project take?" />
               </div>
               <div class="fgroup">
-                <label class="s-label">Question (Arabic)</label>
+                <label class="s-label">السؤال (بالعربي)</label>
                 <input class="s-input" formControlName="question_ar" type="text" required placeholder="مثلاً: كم يستغرق المشروع النموذجي؟" dir="rtl" />
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Answer (English)</label>
+                <label class="s-label">الإجابة (بالإنجليزي)</label>
                 <textarea class="s-input" formControlName="answer_en" rows="3" required placeholder="Detailed answer..."></textarea>
               </div>
               <div class="fgroup full-width">
-                <label class="s-label">Answer (Arabic)</label>
+                <label class="s-label">الإجابة (بالعربي)</label>
                 <textarea class="s-input" formControlName="answer_ar" rows="3" required placeholder="الإجابة التفصيلية..." dir="rtl"></textarea>
               </div>
               <div class="fgroup">
-                <label class="s-label">Sort Order</label>
+                <label class="s-label">ترتيب العرض</label>
                 <input class="s-input" formControlName="sort_order" type="number" />
               </div>
               <div class="fgroup" style="justify-content: center;">
                 <label class="s-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding-top: 25px;">
                   <input type="checkbox" formControlName="is_active" style="width: 20px; height: 20px; accent-color: #e8620a;" />
-                  <span>Active (Visible on public site)</span>
+                  <span>نشط (ظاهر في الموقع العام)</span>
                 </label>
               </div>
             </div>
             <div style="margin-top: 30px; display: flex; gap: 15px;">
               <button type="submit" class="save-btn" [disabled]="loadingFaq || faqForm.invalid">
-                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingFaq ? 'Update FAQ' : 'Create FAQ' }}
+                <i class="fa-solid fa-floppy-disk"></i> {{ isEditingFaq ? 'تحديث السؤال' : 'إنشاء السؤال' }}
               </button>
             </div>
           </form>
@@ -797,11 +797,11 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">All FAQs</div>
+          <div class="card-title">جميع الأسئلة الشائعة</div>
           <div style="display: flex; gap: 10px;">
             <button class="save-btn font-small" (click)="showFaqForm = !showFaqForm">
               <i class="fa-solid" [class.fa-plus]="!showFaqForm" [class.fa-xmark]="showFaqForm"></i> 
-              {{ showFaqForm ? 'Close Form' : 'Add FAQ' }}
+              {{ showFaqForm ? 'إغلاق النموذج' : 'إضافة سؤال' }}
             </button>
             <button class="action-btn font-small" (click)="loadFaqs()"><i class="fa-solid fa-rotate"></i></button>
           </div>
@@ -810,30 +810,30 @@
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th>Question (EN)</th>
-                <th>Question (AR)</th>
-                <th style="width: 80px; text-align: center;">Order</th>
-                <th style="width: 100px; text-align: center;">Status</th>
-                <th style="width: 140px;">Actions</th>
+                <th>السؤال (عربي)</th>
+                <th>السؤال (إنجليزي)</th>
+                <th style="width: 80px; text-align: center;">الترتيب</th>
+                <th style="width: 100px; text-align: center;">الحالة</th>
+                <th style="width: 140px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let faq of faqs">
-                <td><strong>{{ faq.question_en }}</strong></td>
-                <td>{{ faq.question_ar }}</td>
+                <td><strong>{{ faq.question_ar }}</strong></td>
+                <td>{{ faq.question_en }}</td>
                 <td style="text-align: center;">{{ faq.order }}</td>
                 <td style="text-align: center;">
                   <span class="badge" [class.badge-orange]="faq.is_active" [class.badge-error]="!faq.is_active">
-                    {{ faq.is_active ? 'Active' : 'Inactive' }}
+                    {{ faq.is_active ? 'نشط' : 'غير نشط' }}
                   </span>
                 </td>
                 <td>
-                  <button class="action-btn" title="Edit FAQ" (click)="editFaq(faq)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-right: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                  <button class="action-btn" title="Delete FAQ" (click)="deleteFaq(faq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="تعديل السؤال" (click)="editFaq(faq)" style="background: #e8620a10; color: #e8620a; border: 1px solid #e8620a20; margin-left: 5px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                  <button class="action-btn" title="حذف السؤال" (click)="deleteFaq(faq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="faqs.length === 0">
-                <td colspan="5" style="text-align: center; padding: 20px;">No FAQs found.</td>
+                <td colspan="5" style="text-align: center; padding: 20px;">لم يتم العثور على أسئلة شائعة.</td>
               </tr>
             </tbody>
           </table>
@@ -844,20 +844,20 @@
     <!-- CONTACT HUB TAB -->
     <div class="view" [class.active]="activeTab === 'contact-hub'">
       <div class="card" style="margin-bottom: 24px;">
-        <div class="card-header"><div class="card-title">Edit Contact Information & Settings</div></div>
+        <div class="card-header"><div class="card-title">تعديل معلومات الاتصال والإعدادات</div></div>
         <div class="cb" style="padding: 24px;">
           <form [formGroup]="contactForm" (ngSubmit)="saveContactInfo()">
             <div class="form-grid-custom">
-              <div class="fgroup"><label class="s-label">WhatsApp Phone</label><input class="s-input" formControlName="whatsapp_phone" type="text" placeholder="e.g. +966500000000" /></div>
-              <div class="fgroup"><label class="s-label">WhatsApp Description</label><input class="s-input" formControlName="whatsapp_desc" type="text" placeholder="e.g. Chat with Sales" /></div>
-              <div class="fgroup"><label class="s-label">Official Email</label><input class="s-input" formControlName="official_email" type="email" placeholder="e.g. info@mediaglow.com" /></div>
-              <div class="fgroup"><label class="s-label">Company Address</label><input class="s-input" formControlName="company_address" type="text" placeholder="Riyadh, Saudi Arabia" /></div>
-              <div class="fgroup full-width"><label class="s-label">Google Maps URL</label><input class="s-input" formControlName="google_maps_url" type="text" placeholder="https://maps.google.com/..." /></div>
-              <div class="fgroup full-width"><label class="s-label">Emergency Support Info</label><input class="s-input" formControlName="emergency_support_info" type="text" placeholder="Call +9665XXXXXXX for critical queries" /></div>
+              <div class="fgroup"><label class="s-label">رقم هاتف الواتساب</label><input class="s-input" formControlName="whatsapp_phone" type="text" placeholder="مثال: +966500000000" /></div>
+              <div class="fgroup"><label class="s-label">وصف الواتساب</label><input class="s-input" formControlName="whatsapp_desc" type="text" placeholder="مثال: تواصل مع المبيعات" /></div>
+              <div class="fgroup"><label class="s-label">البريد الإلكتروني الرسمي</label><input class="s-input" formControlName="official_email" type="email" placeholder="مثال: info@mediaglow.com" /></div>
+              <div class="fgroup"><label class="s-label">عنوان الشركة الرئيسي</label><input class="s-input" formControlName="company_address" type="text" placeholder="الرياض، المملكة العربية السعودية" /></div>
+              <div class="fgroup full-width"><label class="s-label">رابط موقع الشركة على خرائط جوجل</label><input class="s-input" formControlName="google_maps_url" type="text" placeholder="https://maps.google.com/..." /></div>
+              <div class="fgroup full-width"><label class="s-label">معلومات هاتف الطوارئ والدعم</label><input class="s-input" formControlName="emergency_support_info" type="text" placeholder="اتصل على +9665XXXXXXX للحالات الطارئة" /></div>
             </div>
             <div style="margin-top: 30px; display: flex; align-items: center;">
-              <button type="submit" class="save-btn" [disabled]="loadingInfo"><i class="fa-solid fa-floppy-disk"></i> Save All Changes</button>
-              <span *ngIf="infoMessage" style="margin-left: 15px; color: var(--orange); font-weight:600;"><i class="fa-solid fa-circle-check"></i> {{ infoMessage }}</span>
+              <button type="submit" class="save-btn" [disabled]="loadingInfo"><i class="fa-solid fa-floppy-disk"></i> حفظ جميع التغييرات</button>
+              <span *ngIf="infoMessage" style="margin-right: 15px; color: var(--orange); font-weight:600;"><i class="fa-solid fa-circle-check"></i> {{ infoMessage }}</span>
             </div>
           </form>
         </div>
@@ -865,41 +865,41 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Customer Inquiries (Leads)</div>
-          <button class="save-btn font-small" (click)="loadInquiries()"><i class="fa-solid fa-rotate"></i> Refresh Messages</button>
+          <div class="card-title">رسائل وطلبات العملاء (Leads)</div>
+          <button class="save-btn font-small" (click)="loadInquiries()"><i class="fa-solid fa-rotate"></i> تحديث الرسائل</button>
         </div>
         <div class="table-responsive">
           <table>
             <thead>
               <tr style="background: rgba(255,255,255,0.02);">
-                <th>Lead Name</th>
-                <th>Contact Info</th>
-                <th>Project & Service</th>
-                <th>Date</th>
-                <th style="width: 100px;">Actions</th>
+                <th>اسم العميل</th>
+                <th>معلومات الاتصال</th>
+                <th>المشروع والخدمة المطلوبة</th>
+                <th>التاريخ</th>
+                <th style="width: 100px;">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let inq of inquiries">
                 <td>
                   <strong>{{ inq.full_name }}</strong><br>
-                  <small style="color:rgba(255,255,255,0.5)">{{ inq.company_name || 'Individual' }}</small>
+                  <small style="color:rgba(255,255,255,0.5)">{{ inq.company_name || 'عميل فردي' }}</small>
                 </td>
                 <td>
                   <a href="mailto:{{ inq.email }}" style="color:var(--orange); text-decoration:none">{{ inq.email }}</a><br>
                   <span style="font-size:0.85rem; color:rgba(255,255,255,0.5)">{{ inq.phone }}</span>
                 </td>
                 <td>
-                  <span class="badge badge-blue">{{ inq.service_needed || 'General' }}</span><br>
+                  <span class="badge badge-blue">{{ inq.service_needed || 'عام' }}</span><br>
                   <small style="display:block; margin-top:5px; max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" [title]="inq.project_details">{{ inq.project_details }}</small>
                 </td>
                 <td>{{ inq.created_at | date:'short' }}</td>
                 <td>
-                  <button class="action-btn" title="Delete Lead" (click)="deleteInquiry(inq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
+                  <button class="action-btn" title="حذف الرسالة" (click)="deleteInquiry(inq.id)" style="background: #ff000010; color: #ff0000; border: 1px solid #ff000020;"><i class="fa-solid fa-trash-can"></i></button>
                 </td>
               </tr>
               <tr *ngIf="inquiries.length === 0">
-                <td colspan="5" style="text-align: center; padding: 20px;">No inquiries found.</td>
+                <td colspan="5" style="text-align: center; padding: 20px;">لم يتم العثور على طلبات.</td>
               </tr>
             </tbody>
           </table>
@@ -910,23 +910,23 @@
     <!-- HOME PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'home-page'">
       <div class="pg-head">
-        <h2>Home Page Header Sections</h2>
-        <p>Edit the core textual properties of the main homepage.</p>
+        <h2>إعدادات قسم الهيدر بالصفحة الرئيسية</h2>
+        <p>تعديل النصوص والعناوين الأساسية للصفحة الرئيسية بالموقع.</p>
         <button class="save-btn" (click)="savePageData('home')" [disabled]="isSavingPage['home']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['home'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['home'] ? 'جاري الحفظ...' : 'حفظ جميع التغييرات' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px;">
-        <div class="card-header"><div class="card-title">Hero Banner Section</div></div>
+        <div class="card-header"><div class="card-title">قسم البانر الرئيسي (Hero Banner)</div></div>
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Tagline (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.ar" class="s-input" dir="rtl"></div>
-            <div><label class="s-label">Title Line (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.en" class="s-input"></div>
-            <div><label class="s-label">Title Line (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.ar" class="s-input" dir="rtl"></div>
-            <div class="full-width"><label class="s-label">Subtitle Description (English)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.en" rows="3" class="s-input"></textarea></div>
-            <div class="full-width"><label class="s-label">Subtitle Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div><label class="s-label">الشعار الفرعي (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">الشعار الفرعي (بالعربي)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">عنوان البانر الرئيسي (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.en" class="s-input"></div>
+            <div><label class="s-label">عنوان البانر الرئيسي (بالعربي)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.ar" class="s-input" dir="rtl"></div>
+            <div class="full-width"><label class="s-label">الوصف والتفاصيل (بالإنجليزي)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.en" rows="3" class="s-input"></textarea></div>
+            <div class="full-width"><label class="s-label">الوصف والتفاصيل (بالعربي)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
           </div>
         </div>
       </div>
@@ -935,47 +935,47 @@
     <!-- ABOUT PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'about-page'">
       <div class="pg-head">
-        <h2>About Page Details & Timeline</h2>
-        <p>Configure the vision statements, descriptions, and historical journey items.</p>
+        <h2>تفاصيل صفحة عن الوكالة وجدول التاريخ</h2>
+        <p>تعديل الرؤية، الأهداف، وأحداث مسيرة الوكالة على مر السنوات.</p>
         <button class="save-btn" (click)="saveAboutData()" [disabled]="isSavingAbout" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingAbout ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingAbout ? 'جاري الحفظ...' : 'حفظ جميع التغييرات' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px; margin-bottom:24px;">
-        <div class="card-header"><div class="card-title">About US - Banner Text</div></div>
+        <div class="card-header"><div class="card-title">نص البانر لصفحة عن الوكالة</div></div>
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Label (EN)</label><input type="text" [(ngModel)]="aboutData.content.hero.en.label" class="s-input"></div>
-            <div><label class="s-label">Label (AR)</label><input type="text" [(ngModel)]="aboutData.content.hero.ar.label" class="s-input" dir="rtl"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="aboutData.content.hero.en.title1" class="s-input"></div>
-            <div><label class="s-label">Title (AR)</label><input type="text" [(ngModel)]="aboutData.content.hero.ar.title1" class="s-input" dir="rtl"></div>
-            <div class="full-width"><label class="s-label">Description Brief (EN)</label><textarea [(ngModel)]="aboutData.content.hero.en.desc" rows="3" class="s-input"></textarea></div>
-            <div class="full-width"><label class="s-label">Description Brief (AR)</label><textarea [(ngModel)]="aboutData.content.hero.ar.desc" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div><label class="s-label">الشعار الفرعي (بالإنجليزي)</label><input type="text" [(ngModel)]="aboutData.content.hero.en.label" class="s-input"></div>
+            <div><label class="s-label">الشعار الفرعي (بالعربي)</label><input type="text" [(ngModel)]="aboutData.content.hero.ar.label" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">العنوان الرئيسي (بالإنجليزي)</label><input type="text" [(ngModel)]="aboutData.content.hero.en.title1" class="s-input"></div>
+            <div><label class="s-label">العنوان الرئيسي (بالعربي)</label><input type="text" [(ngModel)]="aboutData.content.hero.ar.title1" class="s-input" dir="rtl"></div>
+            <div class="full-width"><label class="s-label">نبذة الوصف (بالإنجليزي)</label><textarea [(ngModel)]="aboutData.content.hero.en.desc" rows="3" class="s-input"></textarea></div>
+            <div class="full-width"><label class="s-label">نبذة الوصف (بالعربي)</label><textarea [(ngModel)]="aboutData.content.hero.ar.desc" rows="3" class="s-input" dir="rtl"></textarea></div>
           </div>
         </div>
       </div>
 
       <div class="card" style="margin-bottom:24px;">
         <div class="card-header">
-          <div class="card-title">Our History Timeline</div>
-          <button class="save-btn font-small" (click)="addTimeline()"><i class="fa-solid fa-plus"></i> Add Year Event</button>
+          <div class="card-title">جدول تاريخ ومسيرة الوكالة</div>
+          <button class="save-btn font-small" (click)="addTimeline()"><i class="fa-solid fa-plus"></i> إضافة حدث تاريخي</button>
         </div>
         <div class="cb" style="padding:24px;">
           <div *ngFor="let item of aboutData.timeline; let i = index" style="background:rgba(255,255,255,0.01); padding:20px; border-radius:12px; margin-bottom:16px; border:1px solid var(--admin-border); position:relative">
-            <button (click)="removeTimeline(i)" style="position:absolute; top:15px; right:15px; background:#ef4444; color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-trash-can"></i> Remove</button>
+            <button (click)="removeTimeline(i)" style="position:absolute; top:15px; left:15px; background:#ef4444; color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-trash-can"></i> حذف</button>
             <div style="margin-bottom:16px">
-              <label class="s-label">Year</label>
+              <label class="s-label">السنة / العام</label>
               <input type="text" [(ngModel)]="item.year" class="s-input" style="width:120px;">
             </div>
             <div class="form-grid-custom">
-              <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="item.title.en" class="s-input"></div>
-              <div><label class="s-label">Title (AR)</label><input type="text" [(ngModel)]="item.title.ar" class="s-input" dir="rtl"></div>
-              <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="item.description.en" rows="3" class="s-input"></textarea></div>
-              <div class="full-width"><label class="s-label">Description (AR)</label><textarea [(ngModel)]="item.description.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+              <div><label class="s-label">العنوان (بالإنجليزي)</label><input type="text" [(ngModel)]="item.title.en" class="s-input"></div>
+              <div><label class="s-label">العنوان (بالعربي)</label><input type="text" [(ngModel)]="item.title.ar" class="s-input" dir="rtl"></div>
+              <div class="full-width"><label class="s-label">الوصف (بالإنجليزي)</label><textarea [(ngModel)]="item.description.en" rows="3" class="s-input"></textarea></div>
+              <div class="full-width"><label class="s-label">الوصف (بالعربي)</label><textarea [(ngModel)]="item.description.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
             </div>
           </div>
-          <div *ngIf="aboutData.timeline.length === 0" style="color:rgba(255,255,255,0.5)">No timeline events added yet.</div>
+          <div *ngIf="aboutData.timeline.length === 0" style="color:rgba(255,255,255,0.5)">لم يتم إضافة أحداث تاريخية بعد.</div>
         </div>
       </div>
     </div>
@@ -983,19 +983,19 @@
     <!-- SERVICES PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'services-page'">
       <div class="pg-head">
-        <h2>Services Page Header</h2>
-        <p>Edit services banner textual titles.</p>
+        <h2>هيدر صفحة الخدمات</h2>
+        <p>تعديل عناوين ونصوص بانر صفحة الخدمات بالموقع.</p>
         <button class="save-btn" (click)="savePageData('services')" [disabled]="isSavingPage['services']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['services'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['services'] ? 'جاري الحفظ...' : 'حفظ جميع التغييرات' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['services'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['services'].hero.title.en" class="s-input"></div>
-            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['services'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">الشعار الفرعي (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['services'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">العنوان (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['services'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">الوصف (بالإنجليزي)</label><textarea [(ngModel)]="pagesData['services'].hero.desc.en" rows="3" class="s-input"></textarea></div>
           </div>
         </div>
       </div>
@@ -1004,19 +1004,19 @@
     <!-- PORTFOLIO PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'portfolio-page'">
       <div class="pg-head">
-        <h2>Portfolio Page Header</h2>
-        <p>Edit portfolio banner titles.</p>
+        <h2>هيدر صفحة معرض الأعمال</h2>
+        <p>تعديل عناوين ونصوص بانر صفحة معرض الأعمال.</p>
         <button class="save-btn" (click)="savePageData('portfolio')" [disabled]="isSavingPage['portfolio']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['portfolio'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['portfolio'] ? 'جاري الحفظ...' : 'حفظ جميع التغييرات' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.en" class="s-input"></div>
-            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['portfolio'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">الشعار الفرعي (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">العنوان (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">الوصف (بالإنجليزي)</label><textarea [(ngModel)]="pagesData['portfolio'].hero.desc.en" rows="3" class="s-input"></textarea></div>
           </div>
         </div>
       </div>
@@ -1025,19 +1025,19 @@
     <!-- BLOGS PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'blogs-page'">
       <div class="pg-head">
-        <h2>Blogs Page Header</h2>
-        <p>Edit blogs header banner textual titles.</p>
+        <h2>هيدر صفحة المدونة والمقالات</h2>
+        <p>تعديل عناوين ونصوص بانر صفحة المدونة بالموقع.</p>
         <button class="save-btn" (click)="savePageData('blogs')" [disabled]="isSavingPage['blogs']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['blogs'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['blogs'] ? 'جاري الحفظ...' : 'حفظ جميع التغييرات' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.title.en" class="s-input"></div>
-            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['blogs'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">الشعار الفرعي (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">العنوان (بالإنجليزي)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">الوصف (بالإنجليزي)</label><textarea [(ngModel)]="pagesData['blogs'].hero.desc.en" rows="3" class="s-input"></textarea></div>
           </div>
         </div>
       </div>
@@ -1046,21 +1046,21 @@
     <!-- FOOTER CONTENT SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'footer-section'">
       <div class="pg-head">
-        <h2>Footer Global Content</h2>
-        <p>Edit description text and links inside the global website footer.</p>
+        <h2>محتوى تذييل الموقع الرئيسي (Footer)</h2>
+        <p>تعديل الوصف العام، البريد، الهاتف، وروابط التواصل في فوتر الموقع.</p>
         <button class="save-btn" (click)="savePageData('footer')" [disabled]="isSavingPage['footer']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['footer'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['footer'] ? 'جاري الحفظ...' : 'حفظ جميع التغييرات' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div class="full-width"><label class="s-label">Company Description in Footer (EN)</label><textarea [(ngModel)]="pagesData['footer'].desc.en" rows="3" class="s-input"></textarea></div>
-            <div><label class="s-label">Email Address</label><input type="text" [(ngModel)]="pagesData['footer'].email" class="s-input"></div>
-            <div><label class="s-label">Phone Number</label><input type="text" [(ngModel)]="pagesData['footer'].phone" class="s-input"></div>
-            <div><label class="s-label">LinkedIn URL</label><input type="text" [(ngModel)]="pagesData['footer'].socials.linkedin" class="s-input"></div>
-            <div><label class="s-label">Twitter URL</label><input type="text" [(ngModel)]="pagesData['footer'].socials.twitter" class="s-input"></div>
+            <div class="full-width"><label class="s-label">وصف الشركة في فوتر الموقع (بالإنجليزي)</label><textarea [(ngModel)]="pagesData['footer'].desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">البريد الإلكتروني الرسمي</label><input type="text" [(ngModel)]="pagesData['footer'].email" class="s-input"></div>
+            <div><label class="s-label">رقم الهاتف التواصل</label><input type="text" [(ngModel)]="pagesData['footer'].phone" class="s-input"></div>
+            <div><label class="s-label">رابط LinkedIn</label><input type="text" [(ngModel)]="pagesData['footer'].socials.linkedin" class="s-input"></div>
+            <div><label class="s-label">رابط Twitter / X</label><input type="text" [(ngModel)]="pagesData['footer'].socials.twitter" class="s-input"></div>
           </div>
         </div>
     </div>

@@ -3,82 +3,104 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-picker-select.component';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-finance-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, PrimePickerSelectComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PrimePickerSelectComponent,
+    DialogModule,
+    InputTextModule,
+    TextareaModule,
+    DropdownModule
+  ],
   template: `
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-chart-line" style="color:var(--emerald-light);"></i> Finance &amp; Accounting Ledger</h2>
-          <p class="subtitle">Ledger entries, expenses, custody float, partner profit splits, payroll &amp; capital assets</p>
+          <h2><i class="fa-solid fa-chart-line" style="color:var(--emerald-light);"></i> المالية والحسابات العامة</h2>
+          <p class="subtitle">سجل العمليات المالية، المصروفات، العهد المالية، توزيع أرباح الشركاء، المرتبات والأصول</p>
         </div>
 
         <div class="header-actions">
           <button class="btn btn-primary" (click)="openAddLedgerModal()">
-            <i class="fa-solid fa-plus"></i> Record Ledger Entry
+            <i class="fa-solid fa-plus"></i> تسجيل معاملة مالية
           </button>
         </div>
       </div>
 
       <!-- Navigation Sub-Tabs -->
       <div class="finance-tabs-nav glass-panel">
-        <button [class.active]="activeTab === 'summary'" (click)="activeTab = 'summary'"><i class="fa-solid fa-chart-line"></i> Financial Summary</button>
-        <button [class.active]="activeTab === 'ledger'" (click)="activeTab = 'ledger'"><i class="fa-solid fa-book"></i> General Ledger</button>
-        <button [class.active]="activeTab === 'custody'" (click)="activeTab = 'custody'"><i class="fa-solid fa-hand-holding-dollar"></i> Custody Float</button>
-        <button [class.active]="activeTab === 'partners'" (click)="activeTab = 'partners'"><i class="fa-solid fa-users-rectangle"></i> Partner Profit Splits</button>
-        <button [class.active]="activeTab === 'payroll'" (click)="activeTab = 'payroll'"><i class="fa-solid fa-money-check-dollar"></i> Payroll Due</button>
-        <button [class.active]="activeTab === 'assets'" (click)="activeTab = 'assets'"><i class="fa-solid fa-vault"></i> Assets &amp; Capital</button>
+        <button [class.active]="activeTab === 'summary'" (click)="activeTab = 'summary'"><i class="fa-solid fa-chart-line"></i> الملخص المالي</button>
+        <button [class.active]="activeTab === 'ledger'" (click)="activeTab = 'ledger'"><i class="fa-solid fa-book"></i> دفتر الحسابات</button>
+        <button [class.active]="activeTab === 'custody'" (click)="activeTab = 'custody'"><i class="fa-solid fa-hand-holding-dollar"></i> عهدة الموظفين</button>
+        <button [class.active]="activeTab === 'partners'" (click)="activeTab = 'partners'"><i class="fa-solid fa-users-rectangle"></i> أرباح الشركاء</button>
+        <button [class.active]="activeTab === 'payroll'" (click)="activeTab = 'payroll'"><i class="fa-solid fa-money-check-dollar"></i> المرتبات المستحقة</button>
+        <button [class.active]="activeTab === 'assets'" (click)="activeTab = 'assets'"><i class="fa-solid fa-vault"></i> الأصول ورأس المال</button>
       </div>
 
       <!-- TAB 1: SUMMARY -->
       <div class="tab-content" *ngIf="activeTab === 'summary'">
         <div class="metrics-grid">
           <div class="metric-card glass-panel">
-            <span class="label">Total Revenue &amp; Income</span>
-            <h3 class="value" style="color:var(--emerald-light);">{{ summary.total_income | number:'1.2-2' }} EGP</h3>
+            <span class="label">إجمالي الإيرادات والدخل</span>
+            <h3 class="value" style="color:var(--emerald-light);">{{ summary.total_income | number:'1.2-2' }} ج.م</h3>
           </div>
 
           <div class="metric-card glass-panel">
-            <span class="label">Total Expenses &amp; Outflow</span>
-            <h3 class="value" style="color:var(--rose-light);">{{ summary.total_expenses | number:'1.2-2' }} EGP</h3>
+            <span class="label">إجمالي المصروفات</span>
+            <h3 class="value" style="color:var(--rose-light);">{{ summary.total_expenses | number:'1.2-2' }} ج.م</h3>
           </div>
 
           <div class="metric-card glass-panel">
-            <span class="label">Net Balance (Liquidity)</span>
-            <h3 class="value" style="color:#fff;">{{ summary.net_balance | number:'1.2-2' }} EGP</h3>
+            <span class="label">صافي السيولة النقدية</span>
+            <h3 class="value" style="color:#fff;">{{ summary.net_balance | number:'1.2-2' }} ج.م</h3>
           </div>
 
           <div class="metric-card glass-panel highlight-orange">
-            <span class="label">Company Capital &amp; Reserve</span>
-            <h3 class="value" style="color:var(--violet-light);">{{ summary.company_capital | number:'1.2-2' }} EGP</h3>
-            <small style="color:var(--text-2);">Fixed Assets: {{ summary.total_fixed_assets | number:'1.2-2' }} EGP</small>
+            <span class="label">رأس مال الشركة واحتياطي الأصول</span>
+            <h3 class="value" style="color:var(--violet-light);">{{ summary.company_capital | number:'1.2-2' }} ج.م</h3>
+            <small style="color:var(--text-2);">الأصول الثابتة: {{ summary.total_fixed_assets | number:'1.2-2' }} ج.م</small>
           </div>
         </div>
 
         <!-- Client Outstanding Balances Table -->
         <div class="section-card glass-panel margin-top">
-          <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--amber-light);"></i> Client Outstanding Balances</h3>
+          <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--amber-light);"></i> أرصدة العملاء المستحقة</h3>
           <div class="table-responsive" style="margin-top:14px;">
             <table class="crm-table">
               <thead>
                 <tr>
-                  <th>Client</th>
-                  <th>Deals Count</th>
-                  <th>Total Billed</th>
-                  <th>Collected</th>
-                  <th>Outstanding Balance</th>
+                  <th>العميل</th>
+                  <th>عدد الصفقات</th>
+                  <th>إجمالي الفواتير</th>
+                  <th>المحصل (المدفوع)</th>
+                  <th>الرصيد المستحق (المتبقي)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let item of clientBalances">
                   <td style="font-weight:700; color:#fff;">{{ item.client_name }}</td>
-                  <td>{{ item.deals_count }} deals</td>
-                  <td>{{ item.total_billed | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--emerald-light); font-weight:700;">{{ item.total_paid | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--rose-light); font-weight:700;">{{ item.outstanding_balance | number:'1.2-2' }} EGP</td>
+                  <td>{{ item.deals_count }} صفقات</td>
+                  <td>{{ item.total_billed | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--emerald-light); font-weight:700;">{{ item.total_paid | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--rose-light); font-weight:700;">{{ item.outstanding_balance | number:'1.2-2' }} ج.م</td>
+                </tr>
+                <tr *ngIf="clientBalances.length === 0">
+                  <td colspan="5">
+                    <div class="empty-state">
+                      <div class="empty-state-icon"><i class="fa-solid fa-receipt"></i></div>
+                      <div class="empty-state-title">لا توجد أرصدة للعملاء</div>
+                      <div class="empty-state-desc">لا توجد أرصدة نشطة مسجلة للعملاء في الدفتر المالي.</div>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -93,24 +115,32 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
             <table class="crm-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Payment Method</th>
-                  <th>Amount (EGP)</th>
-                  <th>Description</th>
+                  <th>التاريخ</th>
+                  <th>نوع الحركة</th>
+                  <th>التصنيف</th>
+                  <th>طريقة الدفع</th>
+                  <th>المبلغ (ج.م)</th>
+                  <th>الوصف والبيان</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let entry of ledgerEntries">
                   <td style="color:var(--text-2);">{{ entry.date }}</td>
-                  <td><span class="badge" [ngClass]="entry.type === 'income' ? 'badge-e' : 'badge-r'">{{ entry.type }}</span></td>
-                  <td>{{ entry.category?.name_ar || entry.category?.name_en || 'General' }}</td>
+                  <td><span class="badge" [ngClass]="entry.type === 'income' ? 'badge-e' : 'badge-r'">{{ entry.type === 'income' ? 'إيراد' : 'مصروف' }}</span></td>
+                  <td>{{ entry.category?.name_ar || entry.category?.name_en || 'عام' }}</td>
                   <td><span class="method-badge">{{ getPaymentMethodLabel(entry.payment_method) }}</span></td>
                   <td style="font-weight:700;" [ngClass]="entry.type === 'income' ? 'text-success' : 'text-danger'">
-                    {{ entry.type === 'income' ? '+' : '-' }}{{ entry.amount | number:'1.2-2' }} EGP
+                    {{ entry.type === 'income' ? '+' : '-' }}{{ entry.amount | number:'1.2-2' }} ج.م
                   </td>
                   <td style="color:var(--text-2);">{{ entry.description }}</td>
+                </tr>
+                <tr *ngIf="ledgerEntries.length === 0">
+                  <td colspan="6">
+                    <div class="empty-state">
+                      <div class="empty-state-icon"><i class="fa-solid fa-folder-open"></i></div>
+                      <div class="empty-state-title">لا توجد قيود مالية</div>
+                      <div class="empty-state-desc">سجل أول حركة مصروفات أو إيرادات في النظام.</div>
+                    </div>
                 </tr>
               </tbody>
             </table>
@@ -121,9 +151,9 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
       <!-- TAB 3: CUSTODY (بند العهدة) -->
       <div class="tab-content" *ngIf="activeTab === 'custody'">
         <div class="tab-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h3 style="font-size:1.05rem; color:#fff; font-weight:700;"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--teal-light);"></i> Employee Custody Float Accounts</h3>
+          <h3 style="font-size:1.05rem; color:#fff; font-weight:700;"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--teal-light);"></i> حسابات عهدة الموظفين</h3>
           <button class="btn btn-primary" (click)="openIssueCustodyModal()">
-            <i class="fa-solid fa-handshake-angle"></i> Issue New Custody
+            <i class="fa-solid fa-handshake-angle"></i> صرف عهدة جديدة
           </button>
         </div>
         <div class="table-card glass-panel">
@@ -131,24 +161,24 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
             <table class="crm-table">
               <thead>
                 <tr>
-                  <th>Employee</th>
-                  <th>Issued Float</th>
-                  <th>Returned</th>
-                  <th>Actual Outflow</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>الموظف</th>
+                  <th>العهدة المصروفة</th>
+                  <th>المسترد</th>
+                  <th>المنصرف الفعلي</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let custody of custodyAccounts">
                   <td style="font-weight:700; color:#fff;">{{ custody.employee?.name }}</td>
-                  <td>{{ custody.issued_amount | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--emerald-light);">{{ custody.returned_amount | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--rose-light); font-weight:700;">{{ (custody.issued_amount - custody.returned_amount) | number:'1.2-2' }} EGP</td>
+                  <td>{{ custody.issued_amount | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--emerald-light);">{{ custody.returned_amount | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--rose-light); font-weight:700;">{{ (custody.issued_amount - custody.returned_amount) | number:'1.2-2' }} ج.م</td>
                   <td><span class="badge badge-v">{{ custody.status }}</span></td>
                   <td>
                     <button *ngIf="custody.status === 'open'" class="btn-action primary" (click)="openReturnCustodyModal(custody)">
-                      Settle Custody
+                      تصفية العهدة
                     </button>
                   </td>
                 </tr>
@@ -161,19 +191,19 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
       <!-- TAB 4: PARTNER SPLITS -->
       <div class="tab-content" *ngIf="activeTab === 'partners'">
         <div class="section-card glass-panel">
-          <h3 style="font-size:1rem; color:#fff; font-weight:700;"><i class="fa-solid fa-users-rectangle" style="color:var(--amber-light);"></i> Department Partner Profit Distribution Report</h3>
+          <h3 style="font-size:1rem; color:#fff; font-weight:700;"><i class="fa-solid fa-users-rectangle" style="color:var(--amber-light);"></i> تقرير توزيع أرباح الشركاء في المراكز والأقسام</h3>
           <div class="table-responsive margin-top">
             <table class="crm-table">
               <thead>
                 <tr>
-                  <th>Department / Center</th>
-                  <th>External Partner</th>
-                  <th>Partner Share</th>
-                  <th>Total Income</th>
-                  <th>Total Expenses</th>
-                  <th>Net Profit</th>
-                  <th>Partner Net Share</th>
-                  <th>Company Net Share</th>
+                  <th>القسم / المركز</th>
+                  <th>الشريك الخارجي</th>
+                  <th>نسبة الشريك</th>
+                  <th>إجمالي الإيرادات</th>
+                  <th>إجمالي المصروفات</th>
+                  <th>صافي الربح</th>
+                  <th>حصة الشريك الصافية</th>
+                  <th>حصة الوكالة الصافية</th>
                 </tr>
               </thead>
               <tbody>
@@ -181,11 +211,11 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
                   <td style="font-weight:700; color:#fff;">{{ ps.department_name }}</td>
                   <td style="color:var(--text-2);">{{ ps.partner_name }}</td>
                   <td><span class="badge badge-a">{{ ps.partner_percentage }}%</span></td>
-                  <td style="color:var(--emerald-light);">{{ ps.total_income | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--rose-light);">{{ ps.total_expenses | number:'1.2-2' }} EGP</td>
-                  <td style="font-weight:700; color:#fff;">{{ ps.net_profit | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--amber-light); font-weight:700;">{{ ps.partner_share | number:'1.2-2' }} EGP</td>
-                  <td style="color:var(--emerald-light); font-weight:700;">{{ ps.company_share | number:'1.2-2' }} EGP</td>
+                  <td style="color:var(--emerald-light);">{{ ps.total_income | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--rose-light);">{{ ps.total_expenses | number:'1.2-2' }} ج.م</td>
+                  <td style="font-weight:700; color:#fff;">{{ ps.net_profit | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--amber-light); font-weight:700;">{{ ps.partner_share | number:'1.2-2' }} ج.م</td>
+                  <td style="color:var(--emerald-light); font-weight:700;">{{ ps.company_share | number:'1.2-2' }} ج.م</td>
                 </tr>
               </tbody>
             </table>
@@ -196,21 +226,21 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
       <!-- TAB 5: PAYROLL DUE -->
       <div class="tab-content" *ngIf="activeTab === 'payroll'">
         <div class="section-card glass-panel">
-          <h3 style="font-size:1rem; color:#fff; font-weight:700;"><i class="fa-solid fa-money-check-dollar" style="color:var(--teal-light);"></i> Employee Payroll Due Summary</h3>
-          <p style="font-size:0.78rem; color:var(--text-2); margin-top:4px;">Formula: net_payable = base_salary + task_earnings + commission - advances - deductions + bonuses</p>
+          <h3 style="font-size:1rem; color:#fff; font-weight:700;"><i class="fa-solid fa-money-check-dollar" style="color:var(--teal-light);"></i> ملخص المرتبات والمستحقات المالية للموظفين</h3>
+          <p style="font-size:0.78rem; color:var(--text-2); margin-top:4px;">المعادلة: المستحق الصافي = الراتب الأساسي + أرباح المهام + العمولات - السلف - الخصومات + المكافآت</p>
           <div class="table-responsive margin-top">
             <table class="crm-table">
               <thead>
                 <tr>
-                  <th>Employee</th>
-                  <th>Payment Model</th>
-                  <th>Base Salary</th>
-                  <th>Task Earnings</th>
-                  <th>Commissions</th>
-                  <th>Advances (-)</th>
-                  <th>Deductions (-)</th>
-                  <th>Bonuses (+)</th>
-                  <th>Net Payable</th>
+                  <th>الموظف</th>
+                  <th>نظام الدفع</th>
+                  <th>الراتب الأساسي</th>
+                  <th>أرباح المهام</th>
+                  <th>العمولات</th>
+                  <th>السلف (-)</th>
+                  <th>الخصومات (-)</th>
+                  <th>المكافآت (+)</th>
+                  <th>الصافي المستحق</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,7 +253,7 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
                   <td style="color:var(--rose-light);">-{{ p.advances | number:'1.2-2' }}</td>
                   <td style="color:var(--rose-light);">-{{ p.deductions | number:'1.2-2' }}</td>
                   <td style="color:var(--emerald-light);">+{{ p.bonuses | number:'1.2-2' }}</td>
-                  <td style="color:var(--teal-light); font-weight:800; font-size:0.95rem;">{{ p.net_payable | number:'1.2-2' }} EGP</td>
+                  <td style="color:var(--teal-light); font-weight:800; font-size:0.95rem;">{{ p.net_payable | number:'1.2-2' }} ج.م</td>
                 </tr>
               </tbody>
             </table>
@@ -231,73 +261,80 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
         </div>
       </div>
 
-      <!-- Add Ledger Entry Modal -->
-      <div class="crm-modal-backdrop" *ngIf="showLedgerModal">
-        <div class="crm-modal-card glass-panel wide-modal">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-plus" style="color:var(--violet-light);"></i> Record Ledger / Expense Entry</h3>
-            <button class="close-btn" (click)="showLedgerModal = false"><i class="fa-solid fa-xmark"></i></button>
+      <!-- PrimeNG Dialog: Add Ledger Entry -->
+      <p-dialog [(visible)]="showLedgerModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسجيل قسط / حركة مالية جديدة" [style]="{ width: '640px' }">
+        <form [formGroup]="ledgerForm" (ngSubmit)="saveLedgerEntry()">
+          <div class="form-grid" style="padding: 10px 0;">
+            <div class="form-group">
+              <label>نوع الحركة <span class="required">*</span></label>
+              <p-dropdown
+                formControlName="type"
+                [appendTo]="'body'"
+                [options]="[
+                  { label: 'مصروفات', value: 'expense' },
+                  { label: 'إيرادات / دخل', value: 'income' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              ></p-dropdown>
+            </div>
+            <div class="form-group">
+              <label>التصنيف <span class="required">*</span></label>
+              <app-prime-picker-select
+                formControlName="category_id"
+                [items]="categories"
+                optionLabel="name_ar"
+                optionValue="id"
+                placeholder="اختر التصنيف..."
+                addNewLabel="+ إضافة تصنيف جديد"
+                (addNew)="triggerAddCategory()"
+              ></app-prime-picker-select>
+            </div>
+            <div class="form-group">
+              <label>المبلغ (ج.م) <span class="required">*</span></label>
+              <input type="number" pInputText formControlName="amount" placeholder="500" />
+            </div>
+            <div class="form-group">
+              <label>طريقة الدفع <span class="required">*</span></label>
+              <p-dropdown
+                formControlName="payment_method"
+                [appendTo]="'body'"
+                [options]="[
+                  { label: 'كاش (الخزنة الرئيسية)', value: 'cash' },
+                  { label: 'نقدي يدوي', value: 'cash_hand' },
+                  { label: 'إنستا باي (InstaPay)', value: 'instapay' },
+                  { label: 'تحويل بنكي', value: 'bank_transfer' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              ></p-dropdown>
+            </div>
+            <div class="form-group">
+              <label>القسم / المركز المرتبط</label>
+              <app-prime-picker-select
+                formControlName="department_id"
+                [items]="departments"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="اختر القسم..."
+              ></app-prime-picker-select>
+            </div>
+            <div class="form-group">
+              <label>تاريخ القيد</label>
+              <input type="date" pInputText formControlName="date" />
+            </div>
+            <div class="form-group full-width">
+              <label>الوصف والملاحظات</label>
+              <textarea pTextarea formControlName="description" rows="2" placeholder="وصف الحركة المالية..."></textarea>
+            </div>
           </div>
-          <form [formGroup]="ledgerForm" (ngSubmit)="saveLedgerEntry()">
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Entry Type <span class="required">*</span></label>
-                <select formControlName="type">
-                  <option value="expense">Expense</option>
-                  <option value="income">Income / Revenue</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Category <span class="required">*</span></label>
-                <app-prime-picker-select
-                  formControlName="category_id"
-                  [items]="categories"
-                  optionLabel="name_ar"
-                  optionValue="id"
-                  placeholder="Select category..."
-                  addNewLabel="+ Add new category"
-                  (addNew)="triggerAddCategory()"
-                ></app-prime-picker-select>
-              </div>
-              <div class="form-group">
-                <label>Amount (EGP) <span class="required">*</span></label>
-                <input type="number" formControlName="amount" placeholder="500" />
-              </div>
-              <div class="form-group">
-                <label>Payment Method <span class="required">*</span></label>
-                <select formControlName="payment_method">
-                  <option value="cash">Cash (Local Safe)</option>
-                  <option value="cash_hand">Direct Cash-in-hand</option>
-                  <option value="instapay">InstaPay</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Associated Department</label>
-                <app-prime-picker-select
-                  formControlName="department_id"
-                  [items]="departments"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select department..."
-                ></app-prime-picker-select>
-              </div>
-              <div class="form-group">
-                <label>Entry Date</label>
-                <input type="date" formControlName="date" />
-              </div>
-              <div class="form-group full-width">
-                <label>Description &amp; Notes</label>
-                <textarea formControlName="description" rows="2" placeholder="Ledger description..."></textarea>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="showLedgerModal = false">Cancel</button>
-              <button type="submit" class="btn btn-primary" [disabled]="ledgerForm.invalid || loading">Record Entry</button>
-            </div>
-          </form>
-        </div>
-      </div>
+
+          <ng-template pTemplate="footer">
+            <button type="button" class="btn btn-glass" (click)="showLedgerModal = false">إلغاء</button>
+            <button type="submit" class="btn btn-primary" [disabled]="ledgerForm.invalid || loading">تسجيل القيد</button>
+          </ng-template>
+        </form>
+      </p-dialog>
     </div>
   `,
   styles: [`
@@ -317,9 +354,8 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
     .metric-card .value { font-size: 1.8rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
     .highlight-orange { border-top: 3px solid var(--violet-light) !important; }
     .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
-    .margin-top { margin-top: 20px; }
-    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; direction: ltr; }
-    .crm-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.15); white-space: nowrap; }
+    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
+    .crm-table th { text-align: right; padding: 14px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
     .crm-table td { padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }

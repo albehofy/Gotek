@@ -5,13 +5,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4201",
-
-
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
   "dependencies": {
+    "@angular/animations": "^19.2.25",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",

@@ -39,10 +39,10 @@ export class ApiService {
       catchError(err => {
         if (password === "password" || password === "mediaglow2026") {
           let role = "super_admin";
-          let name = "Media Glow Super Admin";
-          if (email.includes("creator") || email.includes("employee")) { role = "employee"; name = "Content Creator Employee"; }
-          if (email.includes("client")) { role = "client"; name = "Media Glow VIP Client"; }
-          if (email.includes("deptmanager") || email.includes("manager")) { role = "department_manager"; name = "Photography Manager"; }
+          let name = "مدير النظام Super Admin";
+          if (email.includes("creator") || email.includes("employee")) { role = "employee"; name = "صانع محتوى الميديا"; }
+          if (email.includes("client")) { role = "client"; name = "عميل VIP - ميديا جلو"; }
+          if (email.includes("deptmanager") || email.includes("manager")) { role = "department_manager"; name = "مدير قسم التصوير"; }
 
           return of({
             success: true,

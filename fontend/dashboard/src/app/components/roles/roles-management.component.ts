@@ -2,17 +2,18 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-roles-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DropdownModule],
   template: `
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-shield-halved" style="color:var(--violet-light);"></i> Roles &amp; Permissions (RBAC)</h2>
-          <p class="subtitle">Access control matrix, role definition &amp; user role assignment</p>
+          <h2><i class="fa-solid fa-shield-halved" style="color:var(--violet-light);"></i> الأدوار والصلاحيات (RBAC)</h2>
+          <p class="subtitle">مصفوفة التحكم بالوصول، تعريف الأدوار وتعيين أدوار الموظفين والعملاء</p>
         </div>
       </div>
 
@@ -26,12 +27,12 @@ import { ApiService } from '../../services/api.service';
           <p class="desc">{{ role.description }}</p>
 
           <div class="permissions-list">
-            <h4>Granted Permissions:</h4>
+            <h4>الصلاحيات الممنوحة:</h4>
             <div class="perm-chips">
               <span *ngFor="let perm of role.permissions" class="perm-chip">
                 {{ perm.name }}
               </span>
-              <span *ngIf="!role.permissions || role.permissions.length === 0" style="color:var(--text-3); font-size:0.75rem;">No permissions assigned</span>
+              <span *ngIf="!role.permissions || role.permissions.length === 0" style="color:var(--text-3); font-size:0.75rem;">لا توجد صلاحيات مسندة</span>
             </div>
           </div>
         </div>
@@ -39,32 +40,49 @@ import { ApiService } from '../../services/api.service';
 
       <!-- Users Role Assignment Table -->
       <div class="section-card glass-panel margin-top">
-        <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-users-gear" style="color:var(--violet-light);"></i> User Role Assignments</h3>
+        <h3 style="font-size:1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-users-gear" style="color:var(--violet-light);"></i> تعيين أدوار المستخدمين</h3>
         <div class="table-responsive" style="margin-top:14px;">
           <table class="crm-table">
             <thead>
               <tr>
-                <th>User Name</th>
-                <th>Email Address</th>
-                <th>Current Role</th>
-                <th>Department</th>
-                <th>Assign Role</th>
+                <th>اسم المستخدم</th>
+                <th>البريد الإلكتروني</th>
+                <th>الدور الحالي</th>
+                <th>القسم</th>
+                <th>تعديل الدور</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let u of users">
                 <td style="font-weight:700; color:#fff;">{{ u.name }}</td>
                 <td style="color:var(--text-2);">{{ u.email }}</td>
-                <td><span class="badge badge-v">{{ u.role }}</span></td>
-                <td style="color:var(--text-2);">{{ u.department?.name || 'General' }}</td>
+                <td><span class="badge badge-v" style="text-transform:uppercase;">{{ u.role }}</span></td>
+                <td style="color:var(--text-2);">{{ u.department?.name || 'عام' }}</td>
                 <td>
-                  <select [ngModel]="u.role" (ngModelChange)="onUserRoleChange(u, $event)" class="role-select">
-                    <option value="super_admin">Super Admin</option>
-                    <option value="admin">Admin</option>
-                    <option value="department_manager">Department Manager</option>
-                    <option value="employee">Employee</option>
-                    <option value="client">Client</option>
-                  </select>
+                  <p-dropdown
+                    [ngModel]="u.role"
+                    (ngModelChange)="onUserRoleChange(u, $event)"
+                    [appendTo]="'body'"
+                    [options]="[
+                      { label: 'سوبر أدمن (Super Admin)', value: 'super_admin' },
+                      { label: 'مدير نظام (Admin)', value: 'admin' },
+                      { label: 'مدير قسم (Manager)', value: 'department_manager' },
+                      { label: 'موظف (Employee)', value: 'employee' },
+                      { label: 'عميل (Client)', value: 'client' }
+                    ]"
+                    optionLabel="label"
+                    optionValue="value"
+                    [style]="{ width: '220px' }"
+                  ></p-dropdown>
+                </td>
+              </tr>
+              <tr *ngIf="users.length === 0">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fa-solid fa-user-slash"></i></div>
+                    <div class="empty-state-title">لم يتم العثور على مستخدمين</div>
+                    <div class="empty-state-desc">لا يوجد مستخدمون مسجلون متاحون لتعيين الأدوار.</div>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -91,9 +109,8 @@ import { ApiService } from '../../services/api.service';
     .perm-chips { display: flex; gap: 5px; flex-wrap: wrap; }
     .perm-chip { background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(124,58,237,0.2); padding: 3px 9px; border-radius: 100px; font-size: 0.68rem; font-weight: 600; }
     .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
-    .margin-top { margin-top: 20px; }
-    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; direction: ltr; }
-    .crm-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.15); white-space: nowrap; }
+    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
+    .crm-table th { text-align: right; padding: 14px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
     .crm-table td { padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }

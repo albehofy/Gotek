@@ -3,28 +3,30 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-clients-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, DialogModule, InputTextModule],
   template: `
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-users" style="color:var(--violet-light);"></i> Clients Directory</h2>
-          <p class="subtitle">View agency clients, financial balances, active contracts & accounts</p>
+          <h2><i class="fa-solid fa-users" style="color:var(--violet-light);"></i> دليل العملاء</h2>
+          <p class="subtitle">عرض عملاء الوكالة، أرصدة الحسابات المالية، والعقود النشطة</p>
         </div>
         <button class="btn btn-primary" (click)="openAddModal()">
-          <i class="fa-solid fa-user-plus"></i> Add New Client
+          <i class="fa-solid fa-user-plus"></i> إضافة عميل جديد
         </button>
       </div>
 
-      <!-- Filters & Search -->
+      <!-- Search -->
       <div class="filters-bar glass-panel">
         <div class="search-field">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" [(ngModel)]="searchQuery" placeholder="Search by name or email..." />
+          <input type="text" pInputText [(ngModel)]="searchQuery" placeholder="البحث بالاسم أو البريد الإلكتروني..." />
         </div>
       </div>
 
@@ -35,12 +37,12 @@ import { ApiService } from '../../services/api.service';
             <thead>
               <tr>
                 <th>#</th>
-                <th>Client Name</th>
-                <th>Email Address</th>
-                <th>Deals Count</th>
-                <th>Paid Total</th>
-                <th>Outstanding Balance</th>
-                <th>Actions</th>
+                <th>اسم العميل</th>
+                <th>البريد الإلكتروني</th>
+                <th>عدد الصفقات</th>
+                <th>إجمالي المدفوعات</th>
+                <th>المتبقي (المستحق)</th>
+                <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -48,64 +50,64 @@ import { ApiService } from '../../services/api.service';
                 <td>{{ i + 1 }}</td>
                 <td>
                   <div class="client-cell">
-                    <div class="client-av">{{ client.name ? client.name[0].toUpperCase() : 'C' }}</div>
+                    <div class="client-av">{{ getInitial(client) }}</div>
                     <div>
-                      <div class="client-name">{{ client.name }}</div>
+                      <div class="client-name">{{ client.client_name || client.name || '—' }}</div>
                     </div>
                   </div>
                 </td>
-                <td style="color:var(--text-2);">{{ client.email }}</td>
-                <td><span class="badge badge-v">{{ client.deals_count || 0 }} deals</span></td>
-                <td style="color:var(--emerald-light); font-weight:700;">{{ (client.total_paid || 0) | number:'1.2-2' }} EGP</td>
-                <td style="color:var(--rose-light); font-weight:700;">{{ (client.outstanding_balance || 0) | number:'1.2-2' }} EGP</td>
+                <td style="color:var(--text-2);">{{ client.client_email || client.email || '—' }}</td>
+                <td><span class="badge badge-v">{{ client.deals_count || 0 }} صفقات</span></td>
+                <td style="color:var(--emerald-light); font-weight:700;">{{ (client.total_paid || 0) | number:'1.2-2' }} ج.م</td>
+                <td style="color:var(--rose-light); font-weight:700;">{{ (client.outstanding_balance || 0) | number:'1.2-2' }} ج.م</td>
                 <td>
-                  <button class="btn-action primary" (click)="openClientDetailsInNewTab(client.id)" title="Open full client record">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Full Profile
+                  <button class="btn-action primary" (click)="goToClientDetails(client)" title="فتح ملف العميل">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> الملف الكامل
                   </button>
                 </td>
               </tr>
               <tr *ngIf="filteredClients().length === 0">
-                <td colspan="7" style="text-align:center; padding:36px; color:var(--text-2);">No clients match search query.</td>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fa-solid fa-users-slash"></i></div>
+                    <div class="empty-state-title">لا يوجد عملاء</div>
+                    <div class="empty-state-desc">لم يتم العثور على عملاء يطابقون كلمة البحث.</div>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Modal: Add New Client -->
-      <div class="crm-modal-backdrop" *ngIf="showAddModal">
-        <div class="crm-modal-card glass-panel">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-user-plus" style="color:var(--violet-light);"></i> Add New Client</h3>
-            <button class="close-btn" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i></button>
+      <!-- PrimeNG Dialog: Add New Client -->
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة عميل جديد" [style]="{ width: '480px' }">
+        <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
+            <div class="form-group">
+              <label>الاسم الكامل <span class="required">*</span></label>
+              <input type="text" pInputText formControlName="name" placeholder="مثال: شركة النور للتجارة" />
+            </div>
+
+            <div class="form-group">
+              <label>البريد الإلكتروني <span class="required">*</span></label>
+              <input type="email" pInputText formControlName="email" placeholder="client@example.com" />
+            </div>
+
+            <div class="form-group">
+              <label>كلمة المرور الافتراضية <span class="required">*</span></label>
+              <input type="password" pInputText formControlName="password" placeholder="••••••••" />
+            </div>
           </div>
-          <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
-            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
-              <div class="form-group">
-                <label>Full Name <span class="required">*</span></label>
-                <input type="text" formControlName="name" placeholder="e.g. Acme Corporation" />
-              </div>
 
-              <div class="form-group">
-                <label>Email Address <span class="required">*</span></label>
-                <input type="email" formControlName="email" placeholder="client@example.com" />
-              </div>
-
-              <div class="form-group">
-                <label>Default Password <span class="required">*</span></label>
-                <input type="password" formControlName="password" placeholder="••••••••" />
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="closeAddModal()">Cancel</button>
-              <button type="submit" class="btn btn-primary" [disabled]="clientForm.invalid || loading">
-                {{ loading ? 'Saving...' : 'Save Client' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+          <ng-template pTemplate="footer">
+            <button type="button" class="btn btn-glass" (click)="closeAddModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary" [disabled]="clientForm.invalid || loading">
+              {{ loading ? 'جاري الحفظ...' : 'حفظ العميل' }}
+            </button>
+          </ng-template>
+        </form>
+      </p-dialog>
     </div>
   `,
   styles: [`
@@ -121,8 +123,8 @@ import { ApiService } from '../../services/api.service';
     .search-field input { background: transparent; border: none; outline: none; color: #fff; width: 100%; font-family: inherit; font-size: 0.88rem; }
     .search-field input::placeholder { color: var(--text-3); }
     .table-card { padding: 0; overflow: hidden; border-radius: var(--r-lg); background: var(--bg-card); border: 1px solid var(--border); }
-    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; direction: ltr; }
-    .crm-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.15); white-space: nowrap; }
+    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
+    .crm-table th { text-align: right; padding: 14px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
     .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
@@ -151,6 +153,7 @@ import { ApiService } from '../../services/api.service';
 export class ClientsListComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   clients: any[] = [];
   searchQuery = '';
@@ -173,14 +176,24 @@ export class ClientsListComponent implements OnInit {
 
   loadClients(): void {
     this.apiService.getClientBalances().subscribe(res => {
-      this.clients = res.data || [];
+      const raw = res.data || [];
+      // API may return client_name/client_email OR name/email depending on endpoint
+      // Normalise both into a unified shape
+      this.clients = raw.map((c: any) => ({
+        ...c,
+        name: c.client_name || c.name || '',
+        email: c.client_email || c.email || ''
+      }));
     });
   }
 
   filteredClients() {
     if (!this.searchQuery.trim()) return this.clients;
     const q = this.searchQuery.toLowerCase();
-    return this.clients.filter(c => c.client_name?.toLowerCase().includes(q) || c.client_email?.toLowerCase().includes(q));
+    return this.clients.filter(c =>
+      (c.client_name || c.name || '').toLowerCase().includes(q) ||
+      (c.client_email || c.email || '').toLowerCase().includes(q)
+    );
   }
 
   openAddModal(): void {
@@ -211,8 +224,15 @@ export class ClientsListComponent implements OnInit {
     });
   }
 
-  openClientDetailsInNewTab(clientId: number): void {
-    const url = window.location.origin + '/clients/' + clientId;
-    window.open(url, '_blank');
+  goToClientDetails(client: any): void {
+    const id = client.id || client.client_id;
+    if (id) {
+      this.router.navigate(['/clients', id]);
+    }
+  }
+
+  getInitial(client: any): string {
+    const name = client.name || client.client_name || '';
+    return name ? name[0].toUpperCase() : 'C';
   }
 }

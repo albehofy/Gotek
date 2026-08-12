@@ -3,20 +3,33 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-picker-select.component';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-deals-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, PrimePickerSelectComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PrimePickerSelectComponent,
+    DialogModule,
+    InputTextModule,
+    TextareaModule,
+    DropdownModule
+  ],
   template: `
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-handshake" style="color:var(--violet-light);"></i> Deals &amp; Sales Contracts</h2>
-          <p class="subtitle">Contract pipeline, sales commission attribution & installment tracking</p>
+          <h2><i class="fa-solid fa-handshake" style="color:var(--violet-light);"></i> الصفقات والعقود المالية</h2>
+          <p class="subtitle">متابعة خط الصفقات، نسب المبيعات وحركات دفع الأقساط</p>
         </div>
         <button class="btn btn-primary" (click)="openAddDealModal()">
-          <i class="fa-solid fa-plus"></i> New Deal
+          <i class="fa-solid fa-plus"></i> صفقة جديدة
         </button>
       </div>
 
@@ -26,166 +39,174 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
           <table class="crm-table">
             <thead>
               <tr>
-                <th>Deal Title</th>
-                <th>Client</th>
-                <th>Department</th>
-                <th>Sales Rep &amp; Commission</th>
-                <th>Total Value</th>
-                <th>Paid</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>عنوان الصفقة</th>
+                <th>العميل</th>
+                <th>القسم الرئيسي</th>
+                <th>مسؤول المبيعات والعمولة</th>
+                <th>القيمة الإجمالية</th>
+                <th>المدفوع</th>
+                <th>المتبقي</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let deal of deals">
                 <td style="font-weight:700; color:#fff;">
                   <div>{{ deal.title }}</div>
-                  <small style="color:var(--text-2); font-weight:normal;" *ngIf="deal.agreed_scope">Scope: {{ deal.agreed_scope }}</small>
+                  <small style="color:var(--text-2); font-weight:normal; font-size:0.75rem;" *ngIf="deal.agreed_scope">النطاق: {{ deal.agreed_scope }}</small>
                 </td>
-                <td style="color:var(--text-2);">{{ deal.client?.name || 'General Client' }}</td>
-                <td><span class="dept-badge">{{ deal.department?.name || 'General' }}</span></td>
+                <td style="color:var(--text-2); font-weight:500;">{{ deal.client?.name || 'عميل عام' }}</td>
+                <td><span class="badge badge-t">{{ deal.department?.name || 'عام' }}</span></td>
                 <td>
                   <div *ngIf="deal.sales_person" style="font-weight:600; color:#fff;">{{ deal.sales_person.name }}</div>
                   <small style="color:var(--teal-light);" *ngIf="deal.sales_commission_value > 0">
-                    Commission: {{ deal.sales_commission_value }} {{ deal.sales_commission_type === 'percentage' ? '%' : 'EGP' }}
+                    العمولة: {{ deal.sales_commission_value }} {{ deal.sales_commission_type === 'percentage' ? '%' : 'ج.م' }}
                   </small>
                   <div *ngIf="!deal.sales_person" style="color:var(--text-3);">-</div>
                 </td>
-                <td style="font-weight:700; color:#fff;">{{ deal.calculated_total | number:'1.2-2' }} EGP</td>
-                <td style="color:var(--emerald-light); font-weight:700;">{{ deal.calculated_paid | number:'1.2-2' }} EGP</td>
-                <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} EGP</td>
-                <td><span class="badge badge-v">{{ deal.status }}</span></td>
+                <td style="font-weight:700; color:#fff;">{{ deal.calculated_total | number:'1.2-2' }} ج.م</td>
+                <td style="color:var(--emerald-light); font-weight:700;">{{ deal.calculated_paid | number:'1.2-2' }} ج.م</td>
+                <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} ج.م</td>
+                <td><span class="badge badge-v" style="text-transform:uppercase;">{{ deal.status }}</span></td>
                 <td>
-                  <button class="btn-action primary" (click)="openPaymentModal(deal)" title="Record payment installment">
-                    <i class="fa-solid fa-money-bill-wave"></i> Record Payment
+                  <button class="btn-action primary" (click)="openPaymentModal(deal)" title="تسجيل قسط مالية">
+                    <i class="fa-solid fa-money-bill-wave"></i> تسجيل دفعة
                   </button>
                 </td>
               </tr>
               <tr *ngIf="deals.length === 0">
-                <td colspan="9" style="text-align:center; padding:36px; color:var(--text-2);">No active deals found.</td>
+                <td colspan="9">
+                  <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fa-solid fa-handshake-slash"></i></div>
+                    <div class="empty-state-title">لا توجد صفقات مسجلة</div>
+                    <div class="empty-state-desc">انقر على "صفقة جديدة" لإضافة عقد أو صفقة جديدة.</div>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Add Deal Modal -->
-      <div class="crm-modal-backdrop" *ngIf="showAddModal">
-        <div class="crm-modal-card glass-panel wide-modal">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-handshake" style="color:var(--violet-light);"></i> Create New Deal &amp; Contract</h3>
-            <button class="close-btn" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i></button>
+      <!-- PrimeNG Dialog: Add Deal -->
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إنشاء صفقة وعقد جديد" [style]="{ width: '680px' }">
+        <form [formGroup]="dealForm" (ngSubmit)="saveDeal()">
+          <div class="form-grid" style="padding: 10px 0;">
+            <div class="form-group full-width">
+              <label>عنوان الصفقة <span class="required">*</span></label>
+              <input type="text" pInputText formControlName="title" placeholder="مثال: الهوية البصرية والحملة الإعلانية" />
+            </div>
+            <div class="form-group">
+              <label>العميل المستهدف</label>
+              <app-prime-picker-select
+                formControlName="client_id"
+                [items]="clients"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="اختر العميل..."
+                addNewLabel="+ إضافة عميل سريع"
+                (addNew)="triggerQuickAddClient()"
+              ></app-prime-picker-select>
+            </div>
+            <div class="form-group">
+              <label>القسم الرئيسي</label>
+              <app-prime-picker-select
+                formControlName="department_id"
+                [items]="departments"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="اختر القسم..."
+              ></app-prime-picker-select>
+            </div>
+            <div class="form-group">
+              <label>مسؤول المبيعات</label>
+              <app-prime-picker-select
+                formControlName="sales_person_id"
+                [items]="employees"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="اختر الموظف..."
+              ></app-prime-picker-select>
+            </div>
+            <div class="form-group">
+              <label>نوع العمولة</label>
+              <p-dropdown
+                formControlName="sales_commission_type"
+                [appendTo]="'body'"
+                [options]="[
+                  { label: 'مبلغ ثابت (ج.م)', value: 'fixed' },
+                  { label: 'نسبة مئوية (%)', value: 'percentage' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              ></p-dropdown>
+            </div>
+            <div class="form-group">
+              <label>قيمة العمولة</label>
+              <input type="number" pInputText formControlName="sales_commission_value" placeholder="مثال: 500 أو 10" />
+            </div>
+            <div class="form-group">
+              <label>قيمة العقد الإجمالية (ج.م) <span class="required">*</span></label>
+              <input type="number" pInputText formControlName="total_price" placeholder="12000" />
+            </div>
+            <div class="form-group full-width">
+              <label>النطاق والمواصفات المتفق عليها</label>
+              <textarea pTextarea formControlName="agreed_scope" rows="3" placeholder="تفاصيل العقد والمخرجات المطلوبة..."></textarea>
+            </div>
           </div>
-          <form [formGroup]="dealForm" (ngSubmit)="saveDeal()">
-            <div class="form-grid">
-              <div class="form-group full-width">
-                <label>Deal Title <span class="required">*</span></label>
-                <input type="text" formControlName="title" placeholder="e.g. Brand Identity & Video Campaign" />
-              </div>
-              <div class="form-group">
-                <label>Target Client</label>
-                <app-prime-picker-select
-                  formControlName="client_id"
-                  [items]="clients"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select client..."
-                  addNewLabel="+ Quick add client"
-                  (addNew)="triggerQuickAddClient()"
-                ></app-prime-picker-select>
-              </div>
-              <div class="form-group">
-                <label>Primary Department</label>
-                <app-prime-picker-select
-                  formControlName="department_id"
-                  [items]="departments"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select department..."
-                ></app-prime-picker-select>
-              </div>
-              <div class="form-group">
-                <label>Sales Representative</label>
-                <app-prime-picker-select
-                  formControlName="sales_person_id"
-                  [items]="employees"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select sales rep..."
-                ></app-prime-picker-select>
-              </div>
-              <div class="form-group">
-                <label>Commission Type</label>
-                <select formControlName="sales_commission_type">
-                  <option value="fixed">Fixed Amount (EGP)</option>
-                  <option value="percentage">Percentage (%)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Commission Value</label>
-                <input type="number" formControlName="sales_commission_value" placeholder="e.g. 500 or 10" />
-              </div>
-              <div class="form-group">
-                <label>Total Contract Value (EGP) <span class="required">*</span></label>
-                <input type="number" formControlName="total_price" placeholder="12000" />
-              </div>
-              <div class="form-group full-width">
-                <label>Agreed Scope</label>
-                <textarea formControlName="agreed_scope" rows="3" placeholder="Scope of work details..."></textarea>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="closeAddModal()">Cancel</button>
-              <button type="submit" class="btn btn-primary" [disabled]="dealForm.invalid || loading">
-                {{ loading ? 'Saving...' : 'Save & Publish Deal' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
 
-      <!-- Payment Modal -->
-      <div class="crm-modal-backdrop" *ngIf="showPaymentModal && selectedDeal">
-        <div class="crm-modal-card glass-panel">
-          <div class="modal-header">
-            <h3><i class="fa-solid fa-money-bill-wave" style="color:var(--emerald-light);"></i> Record Payment: {{ selectedDeal.title }}</h3>
-            <button class="close-btn" (click)="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
+          <ng-template pTemplate="footer">
+            <button type="button" class="btn btn-glass" (click)="closeAddModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary" [disabled]="dealForm.invalid || loading">
+              {{ loading ? 'جاري الحفظ...' : 'حفظ ونشر الصفقة' }}
+            </button>
+          </ng-template>
+        </form>
+      </p-dialog>
+
+      <!-- PrimeNG Dialog: Payment Modal -->
+      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'تسجيل دفعة / قسط: ' + (selectedDeal?.title || '')" [style]="{ width: '480px' }">
+        <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;" *ngIf="selectedDeal">
+            <div class="form-group">
+              <label>مبلغ الدفعة (ج.م) <span class="required">*</span></label>
+              <input type="number" pInputText formControlName="amount" [placeholder]="selectedDeal.remaining_balance" />
+              <small style="color:var(--text-2);">المتبقي في ذمة العميل: {{ selectedDeal.remaining_balance | number:'1.2-2' }} ج.م</small>
+            </div>
+            <div class="form-group">
+              <label>تاريخ السداد</label>
+              <input type="date" pInputText formControlName="payment_date" />
+            </div>
+            <div class="form-group">
+              <label>طريقة التحصيل / الدفع <span class="required">*</span></label>
+              <p-dropdown
+                formControlName="payment_method"
+                [appendTo]="'body'"
+                [options]="[
+                  { label: 'كاش (الخزينة المحلية)', value: 'cash' },
+                  { label: 'نقداً يد بيد', value: 'cash_hand' },
+                  { label: 'إنستا باي (InstaPay)', value: 'instapay' },
+                  { label: 'تحويل بنكي', value: 'bank_transfer' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              ></p-dropdown>
+            </div>
+            <div class="form-group">
+              <label>رقم الإيصال / المرجع</label>
+              <input type="text" pInputText formControlName="receipt_ref" placeholder="مثال: TXN-998811" />
+            </div>
           </div>
-          <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
-            <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
-              <div class="form-group">
-                <label>Payment Amount (EGP) <span class="required">*</span></label>
-                <input type="number" formControlName="amount" [placeholder]="selectedDeal.remaining_balance" />
-                <small style="color:var(--text-2);">Outstanding Balance: {{ selectedDeal.remaining_balance | number:'1.2-2' }} EGP</small>
-              </div>
-              <div class="form-group">
-                <label>Payment Date</label>
-                <input type="date" formControlName="payment_date" />
-              </div>
-              <div class="form-group">
-                <label>Payment Method <span class="required">*</span></label>
-                <select formControlName="payment_method">
-                  <option value="cash">Cash (Local Safe)</option>
-                  <option value="cash_hand">Direct Cash-in-hand</option>
-                  <option value="instapay">InstaPay</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Receipt / Reference Number</label>
-                <input type="text" formControlName="receipt_ref" placeholder="e.g. TXN-998811" />
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-glass" (click)="closePaymentModal()">Cancel</button>
-              <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid || loading">
-                {{ loading ? 'Processing...' : 'Confirm Payment' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+
+          <ng-template pTemplate="footer">
+            <button type="button" class="btn btn-glass" (click)="closePaymentModal()">إلغاء</button>
+            <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid || loading">
+              {{ loading ? 'جاري المعالجة...' : 'تأكيد وتسجيل الدفعة' }}
+            </button>
+          </ng-template>
+        </form>
+      </p-dialog>
     </div>
   `,
   styles: [`
@@ -194,9 +215,8 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
     .module-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
     .module-header h2 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
     .subtitle { color: var(--text-2); font-size: 0.85rem; margin-top: 4px; }
-    .table-card { padding: 0; overflow: hidden; border-radius: var(--r-lg); background: var(--bg-card); border: 1px solid var(--border); }
-    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; direction: ltr; }
-    .crm-table th { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.15); white-space: nowrap; }
+    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
+    .crm-table th { text-align: right; padding: 14px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
     .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: #fff; vertical-align: middle; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
