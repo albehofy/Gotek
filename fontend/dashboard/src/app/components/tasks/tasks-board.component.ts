@@ -28,16 +28,18 @@ import { MultiSelectModule } from 'primeng/multiselect';
     <div class="tb-shell">
 
       <!-- ── PAGE HEADER ────────────────────────────────────────── -->
-      <div class="tb-header">
+      <div class="tb-header" [class.is-client-header]="isClient()">
         <div class="tb-header-left">
-          <div class="tb-icon-badge"><i class="fa-solid fa-list-check"></i></div>
+          <div class="tb-icon-badge" [class.client-badge-icon]="isClient()">
+            <i class="fa-solid" [ngClass]="isClient() ? 'fa-clipboard-check' : 'fa-list-check'"></i>
+          </div>
           <div>
-            <h2>لوحة المهام والتنفيذ</h2>
-            <p>سحب وإسقاط البطاقات بين الأعمدة لتحديث الحالة فوراً</p>
+            <h2>{{ isClient() ? 'لوحة مخرجات ومهام المشروع' : 'لوحة المهام والتنفيذ' }}</h2>
+            <p>{{ isClient() ? 'متابعة مخرجات مشروعك والمهام واعتماد التكتيكات والمخرجات بسهولة' : 'سحب وإسقاط البطاقات بين الأعمدة لتحديث الحالة فوراً' }}</p>
           </div>
         </div>
         <div class="tb-header-right">
-          <div class="tb-stats">
+          <div class="tb-stats" *ngIf="!isClient()">
             <span class="stat-pill">
               <i class="fa-solid fa-circle-dot" style="color:var(--violet-light)"></i>
               {{ tasks.length }} الإجمالي
@@ -47,60 +49,289 @@ import { MultiSelectModule } from 'primeng/multiselect';
               {{ getTasksForColumn('done').length }} مكتمل
             </span>
           </div>
+
+          <div class="tb-stats client-stats" *ngIf="isClient()">
+            <span class="stat-pill client-stat-pill" (click)="clientStatusFilter = 'all'" [class.active]="clientStatusFilter === 'all'">
+              <i class="fa-solid fa-layer-group"></i>
+              <span>{{ tasks.length }}</span> الإجمالي
+            </span>
+            <span class="stat-pill client-stat-pill amber-glow" (click)="clientStatusFilter = 'pending'" [class.active]="clientStatusFilter === 'pending'" *ngIf="getClientPendingCount() > 0">
+              <i class="fa-solid fa-clock-rotate-left fa-spin-pulse"></i>
+              <span>{{ getClientPendingCount() }}</span> بانتظار موافقتك
+            </span>
+            <span class="stat-pill client-stat-pill emerald" (click)="clientStatusFilter = 'done'" [class.active]="clientStatusFilter === 'done'">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>{{ getClientApprovedCount() }}</span> مكتمل ومعتمد
+            </span>
+            <span class="stat-pill client-stat-pill violet" (click)="clientStatusFilter = 'in_progress'" [class.active]="clientStatusFilter === 'in_progress'">
+              <i class="fa-solid fa-spinner"></i>
+              <span>{{ getClientInProgressCount() }}</span> قيد التنفيذ
+            </span>
+          </div>
+
           <button class="btn-new-task" *ngIf="isAdminOrManager()" (click)="openCreateModal()">
             <i class="fa-solid fa-plus"></i> مهمة جديدة
           </button>
         </div>
       </div>
 
+      <!-- ── TOP TOOLBAR WITH SEARCH & STYLISH SIDE FILTER MODAL TRIGGER ── -->
+      <div class="prime-board-toolbar glass-panel">
+        
+        <!-- Live Search Input -->
+        <div class="toolbar-search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery" 
+            placeholder="ابحث في المهام، الصفقات، أو المسؤولين..."
+            class="toolbar-search-input"
+          />
+          <button type="button" class="btn-clear-search" *ngIf="searchQuery" (click)="searchQuery = ''">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Filter Modal Trigger & Active Filters Bar -->
+        <div class="toolbar-actions-group">
+          <button 
+            type="button" 
+            class="btn-trigger-filters" 
+            [class.has-active]="getActiveFiltersCount() > 0"
+            (click)="showFilterDrawer = true"
+          >
+            <i class="fa-solid fa-sliders"></i>
+            <span>الفلاتر والتصفية</span>
+            <span class="active-badge" *ngIf="getActiveFiltersCount() > 0">{{ getActiveFiltersCount() }}</span>
+          </button>
+
+          <!-- Reset Button -->
+          <button 
+            type="button" 
+            class="btn-reset-filters" 
+            *ngIf="getActiveFiltersCount() > 0"
+            (click)="resetBoardFilters()"
+            title="إعادة ضبط جميع الفلاتر"
+          >
+            <i class="fa-solid fa-rotate-left"></i> إعادة ضبط
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SIDE FILTER MODAL (نافذة الفلاتر الجانبية الشيك) ── -->
+      <div class="filter-drawer-overlay" *ngIf="showFilterDrawer" (click)="showFilterDrawer = false">
+        <div class="filter-drawer-content glass-panel" (click)="$event.stopPropagation()">
+          
+          <!-- Drawer Header -->
+          <div class="drawer-header">
+            <div class="dh-title">
+              <i class="fa-solid fa-sliders icon-violet"></i>
+              <span>تصفية وفلترة المهام والمخرجات</span>
+            </div>
+            <button type="button" class="btn-close-drawer" (click)="showFilterDrawer = false">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Drawer Body Filters -->
+          <div class="drawer-filters-body">
+            
+            <!-- Deal Filter -->
+            <div class="filter-group-item" *ngIf="dealOptions.length > 1">
+              <label class="filter-label"><i class="fa-solid fa-handshake"></i> الصفقة والمشروع</label>
+              <p-dropdown
+                [options]="dealOptions"
+                [(ngModel)]="selectedDealFilter"
+                placeholder="اختر الصفقة"
+                [filter]="true"
+                filterBy="label"
+                styleClass="prime-luxury-dropdown"
+                appendTo="body"
+                [baseZIndex]="999999"
+              ></p-dropdown>
+            </div>
+
+            <!-- Department Filter -->
+            <div class="filter-group-item" *ngIf="departmentOptions.length > 1">
+              <label class="filter-label"><i class="fa-solid fa-sitemap"></i> القسم / المركز</label>
+              <p-dropdown
+                [options]="departmentOptions"
+                [(ngModel)]="selectedDepartmentFilter"
+                placeholder="اختر القسم"
+                [filter]="true"
+                filterBy="label"
+                styleClass="prime-luxury-dropdown"
+                appendTo="body"
+                [baseZIndex]="999999"
+              ></p-dropdown>
+            </div>
+
+            <!-- Assignee Filter (Admin & Managers) -->
+            <div class="filter-group-item" *ngIf="isAdminOrManager() && userOptions.length > 1">
+              <label class="filter-label"><i class="fa-solid fa-user-gear"></i> عضو الفريق / المسؤول</label>
+              <p-dropdown
+                [options]="userOptions"
+                [(ngModel)]="selectedUserFilter"
+                placeholder="اختر المسؤول"
+                [filter]="true"
+                filterBy="label"
+                styleClass="prime-luxury-dropdown"
+                appendTo="body"
+                [baseZIndex]="999999"
+              ></p-dropdown>
+            </div>
+
+            <!-- Priority Filter -->
+            <div class="filter-group-item">
+              <label class="filter-label"><i class="fa-solid fa-fire"></i> درجة الأولوية</label>
+              <p-dropdown
+                [options]="priorityOptions"
+                [(ngModel)]="selectedPriorityFilter"
+                placeholder="الأولوية"
+                styleClass="prime-luxury-dropdown"
+                appendTo="body"
+                [baseZIndex]="999999"
+              ></p-dropdown>
+            </div>
+
+          </div>
+
+          <!-- Drawer Footer Actions -->
+          <div class="drawer-footer-actions">
+            <button type="button" class="btn-apply-filters" (click)="showFilterDrawer = false">
+              <i class="fa-solid fa-check"></i> عرض النتائج ({{ getTotalFilteredCount() }})
+            </button>
+            <button type="button" class="btn-clear-drawer" (click)="resetBoardFilters()">
+              <i class="fa-solid fa-rotate-left"></i> إعادة ضبط
+            </button>
+          </div>
+
+        </div>
+      </div>
+
       <!-- ── CLIENT DEDICATED CARDS GRID VIEW (للعميل فقط) ──────────────── -->
-      <div class="client-cards-grid-shell" *ngIf="isClient()" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:18px; margin-top:16px;">
+      <div class="client-cards-grid-shell" *ngIf="isClient()">
         <div 
-          class="client-card-item glass-panel" 
-          *ngFor="let task of (tasks || [])"
-          style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-lg); padding:22px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;"
+          class="client-card-item" 
+          *ngFor="let task of getFilteredClientTasks()"
+          [class.card-status-pending]="task.status === 'client_review' || task.status === 'in_review'"
+          [class.card-status-done]="task.status === 'done' || task.status === 'approved'"
+          [class.card-status-feedback]="task.status === 'client_feedback'"
           (click)="openTaskDetail(task)"
         >
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
-              <h3 style="font-size:1.05rem; font-weight:800; color:#fff; line-height:1.35;">{{ task.title }}</h3>
-              <span class="badge badge-v" style="font-size:0.74rem; font-weight:800; padding:4px 12px; border-radius:100px;">
-                {{ task.status === 'done' || task.status === 'approved' ? 'مكتمل ومعتمد' : (task.status === 'client_review' || task.status === 'in_review' ? 'بانتظار موافقتك واعتمادك' : 'قيد التنفيذ') }}
+          <!-- Card Top Info & Badges -->
+          <div class="client-card-head">
+            <div class="client-card-head-top">
+              <span class="client-badge badge-approved" *ngIf="task.status === 'done' || task.status === 'approved'">
+                <i class="fa-solid fa-circle-check"></i> مكتمل ومعتمد
+              </span>
+              <span class="client-badge badge-pending-approval" *ngIf="task.status === 'client_review' || task.status === 'in_review'">
+                <i class="fa-solid fa-clock-rotate-left fa-spin-pulse"></i> بانتظار موافقتك واعتمادك
+              </span>
+              <span class="client-badge badge-feedback" *ngIf="task.status === 'client_feedback'">
+                <i class="fa-solid fa-comments"></i> تم طلب تعديلات
+              </span>
+              <span class="client-badge badge-in-progress" *ngIf="task.status !== 'done' && task.status !== 'approved' && task.status !== 'client_review' && task.status !== 'in_review' && task.status !== 'client_feedback'">
+                <i class="fa-solid fa-rotate fa-spin"></i> قيد التنفيذ
+              </span>
+
+              <span class="client-deal-chip" *ngIf="task.deal">
+                <i class="fa-solid fa-handshake"></i> {{ task.deal.title }}
               </span>
             </div>
 
-            <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:12px; display:flex; align-items:center; gap:6px;" *ngIf="task.deal">
-              <i class="fa-solid fa-handshake" style="color:var(--violet-light)"></i> {{ task.deal.title }}
+            <h3 class="client-card-title">{{ task.title }}</h3>
+          </div>
+
+          <!-- Card Description / Scope -->
+          <div class="client-card-body">
+            <div class="client-scope-box" *ngIf="task.scope">
+              <i class="fa-solid fa-quote-right scope-icon"></i>
+              <p>{{ task.scope }}</p>
             </div>
 
-            <p style="font-size:0.85rem; color:var(--text-2); margin-bottom:14px; line-height:1.5; background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:10px;" *ngIf="task.scope">
-              {{ task.scope }}
-            </p>
+            <!-- Subtasks Checklist Section (الخطوات والمهام الفرعية) -->
+            <div class="client-subtasks-box" *ngIf="task.subtasks && task.subtasks.length > 0" style="margin-top:10px; background:rgba(99,102,241,0.06); border:1px dashed rgba(99,102,241,0.25); border-radius:12px; padding:10px 14px;">
+              <div style="font-size:0.78rem; font-weight:800; color:var(--violet-light, #818cf8); margin-bottom:6px; display:flex; align-items:center; justify-content:space-between;">
+                <span><i class="fa-solid fa-list-check"></i> الخطوات الفرعية ({{ getCompletedSubtasksCount(task) }}/{{ task.subtasks.length }})</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div *ngFor="let st of task.subtasks" style="font-size:0.8rem; color:var(--text); display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid" [class.fa-circle-check]="st.status === 'done' || st.status === 'approved'" [class.fa-circle]="st.status !== 'done' && st.status !== 'approved'" [style.color]="(st.status === 'done' || st.status === 'approved') ? '#10b981' : '#94a3b8'"></i>
+                  <span [style.text-decoration]="(st.status === 'done' || st.status === 'approved') ? 'line-through' : 'none'" [style.opacity]="(st.status === 'done' || st.status === 'approved') ? '0.7' : '1'">{{ st.title }}</span>
+                </div>
+              </div>
+            </div>
 
-            <div *ngIf="task.attachments && task.attachments.length > 0" style="margin-bottom:14px;">
-              <small style="font-size:0.74rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:6px;"><i class="fa-solid fa-paperclip"></i> المرفقات والمخرجات:</small>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <div *ngFor="let att of task.attachments" style="width:52px; height:52px; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:rgba(0,0,0,0.2); display:flex; align-items:center; justify-content:center;">
-                  <img *ngIf="isImage(att)" [src]="getFileUrl(att)" style="width:100%; height:100%; object-fit:cover;" />
-                  <i *ngIf="!isImage(att)" class="fa-solid fa-file" style="color:var(--violet-light);"></i>
+            <!-- Attachments & Deliverables Section -->
+            <div class="client-attachments-sec" *ngIf="getTaskAttachmentsForUser(task).length > 0">
+              <div class="att-sec-header">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>المرفقات والمخرجات للاعتماد:</span>
+                <span class="att-count-badge">{{ getTaskAttachmentsForUser(task).length }}</span>
+              </div>
+
+              <div class="att-thumbs-grid">
+                <div 
+                  *ngFor="let att of getTaskAttachmentsForUser(task)" 
+                  class="att-thumb-card"
+                  (click)="isImage(att) ? openLightbox(getFileUrl(att), $event) : openFileUrl(getFileUrl(att), $event)"
+                  [title]="att.file_name || 'عرض المرفق'"
+                >
+                  <ng-container *ngIf="isImage(att)">
+                    <img [src]="getFileUrl(att)" alt="المرفق" class="att-img" />
+                    <div class="att-zoom-overlay">
+                      <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="!isImage(att)">
+                    <div class="att-file-icon">
+                      <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <span class="att-file-name">{{ att.file_name || 'ملف مرفق' }}</span>
+                  </ng-container>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style="display:flex; gap:10px; margin-top:14px;" (click)="$event.stopPropagation()">
-            <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(task)" *ngIf="task.status !== 'done' && task.status !== 'approved'" style="flex:1; padding:10px; font-size:0.82rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
-              <i class="fa-solid fa-circle-check"></i> اعتماد المهمة
-            </button>
-            <button type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:10px; font-size:0.82rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
-              <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
-            </button>
+          <!-- Card Footer Actions -->
+          <div class="client-card-footer" (click)="$event.stopPropagation()">
+            <!-- If task is pending approval or in progress -->
+            <div class="client-actions-grid" *ngIf="task.status !== 'done' && task.status !== 'approved'">
+              <button 
+                type="button" 
+                class="btn-client-approve" 
+                (click)="approveTaskByClient(task, $event)" 
+              >
+                <i class="fa-solid fa-circle-check"></i> اعتماد المهمة
+              </button>
+              <button 
+                type="button" 
+                class="btn-client-revision" 
+                (click)="openRevisionModal(task, $event)"
+              >
+                <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
+              </button>
+            </div>
+
+            <!-- If task is already done/approved -->
+            <div class="client-approved-bar" *ngIf="task.status === 'done' || task.status === 'approved'">
+              <div class="approved-status-text">
+                <i class="fa-solid fa-shield-check"></i>
+                <span>تم اعتماد هذه المهمة والموافقة عليها</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div *ngIf="!tasks || tasks.length === 0" style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-2);">
-          <i class="fa-solid fa-clipboard-check" style="font-size:2rem; margin-bottom:10px; color:var(--text-3);"></i>
-          <p>لا توجد مهام أو مخرجات حالية مخصصة لحسابك.</p>
+        <!-- Empty State -->
+        <div *ngIf="!tasks || getFilteredClientTasks().length === 0" class="client-empty-state">
+          <div class="empty-icon-wrap">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <h3>لا توجد مهام أو مخرجات مطابقة</h3>
+          <p>لم يتم العثور على أي مهام حسب البحث أو الفلتر المعتمد حالياً.</p>
         </div>
       </div>
 
@@ -281,8 +512,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
             </div>
           </div>
 
-          <!-- Drawer Navigation Tabs Bar -->
-          <div class="drawer-nav-tabs">
+          <!-- Drawer Navigation Tabs Bar (للإدارة والموظفين فقط) -->
+          <div class="drawer-nav-tabs" *ngIf="!isClient()">
             <button
               class="dnav-tab"
               [class.active]="activeDrawerTab === 'details'"
@@ -294,6 +525,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
               class="dnav-tab"
               [class.active]="activeDrawerTab === 'subtasks'"
               (click)="activeDrawerTab = 'subtasks'"
+              *ngIf="!isClient()"
             >
               <i class="fa-solid fa-list-check"></i> المهام الفرعية
               <span class="dnav-badge" *ngIf="(selectedTask.subtasks || []).length">{{ selectedTask.subtasks.length }}</span>
@@ -302,6 +534,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
               class="dnav-tab"
               [class.active]="activeDrawerTab === 'history'"
               (click)="activeDrawerTab = 'history'"
+              *ngIf="!isClient()"
             >
               <i class="fa-solid fa-clock-rotate-left"></i> سجل التغييرات والتاريخ
               <span class="dnav-badge" *ngIf="taskActivities.length">{{ taskActivities.length }}</span>
@@ -329,20 +562,30 @@ import { MultiSelectModule } from 'primeng/multiselect';
                 </div>
               </div>
 
-              <!-- Client Review Interactive Actions (للعميل فقط عند مراجعة المهمة) -->
+              <!-- Client Review Interactive Actions (للعميل فقط) -->
               <div class="drawer-card client-review-actions-card" *ngIf="isClient()" style="background:linear-gradient(135deg, rgba(6,182,212,0.12), rgba(99,102,241,0.12)); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:16px;">
                 <div class="dc-head" style="color:#67e8f9; font-weight:800; font-size:0.95rem; margin-bottom:8px;">
-                  <i class="fa-solid fa-stamp"></i> اعتماد العميل والتفاعل مع المهمة
+                  <i class="fa-solid fa-stamp"></i> حالة اعتماد وتفاعل العميل
                 </div>
-                <p style="font-size:0.82rem; color:var(--text-2); margin-bottom:12px;">يمكنك كعميل اعتماد المهمة للبدء في تنفيذ الخطوات التالية أو طلب تعديلات ملحوظة:</p>
-                <div class="client-actions-row" style="display:flex; gap:10px;">
-                  <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(selectedTask)" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
-                    <i class="fa-solid fa-circle-check"></i> اعتماد وموافقة على المهمة
-                  </button>
-                  <button type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 14px rgba(245,158,11,0.35);">
-                    <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
-                  </button>
+
+                <!-- If task is already approved/done -->
+                <div *ngIf="['done', 'approved', 'completed'].includes(selectedTask.status)" style="display:flex; align-items:center; gap:10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:12px 16px; border-radius:12px; color:#34d399; font-weight:800; font-size:0.9rem;">
+                  <i class="fa-solid fa-shield-check" style="font-size:1.2rem;"></i>
+                  <span>تم اعتماد وموافقة العميل على هذه المهمة بنجاح ✅</span>
                 </div>
+
+                <!-- If task needs client action / review -->
+                <ng-container *ngIf="!['done', 'approved', 'completed'].includes(selectedTask.status)">
+                  <p style="font-size:0.82rem; color:var(--text-2); margin-bottom:12px;">يمكنك كعميل اعتماد المهمة للبدء في تنفيذ الخطوات التالية أو طلب تعديلات ملحوظة:</p>
+                  <div class="client-actions-row" style="display:flex; gap:10px;">
+                    <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(selectedTask)" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                      <i class="fa-solid fa-circle-check"></i> اعتماد وموافقة على المهمة
+                    </button>
+                    <button type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 14px rgba(245,158,11,0.35);">
+                      <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
+                    </button>
+                  </div>
+                </ng-container>
               </div>
 
               <!-- Pipeline Progress Switcher (الحالة / مرحلة التنفيذ - بالقمة) -->
@@ -949,215 +1192,266 @@ import { MultiSelectModule } from 'primeng/multiselect';
         </div>
       </p-dialog>
 
-      <!-- Subtask Creation Modal Dialog -->
-      <p-dialog
-        header="إضافة مهمة فرعية جديدة (Sub-Task)"
-        [(visible)]="showSubtaskModal"
-        [modal]="true"
-        [appendTo]="'body'"
-        [dismissableMask]="true"
-        [style]="{ width: '560px', maxWidth: '95vw' }"
-        styleClass="custom-dark-dialog"
-      >
-        <div class="subtask-dialog-content" dir="rtl" style="display:flex; flex-direction:column; gap:14px; padding-top:8px;">
-          <!-- Title -->
-          <div class="fg full">
-            <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-heading" style="color:var(--violet-light)"></i> اسم المهمة الفرعية <span class="req" style="color:#f43f5e">*</span></label>
-            <input type="text" [(ngModel)]="subtaskForm.title" placeholder="أدخل اسم وعنوان المهمة الفرعية..." class="w-full st-dialog-input">
-          </div>
-
-          <!-- Description -->
-          <div class="fg full">
-            <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-file-lines" style="color:var(--violet-light)"></i> الوصف والتفاصيل</label>
-            <textarea [(ngModel)]="subtaskForm.description" placeholder="أدخل تفاصيل ومواصفات هذه المهمة الفرعية..." rows="3" class="w-full st-dialog-textarea"></textarea>
-          </div>
-
-          <!-- Priority & Assign Grid -->
-          <div class="form-grid">
-            <!-- Priority Selector -->
-            <div class="fg">
-              <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-bolt" style="color:var(--amber)"></i> الأولوية</label>
-              <select [(ngModel)]="subtaskForm.priority" class="w-full st-dialog-select">
-                <option value="low">منخفض (Low)</option>
-                <option value="medium">متوسط (Medium)</option>
-                <option value="high">مرتفع (High)</option>
-                <option value="urgent">عاجل (Urgent)</option>
-              </select>
-            </div>
-
-            <!-- Employee Assign Dropdown -->
-            <div class="fg">
-              <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-user-plus" style="color:var(--teal)"></i> إسناد لموظف</label>
-              <p-dropdown
-                [options]="groupedUsers"
-                [group]="true"
-                [filter]="true"
-                filterBy="label"
-                placeholder="+ اختر موظف..."
-                styleClass="w-full prime-grouped-dropdown"
-                (onChange)="onSubtaskUserSelect($event)"
-              >
-                <ng-template let-group pTemplate="group">
-                  <div class="p-group-header">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>{{ group.label }}</span>
-                  </div>
-                </ng-template>
-                <ng-template let-item pTemplate="item">
-                  <div class="p-item-row">
-                    <span class="p-item-name">{{ item.label }}</span>
-                    <small class="p-item-email" *ngIf="item.email">{{ item.email }}</small>
-                  </div>
-                </ng-template>
-              </p-dropdown>
-            </div>
-          </div>
-
-          <!-- Selected Assignees Chips -->
-          <div class="subtask-assigned-chips" *ngIf="subtaskForm.user_ids.length" style="display:flex; flex-wrap:wrap; gap:6px;">
-            <span class="tc-chip" *ngFor="let uid of subtaskForm.user_ids" style="background:rgba(99,102,241,0.15); color:#818cf8; padding:4px 10px; border-radius:8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:6px;">
-              <i class="fa-solid fa-user"></i> {{ getUserName(uid) }}
-              <i class="fa-solid fa-xmark remove-chip" (click)="removeSubtaskUser(uid)" style="cursor:pointer; color:#f43f5e"></i>
-            </span>
-          </div>
-
-          <!-- File / Image Attachment Upload -->
-          <div class="fg full">
-            <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-image" style="color:var(--cyan)"></i> صورة أو مرفق المهمة الفرعية</label>
-            <div class="upload-zone-modern" (click)="stFileInput.click()">
-              <input type="file" #stFileInput (change)="onSubtaskFileSelected($event)" style="display:none" />
-              <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-              <div class="uz-text">
-                <strong *ngIf="!subtaskForm.file">اضغط لرفع صورة أو مرفق للمهمة الفرعية</strong>
-                <strong *ngIf="subtaskForm.file" class="teal" style="color:#2dd4bf">{{ subtaskForm.file.name }}</strong>
-                <small>يدعم جميع أنواع الصور والملفات</small>
+      <!-- ── SUBTASK CREATION SIDE DRAWER (إضافة مهمة فرعية جديدة من الجانب) ── -->
+      <div class="drawer-backdrop" *ngIf="showSubtaskModal" (click)="showSubtaskModal = false">
+        <div class="detail-drawer glass-panel" (click)="$event.stopPropagation()" style="width: 580px;">
+          <!-- Drawer Header -->
+          <div class="drawer-hd">
+            <div class="drawer-hd-left">
+              <div class="drawer-task-av">
+                <i class="fa-solid fa-code-branch"></i>
+              </div>
+              <div class="drawer-hd-text">
+                <div class="drawer-title">إضافة مهمة فرعية جديدة</div>
+                <div class="drawer-meta">مرتبطة بالمهمة الرئيسية: {{ selectedTask?.title }}</div>
               </div>
             </div>
-            <div class="st-img-preview" *ngIf="subtaskFilePreview" style="margin-top:10px; text-align:center;">
-              <img [src]="subtaskFilePreview" style="max-height:120px; border-radius:10px; border:1px solid rgba(99,102,241,0.3);" alt="Preview">
-            </div>
-          </div>
-
-          <div class="modal-ft" style="padding:16px 0 0 0; margin-top:10px; display:flex; justify-content:flex-end; gap:10px;">
-            <button class="btn-cancel" (click)="showSubtaskModal = false">إلغاء</button>
-            <button class="btn-save" (click)="saveFullSubtask()" [disabled]="!subtaskForm.title.trim()">
-              <i class="fa-solid fa-check"></i> حفظ المهمة الفرعية
+            <button type="button" class="icon-action-btn" (click)="showSubtaskModal = false">
+              <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
-        </div>
-      </p-dialog>
 
-      <!-- ── CREATE TASK MODAL (PrimeNG Dialog) ─────────────────── -->
-      <p-dialog [(visible)]="showCreateModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="مهمة جديدة" [style]="{ width: '640px' }">
-        <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
-          <div class="modal-body">
+          <!-- Drawer Body -->
+          <div class="drawer-body">
+            <!-- Title -->
+            <div class="fg full">
+              <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-heading" style="color:var(--violet-light)"></i> عنوان المهمة الفرعية <span class="req" style="color:#f43f5e">*</span></label>
+              <input type="text" [(ngModel)]="subtaskForm.title" placeholder="أدخل اسم وعنوان المهمة الفرعية..." class="w-full st-dialog-input">
+            </div>
+
+            <!-- Description -->
+            <div class="fg full">
+              <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-file-lines" style="color:var(--violet-light)"></i> الوصف والتفاصيل</label>
+              <textarea [(ngModel)]="subtaskForm.description" placeholder="أدخل تفاصيل ومواصفات هذه المهمة الفرعية..." rows="3" class="w-full st-dialog-textarea"></textarea>
+            </div>
+
+            <!-- Priority & Assign Grid -->
             <div class="form-grid">
-
-              <div class="fg full">
-                <label>عنوان المهمة <span class="req">*</span></label>
-                <input type="text" pInputText formControlName="title" placeholder="مثال: تصميم 10 فيديو ريلز للحملة..." />
-              </div>
-
+              <!-- Priority Selector -->
               <div class="fg">
-                <label>الصفقة المرتبطة</label>
-                <app-prime-picker-select
-                  formControlName="deal_id"
-                  [items]="deals"
-                  optionLabel="title"
-                  optionValue="id"
-                  placeholder="اختر الصفقة..."
-                ></app-prime-picker-select>
+                <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-bolt" style="color:var(--amber)"></i> الأولوية</label>
+                <select [(ngModel)]="subtaskForm.priority" class="w-full st-dialog-select">
+                  <option value="low">منخفض (Low)</option>
+                  <option value="medium">متوسط (Medium)</option>
+                  <option value="high">مرتفع (High)</option>
+                  <option value="urgent">عاجل (Urgent)</option>
+                </select>
               </div>
 
+              <!-- Employee Assign Dropdown -->
               <div class="fg">
-                <label>القسم</label>
-                <app-prime-picker-select
-                  formControlName="department_id"
-                  [items]="departments"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="اختر القسم..."
-                ></app-prime-picker-select>
-              </div>
-
-              <div class="fg">
-                <label>سعر العميل (ج.م)</label>
-                <input type="number" pInputText formControlName="client_price" (input)="computeMargin()" placeholder="0" />
-              </div>
-
-              <div class="fg">
-                <label>تكلفة الموظف (ج.م)</label>
-                <input type="number" pInputText formControlName="employee_price" (input)="computeMargin()" placeholder="0" />
-              </div>
-
-              <div class="fg full margin-preview" *ngIf="computedMarginVal > 0">
-                <i class="fa-solid fa-chart-line"></i>
-                هامش أرباح الشركة: <strong>+{{ computedMarginVal | number:'1.2-2' }} ج.م</strong>
-              </div>
-
-              <div class="fg">
-                <label>الحالة</label>
+                <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-user-plus" style="color:var(--teal)"></i> إسناد لموظف</label>
                 <p-dropdown
-                  formControlName="status"
-                  [appendTo]="'body'"
-                  [options]="columns"
-                  optionLabel="title"
-                  optionValue="key"
-                  placeholder="اختر الحالة..."
-                ></p-dropdown>
+                  [options]="groupedUsers"
+                  [group]="true"
+                  [filter]="true"
+                  filterBy="label"
+                  placeholder="+ اختر موظف..."
+                  styleClass="w-full prime-grouped-dropdown"
+                  (onChange)="onSubtaskUserSelect($event)"
+                  appendTo="body"
+                >
+                  <ng-template let-group pTemplate="group">
+                    <div class="p-group-header">
+                      <i class="fa-solid fa-layer-group"></i>
+                      <span>{{ group.label }}</span>
+                    </div>
+                  </ng-template>
+                  <ng-template let-item pTemplate="item">
+                    <div class="p-item-row">
+                      <span class="p-item-name">{{ item.label }}</span>
+                      <small class="p-item-email" *ngIf="item.email">{{ item.email }}</small>
+                    </div>
+                  </ng-template>
+                </p-dropdown>
               </div>
+            </div>
 
-              <div class="fg">
-                <label>الأولوية</label>
-                <p-dropdown
-                  formControlName="priority"
-                  [appendTo]="'body'"
-                  [options]="[
-                    { label: 'منخفضة', value: 'low' },
-                    { label: 'متوسطة', value: 'medium' },
-                    { label: 'عالية', value: 'high' },
-                    { label: 'عاجلة جداً', value: 'urgent' }
-                  ]"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="اختر الأولوية..."
-                ></p-dropdown>
+            <!-- Selected Assignees Chips -->
+            <div class="subtask-assigned-chips" *ngIf="subtaskForm.user_ids.length" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <span class="tc-chip" *ngFor="let uid of subtaskForm.user_ids" style="background:rgba(99,102,241,0.15); color:#818cf8; padding:4px 10px; border-radius:8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-user"></i> {{ getUserName(uid) }}
+                <i class="fa-solid fa-xmark remove-chip" (click)="removeSubtaskUser(uid)" style="cursor:pointer; color:#f43f5e"></i>
+              </span>
+            </div>
+
+            <!-- File Upload -->
+            <div class="fg full">
+              <label class="fg-lbl" style="font-weight:700; font-size:0.82rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-image" style="color:var(--cyan)"></i> صورة أو مرفق المهمة الفرعية</label>
+              <div class="upload-zone-modern" (click)="stFileInput.click()">
+                <input type="file" #stFileInput (change)="onSubtaskFileSelected($event)" style="display:none" />
+                <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div class="uz-text">
+                  <strong *ngIf="!subtaskForm.file">اضغط لرفع صورة أو مرفق للمهمة الفرعية</strong>
+                  <strong *ngIf="subtaskForm.file" class="teal" style="color:#2dd4bf">{{ subtaskForm.file.name }}</strong>
+                  <small>يدعم جميع أنواع الصور والملفات</small>
+                </div>
               </div>
-
-              <div class="fg full">
-                <label>الوصف والمواصفات (Scope)</label>
-                <textarea pTextarea formControlName="scope" rows="3" placeholder="اكتب تفاصيل ومطلوبات المهمة..."></textarea>
+              <div class="st-img-preview" *ngIf="subtaskFilePreview" style="margin-top:10px; text-align:center;">
+                <img [src]="subtaskFilePreview" style="max-height:120px; border-radius:10px; border:1px solid rgba(99,102,241,0.3);" alt="Preview">
               </div>
+            </div>
 
+            <!-- Footer Actions -->
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; margin-top:10px;">
+              <button type="button" class="btn-cancel" (click)="showSubtaskModal = false">إلغاء</button>
+              <button type="button" class="btn-save" (click)="saveFullSubtask()" [disabled]="!subtaskForm.title.trim()">
+                <i class="fa-solid fa-check"></i> حفظ المهمة الفرعية
+              </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          <ng-template pTemplate="footer">
-            <button type="button" class="btn-cancel" (click)="showCreateModal = false">إلغاء</button>
-            <button type="submit" class="btn-save" [disabled]="taskForm.invalid || loading">
-              <i class="fa-solid fa-floppy-disk"></i>
-              {{ loading ? 'جاري الحفظ...' : 'إنشاء المهمة' }}
+      <!-- ── CREATE TASK SIDE DRAWER (إنشاء مهمة جديدة من الجانب) ── -->
+      <div class="drawer-backdrop" *ngIf="showCreateModal" (click)="showCreateModal = false">
+        <div class="detail-drawer glass-panel" (click)="$event.stopPropagation()" style="width: 620px;">
+          <!-- Drawer Header -->
+          <div class="drawer-hd">
+            <div class="drawer-hd-left">
+              <div class="drawer-task-av">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+              <div class="drawer-hd-text">
+                <div class="drawer-title">إنشاء مهمة جديدة</div>
+                <div class="drawer-meta">إضافة وتسعير وتكليف مهمة في النظام</div>
+              </div>
+            </div>
+            <button type="button" class="icon-action-btn" (click)="showCreateModal = false">
+              <i class="fa-solid fa-xmark"></i>
             </button>
-          </ng-template>
-        </form>
-      </p-dialog>
-
-      <!-- ── CLIENT REVISION DIALOG (PrimeNG Dialog) ───────────── -->
-      <p-dialog [(visible)]="showRevisionModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="طلب تعديلات من العميل" [style]="{ width: '520px' }">
-        <div style="padding: 10px 0;">
-          <p style="font-size:0.88rem; color:var(--text-2); margin-bottom:14px; line-height:1.6;">يرجى كتابة التعديلات والملاحظات المطلوبة على المهمة ليقوم فريق العمل بتنفيذها فوراً:</p>
-          <div class="fg full" style="margin-bottom:16px;">
-            <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:6px; display:block;"><i class="fa-solid fa-pen-to-square" style="color:var(--amber)"></i> تفاصيل التعديل المطلوب <span style="color:var(--rose)">*</span></label>
-            <textarea [(ngModel)]="revisionNotes" pInputTextarea rows="4" placeholder="مثال: يرجى تعديل الألوان في التصميم وتغيير الشعار في الصورة الثانية..." style="width:100%; border-radius:12px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;"></textarea>
           </div>
-          <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
-            <button type="button" class="btn-cancel" (click)="showRevisionModal = false">إلغاء</button>
-            <button type="button" class="btn-save" style="background:linear-gradient(135deg, var(--amber), #d97706); box-shadow:0 4px 16px rgba(245,158,11,0.35);" [disabled]="!revisionNotes.trim()" (click)="submitRevisionByClient()">
-              <i class="fa-solid fa-paper-plane"></i> إرسال طلب التعديل
-            </button>
+
+          <!-- Drawer Body Form -->
+          <div class="drawer-body">
+            <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
+              <div class="form-grid">
+
+                <div class="fg full">
+                  <label>عنوان المهمة <span class="req">*</span></label>
+                  <input type="text" pInputText formControlName="title" placeholder="مثال: تصميم 10 فيديو ريلز للحملة..." />
+                </div>
+
+                <div class="fg">
+                  <label>الصفقة المرتبطة</label>
+                  <app-prime-picker-select
+                    formControlName="deal_id"
+                    [items]="deals"
+                    optionLabel="title"
+                    optionValue="id"
+                    placeholder="اختر الصفقة..."
+                  ></app-prime-picker-select>
+                </div>
+
+                <div class="fg">
+                  <label>القسم</label>
+                  <app-prime-picker-select
+                    formControlName="department_id"
+                    [items]="departments"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="اختر القسم..."
+                  ></app-prime-picker-select>
+                </div>
+
+                <div class="fg">
+                  <label>سعر العميل (ج.م)</label>
+                  <input type="number" pInputText formControlName="client_price" (input)="computeMargin()" placeholder="0" />
+                </div>
+
+                <div class="fg">
+                  <label>تكلفة الموظف (ج.م)</label>
+                  <input type="number" pInputText formControlName="employee_price" (input)="computeMargin()" placeholder="0" />
+                </div>
+
+                <div class="fg full margin-preview" *ngIf="computedMarginVal > 0">
+                  <i class="fa-solid fa-chart-line"></i>
+                  هامش أرباح الشركة: <strong>+{{ computedMarginVal | number:'1.2-2' }} ج.م</strong>
+                </div>
+
+                <div class="fg">
+                  <label>الحالة</label>
+                  <p-dropdown
+                    formControlName="status"
+                    [appendTo]="'body'"
+                    [options]="columns"
+                    optionLabel="title"
+                    optionValue="key"
+                    placeholder="اختر الحالة..."
+                  ></p-dropdown>
+                </div>
+
+                <div class="fg">
+                  <label>الأولوية</label>
+                  <p-dropdown
+                    formControlName="priority"
+                    [appendTo]="'body'"
+                    [options]="[
+                      { label: 'منخفضة', value: 'low' },
+                      { label: 'متوسطة', value: 'medium' },
+                      { label: 'عالية', value: 'high' },
+                      { label: 'عاجلة جداً', value: 'urgent' }
+                    ]"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="اختر الأولوية..."
+                  ></p-dropdown>
+                </div>
+
+                <div class="fg full">
+                  <label>الوصف والمواصفات (Scope)</label>
+                  <textarea pTextarea formControlName="scope" rows="3" placeholder="اكتب تفاصيل ومطلوبات المهمة..."></textarea>
+                </div>
+
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; margin-top:20px;">
+                <button type="button" class="btn-cancel" (click)="showCreateModal = false">إلغاء</button>
+                <button type="submit" class="btn-save" [disabled]="taskForm.invalid || loading">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  {{ loading ? 'جاري الحفظ...' : 'إنشاء المهمة' }}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </p-dialog>
+      </div>
+
+      <!-- ── CLIENT REVISION SIDE DRAWER (طلب تعديلات العميل من الجانب) ── -->
+      <div class="drawer-backdrop" *ngIf="showRevisionModal" (click)="showRevisionModal = false">
+        <div class="detail-drawer glass-panel" (click)="$event.stopPropagation()" style="width: 520px;">
+          <!-- Drawer Header -->
+          <div class="drawer-hd">
+            <div class="drawer-hd-left">
+              <div class="drawer-task-av" style="background:linear-gradient(135deg, var(--amber), #d97706)">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </div>
+              <div class="drawer-hd-text">
+                <div class="drawer-title">طلب تعديلات من العميل</div>
+                <div class="drawer-meta">كتابة الملاحظات المطلوب تنفيذها</div>
+              </div>
+            </div>
+            <button type="button" class="icon-action-btn" (click)="showRevisionModal = false">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Drawer Body -->
+          <div class="drawer-body">
+            <p style="font-size:0.88rem; color:var(--text-2); margin-bottom:14px; line-height:1.6;">يرجى كتابة التعديلات والملاحظات المطلوبة على المهمة ليقوم فريق العمل بتنفيذها فوراً:</p>
+            <div class="fg full" style="margin-bottom:16px;">
+              <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:6px; display:block;"><i class="fa-solid fa-pen-to-square" style="color:var(--amber)"></i> تفاصيل التعديل المطلوب <span style="color:var(--rose)">*</span></label>
+              <textarea [(ngModel)]="revisionNotes" pInputTextarea rows="4" placeholder="مثال: يرجى تعديل الألوان في التصميم وتغيير الشعار في الصورة الثانية..." style="width:100%; border-radius:12px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;"></textarea>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+              <button type="button" class="btn-cancel" (click)="showRevisionModal = false">إلغاء</button>
+              <button type="button" class="btn-save" style="background:linear-gradient(135deg, var(--amber), #d97706); box-shadow:0 4px 16px rgba(245,158,11,0.35);" [disabled]="!revisionNotes.trim()" (click)="submitRevisionByClient()">
+                <i class="fa-solid fa-paper-plane"></i> إرسال طلب التعديل
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- ── LIGHTBOX ────────────────────────────────────────────── -->
       <div class="lightbox" *ngIf="expandedImageUrl" (click)="expandedImageUrl = null">
@@ -1169,6 +1463,340 @@ import { MultiSelectModule } from 'primeng/multiselect';
   `,
   styles: [`
     :host { display: block; font-family: 'Inter','Cairo',sans-serif; }
+
+    /* PRIMENG UNIVERSAL TOOLBAR */
+    .prime-board-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      border-radius: var(--r-xl, 20px);
+      background: var(--bg-card, rgba(18,18,30,0.7));
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-sm);
+    }
+    .toolbar-search-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+    .toolbar-search-box .search-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--violet, #818cf8);
+      font-size: 0.95rem;
+      pointer-events: none;
+    }
+    .toolbar-search-input {
+      width: 100%;
+      padding: 11px 42px 11px 38px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .toolbar-search-input:focus {
+      border-color: var(--violet, #6366f1);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+    .btn-clear-search {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 0.85rem;
+    }
+    .toolbar-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-trigger-filters {
+      padding: 11px 22px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff !important;
+      font-size: 0.9rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+    }
+    .btn-trigger-filters:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+    }
+    .btn-trigger-filters.has-active {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 6px 22px rgba(124, 58, 237, 0.5);
+    }
+    .btn-trigger-filters .icon-sliders {
+      color: #ffffff;
+      font-size: 1rem;
+    }
+    .btn-trigger-filters .active-badge {
+      background: #ffffff;
+      color: #4f46e5;
+      font-size: 0.78rem;
+      font-weight: 900;
+      padding: 2px 9px;
+      border-radius: 100px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    /* SIDE FILTER MODAL DRAWER (EXACT SAME APPEARANCE AND ANIMATION AS TASK DETAIL DRAWER) */
+    .filter-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      background: rgba(9, 9, 24, 0.45);
+      backdrop-filter: none !important;
+      display: flex;
+      justify-content: flex-start;
+      direction: rtl;
+    }
+    .filter-drawer-content {
+      width: 440px;
+      max-width: 95vw;
+      height: 100vh;
+      background: linear-gradient(165deg, rgba(15, 16, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
+      border-left: 1px solid rgba(99, 102, 241, 0.25);
+      display: flex;
+      flex-direction: column;
+      animation: drawerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.35);
+    }
+    body.light-theme .filter-drawer-content {
+      background: #ffffff !important;
+      border-left: 1px solid rgba(99, 102, 241, 0.2) !important;
+      box-shadow: -15px 0 50px rgba(15, 23, 42, 0.15) !important;
+    }
+    .drawer-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dh-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .dh-title .icon-violet {
+      color: var(--violet, #818cf8);
+    }
+    .btn-close-drawer {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      color: var(--text-2, #94a3b8);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .btn-close-drawer:hover {
+      background: rgba(239,68,68,0.2);
+      color: #f87171;
+    }
+    .drawer-filters-body {
+      padding: 24px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .filter-group-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filter-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--violet-light, #a5b4fc);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .drawer-footer-actions {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      display: flex;
+      gap: 12px;
+    }
+    .btn-apply-filters {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-apply-filters:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+    }
+    .btn-clear-drawer {
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border, rgba(255,255,255,0.1));
+      color: var(--text-2, #cbd5e1);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-clear-drawer:hover {
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+    }
+    ::ng-deep .prime-luxury-dropdown {
+      width: 100% !important;
+      background: rgba(255,255,255,0.04) !important;
+      border: 1px solid var(--border, rgba(255,255,255,0.1)) !important;
+      border-radius: 14px !important;
+      transition: all 0.2s ease !important;
+    }
+    ::ng-deep .prime-luxury-dropdown:hover,
+    ::ng-deep .prime-luxury-dropdown.p-inputwrapper-focus {
+      border-color: var(--violet, #6366f1) !important;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important;
+    }
+    ::ng-deep .prime-luxury-dropdown .p-dropdown-label {
+      padding: 9px 14px !important;
+      font-size: 0.84rem !important;
+      font-weight: 700 !important;
+      color: #fff !important;
+      font-family: inherit !important;
+    }
+    ::ng-deep .prime-luxury-dropdown .p-dropdown-trigger {
+      width: 2.5rem !important;
+      color: var(--violet-light, #a5b4fc) !important;
+    }
+    ::ng-deep .p-dropdown-panel,
+    ::ng-deep .p-connected-overlay,
+    ::ng-deep body > .p-dropdown-panel {
+      background: #0f0f1e !important;
+      border: 1px solid var(--border, rgba(255,255,255,0.12)) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8) !important;
+      backdrop-filter: none !important;
+      z-index: 999999 !important;
+    }
+    ::ng-deep .p-dropdown-panel .p-dropdown-header {
+      background: rgba(15,15,30,0.95) !important;
+      border-bottom: 1px solid var(--border, rgba(255,255,255,0.1)) !important;
+      padding: 10px 12px !important;
+    }
+    ::ng-deep .p-dropdown-panel .p-dropdown-filter-container {
+      position: relative !important;
+      width: 100% !important;
+      margin: 0 !important;
+      display: block !important;
+    }
+    ::ng-deep .p-dropdown-panel .p-dropdown-filter {
+      width: 100% !important;
+      background: rgba(255,255,255,0.06) !important;
+      border: 1px solid var(--border, rgba(255,255,255,0.15)) !important;
+      color: #ffffff !important;
+      border-radius: 10px !important;
+      padding: 8px 36px 8px 14px !important;
+      font-size: 0.84rem !important;
+      font-family: inherit !important;
+      box-shadow: none !important;
+    }
+    body.light-theme ::ng-deep .p-dropdown-panel .p-dropdown-filter {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    ::ng-deep .p-dropdown-panel .p-dropdown-filter-icon {
+      position: absolute !important;
+      right: 12px !important;
+      left: auto !important;
+      top: 50% !important;
+      margin-top: 0 !important;
+      transform: translateY(-50%) !important;
+      color: #818cf8 !important;
+      font-size: 0.9rem !important;
+      pointer-events: none !important;
+      z-index: 5 !important;
+    }
+    ::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+      padding: 10px 14px !important;
+      color: #cbd5e1 !important;
+      font-size: 0.84rem !important;
+      font-weight: 600 !important;
+      border-radius: 10px !important;
+      margin: 2px 6px !important;
+      transition: all 0.15s ease !important;
+    }
+    ::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item:hover,
+    ::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+      background: rgba(99,102,241,0.2) !important;
+      color: #ffffff !important;
+    }
+    .btn-reset-filters {
+      padding: 9px 16px;
+      border-radius: 12px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171;
+      font-size: 0.82rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-reset-filters:hover {
+      background: rgba(239,68,68,0.22);
+      transform: translateY(-1px);
+    }
 
     /* ── SHELL ──────────────────────────────────────────────────── */
     .tb-shell {
@@ -1197,10 +1825,10 @@ import { MultiSelectModule } from 'primeng/multiselect';
       flex-shrink: 0;
     }
     .tb-header-left h2 {
-      font-size: 1.3rem; font-weight: 800; color: #fff;
+      font-size: 1.35rem; font-weight: 800; color: var(--text, #fff);
       letter-spacing: -0.3px; margin: 0;
     }
-    .tb-header-left p { color: var(--text-2); font-size: 0.8rem; margin: 0; }
+    .tb-header-left p { color: var(--text-2); font-size: 0.82rem; margin: 0; }
     .tb-header-right { display: flex; align-items: center; gap: 12px; }
     .tb-stats { display: flex; gap: 8px; }
     .stat-pill {
@@ -1210,7 +1838,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
       border: 1px solid var(--border);
       font-size: 0.76rem; font-weight: 600; color: var(--text-2);
     }
-    .stat-pill.emerald { color: var(--emerald-light); border-color: rgba(16,185,129,0.2); }
+    .stat-pill.emerald { color: var(--emerald-light, #10b981); border-color: rgba(16,185,129,0.2); }
     .btn-new-task {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 10px 20px; border-radius: 12px; border: none;
@@ -1221,6 +1849,538 @@ import { MultiSelectModule } from 'primeng/multiselect';
       font-family: inherit;
     }
     .btn-new-task:hover { box-shadow: 0 8px 28px var(--violet-glow); }
+
+    .tb-icon-badge.client-badge-icon {
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+    }
+
+    /* ── CLIENT STATS & TOOLBAR ── */
+    .client-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .client-stat-pill {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .client-stat-pill span { font-weight: 800; color: var(--text); }
+    .client-stat-pill:hover, .client-stat-pill.active {
+      border-color: var(--violet, #6366f1);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+      color: var(--text);
+    }
+    .client-stat-pill.amber-glow {
+      background: rgba(245,158,11,0.1);
+      border-color: rgba(245,158,11,0.3);
+      color: #f59e0b;
+    }
+    .client-stat-pill.amber-glow span { color: #f59e0b; }
+    .client-stat-pill.emerald {
+      color: #10b981;
+      border-color: rgba(16,185,129,0.3);
+    }
+    .client-stat-pill.emerald span { color: #10b981; }
+    .client-stat-pill.violet {
+      color: #8b5cf6;
+      border-color: rgba(139,92,246,0.3);
+    }
+    .client-stat-pill.violet span { color: #8b5cf6; }
+
+    .client-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .client-search-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+      max-width: 420px;
+    }
+    .client-search-box .search-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+    .client-search-input {
+      width: 100%;
+      padding: 10px 42px 10px 36px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.04));
+    }
+    .client-search-input:focus {
+      border-color: var(--violet);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+    .btn-clear-search {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 0.85rem;
+    }
+
+    /* Client Deal Filter Box */
+    .client-deal-filter-box {
+      position: relative;
+      min-width: 240px;
+      max-width: 380px;
+      flex: 1;
+    }
+    .client-deal-filter-box .deal-filter-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--violet);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+    .client-deal-select {
+      width: 100%;
+      padding: 10px 42px 10px 14px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.04));
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23818cf8' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: left 12px center;
+      background-size: 20px;
+    }
+    .client-deal-select:focus {
+      border-color: var(--violet);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+
+    .client-filter-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .c-tab {
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-2);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .c-tab:hover {
+      border-color: var(--violet);
+      color: var(--text);
+    }
+    .c-tab.active {
+      background: linear-gradient(135deg, var(--violet), #4f46e5);
+      color: #ffffff !important;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+    }
+    .c-tab-amber.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+    }
+    .c-tab-emerald.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    }
+    .c-tab-violet.active {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      box-shadow: 0 4px 14px rgba(139,92,246,0.35);
+    }
+
+    /* ── CLIENT CARDS GRID ── */
+    .client-cards-grid-shell {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 22px;
+      overflow-y: auto;
+      flex: 1;
+      padding-bottom: 20px;
+    }
+
+    /* Client Card Item */
+    .client-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 24px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      cursor: pointer;
+    }
+
+    /* Top Status Border Accent */
+    .client-card-item::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #6366f1, #06b6d4);
+      border-radius: 20px 20px 0 0;
+    }
+    .client-card-item.card-status-pending::before {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    .client-card-item.card-status-done::before {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    .client-card-item.card-status-feedback::before {
+      background: linear-gradient(90deg, #ec4899, #f43f5e);
+    }
+
+    /* Card Head */
+    .client-card-head { margin-bottom: 16px; }
+    .client-card-head-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Badges */
+    .client-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 100px;
+      line-height: 1;
+    }
+    .badge-pending-approval {
+      background: rgba(245,158,11,0.12);
+      color: #d97706;
+      border: 1px solid rgba(245,158,11,0.3);
+      box-shadow: 0 0 12px rgba(245,158,11,0.15);
+    }
+    .badge-approved {
+      background: rgba(16,185,129,0.12);
+      color: #059669;
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    .badge-in-progress {
+      background: rgba(99,102,241,0.12);
+      color: #4f46e5;
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    .badge-feedback {
+      background: rgba(236,72,153,0.12);
+      color: #db2777;
+      border: 1px solid rgba(236,72,153,0.3);
+    }
+
+    .client-deal-chip {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-2);
+      background: rgba(99,102,241,0.06);
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .client-deal-chip i { color: var(--violet); }
+
+    .client-card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Scope Box */
+    .client-scope-box {
+      position: relative;
+      background: rgba(99,102,241,0.03);
+      border: 1px solid var(--border);
+      border-right: 3px solid var(--violet);
+      border-radius: 12px;
+      padding: 12px 14px 12px 34px;
+      margin-bottom: 16px;
+    }
+    .client-scope-box .scope-icon {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      font-size: 0.85rem;
+      color: var(--text-3);
+      opacity: 0.6;
+    }
+    .client-scope-box p {
+      margin: 0;
+      font-size: 0.84rem;
+      color: var(--text-2);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Attachments Section */
+    .client-attachments-sec {
+      margin-bottom: 18px;
+    }
+    .att-sec-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-2);
+      margin-bottom: 10px;
+    }
+    .att-sec-header i { color: var(--violet); }
+    .att-count-badge {
+      background: rgba(99,102,241,0.12);
+      color: var(--violet);
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-weight: 800;
+    }
+
+    .att-thumbs-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .att-thumb-card {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .att-thumb-card:hover {
+      transform: scale(1.06);
+      border-color: var(--violet);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    .att-thumb-card .att-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .att-zoom-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .att-thumb-card:hover .att-zoom-overlay { opacity: 1; }
+
+    .att-file-icon {
+      font-size: 1.3rem;
+      color: var(--violet);
+      margin-bottom: 2px;
+    }
+    .att-file-name {
+      font-size: 0.65rem;
+      color: var(--text-2);
+      width: 100%;
+      text-align: center;
+      padding: 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Footer Action Buttons */
+    .client-card-footer {
+      margin-top: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .client-actions-grid {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-client-approve {
+      flex: 1;
+      padding: 12px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-client-approve:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(16,185,129,0.45);
+    }
+
+    .btn-client-revision {
+      flex: 1;
+      padding: 12px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-client-revision:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(245,158,11,0.45);
+    }
+
+    .client-approved-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(16,185,129,0.08);
+      border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .approved-status-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #059669;
+    }
+    .btn-client-revision-subtle {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 8px;
+      border: 1px solid rgba(245,158,11,0.4);
+      background: rgba(245,158,11,0.1);
+      color: #d97706;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn-client-revision-subtle:hover {
+      background: rgba(245,158,11,0.2);
+    }
+
+    /* Empty State */
+    .client-empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: 20px;
+      color: var(--text-2);
+    }
+    .empty-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(99,102,241,0.1);
+      color: var(--violet);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 16px;
+    }
+    .client-empty-state h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 6px;
+    }
+    .client-empty-state p {
+      font-size: 0.86rem;
+      color: var(--text-2);
+      margin: 0;
+    }
 
     /* ── KANBAN BOARD ───────────────────────────────────────────── */
     .kanban-board {
@@ -1278,11 +2438,18 @@ import { MultiSelectModule } from 'primeng/multiselect';
 
     /* Column Body */
     .col-body {
-      padding: 10px; overflow-y: auto; flex: 1;
-      display: flex; flex-direction: column; gap: 8px;
+      padding: 12px 10px 32px 10px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .col-body::-webkit-scrollbar { width: 3px; }
-    .col-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
+    .col-body::-webkit-scrollbar { width: 5px; }
+    .col-body::-webkit-scrollbar-track { background: transparent; }
+    .col-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 10px; }
+    .col-body::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.6); }
 
     .col-empty {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1298,11 +2465,59 @@ import { MultiSelectModule } from 'primeng/multiselect';
     .tk-card {
       background: linear-gradient(90deg, rgba(15, 15, 35, 0.9) 0%, rgba(12, 12, 28, 0.6) 60%, rgba(15, 15, 35, 0.8) 100%);
       border: 1px solid var(--border);
-      border-radius: 14px; padding: 12px 13px;
+      border-radius: 16px; padding: 14px 14px 20px 14px !important;
+      flex-shrink: 0 !important;
       cursor: grab; transition: border-color 0.2s, box-shadow 0.2s;
       position: relative; overflow: hidden;
       user-select: none;
+      margin-bottom: 2px;
     }
+    .tk-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 8px;
+      padding-bottom: 6px;
+      border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    }
+    .tk-foot-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tk-avatars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .av-sm {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet, #6366f1), var(--teal, #06b6d4));
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.15));
+    }
+    .priority-badge {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 100px;
+      text-transform: capitalize;
+      line-height: 1.2;
+      display: inline-block;
+    }
+    .pb-low { background: rgba(16, 185, 129, 0.14); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .pb-medium { background: rgba(245, 158, 11, 0.14); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .pb-high { background: rgba(244, 63, 94, 0.14); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .pb-urgent { background: linear-gradient(135deg, #f43f5e, #e11d48); color: #ffffff; }
     .tk-card:hover {
       background: linear-gradient(90deg, rgba(20, 20, 45, 0.95) 0%, rgba(15, 15, 35, 0.75) 60%, rgba(20, 20, 45, 0.88) 100%);
       border-color: var(--border-v);
@@ -1483,8 +2698,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 
     .drawer-backdrop {
       position: fixed; inset: 0; z-index: 1200;
-      background: rgba(9, 9, 24, 0.2);
-      backdrop-filter: blur(2px);
+      background: rgba(9, 9, 24, 0.45);
+      backdrop-filter: none !important;
       display: flex; justify-content: flex-start;
       direction: rtl;
     }
@@ -1887,7 +3102,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     .drawer-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 18px 20px;
+      border-radius: 16px; padding: 18px 20px 24px 20px;
       display: flex; flex-direction: column; gap: 12px;
       margin-bottom: 16px;
       transition: all 0.2s;
@@ -2557,7 +3772,6 @@ export class TasksBoardComponent implements OnInit {
     this.subtaskFilePreview = null;
     this.showSubtaskModal = true;
   }
-
   onSubtaskUserSelect(event: any): void {
     if (!event || !event.value) return;
     const uid = Number(event.value);
@@ -2712,15 +3926,27 @@ export class TasksBoardComponent implements OnInit {
   }
 
   getTasksForColumn(colKey: string) {
-    let list = (this.tasks || []).filter(t => t.status === colKey);
-
-    // CRITICAL FIX: Hide child subtasks from board columns so ONLY top-level main tasks appear as cards!
-    list = list.filter(t => !t.parent_id && !t.parent);
+    let list = (this.tasks || []).filter(t => {
+      if (colKey === 'done') {
+        return t.status === 'done' || t.status === 'approved' || t.status === 'completed';
+      }
+      if (colKey === 'in_review') {
+        return t.status === 'in_review' || t.status === 'client_review' || t.status === 'review' || t.status === 'awaiting_approval';
+      }
+      if (colKey === 'client_feedback') {
+        return t.status === 'client_feedback' || t.status === 'needs_revision' || t.status === 'revision_requested';
+      }
+      return t.status === colKey;
+    });
 
     if (!this.currentUser) return list;
 
     const u = this.currentUser;
-    if (u.role === 'employee') {
+
+    // Super Admin & Admin see ALL tasks across all departments
+    if (['super_admin', 'admin'].includes(u.role)) {
+      // Do not return early; allow toolbar filters and search to apply below
+    } else if (u.role === 'employee') {
       // Employee sees ONLY tasks assigned to him
       list = list.filter(t =>
         t.assigned_to === u.id ||
@@ -2730,7 +3956,7 @@ export class TasksBoardComponent implements OnInit {
         (t.users || []).some((x: any) => x.id === u.id || x.email === u.email || x.name === u.name)
       );
     } else if (u.role === 'client') {
-      // Client sees ONLY tasks belonging to his deals/projects in client review stages or done
+      // Client sees ONLY tasks belonging to his deals/projects
       list = list.filter(t =>
         t.client_id === u.id ||
         t.client_name === u.name ||
@@ -2739,33 +3965,270 @@ export class TasksBoardComponent implements OnInit {
         (typeof t.deal?.client === 'string' && t.deal.client.toLowerCase().includes('client')) ||
         (t.status === 'client_review' || t.status === 'in_review' || t.status === 'client_feedback')
       );
-    } else if (u.role === 'department_manager') {
-      // Department manager sees tasks assigned to him OR belonging to his department
-      list = list.filter(t =>
-        t.assigned_to === u.id ||
-        t.assigned_to_user_id === u.id ||
-        (t.users || []).some((x: any) => x.id === u.id) ||
-        (u.department_id && (t.department_id === u.department_id || t.department?.id === u.department_id))
+    } else if (['department_manager', 'Department Manager'].includes(u.role)) {
+      // Department manager sees ALL tasks in his department regardless of assigned employee
+      const managerDeptId = u.department_id || u.department?.id;
+      list = list.filter(t => {
+        const taskDeptId = t.department_id || t.department?.id;
+        const subCatDeptId = t.subCategory?.department_id;
+        const isAssigned = (t.users || []).some((x: any) => x.id === u.id) || t.assigned_to === u.id;
+
+        if (managerDeptId) {
+          return Number(taskDeptId) === Number(managerDeptId) ||
+                 Number(subCatDeptId) === Number(managerDeptId) ||
+                 isAssigned;
+        }
+        return isAssigned;
+      });
+    }
+
+    // Apply Universal PrimeNG Toolbar Filters (Deal, Department, User, Priority, Search) FOR ALL ROLES!
+    if (this.selectedDealFilter && this.selectedDealFilter !== 'all') {
+      const dealId = Number(this.selectedDealFilter);
+      list = list.filter((t: any) => Number(t.deal_id) === dealId || Number(t.deal?.id) === dealId);
+    }
+
+    if (this.selectedDepartmentFilter && this.selectedDepartmentFilter !== 'all') {
+      const deptId = Number(this.selectedDepartmentFilter);
+      list = list.filter((t: any) =>
+        Number(t.department_id) === deptId ||
+        Number(t.department?.id) === deptId ||
+        Number(t.subCategory?.department_id) === deptId
       );
+    }
+
+    if (this.selectedUserFilter && this.selectedUserFilter !== 'all') {
+      const userId = Number(this.selectedUserFilter);
+      list = list.filter((t: any) =>
+        Number(t.assigned_to) === userId ||
+        Number(t.assigned_to_user_id) === userId ||
+        Number(t.user_id) === userId ||
+        (t.users || []).some((x: any) => Number(x.id) === userId)
+      );
+    }
+
+    if (this.selectedPriorityFilter && this.selectedPriorityFilter !== 'all') {
+      list = list.filter((t: any) => t.priority === this.selectedPriorityFilter);
+    }
+
+    const q = (this.searchQuery || this.clientSearchQuery || '').trim().toLowerCase();
+    if (q) {
+      list = list.filter((t: any) => {
+        const titleMatch = t.title && t.title.toLowerCase().includes(q);
+        const scopeMatch = t.scope && t.scope.toLowerCase().includes(q);
+        const descMatch = t.description && t.description.toLowerCase().includes(q);
+        const dealMatch = t.deal && t.deal.title && t.deal.title.toLowerCase().includes(q);
+        const assigneeMatch = (t.assignee_name && t.assignee_name.toLowerCase().includes(q)) ||
+                              (t.assigned_to_name && t.assigned_to_name.toLowerCase().includes(q));
+        const userMatch = (t.users || []).some((u: any) =>
+          (u.name && u.name.toLowerCase().includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q))
+        );
+
+        return titleMatch || scopeMatch || descMatch || dealMatch || assigneeMatch || userMatch;
+      });
     }
 
     return list;
   }
 
+  searchQuery = '';
+  clientSearchQuery = '';
+  clientStatusFilter: 'all' | 'pending' | 'in_progress' | 'done' = 'all';
+  selectedDealFilter: string = 'all';
+  selectedDepartmentFilter: string = 'all';
+  selectedUserFilter: string = 'all';
+  selectedPriorityFilter: string = 'all';
+
+  get dealOptions() {
+    const list = [{ label: 'كل الصفقات والمشاريع', value: 'all' }];
+    const dealsMap = new Map<number, string>();
+    (this.tasks || []).forEach((t: any) => {
+      const id = t.deal_id || t.deal?.id;
+      const title = t.deal?.title || t.deal_title;
+      if (id && title) dealsMap.set(Number(id), title);
+    });
+    dealsMap.forEach((title, id) => list.push({ label: title, value: String(id) }));
+    return list;
+  }
+
+  get departmentOptions() {
+    const list = [{ label: 'كل الأقسام والمراكز', value: 'all' }];
+    const deptMap = new Map<number, string>();
+    (this.tasks || []).forEach((t: any) => {
+      const id = t.department_id || t.department?.id;
+      const name = t.department?.name || t.department_name;
+      if (id && name) deptMap.set(Number(id), name);
+    });
+    deptMap.forEach((name, id) => list.push({ label: name, value: String(id) }));
+    return list;
+  }
+
+  get userOptions() {
+    const list = [{ label: 'جميع أعضاء الفريق والمسؤولين', value: 'all' }];
+    (this.allUsers || []).forEach((u: any) => {
+      if (u.role !== 'client') {
+        list.push({ label: u.name || u.email, value: String(u.id) });
+      }
+    });
+    return list;
+  }
+
+  priorityOptions = [
+    { label: 'جميع الأولويات', value: 'all' },
+    { label: 'أولوية عالية 🔥', value: 'high' },
+    { label: 'أولوية متوسطة ⚡', value: 'medium' },
+    { label: 'أولوية منخفضة 🟢', value: 'low' }
+  ];
+
+  showFilterDrawer = false;
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.selectedDealFilter && this.selectedDealFilter !== 'all') count++;
+    if (this.selectedDepartmentFilter && this.selectedDepartmentFilter !== 'all') count++;
+    if (this.selectedUserFilter && this.selectedUserFilter !== 'all') count++;
+    if (this.selectedPriorityFilter && this.selectedPriorityFilter !== 'all') count++;
+    if (this.searchQuery && this.searchQuery.trim()) count++;
+    return count;
+  }
+
+  getTotalFilteredCount(): number {
+    if (this.isClient()) {
+      return this.getFilteredClientTasks().length;
+    }
+    return (
+      this.getTasksForColumn('new').length +
+      this.getTasksForColumn('content_creator').length +
+      this.getTasksForColumn('in_progress').length +
+      this.getTasksForColumn('in_review').length +
+      this.getTasksForColumn('client_feedback').length +
+      this.getTasksForColumn('done').length
+    );
+  }
+
+  resetBoardFilters() {
+    this.selectedDealFilter = 'all';
+    this.selectedDepartmentFilter = 'all';
+    this.selectedUserFilter = 'all';
+    this.selectedPriorityFilter = 'all';
+    this.searchQuery = '';
+    this.clientSearchQuery = '';
+  }
+
+  getClientDeals(): { id: number; title: string }[] {
+    if (!this.tasks) return [];
+    const map = new Map<number, string>();
+    for (const t of this.tasks) {
+      if (t.deal_id && (t.deal?.title || t.deal_title)) {
+        map.set(Number(t.deal_id), t.deal?.title || t.deal_title);
+      }
+    }
+    const list: { id: number; title: string }[] = [];
+    map.forEach((title, id) => list.push({ id, title }));
+    return list;
+  }
+
+  getClientDepartments(): { id: number; name: string }[] {
+    if (!this.tasks) return [];
+    const map = new Map<number, string>();
+    for (const t of this.tasks) {
+      if (t.department_id && (t.department?.name || t.department_name)) {
+        map.set(Number(t.department_id), t.department?.name || t.department_name);
+      }
+    }
+    const list: { id: number; name: string }[] = [];
+    map.forEach((name, id) => list.push({ id, name }));
+    return list;
+  }
+
+  getFilteredClientTasks(): any[] {
+    if (!this.tasks) return [];
+    let list = this.tasks;
+
+    if (this.selectedDealFilter !== 'all') {
+      const dealId = Number(this.selectedDealFilter);
+      list = list.filter((t: any) => Number(t.deal_id) === dealId);
+    }
+
+    if (this.selectedDepartmentFilter !== 'all') {
+      const deptId = Number(this.selectedDepartmentFilter);
+      list = list.filter((t: any) => Number(t.department_id) === deptId || Number(t.department?.id) === deptId);
+    }
+
+    if (this.clientStatusFilter === 'pending') {
+      list = list.filter((t: any) => t.status === 'client_review' || t.status === 'in_review' || t.status === 'review' || t.status === 'awaiting_approval');
+    } else if (this.clientStatusFilter === 'in_progress') {
+      list = list.filter((t: any) => t.status !== 'done' && t.status !== 'approved' && t.status !== 'completed' && t.status !== 'client_review' && t.status !== 'in_review' && t.status !== 'review');
+    } else if (this.clientStatusFilter === 'done') {
+      list = list.filter((t: any) => t.status === 'done' || t.status === 'approved' || t.status === 'completed');
+    }
+
+    const q = (this.searchQuery || this.clientSearchQuery || '').trim().toLowerCase();
+    if (q) {
+      list = list.filter((t: any) =>
+        (t.title && t.title.toLowerCase().includes(q)) ||
+        (t.scope && t.scope.toLowerCase().includes(q)) ||
+        (t.description && t.description.toLowerCase().includes(q)) ||
+        (t.deal && t.deal.title && t.deal.title.toLowerCase().includes(q)) ||
+        (t.assignee_name && t.assignee_name.toLowerCase().includes(q)) ||
+        (t.users || []).some((u: any) => (u.name && u.name.toLowerCase().includes(q)) || (u.email && u.email.toLowerCase().includes(q)))
+      );
+    }
+    return list;
+  }
+
+  getClientPendingCount(): number {
+    return (this.tasks || []).filter((t: any) => t.status === 'client_review' || t.status === 'in_review' || t.status === 'review' || t.status === 'awaiting_approval').length;
+  }
+
+  getClientApprovedCount(): number {
+    return (this.tasks || []).filter((t: any) => t.status === 'done' || t.status === 'approved' || t.status === 'completed').length;
+  }
+
+  getClientInProgressCount(): number {
+    return (this.tasks || []).filter((t: any) => t.status !== 'done' && t.status !== 'approved' && t.status !== 'completed' && t.status !== 'client_review' && t.status !== 'in_review' && t.status !== 'review').length;
+  }
+
+  openFileUrl(url: string, event: Event): void {
+    event.stopPropagation();
+    if (url) window.open(url, '_blank');
+  }
+
+  openLightbox(url: string, event: Event): void {
+    event.stopPropagation();
+    if (url) this.expandedImageUrl = url;
+  }
+
   showRevisionModal = false;
   revisionNotes = '';
 
-  approveTaskByClient(task: any): void {
+  approveTaskByClient(task: any, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
     if (!task) return;
     const oldStatus = task.status;
-    task.status = 'done';
-    this.persistStatusUpdate(task, 'done', () => task.status = oldStatus);
-    this.apiService.addTaskNote(task.id, 'تمت موافقة واعتماد المهمة بنجاح من قِبل العميل VIP').subscribe(() => {
-      this.loadTaskActivities(task.id);
+    task.status = 'approved';
+    this.apiService.approveClientTask(task.id).subscribe({
+      next: () => {
+        this.apiService.addTaskNote(task.id, 'تمت موافقة واعتماد المهمة بنجاح من قِبل العميل VIP').subscribe(() => {
+          this.loadTaskActivities(task.id);
+        });
+      },
+      error: () => {
+        this.persistStatusUpdate(task, 'approved', () => task.status = oldStatus);
+      }
     });
   }
 
-  openRevisionModal(): void {
+  openRevisionModal(task?: any, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (task) {
+      this.selectedTask = task;
+    }
     this.revisionNotes = '';
     this.showRevisionModal = true;
   }
@@ -2775,11 +4238,20 @@ export class TasksBoardComponent implements OnInit {
     const task = this.selectedTask;
     const oldStatus = task.status;
     task.status = 'client_feedback';
-    this.persistStatusUpdate(task, 'client_feedback', () => task.status = oldStatus);
-    this.apiService.addTaskNote(task.id, 'طلب تعديل من العميل: ' + this.revisionNotes.trim()).subscribe(() => {
-      this.revisionNotes = '';
-      this.showRevisionModal = false;
-      this.loadTaskActivities(task.id);
+    const noteText = this.revisionNotes.trim();
+
+    this.apiService.addTaskNote(task.id, 'طلب تعديل من العميل: ' + noteText).subscribe({
+      next: () => {
+        this.persistStatusUpdate(task, 'client_feedback', () => {});
+        this.revisionNotes = '';
+        this.showRevisionModal = false;
+        this.loadTaskActivities(task.id);
+      },
+      error: () => {
+        this.persistStatusUpdate(task, 'client_feedback', () => task.status = oldStatus);
+        this.revisionNotes = '';
+        this.showRevisionModal = false;
+      }
     });
   }
 

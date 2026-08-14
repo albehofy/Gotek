@@ -79,8 +79,16 @@ export class ApiService {
   }
 
   // Deals
-  getDeals(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/deals`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getDeals', [])));
+  getDeals(params: any = {}): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(k => {
+        if (params[k] !== null && params[k] !== undefined && params[k] !== '') {
+          httpParams = httpParams.set(k, params[k]);
+        }
+      });
+    }
+    return this.http.get<any>(`${API_BASE_URL}/deals`, { headers: this.getHeaders(), params: httpParams }).pipe(catchError(this.handleError('getDeals', [])));
   }
 
   getDeal(id: string | number): Observable<any> {
@@ -244,9 +252,17 @@ export class ApiService {
   }
 
   // Users & Roles
-  getUsers(role?: string): Observable<any> {
+  getUsers(paramsOrRole?: any): Observable<any> {
     let params = new HttpParams();
-    if (role) params = params.set('role', role);
+    if (typeof paramsOrRole === 'string') {
+      params = params.set('role', paramsOrRole);
+    } else if (typeof paramsOrRole === 'object' && paramsOrRole !== null) {
+      Object.keys(paramsOrRole).forEach(k => {
+        if (paramsOrRole[k] !== null && paramsOrRole[k] !== undefined && paramsOrRole[k] !== '') {
+          params = params.set(k, paramsOrRole[k]);
+        }
+      });
+    }
     return this.http.get<any>(`${API_BASE_URL}/users`, { headers: this.getHeaders(), params }).pipe(catchError(this.handleError('getUsers', [])));
   }
 
@@ -305,8 +321,16 @@ export class ApiService {
     return this.http.post<any>(`${API_BASE_URL}/finance/categories`, data, { headers: this.getHeaders() });
   }
 
-  getClientBalances(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/finance/client-balances`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getClientBalances', [])));
+  getClientBalances(params: any = {}): Observable<any> {
+    let httpParams = new HttpParams();
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(k => {
+        if (params[k] !== null && params[k] !== undefined && params[k] !== '') {
+          httpParams = httpParams.set(k, params[k]);
+        }
+      });
+    }
+    return this.http.get<any>(`${API_BASE_URL}/finance/client-balances`, { headers: this.getHeaders(), params: httpParams }).pipe(catchError(this.handleError('getClientBalances', [])));
   }
 
   storeClientPayment(data: any): Observable<any> {

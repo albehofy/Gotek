@@ -11,28 +11,69 @@ use Illuminate\Support\Facades\Auth;
 
 class DealController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
+        $query = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])->latest();
+
         if ($user->role === 'client') {
-            $deals = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])
-                ->where('client_id', $user->id)
-                ->latest()
-                ->get();
+            $query->where('client_id', $user->id);
         } elseif (in_array($user->role, ['department_manager', 'Department Manager']) && $user->department_id) {
-            $deals = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])
-                ->where('department_id', $user->department_id)
-                ->orWhereHas('tasks', function($q) use ($user) {
-                    $q->where('department_id', $user->department_id);
-                })
-                ->latest()
-                ->get();
-        } else {
-            $deals = Deal::with(['client', 'creator', 'department', 'salesPerson', 'tasks.users', 'payments'])
-                ->latest()
-                ->get();
+            $query->where(function($q) use ($user) {
+                $q->where('department_id', $user->department_id)
+                  ->orWhereHas('tasks', function($tQ) use ($user) {
+                      $tQ->where('department_id', $user->department_id);
+                  });
+            });
         }
+
+        if ($request->has('per_page') || $request->has('page')) {
+            $perPage = (int) $request->input('per_page', 15);
+            $paginated = $query->paginate($perPage);
+
+            $paginated->getCollection()->transform(function($deal) {
+                $dealTasks = $deal->tasks;
+                if ($dealTasks && $dealTasks->count() > 0) {
+                    $completedCount = $dealTasks->filter(function($t) {
+                        return in_array($t->status, ['done', 'approved', 'completed']);
+                    })->count();
+                    $deal->progress = (int) round(($completedCount / $dealTasks->count()) * 100);
+                } else {
+                    if (in_array($deal->status, ['won', 'closed', 'completed'])) {
+                        $deal->progress = 100;
+                    } else if (in_array($deal->status, ['lost', 'cancelled'])) {
+                        $deal->progress = 0;
+                    } else {
+                        $deal->progress = 0;
+                    }
+                }
+                return $deal;
+            });
+
+            return response()->json($paginated);
+        }
+
+        $deals = $query->get();
+
+        $deals->transform(function($deal) {
+            $dealTasks = $deal->tasks;
+            if ($dealTasks && $dealTasks->count() > 0) {
+                $completedCount = $dealTasks->filter(function($t) {
+                    return in_array($t->status, ['done', 'approved', 'completed']);
+                })->count();
+                $deal->progress = (int) round(($completedCount / $dealTasks->count()) * 100);
+            } else {
+                if (in_array($deal->status, ['won', 'closed', 'completed'])) {
+                    $deal->progress = 100;
+                } else if (in_array($deal->status, ['lost', 'cancelled'])) {
+                    $deal->progress = 0;
+                } else {
+                    $deal->progress = 0;
+                }
+            }
+            return $deal;
+        });
 
         return response()->json($deals);
     }
@@ -58,8 +99,8 @@ class DealController extends Controller
 
         $deal = Deal::create($validated);
 
-        // Send notification to department manager if deal assigned to department
-        if ($deal->department_id && $deal->department?->manager_id) {
+        // Send notification to department manager if deal assigned to department (excluding creator if manager)
+        if ($deal->department_id && $deal->department?->manager_id && (int)$deal->department->manager_id !== (int)Auth::id()) {
             NotificationModel::create([
                 'user_id' => $deal->department->manager_id,
                 'type' => 'assignment',

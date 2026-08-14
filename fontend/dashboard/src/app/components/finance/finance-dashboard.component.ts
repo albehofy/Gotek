@@ -117,6 +117,41 @@ import { DropdownModule } from 'primeng/dropdown';
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination Bar for Client Balances -->
+          <div class="table-pagination-bar" *ngIf="clientBalances.length > 0">
+            <div class="pagination-info-group">
+              <div class="pagination-info">
+                عرض {{ (clientBalancesPage - 1) * pageSize + 1 }} إلى {{ clientBalancesPage * pageSize > totalClientBalancesRecords ? totalClientBalancesRecords : clientBalancesPage * pageSize }} من أصل {{ totalClientBalancesRecords }} رصيد
+              </div>
+              <div class="pagination-per-page">
+                <span>عرض</span>
+                <select [(ngModel)]="pageSize" (change)="onClientBalancesPerPageChange()" class="pg-select">
+                  <option [ngValue]="5">5</option>
+                  <option [ngValue]="10">10</option>
+                  <option [ngValue]="25">25</option>
+                  <option [ngValue]="50">50</option>
+                </select>
+                <span>صفوف</span>
+              </div>
+            </div>
+            <div class="pagination-controls">
+              <button class="pg-btn" [disabled]="clientBalancesPage === 1" (click)="changeClientBalancesPage(clientBalancesPage - 1)">
+                <i class="fa-solid fa-chevron-right"></i> السابق
+              </button>
+              <button
+                *ngFor="let p of clientBalancesPageNumbers"
+                class="pg-num-btn"
+                [class.active]="p === clientBalancesPage"
+                (click)="changeClientBalancesPage(p)"
+              >
+                {{ p }}
+              </button>
+              <button class="pg-btn" [disabled]="clientBalancesPage * pageSize >= totalClientBalancesRecords" (click)="changeClientBalancesPage(clientBalancesPage + 1)">
+                التالي <i class="fa-solid fa-chevron-left"></i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -153,9 +188,45 @@ import { DropdownModule } from 'primeng/dropdown';
                       <div class="empty-state-title">لا توجد قيود مالية</div>
                       <div class="empty-state-desc">سجل أول حركة مصروفات أو إيرادات في النظام.</div>
                     </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Pagination Bar for Ledger -->
+          <div class="table-pagination-bar" *ngIf="ledgerEntries.length > 0">
+            <div class="pagination-info-group">
+              <div class="pagination-info">
+                عرض {{ (ledgerPage - 1) * pageSize + 1 }} إلى {{ ledgerPage * pageSize > totalLedgerRecords ? totalLedgerRecords : ledgerPage * pageSize }} من أصل {{ totalLedgerRecords }} قيد
+              </div>
+              <div class="pagination-per-page">
+                <span>عرض</span>
+                <select [(ngModel)]="pageSize" (change)="onLedgerPerPageChange()" class="pg-select">
+                  <option [ngValue]="5">5</option>
+                  <option [ngValue]="10">10</option>
+                  <option [ngValue]="25">25</option>
+                  <option [ngValue]="50">50</option>
+                </select>
+                <span>صفوف</span>
+              </div>
+            </div>
+            <div class="pagination-controls">
+              <button class="pg-btn" [disabled]="ledgerPage === 1" (click)="changeLedgerPage(ledgerPage - 1)">
+                <i class="fa-solid fa-chevron-right"></i> السابق
+              </button>
+              <button
+                *ngFor="let p of ledgerPageNumbers"
+                class="pg-num-btn"
+                [class.active]="p === ledgerPage"
+                (click)="changeLedgerPage(p)"
+              >
+                {{ p }}
+              </button>
+              <button class="pg-btn" [disabled]="ledgerPage * pageSize >= totalLedgerRecords" (click)="changeLedgerPage(ledgerPage + 1)">
+                التالي <i class="fa-solid fa-chevron-left"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -421,6 +492,101 @@ export class FinanceDashboardComponent implements OnInit {
   clientBalances: any[] = [];
   custodyAccounts: any[] = [];
   partnerSplits: any[] = [];
+
+  // Pagination
+  clientBalancesPage = 1;
+  totalClientBalancesRecords = 0;
+
+  ledgerPage = 1;
+  totalLedgerRecords = 0;
+
+  pageSize = 5;
+
+  get clientBalancesTotalPages(): number {
+    return Math.ceil(this.totalClientBalancesRecords / this.pageSize) || 1;
+  }
+
+  get clientBalancesPageNumbers(): number[] {
+    return Array.from({ length: this.clientBalancesTotalPages }, (_, i) => i + 1);
+  }
+
+  get ledgerTotalPages(): number {
+    return Math.ceil(this.totalLedgerRecords / this.pageSize) || 1;
+  }
+
+  get ledgerPageNumbers(): number[] {
+    return Array.from({ length: this.ledgerTotalPages }, (_, i) => i + 1);
+  }
+
+  loadLedger(): void {
+    const params = {
+      page: this.ledgerPage,
+      per_page: this.pageSize
+    };
+    this.apiService.getLedger(params).subscribe(res => {
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          this.ledgerEntries = res.data;
+          this.totalLedgerRecords = res.total || this.ledgerEntries.length;
+        } else if (res.data.data && Array.isArray(res.data.data)) {
+          this.ledgerEntries = res.data.data;
+          this.totalLedgerRecords = res.data.total || this.ledgerEntries.length;
+        }
+      } else if (Array.isArray(res)) {
+        this.ledgerEntries = res;
+        this.totalLedgerRecords = res.length;
+      }
+    });
+  }
+
+  loadClientBalances(): void {
+    const params = {
+      page: this.clientBalancesPage,
+      per_page: this.pageSize
+    };
+    this.apiService.getClientBalances(params).subscribe(res => {
+      let raw: any[] = [];
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          raw = res.data;
+          this.totalClientBalancesRecords = res.total || raw.length;
+        } else if (res.data.data && Array.isArray(res.data.data)) {
+          raw = res.data.data;
+          this.totalClientBalancesRecords = res.data.total || raw.length;
+        } else {
+          raw = [res.data];
+          this.totalClientBalancesRecords = raw.length;
+        }
+      } else if (Array.isArray(res)) {
+        raw = res;
+        this.totalClientBalancesRecords = raw.length;
+      }
+      this.clientBalances = raw;
+    });
+  }
+
+  changeClientBalancesPage(p: number): void {
+    if (p < 1 || p > this.clientBalancesTotalPages) return;
+    this.clientBalancesPage = p;
+    this.loadClientBalances();
+  }
+
+  onClientBalancesPerPageChange(): void {
+    this.clientBalancesPage = 1;
+    this.loadClientBalances();
+  }
+
+  changeLedgerPage(p: number): void {
+    if (p < 1 || p > this.ledgerTotalPages) return;
+    this.ledgerPage = p;
+    this.loadLedger();
+  }
+
+  onLedgerPerPageChange(): void {
+    this.ledgerPage = 1;
+    this.loadLedger();
+  }
+
   payrollSummary: any[] = [];
   departments: any[] = [];
 
@@ -466,9 +632,9 @@ export class FinanceDashboardComponent implements OnInit {
 
   loadAllData(): void {
     this.apiService.getFinanceSummary().subscribe(res => this.summary = res.summary || {});
-    this.apiService.getLedger().subscribe(res => this.ledgerEntries = res.data?.data || res.data || []);
+    this.loadLedger();
+    this.loadClientBalances();
     this.apiService.getFinanceCategories().subscribe(res => this.categories = res.data || []);
-    this.apiService.getClientBalances().subscribe(res => this.clientBalances = res.data || []);
     this.apiService.getCustodyAccounts().subscribe(res => this.custodyAccounts = res.data || []);
     this.apiService.getPartnerProfitSplits().subscribe(res => this.partnerSplits = res.data || []);
     this.apiService.getPayrollSummary().subscribe(res => this.payrollSummary = res.data || []);

@@ -7,11 +7,17 @@ use App\Models\Role;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RoleController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        if ($user && in_array($user->role, ['client', 'employee'])) {
+            return response()->json(['message' => 'غير مسموح بتهيئة الأدوار والصلاحيات'], 403);
+        }
+
         $roles = Role::with('permissions')->get();
         $permissions = Permission::all();
         return response()->json([

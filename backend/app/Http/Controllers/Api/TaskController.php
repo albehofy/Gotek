@@ -26,18 +26,31 @@ class TaskController extends Controller
             $query->whereHas('users', function($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
-        } elseif (in_array($user->role, ['department_manager', 'Department Manager']) && $user->department_id) {
-            $query->where(function($q) use ($user) {
-                $q->where('department_id', $user->department_id)
-                  ->orWhereHas('subCategory', function($subQ) use ($user) {
-                      $subQ->where('department_id', $user->department_id);
-                  });
-            });
+        } elseif (in_array($user->role, ['department_manager', 'Department Manager'])) {
+            $deptId = $user->department_id;
+            if (!$deptId) {
+                $dept = \App\Models\Department::where('manager_id', $user->id)->first();
+                if ($dept) {
+                    $deptId = $dept->id;
+                }
+            }
+            if ($deptId) {
+                $query->where(function($q) use ($deptId, $user) {
+                    $q->where('department_id', $deptId)
+                      ->orWhereHas('subCategory', function($subQ) use ($deptId) {
+                          $subQ->where('department_id', $deptId);
+                      })
+                      ->orWhereHas('users', function($uQ) use ($user) {
+                          $uQ->where('users.id', $user->id);
+                      });
+                });
+            }
         } elseif ($user->role === 'client') {
             $query->whereHas('deal', function($q) use ($user) {
                 $q->where('client_id', $user->id);
             });
         }
+        // super_admin & admin: NO filter applied -> retrieves all tasks in all departments
 
         if ($request->filled('deal_id')) {
             $query->where('deal_id', $request->deal_id);
@@ -97,8 +110,12 @@ class TaskController extends Controller
         if (!empty($validated['user_ids'])) {
             $task->users()->sync($validated['user_ids']);
 
-            // Send notification to assigned employees
+            // Send notification to assigned employees (excluding current acting user)
+            $currentUserId = auth()->id();
             foreach ($validated['user_ids'] as $uid) {
+                if ($currentUserId && (int)$uid === (int)$currentUserId) {
+                    continue;
+                }
                 NotificationModel::create([
                     'user_id' => $uid,
                     'type' => 'assignment',
@@ -269,7 +286,11 @@ class TaskController extends Controller
 
         $task->users()->sync($request->user_ids);
 
+        $currentUserId = auth()->id();
         foreach ($request->user_ids as $uid) {
+            if ($currentUserId && (int)$uid === (int)$currentUserId) {
+                continue;
+            }
             NotificationModel::create([
                 'user_id' => $uid,
                 'type' => 'assignment',
@@ -300,9 +321,10 @@ class TaskController extends Controller
         // Extract @mentions (e.g., @name or @id)
         preg_match_all('/@([a-zA-Z0-9_\-\.\s]+)/', $request->note, $matches);
         if (!empty($matches[1])) {
+            $currentUserId = auth()->id();
             foreach ($matches[1] as $mentionedName) {
                 $user = User::where('name', 'like', '%' . trim($mentionedName) . '%')->first();
-                if ($user) {
+                if ($user && (int)$user->id !== (int)$currentUserId) {
                     NotificationModel::create([
                         'user_id' => $user->id,
                         'type' => 'mention',

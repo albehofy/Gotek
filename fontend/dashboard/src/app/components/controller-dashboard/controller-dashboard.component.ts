@@ -109,7 +109,15 @@ export class ControllerDashboardComponent implements OnInit {
     tasks: 0,
     departments: 0,
     totalRevenue: 0,
-    totalMargin: 0
+    totalPaid: 0,
+    totalRemaining: 0,
+    totalMargin: 0,
+    pendingTasksCount: 0,
+    inProgressTasksCount: 0,
+    doneTasksCount: 0,
+    newDealsCount: 0,
+    wonDealsCount: 0,
+    inProgressDealsCount: 0
   };
   recentProjects: any[] = [];
   recentTasks: any[] = [];
@@ -365,25 +373,82 @@ export class ControllerDashboardComponent implements OnInit {
     this.apiService.getDeals().subscribe(res => {
       const arr = Array.isArray(res) ? res : (res?.data || []);
       this.crmStats.deals = arr.length || 0;
-      this.recentDeals = arr.slice(0, 5);
+      this.recentDeals = arr.slice(0, 6);
       let totalVal = 0;
-      arr.forEach((d: any) => totalVal += Number(d.value || d.amount || 0));
+      let totalPaid = 0;
+      let newCount = 0;
+      let wonCount = 0;
+      let progressCount = 0;
+
+      arr.forEach((d: any) => {
+        const val = Number(d.calculated_total || d.value || d.amount || 0);
+        const paid = Number(d.calculated_paid || d.paid || 0);
+        totalVal += val;
+        totalPaid += paid;
+
+        const st = d.stage || d.status || '';
+        if (st === 'new') newCount++;
+        else if (st === 'won' || st === 'closed' || st === 'completed') wonCount++;
+        else progressCount++;
+      });
+
       this.crmStats.totalRevenue = totalVal;
+      this.crmStats.totalPaid = totalPaid;
+      this.crmStats.totalRemaining = Math.max(0, totalVal - totalPaid);
+      this.crmStats.newDealsCount = newCount;
+      this.crmStats.wonDealsCount = wonCount;
+      this.crmStats.inProgressDealsCount = progressCount;
     });
 
     this.apiService.getTasks().subscribe(res => {
       const arr = Array.isArray(res) ? res : (res?.data || []);
-      this.crmStats.tasks = arr.length || 0;
-      this.recentTasks = arr.slice(0, 5);
+      const mainTasks = arr.filter((t: any) => !t.parent_id && !t.parent);
+      this.crmStats.tasks = mainTasks.length > 0 ? mainTasks.length : (arr.length || 0);
+      this.recentTasks = (mainTasks.length > 0 ? mainTasks : arr).slice(0, 6);
+
       let marginSum = 0;
-      arr.forEach((t: any) => marginSum += Number(t.company_margin || 0));
+      let pendingCount = 0;
+      let inProgressCount = 0;
+      let doneCount = 0;
+
+      arr.forEach((t: any) => {
+        const cp = Number(t.client_price || 0);
+        const ep = Number(t.employee_price || 0);
+        const margin = Number(t.company_margin || (cp > 0 ? cp - ep : 0));
+        marginSum += margin;
+
+        const st = t.status || '';
+        if (st === 'client_review' || st === 'in_review') {
+          pendingCount++;
+        } else if (st === 'done' || st === 'approved') {
+          doneCount++;
+        } else {
+          inProgressCount++;
+        }
+      });
+
       this.crmStats.totalMargin = marginSum;
+      this.crmStats.pendingTasksCount = pendingCount;
+      this.crmStats.inProgressTasksCount = inProgressCount;
+      this.crmStats.doneTasksCount = doneCount;
     });
 
     this.apiService.getDepartments().subscribe(res => {
       const arr = Array.isArray(res) ? res : (res?.data || []);
       this.crmStats.departments = arr.length || 0;
     });
+  }
+
+  getCollectionPercentage(): number {
+    const rev = this.crmStats.totalRevenue;
+    if (!rev || rev === 0) return 0;
+    return Math.min(100, Math.round((this.crmStats.totalPaid / rev) * 100));
+  }
+
+  getOverallTasksCompletionRate(): number {
+    const total = this.crmStats.tasks;
+    if (!total || total === 0) return 0;
+    return Math.min(100, Math.round((this.crmStats.doneTasksCount / total) * 100));
   }
 
   loadProjects() {

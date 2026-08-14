@@ -7,15 +7,31 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
+        if ($user && $user->role === 'client') {
+            return response()->json(['message' => 'غير مسموح للعملاء بالوصول لقائمة العملاء والمستخدمين'], 403);
+        }
+
         $query = User::with(['department', 'roleModel']);
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
+        }
+
+        if ($request->has('per_page') || $request->has('page')) {
+            $perPage = (int) $request->input('per_page', 15);
+            $paginatedUsers = $query->latest()->paginate($perPage);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $paginatedUsers
+            ]);
         }
 
         $users = $query->latest()->get();

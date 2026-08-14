@@ -6,11 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DepartmentController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        if ($user && $user->role === 'client') {
+            return response()->json(['message' => 'غير مسموح للعملاء بالدخول لقائمة الأقسام والمراكز'], 403);
+        }
+
         $departments = Department::with(['manager', 'subCategories', 'employees'])->get();
         return response()->json($departments);
     }

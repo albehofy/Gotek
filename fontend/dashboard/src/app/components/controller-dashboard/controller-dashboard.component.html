@@ -1,58 +1,107 @@
 <!-- ═══════════════════════════════════════════════════
-     CRM OVERVIEW — نظرة عامة على CRM الوكالة
+     CRM OVERVIEW — مركز إدارة الوكالة الرئيسي
      ═══════════════════════════════════════════════════ -->
 <div class="view" [class.active]="activeTab === 'crm-overview' || activeTab === 'overview'">
   <div class="dash-root">
 
-    <!-- Header -->
-    <div class="dash-head">
+    <!-- Header Hero Banner -->
+    <div class="dash-head glass-panel">
       <div>
-        <div class="dash-eyebrow"><span class="dash-pulse"></span>CRM — تحديث مستمر</div>
-        <h1 class="dash-title">مركز إدارة الوكالة</h1>
-        <p class="dash-desc">تابع عملاءك وصفقاتك ومهامك والأرباح في مكان واحد.</p>
+        <div class="dash-eyebrow"><span class="dash-pulse"></span>مركز إدارة الوكالة والعمليات — CRM 2026</div>
+        <h1 class="dash-title">أهلاً بك، {{ currentUser?.name || 'مدير الوكالة' }} 👋</h1>
+        <p class="dash-desc">نظرة شاملة ومباشرة على أداء العملاء، التعاقدات المالية، الأقسام والمراكز التشغيلية، ومعدلات إنجاز المهام.</p>
       </div>
       <div class="dash-head-actions">
-        <a class="dash-btn dash-btn-outline" routerLink="/deals"><i class="fa-solid fa-handshake"></i> الصفقات</a>
-        <a class="dash-btn dash-btn-solid" routerLink="/tasks"><i class="fa-solid fa-list-check"></i> المهام</a>
+        <a class="dash-btn dash-btn-outline" routerLink="/deals"><i class="fa-solid fa-handshake"></i> الصفقات والعقود</a>
+        <a class="dash-btn dash-btn-solid" routerLink="/tasks"><i class="fa-solid fa-list-check"></i> لوحة المهام والمخرجات</a>
       </div>
     </div>
 
-    <!-- KPI Row -->
-    <div class="dash-kpi-row">
-      <div class="dash-kpi dash-kpi-purple" routerLink="/clients">
+    <!-- ── 6-METRICS RICH KPI ROW ── -->
+    <div class="dash-kpi-row grid-6">
+      
+      <!-- 1. Total Revenue / Contracts -->
+      <div class="dash-kpi dash-kpi-blue" routerLink="/deals" style="cursor:pointer;">
+        <div class="dash-kpi-left">
+          <div class="dash-kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <div>
+            <div class="dash-kpi-label">إجمالي التعاقدات</div>
+            <div class="dash-kpi-sub">{{ crmStats.deals }} عقود وصفقات</div>
+          </div>
+        </div>
+        <div class="dash-kpi-right">
+          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalRevenue || 0) | number:'1.0-0' }}</div>
+          <div class="dash-kpi-trend up"><i class="fa-solid fa-coins"></i> ج.م</div>
+        </div>
+      </div>
+
+      <!-- 2. Total Paid / Collected -->
+      <div class="dash-kpi dash-kpi-green" routerLink="/finance" *ngIf="isAdmin()" style="cursor:pointer;">
+        <div class="dash-kpi-left">
+          <div class="dash-kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div>
+            <div class="dash-kpi-label">التحصيلات المسددة</div>
+            <div class="dash-kpi-sub">نسبة السداد: {{ getCollectionPercentage() }}%</div>
+          </div>
+        </div>
+        <div class="dash-kpi-right">
+          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalPaid || 0) | number:'1.0-0' }}</div>
+          <div class="dash-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> ج.م</div>
+        </div>
+      </div>
+
+      <!-- 3. Remaining Balance -->
+      <div class="dash-kpi dash-kpi-amber" routerLink="/finance" *ngIf="isAdmin()" style="cursor:pointer;">
+        <div class="dash-kpi-left">
+          <div class="dash-kpi-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <div>
+            <div class="dash-kpi-label">الرصيد المتبقي</div>
+            <div class="dash-kpi-sub">ذمم وأقساط مستحقة</div>
+          </div>
+        </div>
+        <div class="dash-kpi-right">
+          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalRemaining || 0) | number:'1.0-0' }}</div>
+          <div class="dash-kpi-trend warn"><i class="fa-solid fa-hourglass-half"></i> ج.م</div>
+        </div>
+      </div>
+
+      <!-- 4. Total Company Margin / Profits -->
+      <div class="dash-kpi dash-kpi-purple" routerLink="/finance" *ngIf="isAdmin()" style="cursor:pointer;">
+        <div class="dash-kpi-left">
+          <div class="dash-kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div>
+            <div class="dash-kpi-label">أرباح وهامش الوكالة</div>
+            <div class="dash-kpi-sub">الهامش الصافي التراكمي</div>
+          </div>
+        </div>
+        <div class="dash-kpi-right">
+          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalMargin || 0) | number:'1.0-0' }}</div>
+          <div class="dash-kpi-trend up"><i class="fa-solid fa-sack-dollar"></i> ج.م</div>
+        </div>
+      </div>
+
+      <!-- 5. Clients Count -->
+      <div class="dash-kpi dash-kpi-purple" routerLink="/clients" style="cursor:pointer;">
         <div class="dash-kpi-left">
           <div class="dash-kpi-icon"><i class="fa-solid fa-users"></i></div>
           <div>
-            <div class="dash-kpi-label">العملاء</div>
-            <div class="dash-kpi-sub">قاعدة العملاء</div>
+            <div class="dash-kpi-label">دليل العملاء</div>
+            <div class="dash-kpi-sub">عملاء الوكالة VIP</div>
           </div>
         </div>
         <div class="dash-kpi-right">
           <div class="dash-kpi-num">{{ crmStats.clients }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> نشطون</div>
+          <div class="dash-kpi-trend up"><i class="fa-solid fa-shield-halved"></i> نشطون</div>
         </div>
       </div>
 
-      <div class="dash-kpi dash-kpi-blue" routerLink="/deals">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-handshake"></i></div>
-          <div>
-            <div class="dash-kpi-label">الصفقات</div>
-            <div class="dash-kpi-sub">{{ crmStats.totalRevenue | number }} ج.م قيمة</div>
-          </div>
-        </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ crmStats.deals }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-circle-check"></i> عقود</div>
-        </div>
-      </div>
-
-      <div class="dash-kpi dash-kpi-amber" routerLink="/tasks">
+      <!-- 6. Active Tasks Count -->
+      <div class="dash-kpi dash-kpi-amber" routerLink="/tasks" style="cursor:pointer;">
         <div class="dash-kpi-left">
           <div class="dash-kpi-icon"><i class="fa-solid fa-list-check"></i></div>
           <div>
-            <div class="dash-kpi-label">المهام</div>
-            <div class="dash-kpi-sub">قيد التنفيذ</div>
+            <div class="dash-kpi-label">المهام الجارية</div>
+            <div class="dash-kpi-sub">إنجاز المهام: {{ getOverallTasksCompletionRate() }}%</div>
           </div>
         </div>
         <div class="dash-kpi-right">
@@ -60,43 +109,70 @@
           <div class="dash-kpi-trend warn"><i class="fa-solid fa-bars-progress"></i> جارية</div>
         </div>
       </div>
+    </div>
 
-      <div class="dash-kpi dash-kpi-green" *ngIf="isAdmin()" routerLink="/finance">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-coins"></i></div>
+    <!-- ── VISUAL ANALYTICS & PROGRESS BARS ── -->
+    <div class="dash-analytics-grid">
+      
+      <!-- Financial Progress Chart Card -->
+      <div class="analytics-card glass-panel" *ngIf="isAdmin()">
+        <div class="ac-head">
           <div>
-            <div class="dash-kpi-label">الأرباح</div>
-            <div class="dash-kpi-sub">الهامش الصافي</div>
+            <h3><i class="fa-solid fa-chart-pie text-emerald"></i> تحليل التحصيل والسيولة المالية</h3>
+            <p>نسبة المبالغ المسددة مقابل المبالغ الإجمالية المتبقية</p>
           </div>
+          <span class="ac-badge emerald">{{ getCollectionPercentage() }}% محصل</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num dash-kpi-num-sm">{{ crmStats.totalMargin | number }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-chart-line"></i> ج.م</div>
+
+        <div class="ac-progress-box">
+          <div class="ac-pb-header">
+            <span>المدفوع: {{ (crmStats.totalPaid || 0) | number:'1.0-0' }} ج.م</span>
+            <span>المتبقي: {{ (crmStats.totalRemaining || 0) | number:'1.0-0' }} ج.م</span>
+          </div>
+          <div class="ac-pb-track">
+            <div class="ac-pb-fill emerald" [style.width.%]="getCollectionPercentage()"></div>
+          </div>
+          <div class="ac-legend">
+            <span class="legend-item"><i class="dot emerald"></i> المسدد محصل بالفعل ({{ getCollectionPercentage() }}%)</span>
+            <span class="legend-item"><i class="dot rose"></i> المتبقي أقساط مستحقة ({{ 100 - getCollectionPercentage() }}%)</span>
+          </div>
         </div>
       </div>
 
-      <div class="dash-kpi dash-kpi-green" *ngIf="!isAdmin()" routerLink="/departments" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-sitemap"></i></div>
+      <!-- Tasks Progress Breakdown Chart Card -->
+      <div class="analytics-card glass-panel">
+        <div class="ac-head">
           <div>
-            <div class="dash-kpi-label">الأقسام</div>
-            <div class="dash-kpi-sub">المراكز التشغيلية</div>
+            <h3><i class="fa-solid fa-list-check text-cyan"></i> معدل إنجاز ومراجعة المخرجات</h3>
+            <p>توزيع المهام بين المكتملة والمعتمدة، قيد الاعتماد، وقيد التنفيذ</p>
           </div>
+          <span class="ac-badge cyan">{{ getOverallTasksCompletionRate() }}% مكتمل</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ crmStats.departments || 4 }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-layer-group"></i> أقسام</div>
+
+        <div class="ac-progress-box">
+          <div class="ac-pb-header">
+            <span>المعتمد والمكتمل: {{ crmStats.doneTasksCount }}</span>
+            <span>إجمالي المهام: {{ crmStats.tasks }}</span>
+          </div>
+          <div class="ac-pb-track">
+            <div class="ac-pb-fill cyan" [style.width.%]="getOverallTasksCompletionRate()"></div>
+          </div>
+          <div class="ac-legend">
+            <span class="legend-item"><i class="dot emerald"></i> مكتمل ومعتمد ({{ crmStats.doneTasksCount }})</span>
+            <span class="legend-item"><i class="dot amber"></i> بانتظار موافقة العميل ({{ crmStats.pendingTasksCount }})</span>
+            <span class="legend-item"><i class="dot violet"></i> قيد التنفيذ والعمليات ({{ crmStats.inProgressTasksCount }})</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Activity Grid -->
+    <!-- ── RECENT FEEDS GRID ── -->
     <div class="dash-grid">
 
-      <!-- Deals Feed -->
-      <div class="dash-panel">
+      <!-- Recent Deals Panel -->
+      <div class="dash-panel glass-panel">
         <div class="dash-panel-head">
-          <div class="dash-panel-title"><i class="fa-solid fa-handshake"></i> أحدث الصفقات</div>
+          <div class="dash-panel-title"><i class="fa-solid fa-handshake text-blue"></i> أحدث الصفقات والعقود المبرمة</div>
           <a class="dash-panel-link" routerLink="/deals">عرض الكل <i class="fa-solid fa-angle-left"></i></a>
         </div>
         <div class="dash-panel-body">
@@ -107,24 +183,24 @@
               </div>
               <div class="dash-row-info">
                 <div class="dash-row-name">{{ d.title || 'صفقة' }}</div>
-                <div class="dash-row-meta">{{ d.client_name || d.client || 'عميل' }}</div>
+                <div class="dash-row-meta"><i class="fa-solid fa-building"></i> {{ d.client_name || d.client || 'عميل محدد' }}</div>
               </div>
               <div class="dash-row-end">
-                <div class="dash-amount">{{ (d.value || d.amount || 0) | number }} <span>ج.م</span></div>
+                <div class="dash-amount">{{ (d.calculated_total || d.value || d.amount || 0) | number }} <span>ج.م</span></div>
                 <div class="dash-status-badge">{{ d.stage || d.status || 'نشطة' }}</div>
               </div>
             </div>
           </ng-container>
           <ng-template #emptyDealsV2>
-            <div class="dash-empty"><i class="fa-solid fa-handshake"></i><span>لا توجد صفقات بعد</span></div>
+            <div class="dash-empty"><i class="fa-solid fa-handshake"></i><span>لا توجد صفقات حالية مسجلة</span></div>
           </ng-template>
         </div>
       </div>
 
-      <!-- Tasks Feed -->
-      <div class="dash-panel">
+      <!-- Recent Tasks Panel -->
+      <div class="dash-panel glass-panel">
         <div class="dash-panel-head">
-          <div class="dash-panel-title"><i class="fa-solid fa-list-check"></i> أحدث المهام</div>
+          <div class="dash-panel-title"><i class="fa-solid fa-list-check text-amber"></i> أحدث المهام الجارية بالوكالة</div>
           <a class="dash-panel-link" routerLink="/tasks">عرض الكل <i class="fa-solid fa-angle-left"></i></a>
         </div>
         <div class="dash-panel-body">
@@ -135,7 +211,7 @@
               </div>
               <div class="dash-row-info">
                 <div class="dash-row-name">{{ t.title || 'مهمة' }}</div>
-                <div class="dash-row-meta">{{ t.assignee_name || t.assigned_to_name || 'غير محدد' }}</div>
+                <div class="dash-row-meta"><i class="fa-solid fa-user-gear"></i> {{ t.assignee_name || t.assigned_to_name || (t.users && t.users.length ? t.users[0].name : 'فريق الوكالة') }}</div>
               </div>
               <div class="dash-row-end">
                 <span class="dash-priority"
@@ -148,20 +224,20 @@
             </div>
           </ng-container>
           <ng-template #emptyTasksV2>
-            <div class="dash-empty"><i class="fa-solid fa-list-check"></i><span>لا توجد مهام بعد</span></div>
+            <div class="dash-empty"><i class="fa-solid fa-list-check"></i><span>لا توجد مهام جارية حالياً</span></div>
           </ng-template>
         </div>
       </div>
     </div>
 
-    <!-- Quick Access -->
+    <!-- ── AGENCY SHORTCUTS HUB ── -->
     <div class="dash-shortcuts">
-      <a class="dash-shortcut" routerLink="/clients"><i class="fa-solid fa-users"></i><span>العملاء</span></a>
-      <a class="dash-shortcut" routerLink="/deals"><i class="fa-solid fa-handshake"></i><span>الصفقات</span></a>
-      <a class="dash-shortcut" routerLink="/tasks"><i class="fa-solid fa-list-check"></i><span>المهام</span></a>
-      <a class="dash-shortcut" routerLink="/finance"><i class="fa-solid fa-chart-line"></i><span>المالية</span></a>
-      <a class="dash-shortcut" routerLink="/users"><i class="fa-solid fa-user-group"></i><span>الفريق</span></a>
-      <a class="dash-shortcut" routerLink="/departments"><i class="fa-solid fa-sitemap"></i><span>الأقسام</span></a>
+      <a class="dash-shortcut" routerLink="/clients"><i class="fa-solid fa-users text-purple"></i><span>دليل العملاء</span></a>
+      <a class="dash-shortcut" routerLink="/deals"><i class="fa-solid fa-handshake text-blue"></i><span>الصفقات والعقود</span></a>
+      <a class="dash-shortcut" routerLink="/tasks"><i class="fa-solid fa-list-check text-amber"></i><span>لوحة المهام</span></a>
+      <a class="dash-shortcut" routerLink="/finance" *ngIf="isAdmin()"><i class="fa-solid fa-coins text-emerald"></i><span>المالية والخزينة</span></a>
+      <a class="dash-shortcut" routerLink="/departments"><i class="fa-solid fa-sitemap text-cyan"></i><span>الأقسام والمراكز</span></a>
+      <a class="dash-shortcut" routerLink="/roles" *ngIf="isAdmin()"><i class="fa-solid fa-shield-halved text-rose"></i><span>الصلاحيات</span></a>
     </div>
 
   </div>

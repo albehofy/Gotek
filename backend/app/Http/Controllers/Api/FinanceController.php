@@ -68,6 +68,11 @@ class FinanceController extends Controller
     // --- Ledger & Expense Logging ---
     public function getLedger(Request $request)
     {
+        $user = Auth::user();
+        if ($user && $user->role === 'client') {
+            return response()->json(['message' => 'غير مسموح للعملاء بفتح السجل المالي'], 403);
+        }
+
         $query = LedgerEntry::with(['category', 'department', 'deal', 'client', 'employee', 'creator'])->latest();
 
         if ($request->filled('type')) {
@@ -131,6 +136,11 @@ class FinanceController extends Controller
     // --- Client Partial Payments & Outstanding Balances ---
     public function getClientBalances()
     {
+        $user = Auth::user();
+        if ($user && $user->role === 'client') {
+            return response()->json(['message' => 'غير مسموح للعملاء بفتح كشف أرصدة العملاء'], 403);
+        }
+
         $clients = User::where('role', 'client')->get();
         $report = [];
 

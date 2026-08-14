@@ -26,7 +26,7 @@ import { InputTextModule } from 'primeng/inputtext';
       <div class="filters-bar glass-panel">
         <div class="search-field">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" pInputText [(ngModel)]="searchQuery" placeholder="البحث بالاسم أو البريد الإلكتروني..." />
+          <input type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()" placeholder="البحث بالاسم أو البريد الإلكتروني..." />
         </div>
       </div>
 
@@ -46,8 +46,8 @@ import { InputTextModule } from 'primeng/inputtext';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let client of filteredClients(); let i = index" class="client-row-clickable" (click)="goToClientDetails(client)" title="انقر لفتح بوابة وملف العميل">
-                <td>{{ i + 1 }}</td>
+              <tr *ngFor="let client of clients; let i = index" class="client-row-clickable" (click)="goToClientDetails(client)" title="انقر لفتح بوابة وملف العميل">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td>
                   <div class="client-cell">
                     <div class="client-av">{{ getInitial(client) }}</div>
@@ -66,7 +66,7 @@ import { InputTextModule } from 'primeng/inputtext';
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="filteredClients().length === 0">
+              <tr *ngIf="clients.length === 0">
                 <td colspan="7">
                   <div class="empty-state">
                     <div class="empty-state-icon"><i class="fa-solid fa-users-slash"></i></div>
@@ -77,6 +77,41 @@ import { InputTextModule } from 'primeng/inputtext';
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Table Pagination Bar -->
+        <div class="table-pagination-bar" *ngIf="clients.length > 0">
+          <div class="pagination-info-group">
+            <div class="pagination-info">
+              عرض {{ (currentPage - 1) * pageSize + 1 }} إلى {{ currentPage * pageSize > totalRecords ? totalRecords : currentPage * pageSize }} من أصل {{ totalRecords }} عميل
+            </div>
+            <div class="pagination-per-page">
+              <span>عرض</span>
+              <select [(ngModel)]="pageSize" (change)="onPerPageChange()" class="pg-select">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+              <span>صفوف</span>
+            </div>
+          </div>
+          <div class="pagination-controls">
+            <button class="pg-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+              <i class="fa-solid fa-chevron-right"></i> السابق
+            </button>
+            <button
+              *ngFor="let p of pageNumbers"
+              class="pg-num-btn"
+              [class.active]="p === currentPage"
+              (click)="changePage(p)"
+            >
+              {{ p }}
+            </button>
+            <button class="pg-btn" [disabled]="currentPage * pageSize >= totalRecords" (click)="changePage(currentPage + 1)">
+              التالي <i class="fa-solid fa-chevron-left"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -162,6 +197,16 @@ export class ClientsListComponent implements OnInit {
   clientForm!: FormGroup;
 
   ngOnInit(): void {
+    const userStr = localStorage.getItem('mediaglow_user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u.role === 'client') {
+          this.router.navigate(['/client-portal']);
+          return;
+        }
+      } catch(e){}
+    }
     this.initForm();
     this.loadClients();
   }
@@ -174,11 +219,35 @@ export class ClientsListComponent implements OnInit {
     });
   }
 
+  currentPage = 1;
+  pageSize = 5;
+  totalRecords = 0;
+
   loadClients(): void {
-    this.apiService.getClientBalances().subscribe(res => {
-      const raw = res.data || [];
-      // API may return client_name/client_email OR name/email depending on endpoint
-      // Normalise both into a unified shape
+    const params = {
+      page: this.currentPage,
+      per_page: this.pageSize,
+      search: this.searchQuery
+    };
+
+    this.apiService.getClientBalances(params).subscribe(res => {
+      let raw: any[] = [];
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          raw = res.data;
+          this.totalRecords = res.total || raw.length;
+        } else if (res.data.data && Array.isArray(res.data.data)) {
+          raw = res.data.data;
+          this.totalRecords = res.data.total || raw.length;
+        } else {
+          raw = [res.data];
+          this.totalRecords = raw.length;
+        }
+      } else if (Array.isArray(res)) {
+        raw = res;
+        this.totalRecords = raw.length;
+      }
+
       this.clients = raw.map((c: any) => ({
         ...c,
         name: c.client_name || c.name || '',
@@ -187,13 +256,28 @@ export class ClientsListComponent implements OnInit {
     });
   }
 
-  filteredClients() {
-    if (!this.searchQuery.trim()) return this.clients;
-    const q = this.searchQuery.toLowerCase();
-    return this.clients.filter(c =>
-      (c.client_name || c.name || '').toLowerCase().includes(q) ||
-      (c.client_email || c.email || '').toLowerCase().includes(q)
-    );
+  onSearchChange(): void {
+    this.currentPage = 1;
+    this.loadClients();
+  }
+
+  onPerPageChange(): void {
+    this.currentPage = 1;
+    this.loadClients();
+  }
+
+  changePage(p: number): void {
+    if (p < 1 || p > this.totalPages) return;
+    this.currentPage = p;
+    this.loadClients();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize) || 1;
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   openAddModal(): void {

@@ -20,8 +20,13 @@
         <!-- CRM Section -->
         <div class="sb-section">
           <i class="fa-solid fa-layer-group"></i>
-          <span>إدارة الوكالة والنظام</span>
+          <span>{{ isClient() ? 'بوابة العميل' : 'إدارة الوكالة والنظام' }}</span>
         </div>
+
+        <a class="sb-item" *ngIf="isClient()" routerLink="/client-portal" routerLinkActive="active" data-tooltip="بوابة ملخص المشروع">
+          <span class="sb-icon"><i class="fa-solid fa-gauge-high"></i></span>
+          <span class="sb-text">بوابة ملخص المشروع</span>
+        </a>
 
         <a class="sb-item" *ngIf="isAdmin()" [class.active]="isDashboardTabActive('crm-overview') || isDashboardTabActive('overview')" (click)="navigateToTab('crm-overview')" data-tooltip="نظرة عامة على CRM الوكالة">
           <span class="sb-icon"><i class="fa-solid fa-chart-line"></i></span>
@@ -33,14 +38,14 @@
           <span class="sb-text">العملاء</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager() || isClient()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
+        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
           <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span>
           <span class="sb-text">الصفقات والعقود</span>
         </a>
 
         <a class="sb-item" routerLink="/tasks" routerLinkActive="active" data-tooltip="لوحة المهام">
           <span class="sb-icon"><i class="fa-solid fa-list-check"></i></span>
-          <span class="sb-text">لوحة المهام</span>
+          <span class="sb-text">{{ isClient() ? 'لوحة المخرجات والمهام' : 'لوحة المهام' }}</span>
         </a>
 
         <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager()" routerLink="/departments" routerLinkActive="active" data-tooltip="الأقسام والمراكز">

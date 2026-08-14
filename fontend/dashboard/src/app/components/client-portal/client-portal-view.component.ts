@@ -87,9 +87,6 @@ import { TextareaModule } from 'primeng/textarea';
             <span class="mc-label">الرصيد المتبقي للأقساط</span>
             <h2 class="mc-value rose-text">{{ getFinancialRemaining() | number:'1.2-2' }} <small>ج.م</small></h2>
           </div>
-          <div class="mc-footer">
-            <span>تاريخ الدفعة القادمة: قريب جداً</span>
-          </div>
         </div>
 
         <!-- Overall Task Progress Card -->
@@ -202,10 +199,10 @@ import { TextareaModule } from 'primeng/textarea';
             <div class="deal-progress-box">
               <div class="dp-header">
                 <span>تقدم تنفيذ الصفقة</span>
-                <span>{{ deal.progress || 50 }}%</span>
+                <span>{{ getDealProgress(deal) }}%</span>
               </div>
               <div class="dp-track">
-                <div class="dp-fill" [style.width.%]="deal.progress || 50"></div>
+                <div class="dp-fill" [style.width.%]="getDealProgress(deal)"></div>
               </div>
             </div>
 
@@ -270,100 +267,7 @@ import { TextareaModule } from 'primeng/textarea';
         </div>
       </div>
 
-      <!-- ── 5. CLIENT TASKS, SUBTASKS & ACTIVITY LOG GRID ── -->
-      <div class="section-container margin-top">
-        <div class="section-head">
-          <div>
-            <h2><i class="fa-solid fa-list-check text-cyan"></i> كروت المهام الرئيسية والمهمات الفرعية والسجل</h2>
-            <p>عرض شامل لكل مهمة مع خطواتها الفرعية وسجل التواصل والتعليقات للاعتماد</p>
-          </div>
-        </div>
 
-        <div class="client-tasks-grid">
-          <div class="client-task-card glass-panel" *ngFor="let task of portalData.tasks" [class.need-review]="isTaskAwaitingReview(task)">
-            
-            <!-- Task Main Header -->
-            <div class="ct-header">
-              <div>
-                <h3 class="ct-title">{{ task.title }}</h3>
-                <span class="ct-deal-name" *ngIf="task.deal?.title || task.deal_title">
-                  <i class="fa-solid fa-handshake"></i> {{ task.deal?.title || task.deal_title }}
-                </span>
-              </div>
-              <span class="ct-status-badge" [ngClass]="getTaskStatusBadgeClass(task)">
-                {{ getTaskStatusLabel(task) }}
-              </span>
-            </div>
-
-            <!-- Task Scope/Description -->
-            <p class="ct-scope" *ngIf="task.scope || task.description">{{ task.scope || task.description }}</p>
-
-            <!-- SUBTASKS CHECKLIST BOX INSIDE MAIN TASK CARD -->
-            <div class="ct-subtasks-box" *ngIf="task.subtasks && task.subtasks.length > 0">
-              <div class="subtasks-head">
-                <span class="subtasks-title"><i class="fa-solid fa-list-ul"></i> الخطوات والمهام الفرعية:</span>
-                <span class="subtasks-count">{{ getCompletedSubtasksCount(task) }} / {{ task.subtasks.length }} مكتملة</span>
-              </div>
-              <div class="subtasks-list">
-                <div class="subtask-item" *ngFor="let sub of task.subtasks" [class.completed]="sub.is_completed || sub.status === 'completed' || sub.status === 'done'">
-                  <i class="fa-solid" [ngClass]="(sub.is_completed || sub.status === 'completed' || sub.status === 'done') ? 'fa-square-check text-emerald' : 'fa-square text-muted'"></i>
-                  <span class="subtask-title">{{ sub.title }}</span>
-                  <span class="subtask-badge" *ngIf="sub.is_completed || sub.status === 'completed' || sub.status === 'done'">تم الإنجاز</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Attachments & Deliverables -->
-            <div class="ct-attachments" *ngIf="task.attachments && task.attachments.length > 0">
-              <small class="att-head"><i class="fa-solid fa-paperclip"></i> المرفقات والمخرجات للاعتماد:</small>
-              <div class="att-grid">
-                <a *ngFor="let att of task.attachments" [href]="att.file_url || att.url" target="_blank" class="att-thumb">
-                  <img *ngIf="isImage(att)" [src]="att.file_url || att.url" alt="Deliverable" />
-                  <div *ngIf="!isImage(att)" class="file-icon-box"><i class="fa-solid fa-file"></i></div>
-                </a>
-              </div>
-            </div>
-
-            <!-- Notes & Activity Thread Log -->
-            <div class="ct-notes-thread" *ngIf="task.notes && task.notes.length > 0">
-              <small class="thread-head"><i class="fa-solid fa-comments"></i> سجل التواصل والملاحظات (Activity Log):</small>
-              <div class="note-bubble" *ngFor="let note of task.notes">
-                <div class="note-author-row">
-                  <span class="author-name"><i class="fa-solid fa-user-circle"></i> {{ note.user?.name || 'فريق العمل' }}</span>
-                  <span class="note-time" *ngIf="note.created_at">{{ note.created_at | date:'yyyy/MM/dd - hh:mm a' }}</span>
-                </div>
-                <div class="note-text">{{ note.note }}</div>
-              </div>
-            </div>
-
-            <!-- ACTION BUTTONS FOR CLIENT -->
-            <div class="ct-actions">
-              <button 
-                type="button" 
-                class="btn-client-approve" 
-                (click)="approveTask(task)" 
-                *ngIf="task.status !== 'approved' && task.status !== 'done'"
-              >
-                <i class="fa-solid fa-circle-check"></i> اعتماد وموافقة على المهمة
-              </button>
-
-              <button 
-                type="button" 
-                class="btn-client-revision" 
-                (click)="openNoteModalForTask(task)"
-              >
-                <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات وملاحظات
-              </button>
-            </div>
-
-          </div>
-
-          <div class="empty-glass-card" *ngIf="!portalData.tasks || portalData.tasks.length === 0">
-            <i class="fa-solid fa-clipboard-check"></i>
-            <p>لا توجد مهام أو مخرجات حالية بانتظار المراجعة.</p>
-          </div>
-        </div>
-      </div>
 
       <!-- PrimeNG Dialog for Client Revision Notes -->
       <p-dialog [(visible)]="showRevisionDialog" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="طلب تعديل وملاحظات العميل" [style]="{ width: '92vw', maxWidth: '520px' }">
@@ -408,6 +312,7 @@ import { TextareaModule } from 'primeng/textarea';
       justify-content: space-between;
       gap: 20px;
       flex-wrap: wrap;
+      margin-bottom: 28px;
     }
     .hero-main-info { display: flex; align-items: center; gap: 18px; }
     .client-avatar-badge { width: 56px; height: 56px; border-radius: 16px; background: rgba(99,102,241,0.2); border: 1px solid var(--violet-light, #818cf8); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
@@ -424,7 +329,7 @@ import { TextareaModule } from 'primeng/textarea';
     .h-stat-num.amber { color: #fbbf24; }
 
     /* METRICS GRID */
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-top: 28px; margin-bottom: 36px; }
     .metric-card { padding: 22px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: var(--r-lg, 16px); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
     .mc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .mc-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
@@ -448,7 +353,7 @@ import { TextareaModule } from 'primeng/textarea';
     .mc-footer { font-size: 0.75rem; color: var(--text-3, #64748b); margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
 
     /* CHARTS SECTION */
-    .charts-section-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+    .charts-section-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 32px; }
     .chart-card { padding: 22px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: var(--r-lg, 16px); }
     .card-title-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
     .card-title-head i { font-size: 1.2rem; margin-top: 2px; }
@@ -470,12 +375,12 @@ import { TextareaModule } from 'primeng/textarea';
     .dot-legend.amber { background: #fbbf24; }
 
     /* DEALS & LEDGER */
-    .section-container { margin-top: 28px; }
-    .section-head { margin-bottom: 16px; }
+    .section-container { margin-top: 36px; margin-bottom: 32px; }
+    .section-head { margin-bottom: 18px; }
     .section-head h2 { font-size: 1.25rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; }
     .section-head p { font-size: 0.82rem; color: var(--text-2); margin-top: 2px; }
 
-    .deals-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .deals-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
     .deal-card { padding: 22px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: var(--r-lg, 16px); display: flex; flex-direction: column; justify-content: space-between; }
     .dc-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .dc-title { font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.3; }
@@ -677,6 +582,30 @@ export class ClientPortalViewComponent implements OnInit {
     if (!tasks || tasks.length === 0) return 0;
     const completed = this.getCompletedTaskCount();
     return Math.min(100, Math.round((completed / tasks.length) * 100));
+  }
+
+  getDealProgress(deal: any): number {
+    if (!deal) return 0;
+
+    const dealId = Number(deal.id);
+    const tasks = (this.portalData?.tasks || []).filter((t: any) =>
+      Number(t.deal_id) === dealId || (t.deal && Number(t.deal.id) === dealId)
+    );
+
+    const dealTasks = tasks.length > 0 ? tasks : (deal.tasks || []);
+    if (dealTasks && dealTasks.length > 0) {
+      const completed = dealTasks.filter((t: any) =>
+        t.status === 'done' || t.status === 'approved' || t.status === 'completed'
+      ).length;
+      return Math.min(100, Math.round((completed / dealTasks.length) * 100));
+    }
+
+    if (deal.progress !== undefined && deal.progress !== null && !isNaN(Number(deal.progress))) {
+      return Math.min(100, Math.max(0, Math.round(Number(deal.progress))));
+    }
+
+    if (deal.status === 'won' || deal.status === 'closed' || deal.status === 'completed') return 100;
+    return 0;
   }
 
   getCompletedSubtasksCount(task: any): number {

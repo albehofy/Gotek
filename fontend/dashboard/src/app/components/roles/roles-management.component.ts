@@ -61,7 +61,15 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
           <span style="color:var(--text-2); font-size:0.8rem;">إجمالي المستخدمين: {{ users.length }}</span>
         </div>
 
-        <div class="table-responsive" style="margin-top:14px;">
+        <!-- Search bar for users -->
+        <div class="filters-bar glass-panel" style="margin-top:14px; margin-bottom:12px;">
+          <div class="search-field">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()" placeholder="البحث باسم المستخدم أو البريد..." />
+          </div>
+        </div>
+
+        <div class="table-responsive" style="margin-top:10px;">
           <table class="crm-table">
             <thead>
               <tr>
@@ -129,6 +137,41 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Table Pagination Bar -->
+        <div class="table-pagination-bar" *ngIf="users.length > 0">
+          <div class="pagination-info-group">
+            <div class="pagination-info">
+              عرض {{ (currentPage - 1) * pageSize + 1 }} إلى {{ currentPage * pageSize > totalRecords ? totalRecords : currentPage * pageSize }} من أصل {{ totalRecords }} مستخدم
+            </div>
+            <div class="pagination-per-page">
+              <span>عرض</span>
+              <select [(ngModel)]="pageSize" (change)="onPerPageChange()" class="pg-select">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+              <span>صفوف</span>
+            </div>
+          </div>
+          <div class="pagination-controls">
+            <button class="pg-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+              <i class="fa-solid fa-chevron-right"></i> السابق
+            </button>
+            <button
+              *ngFor="let p of pageNumbers"
+              class="pg-num-btn"
+              [class.active]="p === currentPage"
+              (click)="changePage(p)"
+            >
+              {{ p }}
+            </button>
+            <button class="pg-btn" [disabled]="currentPage * pageSize >= totalRecords" (click)="changePage(currentPage + 1)">
+              التالي <i class="fa-solid fa-chevron-left"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -235,6 +278,63 @@ export class RolesManagementComponent implements OnInit {
 
   currentUser: any = null;
 
+  searchQuery = '';
+  currentPage = 1;
+  pageSize = 5;
+  totalRecords = 0;
+
+  loadUsers(): void {
+    const params = {
+      page: this.currentPage,
+      per_page: this.pageSize,
+      search: this.searchQuery
+    };
+
+    this.apiService.getUsers(params).subscribe(res => {
+      let raw: any[] = [];
+      if (res && res.data) {
+        if (Array.isArray(res.data)) {
+          raw = res.data;
+          this.totalRecords = res.total || raw.length;
+        } else if (res.data.data && Array.isArray(res.data.data)) {
+          raw = res.data.data;
+          this.totalRecords = res.data.total || raw.length;
+        } else {
+          raw = [res.data];
+          this.totalRecords = raw.length;
+        }
+      } else if (Array.isArray(res)) {
+        raw = res;
+        this.totalRecords = raw.length;
+      }
+      this.users = raw;
+    });
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  onPerPageChange(): void {
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  changePage(p: number): void {
+    if (p < 1 || p > this.totalPages) return;
+    this.currentPage = p;
+    this.loadUsers();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize) || 1;
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
   ngOnInit(): void {
     try {
       const uStr = localStorage.getItem('mediaglow_user');
@@ -272,9 +372,7 @@ export class RolesManagementComponent implements OnInit {
       ];
     });
 
-    this.apiService.getUsers().subscribe(res => {
-      this.users = res.data || [];
-    });
+    this.loadUsers();
   }
 
   isSuperAdmin(): boolean {

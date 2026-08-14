@@ -29,6 +29,22 @@ class ClientPortalController extends Controller
         foreach ($deals as $deal) {
             $totalBilled += $deal->calculated_total;
             $totalPaid += $deal->calculated_paid;
+
+            $dealTasks = $deal->tasks;
+            if ($dealTasks && $dealTasks->count() > 0) {
+                $completedCount = $dealTasks->filter(function($t) {
+                    return in_array($t->status, ['done', 'approved', 'completed']);
+                })->count();
+                $deal->progress = (int) round(($completedCount / $dealTasks->count()) * 100);
+            } else {
+                if (in_array($deal->status, ['won', 'closed', 'completed'])) {
+                    $deal->progress = 100;
+                } else if (in_array($deal->status, ['lost', 'cancelled'])) {
+                    $deal->progress = 0;
+                } else {
+                    $deal->progress = 0;
+                }
+            }
         }
         $remainingBalance = max(0, $totalBilled - $totalPaid);
 
@@ -81,11 +97,19 @@ class ClientPortalController extends Controller
         // Update task status to client_feedback if client leaves note
         $task->update(['status' => 'client_feedback']);
 
-        // Send notification to department manager & assigned staff
-        $assignedUsers = $task->users;
-        foreach ($assignedUsers as $assigned) {
+        // Send notification to department manager & assigned staff (excluding the acting client)
+        $recipients = $task->users->pluck('id')->toArray();
+        if ($task->department && $task->department->manager_id) {
+            $recipients[] = $task->department->manager_id;
+        }
+        $recipients = array_unique(array_filter($recipients));
+
+        foreach ($recipients as $uid) {
+            if ((int)$uid === (int)$user->id) {
+                continue; // Skip self-notification
+            }
             NotificationModel::create([
-                'user_id' => $assigned->id,
+                'user_id' => $uid,
                 'type' => 'client_note',
                 'title' => 'ملاحظة جديدة من العميل',
                 'message' => 'أضاف العميل ' . $user->name . ' ملاحظة على المهمة: ' . $task->title,
@@ -109,10 +133,19 @@ class ClientPortalController extends Controller
 
         $task->update(['status' => 'approved']);
 
-        // Notify assigned staff & dept manager
-        foreach ($task->users as $assigned) {
+        // Notify assigned staff & dept manager (excluding acting client)
+        $recipients = $task->users->pluck('id')->toArray();
+        if ($task->department && $task->department->manager_id) {
+            $recipients[] = $task->department->manager_id;
+        }
+        $recipients = array_unique(array_filter($recipients));
+
+        foreach ($recipients as $uid) {
+            if ((int)$uid === (int)$user->id) {
+                continue; // Skip self-notification
+            }
             NotificationModel::create([
-                'user_id' => $assigned->id,
+                'user_id' => $uid,
                 'type' => 'status_change',
                 'title' => 'تمت الموافقة على المهمة',
                 'message' => 'وافق العميل ' . $user->name . ' على المهمة: ' . $task->title,

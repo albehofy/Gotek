@@ -553,22 +553,22 @@ table, .crm-table {
 
 th, .crm-table th {
   text-align: right;
-  padding: 14px 20px;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.18);
-  color: var(--violet-light);
-  font-size: 0.75rem;
-  font-weight: 800;
+  padding: 16px 22px !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2) !important;
+  color: var(--violet-light) !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: rgba(99, 102, 241, 0.05);
+  background: rgba(99, 102, 241, 0.07) !important;
   white-space: nowrap;
 }
 
 td, .crm-table td {
-  padding: 15px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
-  font-size: 0.88rem;
-  color: var(--text);
+  padding: 18px 22px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045) !important;
+  font-size: 0.88rem !important;
+  color: var(--text) !important;
   vertical-align: middle;
   transition: background 0.2s var(--ease);
   white-space: nowrap;
@@ -582,10 +582,260 @@ tr:hover td, .crm-table tr:hover td {
   background: rgba(99, 102, 241, 0.06);
 }
 
+.table-card {
+  padding: 16px 20px 20px 20px !important;
+  border-radius: 20px !important;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  margin-bottom: 24px;
+}
+
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  padding: 4px 6px;
   -webkit-overflow-scrolling: touch;
+}
+
+/* ── GLOBAL TABLE PAGINATION BAR ────────────────────────────────────── */
+.table-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 6px 20px;
+  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  margin-top: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-info-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.pagination-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.pg-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pg-select option {
+  background: #0f1026;
+  color: var(--text);
+}
+
+body.light-theme .pg-select {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-theme .pg-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* ── GLOBAL SEARCH & FILTERS BAR ────────────────────────────────────── */
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  flex: 1;
+  min-width: 260px;
+  transition: all 0.2s ease;
+}
+
+.search-field:focus-within {
+  border-color: var(--violet, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.search-field i {
+  color: var(--text-2, #94a3b8);
+  font-size: 0.9rem;
+}
+
+.search-field input,
+.search-field input.p-inputtext {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text, #f8fafc) !important;
+  width: 100% !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+}
+
+.search-field input::placeholder {
+  color: var(--text-3, #64748b) !important;
+}
+
+.filter-dropdown-select {
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  color: var(--text, #f8fafc);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  height: 38px;
+  min-width: 180px;
+  transition: all 0.2s ease;
+}
+
+.filter-dropdown-select:focus {
+  border-color: var(--violet, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.filter-dropdown-select option {
+  background: #0f1026;
+  color: var(--text);
+}
+
+/* Light Mode Overrides for Filters Bar */
+body.light-theme .filters-bar {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.18) !important;
+}
+
+body.light-theme .search-field {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-theme .search-field input {
+  color: #0f172a !important;
+}
+
+body.light-theme .search-field input::placeholder {
+  color: #64748b !important;
+}
+
+body.light-theme .search-field i {
+  color: #64748b !important;
+}
+
+body.light-theme .filter-dropdown-select {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-theme .filter-dropdown-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pg-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: var(--violet-light, #a5b4fc);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.pg-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.45);
+  color: #ffffff;
+}
+
+.pg-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pg-num-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.pg-num-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--violet-light);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.pg-num-btn.active {
+  background: linear-gradient(135deg, var(--violet, #6366f1), var(--violet-2, #4f46e5));
+  color: #ffffff !important;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 /* ── CENTERED EMPTY STATE ─────────────────────────────────────────────── */
@@ -1536,11 +1786,75 @@ body.light-theme .p-dropdown-items li.p-highlight {
   box-shadow: none;
 }
 
+/* ── GLOBAL SIDE-DRAWER MODAL SYSTEM (تحويل كافة النوافذ إلى نوافذ جانبية) ── */
 .p-dialog-mask,
-.crm-modal-backdrop {
-  background: rgba(5, 5, 16, 0.78) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+.crm-modal-backdrop,
+.modal-backdrop,
+.modal-overlay {
+  display: flex !important;
+  justify-content: flex-start !important; /* RTL mode -> flex-start places drawer on the RIGHT edge! */
+  align-items: stretch !important;
+  background: rgba(5, 5, 16, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  direction: rtl !important;
+  z-index: 1200 !important;
+  padding: 0 !important;
+}
+
+.p-dialog,
+.crm-modal-card,
+.crm-modal,
+.create-modal,
+.modal-content {
+  margin: 0 !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 24px 0 0 24px !important;
+  border-right: none !important;
+  box-shadow: -12px 0 45px rgba(0, 0, 0, 0.75) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  animation: globalDrawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+@keyframes globalDrawerSlide {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.p-dialog-header,
+.modal-header,
+.modal-hd,
+.crm-modal-header {
+  flex-shrink: 0 !important;
+  border-radius: 0 !important;
+}
+
+.p-dialog-content,
+.modal-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  max-height: none !important;
+}
+
+.p-dialog-footer,
+.modal-footer,
+.modal-ft {
+  flex-shrink: 0 !important;
 }
 
 /* Light theme overrides for PrimeNG & Modals */
