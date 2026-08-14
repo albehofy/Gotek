@@ -32,10 +32,11 @@ class ClientPortalController extends Controller
         }
         $remainingBalance = max(0, $totalBilled - $totalPaid);
 
-        // 3. Client Tasks (completed & in-progress)
+        // 3. Client Main Tasks (only top-level tasks where parent_id is null, with subtasks eagerly loaded)
         $dealIds = $deals->pluck('id');
         $tasks = Task::whereIn('deal_id', $dealIds)
-            ->with(['attachments', 'notes.user', 'subCategory'])
+            ->whereNull('parent_id')
+            ->with(['attachments', 'notes.user', 'subCategory', 'subtasks.users', 'subtasks.attachments', 'subtasks.notes.user', 'users'])
             ->latest()
             ->get();
 

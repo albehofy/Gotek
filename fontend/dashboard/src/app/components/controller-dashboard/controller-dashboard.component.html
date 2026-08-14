@@ -61,7 +61,7 @@
         </div>
       </div>
 
-      <div class="dash-kpi dash-kpi-green" routerLink="/finance">
+      <div class="dash-kpi dash-kpi-green" *ngIf="isAdmin()" routerLink="/finance">
         <div class="dash-kpi-left">
           <div class="dash-kpi-icon"><i class="fa-solid fa-coins"></i></div>
           <div>
@@ -72,6 +72,20 @@
         <div class="dash-kpi-right">
           <div class="dash-kpi-num dash-kpi-num-sm">{{ crmStats.totalMargin | number }}</div>
           <div class="dash-kpi-trend up"><i class="fa-solid fa-chart-line"></i> ج.م</div>
+        </div>
+      </div>
+
+      <div class="dash-kpi dash-kpi-green" *ngIf="!isAdmin()" routerLink="/departments" style="cursor:pointer;">
+        <div class="dash-kpi-left">
+          <div class="dash-kpi-icon"><i class="fa-solid fa-sitemap"></i></div>
+          <div>
+            <div class="dash-kpi-label">الأقسام</div>
+            <div class="dash-kpi-sub">المراكز التشغيلية</div>
+          </div>
+        </div>
+        <div class="dash-kpi-right">
+          <div class="dash-kpi-num">{{ crmStats.departments || 4 }}</div>
+          <div class="dash-kpi-trend up"><i class="fa-solid fa-layer-group"></i> أقسام</div>
         </div>
       </div>
     </div>

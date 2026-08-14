@@ -23,9 +23,9 @@ export class LoginComponent implements OnInit {
   showPassword = false;
 
   demoAccounts = [
-    { role: 'super_admin', label: 'سوبر أدمن', email: 'admin@mediaglow.com', pass: 'password', icon: 'fa-user-shield', color: '#e8620a' },
-    { role: 'employee', label: 'صانع محتوى', email: 'creator@mediaglow.com', pass: 'password', icon: 'fa-pen-nib', color: '#10b981' },
-    { role: 'client', label: 'عميل VIP', email: 'client@mediaglow.com', pass: 'password', icon: 'fa-building', color: '#3b82f6' }
+    { role: 'super_admin', label: 'مدير النظام (أدمن)', email: 'admin@mediaglow.com', pass: 'password', icon: 'fa-user-shield', color: '#818cf8', badge: 'Super Admin' },
+    { role: 'employee', label: 'صانع محتوى', email: 'creator@mediaglow.com', pass: 'password', icon: 'fa-pen-nib', color: '#34d399', badge: 'Creator' },
+    { role: 'client', label: 'عميل VIP', email: 'client@mediaglow.com', pass: 'password', icon: 'fa-building', color: '#38bdf8', badge: 'Client' }
   ];
 
 
@@ -62,10 +62,17 @@ export class LoginComponent implements OnInit {
         this.loading = false;
         if (res && res.success) {
           localStorage.setItem('mediaglow_client_token', res.token || 'demo_token_123');
-          if (res.user) {
-            localStorage.setItem('mediaglow_user', JSON.stringify(res.user));
+          const user = res.user;
+          if (user) {
+            localStorage.setItem('mediaglow_user', JSON.stringify(user));
           }
-          this.router.navigate(['/dashboard']);
+          if (user && user.role === 'client') {
+            this.router.navigate(['/client-portal']);
+          } else if (user && user.role === 'employee') {
+            this.router.navigate(['/tasks']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
           this.showError = true;
         }

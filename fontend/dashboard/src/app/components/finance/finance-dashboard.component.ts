@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-picker-select.component';
@@ -13,6 +14,7 @@ import { DropdownModule } from 'primeng/dropdown';
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     FormsModule,
     ReactiveFormsModule,
     PrimePickerSelectComponent,
@@ -22,7 +24,17 @@ import { DropdownModule } from 'primeng/dropdown';
     DropdownModule
   ],
   template: `
-    <div class="crm-module-container">
+    <!-- Access Denied for Client Role -->
+    <div class="access-denied-shell" *ngIf="isClient()" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; text-align:center; gap:16px; direction:rtl; padding:30px;">
+      <i class="fa-solid fa-shield-halved" style="font-size:3.5rem; color:var(--rose-light, #f43f5e);"></i>
+      <h2 style="color:var(--text, #fff); font-weight:900; font-size:1.4rem; margin:0;">غير مسموح بفتح الإدارة والمالية العامة</h2>
+      <p style="color:var(--text-2, #94a3b8); font-size:0.9rem; max-width:450px; margin:0;">هذه الصفحة خاصة بحسابات وإدارة الوكالة فقط ولا تتاح لحسابات العملاء.</p>
+      <button class="btn btn-primary" (click)="redirectToDashboard()" style="padding:10px 24px; border-radius:12px; font-weight:700; cursor:pointer; background:linear-gradient(135deg, #6366f1, #4f46e5); color:#fff; border:none;">
+        <i class="fa-solid fa-arrow-right"></i> الرجوع للوحة التحكم
+      </button>
+    </div>
+
+    <div class="crm-module-container" *ngIf="!isClient()">
       <div class="module-header">
         <div>
           <h2><i class="fa-solid fa-chart-line" style="color:var(--emerald-light);"></i> المالية والحسابات العامة</h2>
@@ -262,7 +274,7 @@ import { DropdownModule } from 'primeng/dropdown';
       </div>
 
       <!-- PrimeNG Dialog: Add Ledger Entry -->
-      <p-dialog [(visible)]="showLedgerModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسجيل قسط / حركة مالية جديدة" [style]="{ width: '640px' }">
+      <p-dialog [(visible)]="showLedgerModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسجيل قسط / حركة مالية جديدة" [style]="{ width: '92vw', maxWidth: '640px' }">
         <form [formGroup]="ledgerForm" (ngSubmit)="saveLedgerEntry()">
           <div class="form-grid" style="padding: 10px 0;">
             <div class="form-group">
@@ -329,10 +341,12 @@ import { DropdownModule } from 'primeng/dropdown';
             </div>
           </div>
 
-          <ng-template pTemplate="footer">
-            <button type="button" class="btn btn-glass" (click)="showLedgerModal = false">إلغاء</button>
-            <button type="submit" class="btn btn-primary" [disabled]="ledgerForm.invalid || loading">تسجيل القيد</button>
-          </ng-template>
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="showLedgerModal = false">إلغاء</button>
+            <button type="submit" class="btn-dialog-submit" [disabled]="ledgerForm.invalid || loading">
+              {{ loading ? 'جاري التسجيل...' : 'تسجيل القيد' }}
+            </button>
+          </div>
         </form>
       </p-dialog>
     </div>
@@ -398,6 +412,7 @@ import { DropdownModule } from 'primeng/dropdown';
 export class FinanceDashboardComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   activeTab = 'summary';
   summary: any = {};
@@ -413,7 +428,26 @@ export class FinanceDashboardComponent implements OnInit {
   loading = false;
   ledgerForm!: FormGroup;
 
+  isClient(): boolean {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const user = JSON.parse(userStr);
+      return user.role === 'client';
+    } catch {
+      return false;
+    }
+  }
+
+  redirectToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
   ngOnInit(): void {
+    if (this.isClient()) {
+      this.redirectToDashboard();
+      return;
+    }
     this.initForms();
     this.loadAllData();
   }

@@ -29,7 +29,18 @@ export class MainLayoutComponent implements OnInit {
     inquiries: 0
   };
 
+  currentUser: any = null;
+
   ngOnInit() {
+    try {
+      const uStr = localStorage.getItem('mediaglow_user');
+      if (uStr) this.currentUser = JSON.parse(uStr);
+    } catch(e){}
+
+    if (!this.currentUser) {
+      this.currentUser = { name: 'مدير النظام', role: 'super_admin', email: 'admin@mediaglow.com' };
+    }
+
     const savedTheme = localStorage.getItem('mediaglow_theme');
     if (savedTheme === 'light') {
       this.isLightMode = true;
@@ -97,6 +108,22 @@ export class MainLayoutComponent implements OnInit {
   navigateToTab(tab: string) {
     this.sidebarOpen = false;
     this.router.navigate(['/dashboard'], { queryParams: { tab } });
+  }
+
+  isSuperAdmin(): boolean { return this.currentUser?.role === 'super_admin'; }
+  isAdmin(): boolean { return ['super_admin', 'admin'].includes(this.currentUser?.role); }
+  isDepartmentManager(): boolean { return this.currentUser?.role === 'department_manager'; }
+  isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
+  isClient(): boolean { return this.currentUser?.role === 'client'; }
+
+  getRoleBadgeLabel(): string {
+    const role = this.currentUser?.role;
+    if (role === 'super_admin') return 'سوبر أدمن';
+    if (role === 'admin') return 'أدمن';
+    if (role === 'department_manager') return 'مدير قسم';
+    if (role === 'employee') return 'موظف / صانع محتوى';
+    if (role === 'client') return 'عميل VIP';
+    return 'مستخدم';
   }
 
   isDashboardTabActive(tabName: string): boolean {

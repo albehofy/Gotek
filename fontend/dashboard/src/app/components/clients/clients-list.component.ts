@@ -46,7 +46,7 @@ import { InputTextModule } from 'primeng/inputtext';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let client of filteredClients(); let i = index">
+              <tr *ngFor="let client of filteredClients(); let i = index" class="client-row-clickable" (click)="goToClientDetails(client)" title="انقر لفتح بوابة وملف العميل">
                 <td>{{ i + 1 }}</td>
                 <td>
                   <div class="client-cell">
@@ -61,7 +61,7 @@ import { InputTextModule } from 'primeng/inputtext';
                 <td style="color:var(--emerald-light); font-weight:700;">{{ (client.total_paid || 0) | number:'1.2-2' }} ج.م</td>
                 <td style="color:var(--rose-light); font-weight:700;">{{ (client.outstanding_balance || 0) | number:'1.2-2' }} ج.م</td>
                 <td>
-                  <button class="action-icon-btn btn-indigo" (click)="goToClientDetails(client)" data-tooltip="عرض ملف العميل الكامل" title="عرض ملف العميل الكامل">
+                  <button class="action-icon-btn btn-indigo" (click)="$event.stopPropagation(); goToClientDetails(client)" title="فتح بوابة وملف العميل الكامل">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
                   </button>
                 </td>
@@ -81,7 +81,7 @@ import { InputTextModule } from 'primeng/inputtext';
       </div>
 
       <!-- PrimeNG Dialog: Add New Client -->
-      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة عميل جديد" [style]="{ width: '480px' }">
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة عميل جديد" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
@@ -100,12 +100,12 @@ import { InputTextModule } from 'primeng/inputtext';
             </div>
           </div>
 
-          <ng-template pTemplate="footer">
-            <button type="button" class="btn btn-glass" (click)="closeAddModal()">إلغاء</button>
-            <button type="submit" class="btn btn-primary" [disabled]="clientForm.invalid || loading">
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="closeAddModal()">إلغاء</button>
+            <button type="submit" class="btn-dialog-submit" [disabled]="clientForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : 'حفظ العميل' }}
             </button>
-          </ng-template>
+          </div>
         </form>
       </p-dialog>
     </div>

@@ -20,54 +20,58 @@
         <!-- CRM Section -->
         <div class="sb-section">
           <i class="fa-solid fa-layer-group"></i>
-          <span>إدارة الوكالة والنظام المالي</span>
+          <span>إدارة الوكالة والنظام</span>
         </div>
-        <a class="sb-item" [class.active]="isDashboardTabActive('crm-overview') || isDashboardTabActive('overview')" (click)="navigateToTab('crm-overview')" data-tooltip="نظرة عامة على CRM الوكالة">
+
+        <a class="sb-item" *ngIf="isAdmin()" [class.active]="isDashboardTabActive('crm-overview') || isDashboardTabActive('overview')" (click)="navigateToTab('crm-overview')" data-tooltip="نظرة عامة على CRM الوكالة">
           <span class="sb-icon"><i class="fa-solid fa-chart-line"></i></span>
-          <span class="sb-text">نظرة عامة على CRM الوكالة</span>
+          <span class="sb-text">نظرة عامة على CRM</span>
         </a>
-        <a class="sb-item" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
+
+        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager()" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
           <span class="sb-icon"><i class="fa-solid fa-users"></i></span>
           <span class="sb-text">العملاء</span>
         </a>
-        <a class="sb-item" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
+
+        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager() || isClient()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
           <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span>
           <span class="sb-text">الصفقات والعقود</span>
         </a>
+
         <a class="sb-item" routerLink="/tasks" routerLinkActive="active" data-tooltip="لوحة المهام">
           <span class="sb-icon"><i class="fa-solid fa-list-check"></i></span>
           <span class="sb-text">لوحة المهام</span>
         </a>
-        <a class="sb-item" routerLink="/departments" routerLinkActive="active" data-tooltip="الأقسام والمراكز">
+
+        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager()" routerLink="/departments" routerLinkActive="active" data-tooltip="الأقسام والمراكز">
           <span class="sb-icon"><i class="fa-solid fa-sitemap"></i></span>
           <span class="sb-text">الأقسام والمراكز</span>
         </a>
-        <a class="sb-item" routerLink="/finance" routerLinkActive="active" data-tooltip="المالية والخزينة">
+
+        <a class="sb-item" *ngIf="isAdmin()" routerLink="/finance" routerLinkActive="active" data-tooltip="المالية والخزينة">
           <span class="sb-icon"><i class="fa-solid fa-coins"></i></span>
           <span class="sb-text">المالية والخزينة</span>
         </a>
-        <a class="sb-item" routerLink="/client-portal" routerLinkActive="active" data-tooltip="بوابة العملاء">
-          <span class="sb-icon"><i class="fa-solid fa-id-card"></i></span>
-          <span class="sb-text">بوابة العملاء</span>
-        </a>
-        <a class="sb-item" routerLink="/roles" routerLinkActive="active" data-tooltip="الأدوار والصلاحيات">
+
+        <a class="sb-item" *ngIf="isAdmin()" routerLink="/roles" routerLinkActive="active" data-tooltip="الأدوار والصلاحيات">
           <span class="sb-icon"><i class="fa-solid fa-shield-halved"></i></span>
           <span class="sb-text">الأدوار والصلاحيات</span>
         </a>
 
         <!-- Console Section -->
-        <div class="sb-section">
+        <div class="sb-section" *ngIf="!isEmployee() && !isClient()">
           <i class="fa-solid fa-sliders"></i>
           <span>لوحة التحكم والرسائل</span>
         </div>
-        <a class="sb-item" [class.active]="isDashboardTabActive('contact-hub')" (click)="navigateToTab('contact-hub')" data-tooltip="مركز الرسائل والطلبات">
+
+        <a class="sb-item" *ngIf="!isEmployee() && !isClient()" [class.active]="isDashboardTabActive('contact-hub')" (click)="navigateToTab('contact-hub')" data-tooltip="مركز الرسائل والطلبات">
           <span class="sb-icon"><i class="fa-solid fa-inbox"></i></span>
           <span class="sb-text">مركز الرسائل والطلبات</span>
           <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>
         </a>
 
-        <!-- Website Section Dropdown -->
-        <div class="nav-dropdown" [class.open]="websiteMenuOpen">
+        <!-- Website Section Dropdown (Admins only) -->
+        <div class="nav-dropdown" [class.open]="websiteMenuOpen" *ngIf="isAdmin()">
           <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;" data-tooltip="الموقع الإلكتروني">
             <span class="sb-icon"><i class="fa-solid fa-globe"></i></span>
             <span class="sb-text">الموقع الإلكتروني</span>
@@ -78,7 +82,6 @@
               <span class="sb-icon"><i class="fa-solid fa-chart-pie"></i></span>
               <span class="sb-text">نظرة عامة على الموقع</span>
             </a>
-            <!-- Content Management -->
             <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('projects')" (click)="navigateToTab('projects')" data-tooltip="المشاريع والأعمال">
               <span class="sb-icon"><i class="fa-solid fa-folder-open"></i></span>
               <span class="sb-text">المشاريع والأعمال</span>
@@ -136,11 +139,13 @@
             </a>
 
             <!-- Visit Main Site -->
-            <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 6px 12px;"></div>
-            <a class="sb-item nav-sub-item" routerLink="/" data-tooltip="زيارة الموقع الرئيسي">
-              <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-              <span class="sb-text">زيارة الموقع الرئيسي</span>
-            </a>
+            <ng-container *ngIf="isAdmin()">
+              <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 6px 12px;"></div>
+              <a class="sb-item nav-sub-item" routerLink="/" data-tooltip="زيارة الموقع الرئيسي">
+                <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                <span class="sb-text">زيارة الموقع الرئيسي</span>
+              </a>
+            </ng-container>
           </div>
         </div>
 
@@ -175,20 +180,20 @@
         </button>
         <div class="tb-user-wrap">
           <div class="tb-user" (click)="toggleDropdown('user')">
-            <div class="tb-av"><i class="fa-solid fa-user-shield"></i></div>
-            <span class="tb-uname">مدير النظام</span>
+            <div class="tb-av"><i class="fa-solid" [ngClass]="isClient() ? 'fa-building' : (isEmployee() ? 'fa-laptop-code' : 'fa-user-shield')"></i></div>
+            <span class="tb-uname">{{ currentUser?.name || 'مستخدم' }}</span>
             <span class="tb-caret">▾</span>
           </div>
 
           <!-- Dropdown menu -->
           <div class="dropdown dd-user" [class.show]="activeDropdown === 'user'">
             <div class="ud-top">
-              <div class="ud-name">مدير النظام</div>
-              <div class="ud-role">سوبر أدمن</div>
-              <div class="ud-email">admin&#64;mediaglow.com</div>
+              <div class="ud-name">{{ currentUser?.name || 'مستخدم' }}</div>
+              <div class="ud-role">{{ getRoleBadgeLabel() }}</div>
+              <div class="ud-email">{{ currentUser?.email || '' }}</div>
             </div>
-            <a class="ud-row" (click)="navigateToTab('contact-hub')"><i class="fa-solid fa-inbox" style="color:var(--teal-2)"></i>&nbsp;&nbsp;إدارة الرسائل والطلبات</a>
-            <a class="ud-row" routerLink="/"><i class="fa-solid fa-globe" style="color:var(--teal-2)"></i>&nbsp;&nbsp;زيارة الموقع الرئيسي</a>
+            <a class="ud-row" *ngIf="isAdmin()" (click)="navigateToTab('contact-hub')"><i class="fa-solid fa-inbox" style="color:var(--teal-2)"></i>&nbsp;&nbsp;إدارة الرسائل والطلبات</a>
+            <a class="ud-row" *ngIf="isAdmin()" routerLink="/"><i class="fa-solid fa-globe" style="color:var(--teal-2)"></i>&nbsp;&nbsp;زيارة الموقع الرئيسي</a>
             <div class="ud-divider"></div>
             <a class="ud-row danger" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i>&nbsp;&nbsp;تسجيل الخروج</a>
           </div>

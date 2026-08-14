@@ -169,7 +169,62 @@ export class ApiService {
 
   // Departments & Sections
   getDepartments(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/departments`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getDepartments', [])));
+    const fallbackDepartments = [
+      {
+        id: 1,
+        name: 'قسم تصميم الهوية والجرافيك',
+        description: 'إبداع التصاميم الرئيسية، الهويات البصرية، شعارات الشركات، والـ Storyboards الإعلانية',
+        manager: { name: 'أحمد محمود - رئيس قسم التصميم' },
+        has_partner: false,
+        sub_categories: [
+          { id: 101, name_ar: 'تصميم شعار وهوية', name_en: 'Branding & Logo' },
+          { id: 102, name_ar: 'تصاميم سوشيال ميديا', name_en: 'Social Media Designs' },
+          { id: 103, name_ar: 'تصاميم طباعة وبانرات', name_en: 'Print & Banners' }
+        ]
+      },
+      {
+        id: 2,
+        name: 'قسم إنتاج الفيديو والموشن جرافيك',
+        description: 'إنتاج إعلانات الفيديو، الريلز، مونتاج المقاطع الحية، والـ Motion Graphics الفاخرة',
+        manager: { name: 'محمود السيد - مدير الإنتاج' },
+        has_partner: true,
+        partner_name: 'استوديو ميديا فيجن',
+        partner_percentage: 60,
+        sub_categories: [
+          { id: 201, name_ar: 'فيديو ريلز وتيك توك', name_en: 'Reels & TikTok' },
+          { id: 202, name_ar: 'موشن جرافيك 2D/3D', name_en: 'Motion Graphics' },
+          { id: 203, name_ar: 'مونتاج وتصحيح ألوان', name_en: 'Video Editing' }
+        ]
+      },
+      {
+        id: 3,
+        name: 'قسم التسويق وإدارة الحملات',
+        description: 'إدارة وتخطيط الحملات الإعلانية الممولة على الفيس بوك، إنستجرام، تيك توك وجوجل',
+        manager: { name: 'سارة خالد - مدير التسويق' },
+        has_partner: false,
+        sub_categories: [
+          { id: 301, name_ar: 'حملات إعلانية ممولة', name_en: 'Paid Ads Campaigns' },
+          { id: 302, name_ar: 'إدارة الحسابات اليومية', name_en: 'Page Management' },
+          { id: 303, name_ar: 'كتابة المحتوى (Copywriting)', name_en: 'Content Writing' }
+        ]
+      },
+      {
+        id: 4,
+        name: 'قسم البرمجة والتطوير',
+        description: 'تطوير وتصميم المواقع الإلكترونية، متاجر سلة وزد، وتطبيقات الهواتف الذكية',
+        manager: { name: 'إبراهيم علي - مدير البرمجيات' },
+        has_partner: false,
+        sub_categories: [
+          { id: 401, name_ar: 'مواقع إلكترونية فريدة', name_en: 'Web Development' },
+          { id: 402, name_ar: 'متاجر إلكترونية', name_en: 'E-commerce Stores' },
+          { id: 403, name_ar: 'تطبيقات الجوال', name_en: 'Mobile Apps' }
+        ]
+      }
+    ];
+
+    return this.http.get<any>(`${API_BASE_URL}/departments`, { headers: this.getHeaders() }).pipe(
+      catchError(this.handleError('getDepartments', fallbackDepartments))
+    );
   }
 
   createDepartment(data: any): Observable<any> {
@@ -201,6 +256,10 @@ export class ApiService {
 
   updateUser(id: string | number, data: any): Observable<any> {
     return this.http.put<any>(`${API_BASE_URL}/users/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  updateUserDepartment(userId: string | number, departmentId: number | null): Observable<any> {
+    return this.http.patch<any>(`${API_BASE_URL}/users/${userId}/assign-department`, { department_id: departmentId }, { headers: this.getHeaders() });
   }
 
   deleteUser(id: string | number): Observable<any> {

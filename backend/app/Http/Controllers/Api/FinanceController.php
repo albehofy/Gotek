@@ -21,6 +21,9 @@ class FinanceController extends Controller
     public function summary()
     {
         $user = Auth::user();
+        if ($user && $user->role === 'client') {
+            return response()->json(['message' => 'غير مسموح للعملاء بدخول الإدارة المالية'], 403);
+        }
 
         // Department Manager scope limit if not admin/super_admin
         $deptId = null;
@@ -157,6 +160,10 @@ class FinanceController extends Controller
 
     public function storeClientPayment(Request $request)
     {
+        $user = Auth::user();
+        if ($user && $user->role === 'client') {
+            return response()->json(['message' => 'غير مسموح للعملاء بتسجيل دفعات مالية بنفسهم'], 403);
+        }
         $validated = $request->validate([
             'deal_id' => 'required|exists:deals,id',
             'client_id' => 'required|exists:users,id',

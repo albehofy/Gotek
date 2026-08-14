@@ -8,6 +8,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-tasks-board',
@@ -20,7 +21,8 @@ import { DropdownModule } from 'primeng/dropdown';
     DialogModule,
     InputTextModule,
     TextareaModule,
-    DropdownModule
+    DropdownModule,
+    MultiSelectModule
   ],
   template: `
     <div class="tb-shell">
@@ -45,14 +47,65 @@ import { DropdownModule } from 'primeng/dropdown';
               {{ getTasksForColumn('done').length }} مكتمل
             </span>
           </div>
-          <button class="btn-new-task" (click)="openCreateModal()">
+          <button class="btn-new-task" *ngIf="isAdminOrManager()" (click)="openCreateModal()">
             <i class="fa-solid fa-plus"></i> مهمة جديدة
           </button>
         </div>
       </div>
 
-      <!-- ── KANBAN BOARD ───────────────────────────────────────── -->
-      <div class="kanban-board">
+      <!-- ── CLIENT DEDICATED CARDS GRID VIEW (للعميل فقط) ──────────────── -->
+      <div class="client-cards-grid-shell" *ngIf="isClient()" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:18px; margin-top:16px;">
+        <div 
+          class="client-card-item glass-panel" 
+          *ngFor="let task of (tasks || [])"
+          style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-lg); padding:22px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;"
+          (click)="openTaskDetail(task)"
+        >
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
+              <h3 style="font-size:1.05rem; font-weight:800; color:#fff; line-height:1.35;">{{ task.title }}</h3>
+              <span class="badge badge-v" style="font-size:0.74rem; font-weight:800; padding:4px 12px; border-radius:100px;">
+                {{ task.status === 'done' || task.status === 'approved' ? 'مكتمل ومعتمد' : (task.status === 'client_review' || task.status === 'in_review' ? 'بانتظار موافقتك واعتمادك' : 'قيد التنفيذ') }}
+              </span>
+            </div>
+
+            <div style="font-size:0.75rem; color:var(--text-2); margin-bottom:12px; display:flex; align-items:center; gap:6px;" *ngIf="task.deal">
+              <i class="fa-solid fa-handshake" style="color:var(--violet-light)"></i> {{ task.deal.title }}
+            </div>
+
+            <p style="font-size:0.85rem; color:var(--text-2); margin-bottom:14px; line-height:1.5; background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:10px;" *ngIf="task.scope">
+              {{ task.scope }}
+            </p>
+
+            <div *ngIf="task.attachments && task.attachments.length > 0" style="margin-bottom:14px;">
+              <small style="font-size:0.74rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:6px;"><i class="fa-solid fa-paperclip"></i> المرفقات والمخرجات:</small>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <div *ngFor="let att of task.attachments" style="width:52px; height:52px; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:rgba(0,0,0,0.2); display:flex; align-items:center; justify-content:center;">
+                  <img *ngIf="isImage(att)" [src]="getFileUrl(att)" style="width:100%; height:100%; object-fit:cover;" />
+                  <i *ngIf="!isImage(att)" class="fa-solid fa-file" style="color:var(--violet-light);"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:14px;" (click)="$event.stopPropagation()">
+            <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(task)" *ngIf="task.status !== 'done' && task.status !== 'approved'" style="flex:1; padding:10px; font-size:0.82rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+              <i class="fa-solid fa-circle-check"></i> اعتماد المهمة
+            </button>
+            <button type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:10px; font-size:0.82rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+              <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="!tasks || tasks.length === 0" style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--text-2);">
+          <i class="fa-solid fa-clipboard-check" style="font-size:2rem; margin-bottom:10px; color:var(--text-3);"></i>
+          <p>لا توجد مهام أو مخرجات حالية مخصصة لحسابك.</p>
+        </div>
+      </div>
+
+      <!-- ── KANBAN BOARD FOR STAFF / ADMIN ───────────────────────── -->
+      <div class="kanban-board" *ngIf="!isClient()">
         <div
           class="kanban-col"
           *ngFor="let col of columns"
@@ -111,6 +164,25 @@ import { DropdownModule } from 'primeng/dropdown';
                 <span class="m-item"><i class="fa-solid fa-arrow-up-right-dots"></i> {{ task.client_price | number:'1.0-0' }} EGP</span>
                 <span class="m-sep">→</span>
                 <span class="m-profit">+{{ (task.client_price - task.employee_price) | number:'1.0-0' }} margin</span>
+              </div>
+
+              <!-- Subtasks Checklist Box inside Board Card -->
+              <div class="tk-subtasks-preview" *ngIf="(task.subtasks || []).length > 0">
+                <div class="tsp-head">
+                  <span><i class="fa-solid fa-list-check"></i> الخطوات الفرعية ({{ getCompletedSubtasksCount(task) }}/{{ task.subtasks.length }})</span>
+                </div>
+                <div class="tsp-bar">
+                  <div class="tsp-fill" [style.width.%]="getSubtasksProgressPercent(task)"></div>
+                </div>
+                <div class="tsp-list">
+                  <div class="tsp-item" *ngFor="let st of (task.subtasks || []).slice(0, 3)" [class.done]="st.status === 'done' || st.is_completed">
+                    <i class="fa-solid" [ngClass]="(st.status === 'done' || st.is_completed) ? 'fa-square-check text-emerald' : 'fa-square text-muted'"></i>
+                    <span>{{ st.title }}</span>
+                  </div>
+                  <div class="tsp-more" *ngIf="task.subtasks.length > 3">
+                    + {{ task.subtasks.length - 3 }} خطوات فرعية إضافية...
+                  </div>
+                </div>
               </div>
 
               <!-- Thumbnails -->
@@ -257,8 +329,24 @@ import { DropdownModule } from 'primeng/dropdown';
                 </div>
               </div>
 
+              <!-- Client Review Interactive Actions (للعميل فقط عند مراجعة المهمة) -->
+              <div class="drawer-card client-review-actions-card" *ngIf="isClient()" style="background:linear-gradient(135deg, rgba(6,182,212,0.12), rgba(99,102,241,0.12)); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:16px;">
+                <div class="dc-head" style="color:#67e8f9; font-weight:800; font-size:0.95rem; margin-bottom:8px;">
+                  <i class="fa-solid fa-stamp"></i> اعتماد العميل والتفاعل مع المهمة
+                </div>
+                <p style="font-size:0.82rem; color:var(--text-2); margin-bottom:12px;">يمكنك كعميل اعتماد المهمة للبدء في تنفيذ الخطوات التالية أو طلب تعديلات ملحوظة:</p>
+                <div class="client-actions-row" style="display:flex; gap:10px;">
+                  <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(selectedTask)" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                    <i class="fa-solid fa-circle-check"></i> اعتماد وموافقة على المهمة
+                  </button>
+                  <button type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 14px rgba(245,158,11,0.35);">
+                    <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
+                  </button>
+                </div>
+              </div>
+
               <!-- Pipeline Progress Switcher (الحالة / مرحلة التنفيذ - بالقمة) -->
-              <div class="drawer-card pipeline-card">
+              <div class="drawer-card pipeline-card" *ngIf="!isClient()">
                 <div class="dc-head"><i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (تعديل الحالة)</div>
                 <div class="ps-grid">
                   <button
@@ -319,30 +407,39 @@ import { DropdownModule } from 'primeng/dropdown';
                 <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الفريق المكلف بالمهمة</div>
                 <div class="team-assign-container" style="display:flex; flex-direction:column; gap:12px; margin-top:6px;">
 
-                  <!-- PrimeNG Grouped & Searchable Dropdown (Placed ON TOP) -->
+                  <!-- PrimeNG Grouped MultiSelect Dropdown -->
                   <div class="assign-user-picker">
-                    <p-dropdown
+                    <p-multiSelect
                       [options]="groupedUsers"
                       [group]="true"
                       [filter]="true"
                       filterBy="label"
-                      placeholder="+ اختر موظف لإسناد المهمة (بحث بالاسم أو القسم)..."
-                      styleClass="w-full prime-grouped-dropdown"
-                      (onChange)="onPrimeUserSelect($event)"
+                      [(ngModel)]="selectedTaskUserIds"
+                      (onChange)="onMultiSelectUserChange($event)"
+                      placeholder="+ اختر الموظفين المكلفين بالمهمة (متعدد)..."
+                      styleClass="w-full prime-luxury-multiselect"
+                      panelStyleClass="prime-luxury-multiselect-panel"
+                      [display]="'chip'"
+                      [showClear]="true"
                     >
                       <ng-template let-group pTemplate="group">
                         <div class="p-group-header">
-                          <i class="fa-solid fa-layer-group"></i>
+                          <i class="fa-solid fa-layer-group" style="color:var(--violet-light);"></i>
                           <span>{{ group.label }}</span>
                         </div>
                       </ng-template>
                       <ng-template let-item pTemplate="item">
-                        <div class="p-item-row">
-                          <span class="p-item-name">{{ item.label }}</span>
-                          <small class="p-item-email" *ngIf="item.email">{{ item.email }}</small>
+                        <div class="p-item-row" style="display:flex; align-items:center; gap:9px; padding:3px 0;">
+                          <div class="tc-av-mini" style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg, var(--violet), var(--teal)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:800;">
+                            {{ item.label.charAt(0) }}
+                          </div>
+                          <div style="display:flex; flex-direction:column;">
+                            <span class="p-item-name" style="font-weight:700; color:var(--text); font-size:0.84rem;">{{ item.label }}</span>
+                            <small class="p-item-email" *ngIf="item.email" style="color:var(--text-2); font-size:0.72rem;">{{ item.email }}</small>
+                          </div>
                         </div>
                       </ng-template>
-                    </p-dropdown>
+                    </p-multiSelect>
                   </div>
 
                   <!-- Assigned Team Members Chips (Placed ON BOTTOM) -->
@@ -365,11 +462,11 @@ import { DropdownModule } from 'primeng/dropdown';
                 </div>
               </div>
 
-              <!-- Attachments -->
+              <!-- Attachments with Client Visibility Controls -->
               <div class="drawer-card">
                 <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والملفات</div>
-                <div class="att-grid" *ngIf="(selectedTask.attachments || []).length > 0">
-                  <div *ngFor="let att of selectedTask.attachments" class="att-item">
+                <div class="att-grid" *ngIf="getTaskAttachmentsForUser(selectedTask).length > 0">
+                  <div *ngFor="let att of getTaskAttachmentsForUser(selectedTask)" class="att-item">
                     <div class="att-img-wrap" *ngIf="isImage(att)">
                       <img
                         [src]="getFileUrl(att)"
@@ -378,20 +475,47 @@ import { DropdownModule } from 'primeng/dropdown';
                         (error)="handleImageError($event)"
                         alt="مرفق"
                       />
-                      <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                      <!-- Delete Button on Top Left -->
+                      <button class="att-del-btn" *ngIf="!isClient()" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
                         <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                      <!-- Client Visibility Pill Badge at Bottom Center -->
+                      <button 
+                        type="button" 
+                        class="att-vis-btn" 
+                        *ngIf="!isClient()"
+                        [class.is-vis]="att.visible_to_client !== false" 
+                        (click)="toggleAttachmentVisibility(selectedTask, att, $event)" 
+                        [title]="att.visible_to_client !== false ? 'المرفق مرئي للعميل (انقر للتغيير إلى داخلي)' : 'المرفق داخلي فقط (انقر للتغيير إلى مرئي للعميل)'"
+                      >
+                        <i class="fa-solid" [ngClass]="att.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
+                        <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي فقط' }}</span>
                       </button>
                     </div>
                     <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
                       <i class="fa-solid fa-file-pdf"></i>
                       <span>{{ att.file_name || att.name || 'مستند' }}</span>
-                      <button class="att-del-btn" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                      <button 
+                        type="button" 
+                        class="att-vis-btn-doc" 
+                        *ngIf="!isClient()"
+                        [class.is-vis]="att.visible_to_client !== false" 
+                        (click)="toggleAttachmentVisibility(selectedTask, att, $event)"
+                        style="padding:2px 7px; border-radius:6px; font-size:0.65rem; font-weight:700; border:none; cursor:pointer; margin-right:6px;"
+                        [style.background]="att.visible_to_client !== false ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'"
+                        [style.color]="att.visible_to_client !== false ? '#34d399' : '#fbbf24'"
+                      >
+                        <i class="fa-solid" [ngClass]="att.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
+                        <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي' }}</span>
+                      </button>
+                      <button class="att-del-btn" *ngIf="!isClient()" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
                         <i class="fa-solid fa-trash-can"></i>
                       </button>
                     </div>
                   </div>
                 </div>
-                <div class="upload-zone-modern" (click)="fileInput.click()">
+
+                <div class="upload-zone-modern" *ngIf="!isClient()" (click)="fileInput.click()">
                   <input type="file" #fileInput (change)="onFileSelected($event)" style="display:none" />
                   <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                   <div class="uz-text">
@@ -399,36 +523,89 @@ import { DropdownModule } from 'primeng/dropdown';
                     <small>يدعم الصور والملفات المرفقة (PNG, JPG, PDF)</small>
                   </div>
                 </div>
+                
+                <!-- Client Visibility Checkbox for Upload -->
+                <div style="margin-top:10px; display:flex; align-items:center; justify-content:flex-end;" *ngIf="!isClient()">
+                  <label style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-2); cursor:pointer; background:rgba(255,255,255,0.03); padding:6px 12px; border-radius:8px; border:1px solid var(--border);">
+                    <input type="checkbox" [(ngModel)]="newFileVisibleToClient" style="accent-color:var(--teal); cursor:pointer;" />
+                    <span>إظهار الملف المرفوع للعميل 👁️</span>
+                  </label>
+                </div>
               </div>
 
-              <!-- Comments & Discussion -->
+              <!-- Embedded Subtasks Checklist Box -->
+              <div class="drawer-card subtasks-embedded-card" *ngIf="(selectedTask.subtasks || []).length > 0">
+                <div class="dc-head flex-between" style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-weight:800; color:var(--teal-light, #38bdf8);"><i class="fa-solid fa-list-check"></i> المهام والخطوات الفرعية التابعة للمهمة</span>
+                  <span class="badge-sub-progress" style="background:rgba(99,102,241,0.12); color:var(--violet-light); font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:100px; border:1px solid rgba(99,102,241,0.25);">
+                    {{ getCompletedSubtasksCount(selectedTask) }} من {{ selectedTask.subtasks.length }} مكتملة ({{ getSubtasksProgressPercent(selectedTask) }}%)
+                  </span>
+                </div>
+                <div class="subtask-progress-bar" style="height:8px; background:rgba(255,255,255,0.08); border-radius:100px; overflow:hidden; margin:10px 0;">
+                  <div class="subtask-progress-fill" [style.width.%]="getSubtasksProgressPercent(selectedTask)" style="height:100%; background:linear-gradient(90deg, var(--teal, #06b6d4), var(--emerald, #10b981)); border-radius:100px;"></div>
+                </div>
+                <div class="subtask-list" style="display:flex; flex-direction:column; gap:8px;">
+                  <div class="subtask-item-row" *ngFor="let st of selectedTask.subtasks" [class.completed]="st.status === 'done' || st.is_completed" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px;">
+                    <input type="checkbox" [checked]="st.status === 'done' || st.is_completed" (change)="toggleSubtaskStatus(selectedTask, st)" style="width:16px; height:16px; cursor:pointer;" />
+                    <span class="st-title" style="flex:1; font-size:0.86rem; font-weight:700; color:var(--text);" [style.text-decoration]="(st.status === 'done' || st.is_completed) ? 'line-through' : 'none'">{{ st.title }}</span>
+                    <span class="st-status" [class.done]="st.status === 'done' || st.is_completed" style="font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:100px;" [style.background]="(st.status === 'done' || st.is_completed) ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'" [style.color]="(st.status === 'done' || st.is_completed) ? '#34d399' : '#fbbf24'">
+                      {{ (st.status === 'done' || st.is_completed) ? 'مكتملة' : 'قيد التنفيذ' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Comments & Discussion with Client Visibility Controls -->
               <div class="drawer-card">
                 <div class="dc-head"><i class="fa-solid fa-comments"></i> التعليقات والملاحظات</div>
                 <div class="notes-timeline">
-                  <div class="note-bubble" *ngFor="let note of (selectedTask.notes || [])">
+                  <div class="note-bubble" *ngFor="let note of getTaskNotesForUser(selectedTask)">
                     <div class="note-av">{{ note.user?.name?.charAt(0) || 'U' }}</div>
                     <div class="note-content">
-                      <div class="note-meta">
-                        <strong class="note-author">{{ note.user?.name || 'مستخدم' }}</strong>
-                        <span class="note-time">{{ note.created_at | date:'short' }}</span>
+                      <div class="note-meta" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                        <div>
+                          <strong class="note-author">{{ note.user?.name || 'مستخدم' }}</strong>
+                          <span class="note-time" style="margin-right:8px;">{{ note.created_at | date:'short' }}</span>
+                        </div>
+                        <!-- Note Visibility Toggle Badge -->
+                        <span 
+                          class="note-vis-chip" 
+                          *ngIf="!isClient()" 
+                          (click)="toggleNoteVisibility(selectedTask, note)"
+                          style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:100px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s;"
+                          [style.background]="note.visible_to_client !== false ? 'rgba(6,182,212,0.18)' : 'rgba(245,158,11,0.18)'"
+                          [style.color]="note.visible_to_client !== false ? '#67e8f9' : '#fbbf24'"
+                          [style.border]="note.visible_to_client !== false ? '1px solid rgba(6,182,212,0.3)' : '1px solid rgba(245,158,11,0.3)'"
+                          [title]="note.visible_to_client !== false ? 'تعليق مرئي للعميل (انقر لتغييره لتعليق داخلي)' : 'تعليق داخلي فقط (انقر لتغييره لمرئي للعميل)'"
+                        >
+                          <i class="fa-solid" [ngClass]="note.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
+                          <span>{{ note.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي للفريق' }}</span>
+                        </span>
                       </div>
-                      <div class="note-text">{{ note.note }}</div>
+                      <div class="note-text" style="margin-top:4px;">{{ note.note }}</div>
                     </div>
                   </div>
-                  <div class="notes-empty" *ngIf="!(selectedTask.notes || []).length">
+                  <div class="notes-empty" *ngIf="!getTaskNotesForUser(selectedTask).length">
                     <i class="fa-regular fa-comments"></i> لا توجد تعليقات بعد... كن أول من يضيف تعليقاً!
                   </div>
                 </div>
-                <div class="add-note-box">
+                
+                <div class="add-note-box" style="display:flex; flex-direction:column; gap:10px;">
                   <textarea
                     [(ngModel)]="newNoteText"
                     placeholder="اكتب تعليقاً أو ملاحظة..."
                     rows="2"
                     dir="rtl"
                   ></textarea>
-                  <button class="btn-send-note-modern" (click)="submitNote()" [disabled]="!newNoteText.trim()">
-                    <i class="fa-solid fa-paper-plane"></i> إرسال التعليق
-                  </button>
+                  <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <label style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-2); cursor:pointer;" *ngIf="!isClient()">
+                      <input type="checkbox" [(ngModel)]="newNoteVisibleToClient" style="accent-color:var(--violet); cursor:pointer;" />
+                      <span>إظهار التعليق للعميل 👁️</span>
+                    </label>
+                    <button class="btn-send-note-modern" (click)="submitNote()" [disabled]="!newNoteText.trim()">
+                      <i class="fa-solid fa-paper-plane"></i> إرسال التعليق
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -965,6 +1142,23 @@ import { DropdownModule } from 'primeng/dropdown';
         </form>
       </p-dialog>
 
+      <!-- ── CLIENT REVISION DIALOG (PrimeNG Dialog) ───────────── -->
+      <p-dialog [(visible)]="showRevisionModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="طلب تعديلات من العميل" [style]="{ width: '520px' }">
+        <div style="padding: 10px 0;">
+          <p style="font-size:0.88rem; color:var(--text-2); margin-bottom:14px; line-height:1.6;">يرجى كتابة التعديلات والملاحظات المطلوبة على المهمة ليقوم فريق العمل بتنفيذها فوراً:</p>
+          <div class="fg full" style="margin-bottom:16px;">
+            <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:6px; display:block;"><i class="fa-solid fa-pen-to-square" style="color:var(--amber)"></i> تفاصيل التعديل المطلوب <span style="color:var(--rose)">*</span></label>
+            <textarea [(ngModel)]="revisionNotes" pInputTextarea rows="4" placeholder="مثال: يرجى تعديل الألوان في التصميم وتغيير الشعار في الصورة الثانية..." style="width:100%; border-radius:12px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;"></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <button type="button" class="btn-cancel" (click)="showRevisionModal = false">إلغاء</button>
+            <button type="button" class="btn-save" style="background:linear-gradient(135deg, var(--amber), #d97706); box-shadow:0 4px 16px rgba(245,158,11,0.35);" [disabled]="!revisionNotes.trim()" (click)="submitRevisionByClient()">
+              <i class="fa-solid fa-paper-plane"></i> إرسال طلب التعديل
+            </button>
+          </div>
+        </div>
+      </p-dialog>
+
       <!-- ── LIGHTBOX ────────────────────────────────────────────── -->
       <div class="lightbox" *ngIf="expandedImageUrl" (click)="expandedImageUrl = null">
         <img [src]="expandedImageUrl" />
@@ -1223,6 +1417,41 @@ import { DropdownModule } from 'primeng/dropdown';
     .m-item { color: var(--teal-light); font-weight: 600; }
     .m-sep  { color: rgba(255,255,255,0.2); }
     .m-profit { color: var(--emerald-light); font-weight: 700; }
+
+    /* Subtasks preview box inside board card */
+    .tk-subtasks-preview {
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .tsp-head {
+      font-size: 0.7rem; font-weight: 800; color: var(--text-2);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tsp-bar {
+      height: 4px; background: rgba(255, 255, 255, 0.08);
+      border-radius: 100px; overflow: hidden;
+    }
+    .tsp-fill {
+      height: 100%; background: linear-gradient(90deg, #06b6d4, #10b981);
+      border-radius: 100px;
+    }
+    .tsp-list { display: flex; flex-direction: column; gap: 4px; }
+    .tsp-item {
+      font-size: 0.72rem; color: var(--text-2); display: flex; align-items: center; gap: 6px;
+    }
+    .tsp-item.done { color: var(--text); }
+    .tsp-more { font-size: 0.65rem; color: var(--text-3); font-weight: 700; }
+    
+    body.light-theme .tk-subtasks-preview {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.light-theme .tsp-head { color: #0f172a !important; }
+    body.light-theme .tsp-item { color: #334155 !important; }
 
     /* Thumbnails */
     .tk-thumbs { display: flex; gap: 4px; margin-bottom: 8px; align-items: center; }
@@ -1715,44 +1944,71 @@ import { DropdownModule } from 'primeng/dropdown';
       color: #0f172a !important;
     }
 
-    /* Attachments Grid & Overlay Delete */
+    /* Attachments Grid & Luxury Card Styling */
     .att-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 6px;
+      gap: 14px;
+      margin-bottom: 10px;
     }
     .att-item {
-      width: 76px;
-      height: 76px;
+      width: 124px;
+      height: 118px;
       flex-shrink: 0;
       border-radius: 14px;
       overflow: hidden;
       position: relative;
-    }
-    .att-img-wrap { position: relative; width: 76px; height: 76px; flex-shrink: 0; }
-    .att-img {
-      width: 76px;
-      height: 76px;
-      object-fit: cover;
-      border-radius: 14px;
       border: 1px solid var(--border);
-      cursor: pointer;
-      transition: border-color 0.2s;
-      background: rgba(99, 102, 241, 0.05);
+      background: var(--bg-card);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    .att-img:hover {
-      border-color: var(--violet);
+    .att-item:hover {
+      border-color: var(--violet-light);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+    }
+    .att-img-wrap { position: relative; width: 100%; height: 100%; overflow: hidden; }
+    .att-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .att-item:hover .att-img {
+      transform: scale(1.05);
     }
     .att-del-btn {
-      position: absolute; top: 4px; left: 4px;
-      width: 22px; height: 22px; border-radius: 6px;
-      background: rgba(225, 29, 72, 0.85); color: #fff;
+      position: absolute; top: 6px; left: 6px;
+      width: 24px; height: 24px; border-radius: 6px;
+      background: rgba(225, 29, 72, 0.9); color: #fff;
       border: none; cursor: pointer; display: flex;
       align-items: center; justify-content: center;
-      font-size: 0.65rem; transition: all 0.2s; z-index: 5;
+      font-size: 0.7rem; transition: all 0.2s ease; z-index: 10;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    .att-del-btn:hover { background: #e11d48; transform: scale(1.1); }
+    .att-del-btn:hover { background: #e11d48; transform: scale(1.08); }
+
+    .att-vis-btn {
+      position: absolute; bottom: 6px; left: 6px; right: 6px;
+      padding: 4px 6px; border-radius: 8px;
+      font-size: 0.65rem; font-weight: 700; font-family: inherit;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      white-space: nowrap; z-index: 10;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      background: rgba(245, 158, 11, 0.92); color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .att-vis-btn.is-vis {
+      background: rgba(16, 185, 129, 0.92); color: #ffffff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    .att-vis-btn:hover {
+      opacity: 0.95;
+    }
     .att-doc {
       width: 76px;
       height: 76px;
@@ -2016,6 +2272,101 @@ import { DropdownModule } from 'primeng/dropdown';
       color: var(--text); outline: none; font-family: inherit;
       font-size: 0.86rem; transition: all 0.2s;
     }
+    /* PrimeNG Luxury MultiSelect Styling */
+    ::ng-deep .prime-luxury-multiselect {
+      width: 100% !important;
+      background: rgba(99, 102, 241, 0.05) !important;
+      border: 1px solid var(--border, rgba(99, 102, 241, 0.2)) !important;
+      border-radius: 14px !important;
+      padding: 4px 8px !important;
+      transition: all 0.2s ease !important;
+    }
+    ::ng-deep .prime-luxury-multiselect:hover,
+    ::ng-deep .prime-luxury-multiselect.p-multiselect-focus {
+      border-color: var(--violet-light) !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+      background: rgba(99, 102, 241, 0.08) !important;
+    }
+    ::ng-deep .prime-luxury-multiselect .p-multiselect-label {
+      padding: 6px 10px !important;
+      font-family: inherit !important;
+      font-size: 0.85rem !important;
+      color: var(--text) !important;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+    }
+    ::ng-deep .prime-luxury-multiselect .p-multiselect-token {
+      background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(6,182,212,0.25)) !important;
+      border: 1px solid rgba(99,102,241,0.35) !important;
+      color: #ffffff !important;
+      border-radius: 100px !important;
+      padding: 3px 10px !important;
+      font-size: 0.76rem !important;
+      font-weight: 700 !important;
+    }
+    ::ng-deep .prime-luxury-multiselect .p-multiselect-token-icon {
+      margin-left: 4px !important;
+      color: rgba(255,255,255,0.7) !important;
+    }
+    ::ng-deep .prime-luxury-multiselect .p-multiselect-token-icon:hover {
+      color: #f43f5e !important;
+    }
+    ::ng-deep .prime-luxury-multiselect-panel {
+      background: #10101e !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+      backdrop-filter: blur(16px) !important;
+    }
+    ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-header {
+      background: rgba(255,255,255,0.03) !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 10px 14px !important;
+      border-radius: 16px 16px 0 0 !important;
+    }
+    ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter {
+      background: var(--bg-input) !important;
+      border: 1px solid var(--border) !important;
+      color: #fff !important;
+      border-radius: 10px !important;
+      padding: 8px 12px !important;
+      font-size: 0.82rem !important;
+    }
+    ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item {
+      padding: 10px 14px !important;
+      color: var(--text) !important;
+      border-radius: 10px !important;
+      margin: 2px 6px !important;
+      transition: all 0.15s ease !important;
+    }
+    ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item:hover,
+    ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item.p-highlight {
+      background: rgba(99,102,241,0.18) !important;
+      color: #ffffff !important;
+    }
+
+    body.light-theme ::ng-deep .prime-luxury-multiselect,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+    }
+    body.light-theme ::ng-deep .prime-luxury-multiselect-panel,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel {
+      background: #ffffff !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12) !important;
+    }
+    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item {
+      color: #0f172a !important;
+    }
+    body.light-theme ::ng-deep .prime-luxury-multiselect .p-multiselect-token {
+      background: rgba(99, 102, 241, 0.12) !important;
+      color: #4f46e5 !important;
+      border-color: rgba(99, 102, 241, 0.25) !important;
+    }
+
     .fg input:focus, .fg select:focus, .fg textarea:focus {
       border-color: var(--violet); background: rgba(99,102,241,0.06);
       box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
@@ -2135,10 +2486,13 @@ export class TasksBoardComponent implements OnInit {
 
   isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
   isClient(): boolean { return this.currentUser?.role === 'client'; }
+  isDepartmentManager(): boolean { return this.currentUser?.role === 'department_manager'; }
+  isSuperAdmin(): boolean { return this.currentUser?.role === 'super_admin'; }
+  isAdmin(): boolean { return ['super_admin', 'admin'].includes(this.currentUser?.role); }
   isAdminOrManager(): boolean {
     if (!this.currentUser) return true;
     const role = this.currentUser.role || '';
-    return !['employee', 'client'].includes(role);
+    return ['super_admin', 'admin', 'department_manager'].includes(role);
   }
 
   initForm(): void {
@@ -2358,7 +2712,75 @@ export class TasksBoardComponent implements OnInit {
   }
 
   getTasksForColumn(colKey: string) {
-    return (this.tasks || []).filter(t => t.status === colKey);
+    let list = (this.tasks || []).filter(t => t.status === colKey);
+
+    // CRITICAL FIX: Hide child subtasks from board columns so ONLY top-level main tasks appear as cards!
+    list = list.filter(t => !t.parent_id && !t.parent);
+
+    if (!this.currentUser) return list;
+
+    const u = this.currentUser;
+    if (u.role === 'employee') {
+      // Employee sees ONLY tasks assigned to him
+      list = list.filter(t =>
+        t.assigned_to === u.id ||
+        t.assigned_to_user_id === u.id ||
+        t.user_id === u.id ||
+        t.assigned_to_name === u.name ||
+        (t.users || []).some((x: any) => x.id === u.id || x.email === u.email || x.name === u.name)
+      );
+    } else if (u.role === 'client') {
+      // Client sees ONLY tasks belonging to his deals/projects in client review stages or done
+      list = list.filter(t =>
+        t.client_id === u.id ||
+        t.client_name === u.name ||
+        t.deal?.client_id === u.id ||
+        t.deal?.client_name === u.name ||
+        (typeof t.deal?.client === 'string' && t.deal.client.toLowerCase().includes('client')) ||
+        (t.status === 'client_review' || t.status === 'in_review' || t.status === 'client_feedback')
+      );
+    } else if (u.role === 'department_manager') {
+      // Department manager sees tasks assigned to him OR belonging to his department
+      list = list.filter(t =>
+        t.assigned_to === u.id ||
+        t.assigned_to_user_id === u.id ||
+        (t.users || []).some((x: any) => x.id === u.id) ||
+        (u.department_id && (t.department_id === u.department_id || t.department?.id === u.department_id))
+      );
+    }
+
+    return list;
+  }
+
+  showRevisionModal = false;
+  revisionNotes = '';
+
+  approveTaskByClient(task: any): void {
+    if (!task) return;
+    const oldStatus = task.status;
+    task.status = 'done';
+    this.persistStatusUpdate(task, 'done', () => task.status = oldStatus);
+    this.apiService.addTaskNote(task.id, 'تمت موافقة واعتماد المهمة بنجاح من قِبل العميل VIP').subscribe(() => {
+      this.loadTaskActivities(task.id);
+    });
+  }
+
+  openRevisionModal(): void {
+    this.revisionNotes = '';
+    this.showRevisionModal = true;
+  }
+
+  submitRevisionByClient(): void {
+    if (!this.revisionNotes.trim() || !this.selectedTask) return;
+    const task = this.selectedTask;
+    const oldStatus = task.status;
+    task.status = 'client_feedback';
+    this.persistStatusUpdate(task, 'client_feedback', () => task.status = oldStatus);
+    this.apiService.addTaskNote(task.id, 'طلب تعديل من العميل: ' + this.revisionNotes.trim()).subscribe(() => {
+      this.revisionNotes = '';
+      this.showRevisionModal = false;
+      this.loadTaskActivities(task.id);
+    });
   }
 
   computeMargin(): void {
@@ -2376,7 +2798,21 @@ export class TasksBoardComponent implements OnInit {
   saveTask(): void {
     if (this.taskForm.invalid) return;
     this.loading = true;
-    this.apiService.createTask(this.taskForm.value).subscribe({
+    const taskVal = { ...this.taskForm.value };
+
+    // Rule 4: If task is created for a department without specifying an employee, auto-assign to Department Head!
+    if (taskVal.department_id && !taskVal.assigned_to && (!taskVal.user_ids || !taskVal.user_ids.length)) {
+      const deptHead = this.allUsers.find((u: any) =>
+        u.role === 'department_manager' &&
+        (u.department_id === taskVal.department_id || u.department?.id === taskVal.department_id)
+      );
+      if (deptHead) {
+        taskVal.assigned_to = deptHead.id;
+        taskVal.user_ids = [deptHead.id];
+      }
+    }
+
+    this.apiService.createTask(taskVal).subscribe({
       next: () => { this.loading = false; this.showCreateModal = false; this.loadData(); },
       error: () => this.loading = false
     });
@@ -2392,9 +2828,12 @@ export class TasksBoardComponent implements OnInit {
     }
   }
 
+  selectedTaskUserIds: number[] = [];
+
   openTaskDetail(task: any): void {
     if (this.draggingTask || !task) return;
     this.selectedTask = task;
+    this.selectedTaskUserIds = (task.users || []).map((u: any) => u.id);
     this.activeDrawerTab = 'details';
     this.selectedSubtask = null;
     this.loadTaskActivities(task.id);
@@ -2430,6 +2869,15 @@ export class TasksBoardComponent implements OnInit {
       if (res && res.data) {
         this.taskActivities = res.data;
       }
+    });
+  }
+
+  onMultiSelectUserChange(event: any): void {
+    if (!this.selectedTask) return;
+    const userIds: number[] = (event.value || []).map((v: any) => Number(v));
+    this.apiService.assignTaskMembers(this.selectedTask.id, userIds).subscribe(() => {
+      this.selectedTask.users = this.allUsers.filter((u: any) => userIds.includes(u.id));
+      this.loadTaskActivities(this.selectedTask.id);
     });
   }
 
@@ -2571,30 +3019,63 @@ export class TasksBoardComponent implements OnInit {
     this.expandedImageUrl = this.getFileUrl(url);
   }
 
+  newFileVisibleToClient = true;
+  newNoteVisibleToClient = true;
+
+  getTaskAttachmentsForUser(task: any): any[] {
+    if (!task || !task.attachments) return [];
+    if (this.isClient()) {
+      return task.attachments.filter((a: any) => a.visible_to_client !== false);
+    }
+    return task.attachments;
+  }
+
+  toggleAttachmentVisibility(task: any, att: any, event: Event): void {
+    event.stopPropagation();
+    att.visible_to_client = !(att.visible_to_client !== false);
+  }
+
+  getTaskNotesForUser(task: any): any[] {
+    if (!task || !task.notes) return [];
+    if (this.isClient()) {
+      return task.notes.filter((n: any) => n.visible_to_client !== false);
+    }
+    return task.notes;
+  }
+
+  toggleNoteVisibility(task: any, note: any): void {
+    note.visible_to_client = !(note.visible_to_client !== false);
+  }
+
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file && this.selectedTask) {
+      const isVis = this.newFileVisibleToClient;
       const fd = new FormData();
       fd.append('file', file);
+      fd.append('visible_to_client', isVis ? '1' : '0');
       this.apiService.addTaskAttachment(this.selectedTask.id, fd).subscribe(res => {
-        if (res.data) {
-          if (!this.selectedTask.attachments) this.selectedTask.attachments = [];
-          this.selectedTask.attachments.push(res.data);
-          this.loadTaskActivities(this.selectedTask.id);
-        }
+        const attData = res?.data || { id: Date.now(), file_name: file.name, file_url: URL.createObjectURL(file), is_image: file.type.includes('image') };
+        attData.visible_to_client = isVis;
+        if (!this.selectedTask.attachments) this.selectedTask.attachments = [];
+        this.selectedTask.attachments.push(attData);
+        this.loadTaskActivities(this.selectedTask.id);
       });
     }
   }
 
   submitNote(): void {
     if (!this.newNoteText.trim() || !this.selectedTask) return;
-    this.apiService.addTaskNote(this.selectedTask.id, this.newNoteText).subscribe(res => {
-      if (res.data) {
-        if (!this.selectedTask.notes) this.selectedTask.notes = [];
-        this.selectedTask.notes.push(res.data);
-        this.newNoteText = '';
-        this.loadTaskActivities(this.selectedTask.id);
-      }
+    const isVis = this.newNoteVisibleToClient;
+    const noteText = this.newNoteText.trim();
+    this.apiService.addTaskNote(this.selectedTask.id, noteText).subscribe(res => {
+      const noteData = res?.data || { id: Date.now(), note: noteText, user: this.currentUser, created_at: new Date().toISOString() };
+      noteData.visible_to_client = isVis;
+      if (!this.selectedTask.notes) this.selectedTask.notes = [];
+      this.selectedTask.notes.push(noteData);
+      this.newNoteText = '';
+      this.newNoteVisibleToClient = true;
+      this.loadTaskActivities(this.selectedTask.id);
     });
   }
 

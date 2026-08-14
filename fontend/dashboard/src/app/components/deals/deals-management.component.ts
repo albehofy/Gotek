@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-picker-select.component';
@@ -13,6 +14,7 @@ import { DropdownModule } from 'primeng/dropdown';
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     FormsModule,
     ReactiveFormsModule,
     PrimePickerSelectComponent,
@@ -26,7 +28,7 @@ import { DropdownModule } from 'primeng/dropdown';
       <div class="module-header">
         <div>
           <h2><i class="fa-solid fa-handshake" style="color:var(--violet-light);"></i> الصفقات والعقود المالية</h2>
-          <p class="subtitle">متابعة خط الصفقات، نسب المبيعات وحركات دفع الأقساط</p>
+          <p class="subtitle">متابعة خط الصفقات، التواريخ، الدفعات المسددة والمتبقية، وتفاصيل المهام المكتملة والجارية</p>
         </div>
         <button class="btn btn-primary" (click)="openAddDealModal()">
           <i class="fa-solid fa-plus"></i> صفقة جديدة
@@ -39,11 +41,11 @@ import { DropdownModule } from 'primeng/dropdown';
           <table class="crm-table">
             <thead>
               <tr>
-                <th>عنوان الصفقة</th>
+                <th>عنوان الصفقة والعقد</th>
                 <th>العميل</th>
                 <th>القسم الرئيسي</th>
                 <th>مسؤول المبيعات والعمولة</th>
-                <th>القيمة الإجمالية</th>
+                <th>قيمة العقد الإجمالية</th>
                 <th>المدفوع</th>
                 <th>المتبقي</th>
                 <th>الحالة</th>
@@ -53,8 +55,11 @@ import { DropdownModule } from 'primeng/dropdown';
             <tbody>
               <tr *ngFor="let deal of deals">
                 <td style="font-weight:700; color:var(--text);">
-                  <div>{{ deal.title }}</div>
-                  <small style="color:var(--text-2); font-weight:normal; font-size:0.75rem;" *ngIf="deal.agreed_scope">النطاق: {{ deal.agreed_scope }}</small>
+                  <div class="deal-title-clickable" (click)="openDealDetails(deal)" title="انقر لفتح صفحة التفاصيل الشاملة للصفقة">
+                    <i class="fa-solid fa-file-contract" style="color:var(--violet-light); margin-left:6px;"></i>
+                    {{ deal.title }}
+                  </div>
+                  <small style="color:var(--text-2); font-weight:normal; font-size:0.75rem;" *ngIf="deal.agreed_scope">النطاق: {{ deal.agreed_scope | slice:0:55 }}{{ (deal.agreed_scope?.length || 0) > 55 ? '...' : '' }}</small>
                 </td>
                 <td style="color:var(--text-2); font-weight:500;">{{ deal.client?.name || 'عميل عام' }}</td>
                 <td><span class="badge badge-t">{{ deal.department?.name || 'عام' }}</span></td>
@@ -65,14 +70,23 @@ import { DropdownModule } from 'primeng/dropdown';
                   </small>
                   <div *ngIf="!deal.sales_person" style="color:var(--text-3);">-</div>
                 </td>
-                <td style="font-weight:700; color:var(--text);">{{ deal.calculated_total | number:'1.2-2' }} ج.م</td>
-                <td style="color:var(--emerald-light); font-weight:700;">{{ deal.calculated_paid | number:'1.2-2' }} ج.م</td>
+                <td style="font-weight:700; color:var(--text);">{{ (deal.calculated_total || deal.total_price) | number:'1.2-2' }} ج.م</td>
+                <td style="color:var(--emerald-light); font-weight:700;">{{ (deal.calculated_paid || deal.paid_amount) | number:'1.2-2' }} ج.م</td>
                 <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} ج.م</td>
-                <td><span class="badge badge-v" style="text-transform:uppercase;">{{ deal.status }}</span></td>
                 <td>
-                  <button class="action-icon-btn btn-emerald" (click)="openPaymentModal(deal)" data-tooltip="تسجيل دفعة مالية جديدة" title="تسجيل دفعة مالية جديدة">
-                    <i class="fa-solid fa-money-bill-wave"></i>
-                  </button>
+                  <span class="status-pill" [ngClass]="'status-' + (deal.status || 'pending')">
+                    {{ getStatusLabel(deal.status) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-group">
+                    <button class="action-icon-btn btn-violet" (click)="openDealDetails(deal)" title="فتح صفحة التفاصيل الشاملة">
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="action-icon-btn btn-emerald" *ngIf="!isClient()" (click)="openPaymentModal(deal)" title="تسجيل دفعة مالية جديدة">
+                      <i class="fa-solid fa-money-bill-wave"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="deals.length === 0">
@@ -90,7 +104,7 @@ import { DropdownModule } from 'primeng/dropdown';
       </div>
 
       <!-- PrimeNG Dialog: Add Deal -->
-      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إنشاء صفقة وعقد جديد" [style]="{ width: '680px' }">
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إنشاء صفقة وعقد جديد" [style]="{ width: '92vw', maxWidth: '680px' }">
         <form [formGroup]="dealForm" (ngSubmit)="saveDeal()">
           <div class="form-grid" style="padding: 10px 0;">
             <div class="form-group full-width">
@@ -156,17 +170,17 @@ import { DropdownModule } from 'primeng/dropdown';
             </div>
           </div>
 
-          <ng-template pTemplate="footer">
-            <button type="button" class="btn btn-glass" (click)="closeAddModal()">إلغاء</button>
-            <button type="submit" class="btn btn-primary" [disabled]="dealForm.invalid || loading">
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="closeAddModal()">إلغاء</button>
+            <button type="submit" class="btn-dialog-submit" [disabled]="dealForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : 'حفظ ونشر الصفقة' }}
             </button>
-          </ng-template>
+          </div>
         </form>
       </p-dialog>
 
       <!-- PrimeNG Dialog: Payment Modal -->
-      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'تسجيل دفعة / قسط: ' + (selectedDeal?.title || '')" [style]="{ width: '480px' }">
+      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'تسجيل دفعة / قسط: ' + (selectedDeal?.title || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;" *ngIf="selectedDeal">
             <div class="form-group">
@@ -199,12 +213,12 @@ import { DropdownModule } from 'primeng/dropdown';
             </div>
           </div>
 
-          <ng-template pTemplate="footer">
-            <button type="button" class="btn btn-glass" (click)="closePaymentModal()">إلغاء</button>
-            <button type="submit" class="btn btn-primary" [disabled]="paymentForm.invalid || loading">
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="closePaymentModal()">إلغاء</button>
+            <button type="submit" class="btn-dialog-submit" [disabled]="paymentForm.invalid || loading">
               {{ loading ? 'جاري المعالجة...' : 'تأكيد وتسجيل الدفعة' }}
             </button>
-          </ng-template>
+          </div>
         </form>
       </p-dialog>
     </div>
@@ -215,38 +229,59 @@ import { DropdownModule } from 'primeng/dropdown';
     .module-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
     .module-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
     .subtitle { color: var(--text-2); font-size: 0.85rem; margin-top: 4px; }
-    .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
-    .crm-table th { text-align: right; padding: 14px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
-    .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: var(--text); vertical-align: middle; }
+    
+    .deal-title-clickable { cursor: pointer; color: var(--text); transition: color 0.2s; font-size: 0.95rem; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; }
+    .deal-title-clickable:hover { color: var(--violet-light); text-decoration: underline; }
+
+    .table-card { border-radius: 18px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    .crm-table { width: 100%; min-width: 1050px; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
+    .crm-table th { text-align: right; padding: 16px 20px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.76rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
+    .crm-table td { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; color: var(--text); vertical-align: middle; white-space: nowrap; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
-    .dept-badge { background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(124,58,237,0.2); padding: 3px 9px; border-radius: 100px; font-size: 0.68rem; font-weight: 700; }
-    .btn-action { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); padding: 6px 12px; border-radius: var(--r); font-size: 0.76rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
-    .btn-action:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-    .btn-action.primary { color: var(--emerald-light); background: var(--emerald-soft); border-color: rgba(5,150,105,0.2); }
-    .btn-action.primary:hover { background: rgba(5,150,105,0.22); }
-    .crm-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px; }
-    .crm-modal-card { width: 100%; max-width: 520px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: 0 24px 80px rgba(0,0,0,0.7); animation: modalIn 0.22s var(--ease); max-height: 90vh; overflow-y: auto; }
-    .wide-modal { max-width: 680px; }
-    @keyframes modalIn { from { opacity:0; transform: translateY(16px) scale(0.97); } to { opacity:1; transform:none; } }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
-    .modal-header h3 { font-size: 1.05rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 9px; }
-    .close-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); font-size: 0.9rem; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .close-btn:hover { background: var(--rose-soft); color: var(--rose-light); border-color: rgba(225,29,72,0.2); }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px 24px; }
-    .full-width { grid-column: span 2; }
+    
+    .actions-group { display: flex; align-items: center; gap: 6px; }
+    .action-icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; }
+    .btn-violet { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border-color: rgba(99, 102, 241, 0.25); }
+    .btn-violet:hover { background: var(--violet); color: #ffffff; }
+    .btn-emerald { background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.25); }
+    .btn-emerald:hover { background: #10b981; color: #ffffff; }
+
+    /* Status Pills */
+    .status-pill { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; }
+    .status-pending { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-active { background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .status-completed { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-cancelled { background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--violet); background: rgba(124,58,237,0.06); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
-    .form-group select option { background: var(--bg-card); color: var(--text); }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: #fff; outline: none; font-family: inherit; font-size: 0.88rem; }
     .required { color: var(--rose-light); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .full-width { grid-column: span 2; }
+
+    /* Light Theme Overrides */
+    :host-context(body.light-theme) .crm-module-container { background: #f8fafc !important; }
+    :host-context(body.light-theme) .table-card { background: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important; }
+    :host-context(body.light-theme) .crm-table th { background: #f8fafc !important; color: #475569 !important; border-bottom-color: #e2e8f0 !important; }
+    :host-context(body.light-theme) .crm-table td { border-bottom-color: #f1f5f9 !important; color: #0f172a !important; }
+    :host-context(body.light-theme) .crm-table tr:hover td { background: #f8fafc !important; }
+    :host-context(body.light-theme) .deal-title-clickable { color: #0f172a !important; }
+    :host-context(body.light-theme) .deal-title-clickable:hover { color: #4f46e5 !important; }
+    :host-context(body.light-theme) .status-pending { background: #fffbeb !important; color: #b45309 !important; border-color: #fde68a !important; }
+    :host-context(body.light-theme) .status-active { background: #eef2ff !important; color: #4338ca !important; border-color: #c7d2fe !important; }
+    :host-context(body.light-theme) .status-completed { background: #ecfdf5 !important; color: #047857 !important; border-color: #a7f3d0 !important; }
+    :host-context(body.light-theme) .status-cancelled { background: #fff1f2 !important; color: #be123c !important; border-color: #fecdd3 !important; }
   `]
 })
 export class DealsManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   deals: any[] = [];
   clients: any[] = [];
@@ -261,7 +296,24 @@ export class DealsManagementComponent implements OnInit {
   dealForm!: FormGroup;
   paymentForm!: FormGroup;
 
+  currentUser: any = null;
+
+  isClient(): boolean {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const user = JSON.parse(userStr);
+      return user.role === 'client';
+    } catch {
+      return false;
+    }
+  }
+
   ngOnInit(): void {
+    try {
+      const uStr = localStorage.getItem('mediaglow_user');
+      if (uStr) this.currentUser = JSON.parse(uStr);
+    } catch(e){}
     this.initForms();
     this.loadData();
   }
@@ -287,10 +339,38 @@ export class DealsManagementComponent implements OnInit {
   }
 
   loadData(): void {
-    this.apiService.getDeals().subscribe(res => this.deals = res || []);
+    this.apiService.getDeals().subscribe(res => {
+      let list = res || [];
+      if (this.currentUser?.role === 'client') {
+        const u = this.currentUser;
+        list = list.filter((d: any) =>
+          d.client_id === u.id ||
+          d.client?.id === u.id ||
+          d.client?.email === u.email ||
+          d.client_name === u.name ||
+          d.client === u.name ||
+          (typeof d.client === 'string' && d.client.toLowerCase().includes('client'))
+        );
+      }
+      this.deals = list;
+    });
     this.apiService.getUsers('client').subscribe(res => this.clients = res.data || []);
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
     this.apiService.getUsers().subscribe(res => this.employees = res.data || []);
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'active': return 'نشطة / جارية';
+      case 'completed': return 'مكتملة';
+      case 'cancelled': return 'ملغاة';
+      case 'pending':
+      default: return 'قيد الانتظار';
+    }
+  }
+
+  openDealDetails(deal: any): void {
+    this.router.navigate(['/deals', deal.id]);
   }
 
   openAddDealModal(): void {

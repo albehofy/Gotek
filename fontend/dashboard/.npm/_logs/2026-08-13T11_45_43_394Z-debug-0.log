@@ -6,8 +6,8 @@
 5 silly config load:file:/home/devoryx/.nvm/versions/node/v22.23.2/etc/npmrc
 6 verbose title npm exec ng build
 7 verbose argv "exec" "--" "ng" "build"
-8 verbose logfile logs-max:10 dir:/run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-12T20_20_50_656Z-
-9 verbose logfile /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-12T20_20_50_656Z-debug-0.log
+8 verbose logfile logs-max:10 dir:/run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-13T11_45_43_394Z-
+9 verbose logfile /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard/.npm/_logs/2026-08-13T11_45_43_394Z-debug-0.log
 10 silly logfile start cleaning logs, removing 1 files
 11 silly logfile done cleaning log files
 12 verbose cwd /run/media/devoryx/Storage/Media Glow CRM/fontend/dashboard

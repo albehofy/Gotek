@@ -1,4 +1,4 @@
-<div class="login-wrapper">
+<div class="login-wrapper" dir="rtl">
   
   <!-- LEFT: CINEMATIC VISUAL PANEL -->
   <div class="login-visual-panel">
@@ -10,7 +10,7 @@
       <!-- Top Brand Logo -->
       <a routerLink="/" class="brand-logo">
         <div class="logo-badge">
-          <i class="fa-solid fa-sparkles text-orange"></i>
+          <i class="fa-solid fa-sparkles text-brand-gradient"></i>
         </div>
         <div class="logo-text">
           <span>Media Glow</span>
@@ -31,19 +31,28 @@
           إدارة الصفقات، المهام، المراكز، الأرباح الشريكة، وبنود العهدة في بيئة ديناميكية موحدة.
         </p>
 
-        <!-- Stats Chips -->
+        <!-- Feature Metric Chips -->
         <div class="stats-row">
           <div class="stat-box">
-            <span class="stat-val">+100%</span>
-            <span class="stat-lbl">ديناميكي ومربوط بالكامل</span>
+            <div class="stat-icon-wrap violet"><i class="fa-solid fa-bolt"></i></div>
+            <div>
+              <span class="stat-val">+100%</span>
+              <span class="stat-lbl">ديناميكي ومربوط بالكامل</span>
+            </div>
           </div>
           <div class="stat-box">
-            <span class="stat-val">4 طرق</span>
-            <span class="stat-lbl">تحصيل مالي وأقساط</span>
+            <div class="stat-icon-wrap cyan"><i class="fa-solid fa-credit-card"></i></div>
+            <div>
+              <span class="stat-val">4 طرق</span>
+              <span class="stat-lbl">تحصيل مالي وأقساط</span>
+            </div>
           </div>
           <div class="stat-box">
-            <span class="stat-val">RBAC</span>
-            <span class="stat-lbl">صلاحيات أدوار محكمة</span>
+            <div class="stat-icon-wrap emerald"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <span class="stat-val">RBAC</span>
+              <span class="stat-lbl">صلاحيات أدوار محكمة</span>
+            </div>
           </div>
         </div>
       </div>
@@ -65,12 +74,14 @@
           <span class="dot"></span> مرحباً بك مجدداً
         </div>
         <h2>تسجيل الدخول للنظام</h2>
-        <p class="subtitle-text">أدخل بيانات الحساب أو اختر حسام تجريبي سريع للدخول بنقرة واحدة</p>
+        <p class="subtitle-text">أدخل بيانات الحساب أو اختر حساب تجريبي سريع للدخول بنقرة واحدة</p>
       </div>
 
       <!-- Quick Fill Demo Accounts -->
       <div class="demo-quick-section">
-        <span class="section-tag"><i class="fa-solid fa-bolt text-orange"></i> دخول تجريبي سريع بنقرة واحدة:</span>
+        <span class="section-tag">
+          <i class="fa-solid fa-bolt text-brand"></i> دخول تجريبي سريع بنقرة واحدة:
+        </span>
         <div class="quick-chips-grid">
           <button 
             type="button" 
@@ -79,8 +90,12 @@
             (click)="quickFill(acc)"
             [title]="acc.email"
           >
-            <i class="fa-solid" [ngClass]="acc.icon" [style.color]="acc.color"></i>
-            <span>{{ acc.label }}</span>
+            <div class="demo-chip-icon" [style.background]="acc.color + '20'" [style.color]="acc.color">
+              <i class="fa-solid" [ngClass]="acc.icon"></i>
+            </div>
+            <div class="demo-chip-text">
+              <span class="demo-chip-label">{{ acc.label }}</span>
+            </div>
           </button>
         </div>
       </div>
@@ -94,11 +109,13 @@
       <!-- Login Form -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
         
+        <!-- Email Input -->
         <div class="form-group">
-          <label>البريد الإلكتروني <span class="required">*</span></label>
+          <label for="emailInput">البريد الإلكتروني <span class="required">*</span></label>
           <div class="input-wrapper">
             <i class="fa-solid fa-envelope input-icon"></i>
             <input 
+              id="emailInput"
               type="email" 
               pInputText
               formControlName="email" 
@@ -109,13 +126,15 @@
           </div>
         </div>
 
+        <!-- Password Input -->
         <div class="form-group">
           <div class="label-row">
-            <label>كلمة المرور <span class="required">*</span></label>
+            <label for="passwordInput">كلمة المرور <span class="required">*</span></label>
           </div>
-          <div class="input-wrapper">
+          <div class="input-wrapper password-input">
             <i class="fa-solid fa-lock input-icon"></i>
             <input 
+              id="passwordInput"
               [type]="showPassword ? 'text' : 'password'" 
               pInputText
               formControlName="password" 
@@ -123,12 +142,13 @@
               class="form-control"
               autocomplete="current-password"
             />
-            <button type="button" class="eye-toggle-btn" (click)="togglePassword()">
+            <button type="button" class="eye-toggle-btn" (click)="togglePassword()" [title]="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
               <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
             </button>
           </div>
         </div>
 
+        <!-- Remember Me & Options -->
         <div class="remember-row">
           <label class="custom-checkbox">
             <input type="checkbox" formControlName="rememberMe" />
@@ -137,8 +157,9 @@
           </label>
         </div>
 
+        <!-- Submit Button -->
         <button type="submit" class="btn-submit-login" [disabled]="loginForm.invalid || loading">
-          <span *ngIf="!loading">تأكيد وتأمين الدخول <i class="fa-solid fa-arrow-left"></i></span>
+          <span *ngIf="!loading">تأكيد وتأمين الدخول <i class="fa-solid fa-arrow-left icon-arrow"></i></span>
           <span *ngIf="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري التحقق والدخول...</span>
         </button>
 
@@ -152,3 +173,4 @@
   </div>
 
 </div>
+

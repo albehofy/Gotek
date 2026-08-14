@@ -22,6 +22,20 @@ export class ControllerDashboardComponent implements OnInit {
   activeDropdown: string | null = null;
   websiteMenuOpen = true;
   isLightMode = false;
+  currentUser: any = null;
+
+  isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
+  isClient(): boolean { return this.currentUser?.role === 'client'; }
+  isDepartmentManager(): boolean { return this.currentUser?.role === 'department_manager'; }
+  isSuperAdmin(): boolean { return this.currentUser?.role === 'super_admin'; }
+  isAdmin(): boolean {
+    if (!this.currentUser) return true;
+    return ['super_admin', 'admin'].includes(this.currentUser.role);
+  }
+  isAdminOrManager(): boolean {
+    if (!this.currentUser) return true;
+    return ['super_admin', 'admin', 'department_manager'].includes(this.currentUser.role);
+  }
 
 
   // FormGroups
@@ -183,6 +197,7 @@ export class ControllerDashboardComponent implements OnInit {
         user = userStr ? JSON.parse(userStr) : null;
       } catch (e) {}
     }
+    this.currentUser = user;
 
     this.loadOverviewData();
   }

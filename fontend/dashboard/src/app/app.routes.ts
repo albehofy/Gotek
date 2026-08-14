@@ -31,6 +31,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/deals/deals-management.component').then(m => m.DealsManagementComponent) 
       },
       { 
+        path: 'deals/:id', 
+        loadComponent: () => import('./components/deals/deal-detail.component').then(m => m.DealDetailComponent) 
+      },
+      { 
         path: 'tasks', 
         loadComponent: () => import('./components/tasks/tasks-board.component').then(m => m.TasksBoardComponent) 
       },
