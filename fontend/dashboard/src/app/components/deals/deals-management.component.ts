@@ -11,6 +11,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { DatePickerModule } from 'primeng/datepicker';
 
 import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-deals-management',
@@ -461,6 +462,7 @@ export class DealsManagementComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
 
   deals: any[] = [];
   clients: any[] = [];
@@ -529,20 +531,28 @@ export class DealsManagementComponent implements OnInit {
   }
 
   confirmDeleteDeal(deal: any): void {
-    if (confirm(`هل أنت تأكد من حذف الصفقة والعقد "${deal.title}" بشكل نهائي؟`)) {
-      this.loading = true;
-      this.apiService.deleteDeal(deal.id).subscribe({
-        next: () => {
-          this.loading = false;
-          this.toastService.success(`تم حذف الصفقة "${deal.title}" بنجاح`, 'تم الحذف');
-          this.loadData();
-        },
-        error: (err) => {
-          this.loading = false;
-          this.toastService.error(err.error?.message || 'تعذر حذف الصفقة', 'خطأ بالحذف');
-        }
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف الصفقة والعقد',
+      message: `هل أنت تأكد من رغبتك في حذف الصفقة والعقد "${deal.title}" بشكل نهائي؟`,
+      confirmText: 'نعم، حذف الصفقة والعقد',
+      cancelText: 'إلغاء وتراجع',
+      type: 'danger',
+      icon: 'fa-solid fa-trash-can',
+      accept: () => {
+        this.loading = true;
+        this.apiService.deleteDeal(deal.id).subscribe({
+          next: () => {
+            this.loading = false;
+            this.toastService.success(`تم حذف الصفقة "${deal.title}" بنجاح`, 'تم الحذف');
+            this.loadData();
+          },
+          error: (err) => {
+            this.loading = false;
+            this.toastService.error(err.error?.message || 'تعذر حذف الصفقة', 'خطأ بالحذف');
+          }
+        });
+      }
+    });
   }
 
   saveQuickClient(): void {

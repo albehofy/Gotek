@@ -7,6 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-departments-sections',
@@ -647,6 +648,7 @@ export class DepartmentsSectionsComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
 
   departments: any[] = [];
   employees: any[] = [];
@@ -773,16 +775,25 @@ export class DepartmentsSectionsComponent implements OnInit {
   }
 
   confirmDeleteDepartment(dept: any): void {
-    if (confirm(`هل أنت تأكد من رغبتك في حذف القسم "${dept.name}"؟`)) {
-      this.apiService.deleteDepartment(dept.id).subscribe({
-        next: () => {
-          this.loadData();
-        },
-        error: (err) => {
-          alert('حدث خطأ أثناء حذف القسم.');
-        }
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف القسم الرئيسي',
+      message: `هل أنت تأكد من رغبتك في حذف القسم "${dept.name}"؟ قد يؤثر ذلك على الصفقات والمهام التابعة له.`,
+      confirmText: 'نعم، حذف القسم',
+      cancelText: 'إلغاء وتراجع',
+      type: 'danger',
+      icon: 'fa-solid fa-folder-minus',
+      accept: () => {
+        this.apiService.deleteDepartment(dept.id).subscribe({
+          next: () => {
+            this.toastService.success(`تم حذف القسم "${dept.name}" بنجاح`);
+            this.loadData();
+          },
+          error: (err) => {
+            this.toastService.error(err.error?.message || 'حدث خطأ أثناء حذف القسم.');
+          }
+        });
+      }
+    });
   }
 
   saveDepartment(): void {
@@ -898,15 +909,28 @@ export class DepartmentsSectionsComponent implements OnInit {
   }
 
   confirmDeleteSubCategory(sub: any, dept: any): void {
-    if (confirm(`هل أنت تأكد من حذف التصنيف الفرعي "${sub.name_ar || sub.name_en}"؟`)) {
-      this.loading = true;
-      this.apiService.deleteSubCategory(sub.id).subscribe({
-        next: () => {
-          this.loading = false;
-          this.loadData();
-        },
-        error: () => this.loading = false
-      });
-    }
+    const subName = sub.name_ar || sub.name_en || '';
+    this.confirmService.confirm({
+      title: 'حذف التصنيف الفرعي',
+      message: `هل أنت تأكد من حذف التصنيف الفرعي "${subName}" من هذا القسم؟`,
+      confirmText: 'نعم، حذف التصنيف',
+      cancelText: 'إلغاء وتراجع',
+      type: 'danger',
+      icon: 'fa-solid fa-tags',
+      accept: () => {
+        this.loading = true;
+        this.apiService.deleteSubCategory(sub.id).subscribe({
+          next: () => {
+            this.loading = false;
+            this.toastService.success(`تم حذف التصنيف الفرعي "${subName}" بنجاح`);
+            this.loadData();
+          },
+          error: (err) => {
+            this.loading = false;
+            this.toastService.error(err.error?.message || 'تعذر حذف التصنيف الفرعي');
+          }
+        });
+      }
+    });
   }
 }

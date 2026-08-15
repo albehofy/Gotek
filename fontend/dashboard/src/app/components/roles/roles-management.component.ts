@@ -2,6 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -273,6 +275,7 @@ export class RolesManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
 
   roles: any[] = [];
   permissions: any[] = [];
@@ -448,16 +451,24 @@ export class RolesManagementComponent implements OnInit {
       this.toastService.error('لا يمكنك حذف حسابك الشخصي الحالى');
       return;
     }
-    if (confirm(`هل أنت تأكد من حذف المستخدم "${user.name}"؟`)) {
-      this.apiService.deleteUser(user.id).subscribe({
-        next: () => {
-          this.toastService.success(`تم حذف المستخدم "${user.name}" بنجاح`);
-          this.loadData();
-        },
-        error: (err) => {
-          this.toastService.error(err.error?.message || 'تعذر حذف المستخدم');
-        }
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف حساب مستخدم',
+      message: `هل أنت تأكد من رغبتك في حذف حساب المستخدم "${user.name}"؟`,
+      confirmText: 'نعم، حذف المستخدم',
+      cancelText: 'إلغاء وتراجع',
+      type: 'danger',
+      icon: 'fa-solid fa-user-xmark',
+      accept: () => {
+        this.apiService.deleteUser(user.id).subscribe({
+          next: () => {
+            this.toastService.success(`تم حذف المستخدم "${user.name}" بنجاح`);
+            this.loadData();
+          },
+          error: (err) => {
+            this.toastService.error(err.error?.message || 'تعذر حذف المستخدم');
+          }
+        });
+      }
+    });
   }
 }
