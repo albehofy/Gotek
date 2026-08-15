@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-controller-dashboard',
@@ -16,6 +17,7 @@ export class ControllerDashboardComponent implements OnInit {
   route = inject(ActivatedRoute);
   apiService = inject(ApiService);
   fb = inject(FormBuilder);
+  confirmService = inject(ConfirmService);
 
   sidebarOpen = false;
   activeTab = 'overview';
@@ -733,12 +735,19 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteProject(id: string) {
-    if (confirm('Are you sure you want to delete this project?')) {
-      this.apiService.deleteProject(id).subscribe(() => {
-        this.loadProjects();
-        this.loadOverviewData();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف المشروع',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا المشروع؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteProject(id).subscribe(() => {
+          this.loadProjects();
+          this.loadOverviewData();
+        });
+      }
+    });
   }
 
   // --- Category CRUD Operations ---
@@ -813,11 +822,18 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteCategory(id: string) {
-    if (confirm('Are you sure you want to delete this category? All projects under this category will need update.')) {
-      this.apiService.deleteCategory(id).subscribe(() => {
-        this.loadCategories();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف التصنيف',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا التصنيف؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteCategory(id).subscribe(() => {
+          this.loadCategories();
+        });
+      }
+    });
   }
 
   // --- Service CRUD Operations ---
@@ -943,12 +959,19 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteService(id: string) {
-    if (confirm('Are you sure you want to delete this service?')) {
-      this.apiService.deleteService(id).subscribe(() => {
-        this.loadServices();
-        this.loadOverviewData();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف الخدمة',
+      message: 'هل أنت تأكد من رغبتك في حذف هذه الخدمة؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteService(id).subscribe(() => {
+          this.loadServices();
+          this.loadOverviewData();
+        });
+      }
+    });
   }
 
   // --- Blog CRUD Operations ---
@@ -1025,11 +1048,18 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteBlog(id: string) {
-    if (confirm('Are you sure you want to delete this blog article?')) {
-      this.apiService.deleteBlog(id).subscribe(() => {
-        this.loadBlogs();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف المقال',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا المقال؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteBlog(id).subscribe(() => {
+          this.loadBlogs();
+        });
+      }
+    });
   }
 
   // --- Testimonial CRUD Operations ---
@@ -1100,12 +1130,19 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteTestimonial(id: string) {
-    if (confirm('Are you sure you want to delete this testimonial?')) {
-      this.apiService.deleteTestimonial(id).subscribe(() => {
-        this.loadTestimonials();
-        this.loadOverviewData();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف التقييم',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا التقييم؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteTestimonial(id).subscribe(() => {
+          this.loadTestimonials();
+          this.loadOverviewData();
+        });
+      }
+    });
   }
 
   // --- FAQ CRUD Operations ---
@@ -1170,11 +1207,18 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteFaq(id: string) {
-    if (confirm('Are you sure you want to delete this FAQ?')) {
-      this.apiService.deleteFaq(id).subscribe(() => {
-        this.loadFaqs();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف السؤال الشائع',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا السؤال؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteFaq(id).subscribe(() => {
+          this.loadFaqs();
+        });
+      }
+    });
   }
 
   // --- Contact & Inquiries Operations ---
@@ -1195,12 +1239,19 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   deleteInquiry(id: string) {
-    if (confirm('Are you sure you want to delete this inquiry?')) {
-      this.apiService.deleteInquiry(id).subscribe(() => {
-        this.loadInquiries();
-        this.loadOverviewData();
-      });
-    }
+    this.confirmService.confirm({
+      title: 'حذف الاستفسار',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا الاستفسار؟',
+      confirmText: 'نعم، حذف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.apiService.deleteInquiry(id).subscribe(() => {
+          this.loadInquiries();
+          this.loadOverviewData();
+        });
+      }
+    });
   }
 
   // --- Legacy Page Editor operations ---

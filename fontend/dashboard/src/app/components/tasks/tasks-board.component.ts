@@ -10,6 +10,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-tasks-board',
@@ -3657,6 +3658,7 @@ export class TasksBoardComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
   private pendingTaskIdFromUrl: number | null = null;
 
   tasks: any[] = [];
@@ -3756,9 +3758,19 @@ export class TasksBoardComponent implements OnInit {
 
   deleteSubtaskAttachment(subtask: any, att: any, event: Event): void {
     event.stopPropagation();
-    if (!confirm('هل أنت تأكد من حذف هذا المرفق للمهمة الفرعية؟')) return;
-    this.apiService.deleteTaskAttachment(subtask.id, att.id).subscribe(() => {
-      subtask.attachments = (subtask.attachments || []).filter((a: any) => a.id !== att.id);
+    this.confirmService.confirm({
+      title: 'حذف مرفق المهمة الفرعية',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا المرفق للمهمة الفرعية؟',
+      confirmText: 'نعم، حذف المرفق',
+      cancelText: 'إلغاء وتراجع',
+      type: 'danger',
+      icon: 'fa-solid fa-paperclip',
+      accept: () => {
+        this.apiService.deleteTaskAttachment(subtask.id, att.id).subscribe(() => {
+          subtask.attachments = (subtask.attachments || []).filter((a: any) => a.id !== att.id);
+          this.toastService.success('تم حذف المرفق بنجاح');
+        });
+      }
     });
   }
 
@@ -4432,12 +4444,22 @@ export class TasksBoardComponent implements OnInit {
 
   deleteAttachment(task: any, att: any, event: Event): void {
     event.stopPropagation();
-    if (!confirm('هل أنت تأكد من حذف هذا المرفق؟')) return;
-    this.apiService.deleteTaskAttachment(task.id, att.id).subscribe(() => {
-      if (task.attachments) {
-        task.attachments = task.attachments.filter((a: any) => a.id !== att.id);
+    this.confirmService.confirm({
+      title: 'حذف مرفق المهمة',
+      message: 'هل أنت تأكد من رغبتك في حذف هذا المرفق؟',
+      confirmText: 'نعم، حذف المرفق',
+      cancelText: 'إلغاء وتراجع',
+      type: 'danger',
+      icon: 'fa-solid fa-file-circle-xmark',
+      accept: () => {
+        this.apiService.deleteTaskAttachment(task.id, att.id).subscribe(() => {
+          if (task.attachments) {
+            task.attachments = task.attachments.filter((a: any) => a.id !== att.id);
+          }
+          this.toastService.success('تم حذف المرفق بنجاح');
+          this.loadTaskActivities(task.id);
+        });
       }
-      this.loadTaskActivities(task.id);
     });
   }
 
