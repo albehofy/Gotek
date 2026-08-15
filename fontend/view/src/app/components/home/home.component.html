@@ -1,18 +1,22 @@
-<!-- ═══ HERO ═══ -->
+<!-- ═══ CINEMATIC HERO SECTION ═══ -->
 <section class="hero-full">
-  <div class="glow-orb primary" style="width:700px;height:700px;top:-200px;right:-150px;opacity:0.4;"></div>
-  <div class="glow-orb secondary" style="width:500px;height:500px;bottom:-100px;left:-100px;opacity:0.3;"></div>
+  <div class="glow-orb primary" style="width:750px;height:750px;top:-250px;right:-180px;opacity:0.45;"></div>
+  <div class="glow-orb secondary" style="width:600px;height:600px;bottom:-120px;left:-120px;opacity:0.35;"></div>
+  <div class="glow-orb teal" style="width:450px;height:450px;top:40%;right:30%;opacity:0.25;"></div>
 
-  <div class="hero-top">
+  <div class="hero-top container">
     <div class="hero-top-inner">
+      
+      <!-- Eyebrow Badge -->
       <div class="hero-eyebrow">
         <p-tag [value]="(homeData?.hero?.tag | translate) || ('hero_badge' | translate)"
                severity="warn" [rounded]="true" icon="pi pi-sparkles"></p-tag>
       </div>
 
+      <!-- Headline -->
       <h1 class="hero-headline">
         {{ (homeData?.hero?.title1 | translate) || ('hero_title_1' | translate) }}<br>
-        <em>{{ (homeData?.hero?.title2 | translate) || ('hero_title_2' | translate) }}</em>
+        <span class="grad-text">{{ (homeData?.hero?.title2 | translate) || ('hero_title_2' | translate) }}</span><br>
         {{ (homeData?.hero?.title3 | translate) || ('hero_title_3' | translate) }}
       </h1>
 
@@ -21,30 +25,36 @@
           <p class="hero-desc-text">
             {{ (homeData?.hero?.subtitle | translate) || ('hero_desc' | translate) }}
           </p>
+
+          <!-- Dual CTA Buttons -->
           <div class="hero-cta-group">
-            <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 44px; font-size:1rem;">
+            <a routerLink="/contact" class="btn btn-primary hero-btn-main">
               <i class="pi pi-send"></i>
               <span>{{ 'get_started' | translate }}</span>
             </a>
-            <a routerLink="/portfolio" class="btn btn-glass" style="padding: 16px 36px;">
+            <a routerLink="/portfolio" class="btn btn-glass hero-btn-sub">
               <i class="pi pi-eye"></i>
               <span>{{ 'view_work' | translate }}</span>
             </a>
           </div>
-        </div>
-        <div class="hero-scroll-col">
-          <div class="scroll-indicator"></div>
-          <span class="scroll-text">{{ 'scroll' | translate }}</span>
+
+          <!-- Quick Agency Trust Pills -->
+          <div class="hero-trust-chips">
+            <div class="trust-chip"><i class="pi pi-star-fill" style="color:#f59e0b;"></i> +500 مشروع ناجح</div>
+            <div class="trust-chip"><i class="pi pi-shield" style="color:#10b981;"></i> 9+ سنوات خبرة</div>
+            <div class="trust-chip"><i class="pi pi-heart-fill" style="color:#f43f5e;"></i> +2000 عميل موثوق</div>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- Hero Image Strip -->
+  <!-- Hero Featured Work Strip -->
   <div class="hero-strip container">
     @if (projects.length >= 4) {
       @for (p of projects | slice:0:4; track p.id || $index) {
-        <a class="hero-strip-item" [routerLink]="['/project', p.id]">
+        <a class="hero-strip-item glass-panel" [routerLink]="['/project', p.id]">
           @if (p.image || p.main_image) {
             <img [src]="p.image || p.main_image" [alt]="p.title | translate" />
           } @else {
@@ -58,19 +68,19 @@
         </a>
       }
     } @else {
-      <div class="hero-strip-item">
+      <div class="hero-strip-item glass-panel">
         <div class="hero-strip-emoji"><i class="pi pi-bolt"></i></div>
         <div class="hero-strip-overlay"><div class="hero-strip-label">{{ 'svc_social' | translate }}</div></div>
       </div>
-      <div class="hero-strip-item" style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(14,165,233,0.1));">
+      <div class="hero-strip-item glass-panel" style="background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(14,165,233,0.12));">
         <div class="hero-strip-emoji"><i class="pi pi-palette"></i></div>
         <div class="hero-strip-overlay"><div class="hero-strip-label">{{ 'svc_brand' | translate }}</div></div>
       </div>
-      <div class="hero-strip-item" style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(14,165,233,0.1));">
+      <div class="hero-strip-item glass-panel" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(14,165,233,0.12));">
         <div class="hero-strip-emoji"><i class="pi pi-globe"></i></div>
         <div class="hero-strip-overlay"><div class="hero-strip-label">{{ 'svc_web' | translate }}</div></div>
       </div>
-      <div class="hero-strip-item" style="background:linear-gradient(135deg,rgba(255,107,0,0.12),rgba(244,63,94,0.1));">
+      <div class="hero-strip-item glass-panel" style="background:linear-gradient(135deg,rgba(255,107,0,0.15),rgba(244,63,94,0.12));">
         <div class="hero-strip-emoji"><i class="pi pi-video"></i></div>
         <div class="hero-strip-overlay"><div class="hero-strip-label">{{ 'svc_media' | translate }}</div></div>
       </div>
@@ -78,69 +88,84 @@
   </div>
 </section>
 
-<!-- ═══ ABOUT / INTRO ═══ -->
-<section class="intro-section">
-  <div class="intro-left">
-    <div class="intro-eyebrow">
-      <p-tag [value]="'who_we' | translate" severity="info" [rounded]="true" icon="pi pi-compass"></p-tag>
-    </div>
-    <h2 class="intro-heading">
-      {{ (homeData?.about?.title | translate) || ('about_title_1' | translate) }}<br>
-      <span>{{ 'about_title_2' | translate }}</span>
-    </h2>
-    <p class="intro-body">
-      {{ (homeData?.about?.subtitle | translate) || ('about_desc_1' | translate) }}
-    </p>
-    <div class="intro-facts">
-      <div class="intro-fact">
-        <i class="pi pi-award intro-fact-icon"></i>
-        {{ stats?.years_experience || stats?.years || '9' }}+ {{ 'years_exp' | translate }}
+<!-- ═══ ABOUT / INTRO SECTION ═══ -->
+<section class="section intro-section">
+  <div class="container intro-grid">
+    <div class="intro-left">
+      <div class="sec-tag">
+        <i class="pi pi-compass"></i> {{ 'who_we' | translate }}
       </div>
-      <div class="intro-fact">
-        <i class="pi pi-globe intro-fact-icon"></i>
-        {{ 'fact_regions' | translate }}
-      </div>
-      <div class="intro-fact">
-        <i class="pi pi-users intro-fact-icon"></i>
-        {{ stats?.team_count || stats?.team || '20' }}+ {{ 'team_spec' | translate }}
-      </div>
-    </div>
-    <a routerLink="/about" class="btn btn-glass">
-      <i class="pi pi-arrow-left"></i>
-      <span>{{ 'full_story' | translate }}</span>
-    </a>
-  </div>
+      <h2 class="sec-title">
+        {{ (homeData?.about?.title | translate) || ('about_title_1' | translate) }}<br>
+        <span>{{ 'about_title_2' | translate }}</span>
+      </h2>
+      <p class="sec-desc">
+        {{ (homeData?.about?.subtitle | translate) || ('about_desc_1' | translate) }}
+      </p>
 
-  <div class="intro-stats">
-    <div class="intro-stat">
-      <div class="intro-stat-val">{{ stats?.clients_count || stats?.clients || '2000' }}<span>+</span></div>
-      <div class="intro-stat-label">{{ 'stat_clients' | translate }}</div>
+      <div class="intro-facts-grid">
+        <div class="intro-fact-card glass-panel">
+          <div class="fact-icon-badge orange"><i class="pi pi-award"></i></div>
+          <div class="fact-info">
+            <span class="fact-val">{{ stats?.years_experience || stats?.years || '9' }}+</span>
+            <span class="fact-txt">{{ 'years_exp' | translate }}</span>
+          </div>
+        </div>
+        <div class="intro-fact-card glass-panel">
+          <div class="fact-icon-badge violet"><i class="pi pi-globe"></i></div>
+          <div class="fact-info">
+            <span class="fact-val">الشرق الأوسط</span>
+            <span class="fact-txt">{{ 'fact_regions' | translate }}</span>
+          </div>
+        </div>
+        <div class="intro-fact-card glass-panel">
+          <div class="fact-icon-badge teal"><i class="pi pi-users"></i></div>
+          <div class="fact-info">
+            <span class="fact-val">{{ stats?.team_count || stats?.team || '20' }}+</span>
+            <span class="fact-txt">{{ 'team_spec' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 36px;">
+        <a routerLink="/about" class="btn btn-glass">
+          <i class="pi pi-arrow-left"></i>
+          <span>{{ 'full_story' | translate }}</span>
+        </a>
+      </div>
     </div>
-    <div class="intro-stat">
-      <div class="intro-stat-val">{{ stats?.years_experience || stats?.years || '9' }}<span>+</span></div>
-      <div class="intro-stat-label">{{ 'stat_years' | translate }}</div>
-    </div>
-    <div class="intro-stat">
-      <div class="intro-stat-val">{{ stats?.team_count || stats?.team || '20' }}<span>+</span></div>
-      <div class="intro-stat-label">{{ 'stat_team' | translate }}</div>
-    </div>
-    <div class="intro-stat">
-      <div class="intro-stat-val">{{ stats?.projects_count || stats?.projects || '500' }}<span>+</span></div>
-      <div class="intro-stat-label">{{ 'stat_svc' | translate }}</div>
+
+    <div class="intro-stats-cards">
+      <div class="stat-card glass-panel card-glow-orange">
+        <div class="stat-number">{{ stats?.clients_count || stats?.clients || '2000' }}<span>+</span></div>
+        <div class="stat-title">{{ 'stat_clients' | translate }}</div>
+        <div class="stat-sub">ثقة مستمرة في الشرق الأوسط</div>
+      </div>
+      <div class="stat-card glass-panel card-glow-violet">
+        <div class="stat-number">{{ stats?.projects_count || stats?.projects || '500' }}<span>+</span></div>
+        <div class="stat-title">{{ 'stat_svc' | translate }}</div>
+        <div class="stat-sub">مشروع وحملة تسويقية ناجحة</div>
+      </div>
+      <div class="stat-card glass-panel card-glow-teal">
+        <div class="stat-number">99<span>%</span></div>
+        <div class="stat-title">نسبة رضا العملاء</div>
+        <div class="stat-sub">تقييم ممتاز وجودة استثنائية</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ SERVICES ═══ -->
-<section class="svc-section" id="services">
+<!-- ═══ SERVICES SECTION ═══ -->
+<section class="section svc-section" id="services">
   <div class="container">
     <div class="svc-header">
       <div>
-        <div class="intro-eyebrow">
-          <p-tag [value]="'what_we' | translate" severity="warn" [rounded]="true" icon="pi pi-cog"></p-tag>
+        <div class="sec-tag">
+          <i class="pi pi-cog"></i> {{ 'what_we' | translate }}
         </div>
-        <h2 class="intro-heading" style="margin-bottom: 0;">
-          {{ 'svc_title_1' | translate }}<br><span>{{ 'svc_title_2' | translate }} {{ 'svc_title_3' | translate }}</span>
+        <h2 class="sec-title">
+          {{ 'svc_title_1' | translate }}<br>
+          <span>{{ 'svc_title_2' | translate }} {{ 'svc_title_3' | translate }}</span>
         </h2>
       </div>
       <a routerLink="/services" class="btn btn-glass" style="flex-shrink:0;">
@@ -152,7 +177,7 @@
     <div class="svc-grid">
       @if (services.length) {
         @for (s of services | slice:0:3; track s.id || $index) {
-          <a [routerLink]="['/services']" [fragment]="s.id?.toString()" class="svc-card">
+          <a [routerLink]="['/services']" [fragment]="s.id?.toString()" class="svc-card glass-panel">
             <div class="svc-card-num">0{{ $index + 1 }}</div>
             <div class="svc-card-icon"><i [class]="s.iconClass || s.icon || 'pi pi-star'"></i></div>
             <div class="svc-card-title">{{ s.title | translate }}</div>
@@ -161,21 +186,21 @@
           </a>
         }
       } @else {
-        <a class="svc-card">
+        <a routerLink="/services" class="svc-card glass-panel">
           <div class="svc-card-num">01</div>
           <div class="svc-card-icon"><i class="pi pi-megaphone"></i></div>
           <div class="svc-card-title">{{ 'footer_ads' | translate }}</div>
           <div class="svc-card-desc">{{ 'svc_ads_desc' | translate }}</div>
           <div class="svc-card-link"><span>{{ 'explore' | translate }}</span><i class="pi pi-arrow-left"></i></div>
         </a>
-        <a class="svc-card">
+        <a routerLink="/services" class="svc-card glass-panel">
           <div class="svc-card-num">02</div>
           <div class="svc-card-icon"><i class="pi pi-palette"></i></div>
           <div class="svc-card-title">{{ 'footer_brand' | translate }}</div>
           <div class="svc-card-desc">{{ 'svc_brand_desc' | translate }}</div>
           <div class="svc-card-link"><span>{{ 'explore' | translate }}</span><i class="pi pi-arrow-left"></i></div>
         </a>
-        <a class="svc-card">
+        <a routerLink="/services" class="svc-card glass-panel">
           <div class="svc-card-num">03</div>
           <div class="svc-card-icon"><i class="pi pi-share-alt"></i></div>
           <div class="svc-card-title">{{ 'footer_social' | translate }}</div>
@@ -185,8 +210,8 @@
       }
     </div>
 
-    <div style="text-align: center; margin-top: 52px;">
-      <a routerLink="/services" class="btn btn-primary" style="padding: 15px 48px;">
+    <div style="text-align: center; margin-top: 56px;">
+      <a routerLink="/services" class="btn btn-primary" style="padding: 16px 52px;">
         <i class="pi pi-grid"></i>
         <span>{{ 'all_svc' | translate }}</span>
       </a>
@@ -194,16 +219,17 @@
   </div>
 </section>
 
-<!-- ═══ FEATURED WORK ═══ -->
-<section class="work-section" id="portfolio">
+<!-- ═══ FEATURED WORK PORTFOLIO ═══ -->
+<section class="section work-section" id="portfolio">
   <div class="container">
     <div class="work-header">
       <div>
-        <div class="intro-eyebrow">
-          <p-tag [value]="'our_port' | translate" severity="success" [rounded]="true" icon="pi pi-briefcase"></p-tag>
+        <div class="sec-tag">
+          <i class="pi pi-briefcase"></i> {{ 'our_port' | translate }}
         </div>
-        <h2 class="intro-heading" style="margin-bottom: 0;">
-          {{ 'port_title_1' | translate }}<br><span>{{ 'port_title_2' | translate }} {{ 'port_title_3' | translate }}</span>
+        <h2 class="sec-title">
+          {{ 'port_title_1' | translate }}<br>
+          <span>{{ 'port_title_2' | translate }} {{ 'port_title_3' | translate }}</span>
         </h2>
       </div>
       <a routerLink="/portfolio" class="btn btn-primary" style="flex-shrink:0;">
@@ -215,7 +241,7 @@
     @if (projects.length) {
       <div class="work-grid">
         @for (p of projects | slice:0:3; track p.id || $index) {
-          <a [routerLink]="['/project', p.id]" class="work-card">
+          <a [routerLink]="['/project', p.id]" class="work-card glass-panel">
             @if (p.image || p.main_image) {
               <img class="work-img" [src]="p.image || p.main_image" [alt]="p.title | translate" />
             } @else {
@@ -235,28 +261,28 @@
       </div>
     } @else {
       <div class="work-grid">
-        <div class="work-card">
+        <div class="work-card glass-panel">
           <div class="work-emoji-bg"><i class="pi pi-bolt"></i></div>
           <div class="work-overlay"></div>
           <div class="work-info">
             <div class="work-tag"><p-tag value="إبداعي" severity="info"></p-tag></div>
-            <div class="work-title">{{ 'coming_soon' | translate }}</div>
+            <div class="work-title">حملات إعلانية متكاملة</div>
           </div>
         </div>
-        <div class="work-card" style="background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(14,165,233,0.1));">
+        <div class="work-card glass-panel">
           <div class="work-emoji-bg"><i class="pi pi-palette"></i></div>
           <div class="work-overlay"></div>
           <div class="work-info">
-            <div class="work-tag"><p-tag value="تصميم" severity="contrast"></p-tag></div>
-            <div class="work-title">{{ 'coming_soon' | translate }}</div>
+            <div class="work-tag"><p-tag value="هوية بصرية" severity="contrast"></p-tag></div>
+            <div class="work-title">تصميم هويات تجارية فاخرة</div>
           </div>
         </div>
-        <div class="work-card" style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(14,165,233,0.1));">
+        <div class="work-card glass-panel">
           <div class="work-emoji-bg"><i class="pi pi-globe"></i></div>
           <div class="work-overlay"></div>
           <div class="work-info">
-            <div class="work-tag"><p-tag value="رقمي" severity="success"></p-tag></div>
-            <div class="work-title">{{ 'coming_soon' | translate }}</div>
+            <div class="work-tag"><p-tag value="تطوير ويب" severity="success"></p-tag></div>
+            <div class="work-title">منصات رقمية متطورة</div>
           </div>
         </div>
       </div>
@@ -264,94 +290,101 @@
   </div>
 </section>
 
-<!-- ═══ TESTIMONIALS (Custom Carousel — no animations dep) ═══ -->
-@if (testimonials?.length) {
-  <section class="voices-section" id="testimonials">
-    <div class="container">
-      <div class="svc-header" style="margin-bottom: 48px;">
+<!-- ═══ CLIENT TESTIMONIALS ═══ -->
+<section class="section test-section">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 56px;">
+      <div class="sec-tag">
+        <i class="pi pi-comments"></i> آراء وتقييمات العملاء
+      </div>
+      <h2 class="sec-title" style="margin: 0 auto 16px auto;">
+        ماذا يقول عملاؤنا عن <span>ميديا جلو</span>
+      </h2>
+      <p class="sec-desc" style="margin: 0 auto;">
+        نفخر بشراكتنا وثقة مئات العلامات التجارية الرائدة بالشرق الأوسط
+      </p>
+    </div>
+
+    <div class="test-grid">
+      <div class="test-card glass-panel">
+        <div class="test-stars">
+          <i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i>
+        </div>
+        <p class="test-quote">
+          "تجربة استثنائية مع فريق ميديا جلو. تم تنفيذ الهوية البصرية والحملة الإعلانية بكفاءة واحترافية غير مسبوقة وضاعفت مبيعاتنا بشكل ملحوظ."
+        </p>
+        <div class="test-author">
+          <div class="author-av">أ</div>
+          <div class="author-info">
+            <span class="author-name">أحمد العتيبي</span>
+            <span class="author-role">الرئيس التنفيذي — شركة الرواد</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card glass-panel">
+        <div class="test-stars">
+          <i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i>
+        </div>
+        <p class="test-quote">
+          "ميديا جلو شريكنا الإستراتيجي في التسويق وتطوير الأنظمة الرقمية، سرعة الاستجابة ودقة المخرجات الإبداعية تتجاوز التوقعات دائماً."
+        </p>
+        <div class="test-author">
+          <div class="author-av">م</div>
+          <div class="author-info">
+            <span class="author-name">م. سارة المهندس</span>
+            <span class="author-role">مدير التسويق — مجموعة جلوبال</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="test-card glass-panel">
+        <div class="test-stars">
+          <i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i><i class="pi pi-star-fill"></i>
+        </div>
+        <p class="test-quote">
+          "أحدثت الحملة التسويقية وتطوير الهوية نقلة نوعية في وصولنا لشرائح جديدة من العملاء. فريق متميز ومبتكر وموثوق 100%."
+        </p>
+        <div class="test-author">
+          <div class="author-av">خ</div>
+          <div class="author-info">
+            <span class="author-name">خالد الشمري</span>
+            <span class="author-role">مؤسس — منصة فيوتشر</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HIGH-IMPACT CALL TO ACTION BANNER ═══ -->
+<section class="section cta-section">
+  <div class="container">
+    <div class="cta-card glass-panel">
+      <div class="cta-inner">
         <div>
-          <div class="intro-eyebrow">
-            <p-tag [value]="'client_say' | translate" severity="contrast" [rounded]="true" icon="pi pi-heart-fill"></p-tag>
+          <div class="sec-tag">
+            <i class="pi pi-sparkles"></i> ابدأ مشروعك الآن
           </div>
-          <h2 class="intro-heading" style="margin-bottom: 0;">
-            {{ 'testi_title_1' | translate }}<br><span>{{ 'testi_title_2' | translate }}</span>
+          <h2 class="sec-title" style="margin-bottom: 16px;">
+            جاهز للانطلاق بعلامتك التجارية إلى <span>مستوى أرفع؟</span>
           </h2>
+          <p class="sec-desc">
+            تواصل مع خبراء ميديا جلو اليوم واحصل على استشارة مجانية لخطة التسويق والهوية الرقمية.
+          </p>
         </div>
-        <!-- Navigation -->
-        <div class="testi-nav">
-          <button class="testi-btn" (click)="prevTestimonial()">
-            <i class="pi pi-chevron-right"></i>
-          </button>
-          <button class="testi-btn" (click)="nextTestimonial()">
-            <i class="pi pi-chevron-left"></i>
-          </button>
+
+        <div class="cta-btns">
+          <a routerLink="/contact" class="btn btn-primary style-luxe">
+            <i class="pi pi-send"></i>
+            <span>تواصل معنا فوراً</span>
+          </a>
+          <a routerLink="/services" class="btn btn-glass">
+            <i class="pi pi-th-large"></i>
+            <span>استكشف خدماتنا</span>
+          </a>
         </div>
       </div>
-
-      <div class="voices-grid">
-        @for (t of visibleTestimonials; track t?.id || $index) {
-          <div class="voice-card">
-            <div>
-              <div class="voice-quote">&ldquo;</div>
-              <div class="voice-stars">
-                <i class="pi pi-star-fill" style="color:#f59e0b;margin:0 2px;"></i>
-                <i class="pi pi-star-fill" style="color:#f59e0b;margin:0 2px;"></i>
-                <i class="pi pi-star-fill" style="color:#f59e0b;margin:0 2px;"></i>
-                <i class="pi pi-star-fill" style="color:#f59e0b;margin:0 2px;"></i>
-                <i class="pi pi-star-fill" style="color:#f59e0b;margin:0 2px;"></i>
-              </div>
-              <p class="voice-text">{{ t?.feedback | translate }}</p>
-            </div>
-            <div class="voice-foot">
-              <div class="voice-ava">
-                @if (t?.avatar) {
-                  <img [src]="t.avatar" [alt]="t.client_name" />
-                } @else {
-                  <span>{{ t?.client_name?.charAt(0) }}</span>
-                }
-              </div>
-              <div>
-                <div class="voice-name">{{ t?.client_name }}</div>
-                <div class="voice-role">{{ t?.job_title }}</div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- Dots -->
-      <div class="testi-dots">
-        @for (t of testimonials; track $index) {
-          <button class="testi-dot" [class.active]="$index === activeTestimonial"
-                  (click)="setActiveTestimonial($index)"></button>
-        }
-      </div>
-    </div>
-  </section>
-}
-
-<!-- ═══ FINAL CTA ═══ -->
-<section class="finale-section">
-  <div class="finale-bg"></div>
-  <div class="finale-glow"></div>
-  <div class="finale-inner">
-    <div class="intro-eyebrow" style="justify-content: center;">
-      <p-tag [value]="'ready_start' | translate" severity="warn" [rounded]="true" icon="pi pi-send"></p-tag>
-    </div>
-    <h2 class="finale-heading">
-      {{ 'cta_title_1' | translate }}<br>
-      <span>{{ 'cta_title_2' | translate }}</span>
-    </h2>
-    <p class="finale-sub">{{ 'cta_desc' | translate }}</p>
-    <div class="finale-btns">
-      <a routerLink="/contact" class="btn btn-primary" style="padding: 18px 52px; font-size: 1.05rem;">
-        <i class="pi pi-send"></i>
-        <span>{{ 'start_proj' | translate }}</span>
-      </a>
-      <a routerLink="/services" class="btn btn-glass" style="padding: 18px 44px; font-size: 1.05rem;">
-        <i class="pi pi-grid"></i>
-        <span>{{ 'explore_services' | translate }}</span>
-      </a>
     </div>
   </div>
 </section>

@@ -1485,7 +1485,7 @@ div[class*="p-dropdown-panel"] {
   padding: 6px !important;
   margin-top: 6px !important;
   overflow: hidden !important;
-  z-index: 2000 !important;
+  z-index: 999999999 !important;
   min-width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -2825,7 +2825,8 @@ p-datepicker .p-datepicker-trigger:hover,
   background: rgba(99, 102, 241, 0.25) !important;
   border-color: rgba(99, 102, 241, 0.45) !important;
   color: #a5b4fc !important;
-  transform: translateY(-50%) scale(1.05) !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 body.light-theme p-datepicker .p-datepicker-trigger,
@@ -2892,6 +2893,10 @@ div[class*="p-datepicker-panel"] {
   color: var(--text) !important;
   padding: 10px 14px !important;
   margin-bottom: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-direction: row-reverse !important; /* Right button = Next Month, Left button = Prev Month */
 }
 
 .p-datepicker-title {
@@ -2907,20 +2912,67 @@ div[class*="p-datepicker-panel"] {
   font-size: 0.95rem !important;
 }
 
-.p-datepicker-prev, .p-datepicker-next {
+/* DatePicker Arrows: Completely disable hover animations, scaling, and transitions */
+.p-datepicker-prev,
+.p-datepicker-next,
+.p-datepicker-prev-button,
+.p-datepicker-next-button,
+button.p-datepicker-prev-button,
+button.p-datepicker-next-button {
   color: var(--violet-light, #818cf8) !important;
   cursor: pointer !important;
-  width: 30px !important;
-  height: 30px !important;
+  width: 32px !important;
+  height: 32px !important;
   border-radius: 8px !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.2s !important;
+  transition: none !important;
+  transform: none !important;
+  animation: none !important;
+  box-shadow: none !important;
 }
 
-.p-datepicker-prev:hover, .p-datepicker-next:hover {
-  background: rgba(99, 102, 241, 0.18) !important;
+.p-datepicker-prev:hover,
+.p-datepicker-next:hover,
+.p-datepicker-prev-button:hover,
+.p-datepicker-next-button:hover,
+button.p-datepicker-prev-button:hover,
+button.p-datepicker-next-button:hover,
+.p-datepicker-prev:focus,
+.p-datepicker-next:focus,
+.p-datepicker-prev-button:focus,
+.p-datepicker-next-button:focus {
+  transition: none !important;
+  transform: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+
+.p-datepicker-prev:active,
+.p-datepicker-next:active,
+.p-datepicker-prev-button:active,
+.p-datepicker-next-button:active {
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Ensure right arrow points Right > and left arrow points Left < */
+.p-datepicker-next-button svg,
+.p-datepicker-next-button i,
+.p-datepicker-next-button .p-datepicker-next-icon,
+.p-datepicker-next svg,
+.p-datepicker-next i {
+  transform: none !important;
+}
+
+.p-datepicker-prev-button svg,
+.p-datepicker-prev-button i,
+.p-datepicker-prev-button .p-datepicker-prev-icon,
+.p-datepicker-prev svg,
+.p-datepicker-prev i {
+  transform: none !important;
 }
 
 .p-datepicker-calendar {

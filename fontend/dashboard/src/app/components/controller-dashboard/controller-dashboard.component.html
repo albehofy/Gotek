@@ -17,96 +17,84 @@
       </div>
     </div>
 
-    <!-- ── 6-METRICS RICH KPI ROW ── -->
-    <div class="dash-kpi-row grid-6">
+    <!-- ── 6-METRICS ULTRA-MODERN KPI GRID (3x2) ── -->
+    <div class="dash-kpi-grid">
       
       <!-- 1. Total Revenue / Contracts -->
-      <div class="dash-kpi dash-kpi-blue" routerLink="/deals" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-          <div>
-            <div class="dash-kpi-label">إجمالي التعاقدات</div>
-            <div class="dash-kpi-sub">{{ crmStats.deals }} عقود وصفقات</div>
-          </div>
+      <div class="kpi-card card-blue" routerLink="/deals">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge blue"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <span class="kpi-pill blue"><i class="fa-solid fa-coins"></i> {{ crmStats.deals }} عقود وصفقات</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalRevenue || 0) | number:'1.0-0' }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-coins"></i> ج.م</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value blue">{{ (crmStats.totalRevenue || 0) | number:'1.0-0' }} <span class="kpi-currency">ج.م</span></div>
+          <div class="kpi-title">إجمالي التعاقدات والعقود</div>
+          <div class="kpi-subtitle">قيمة كافة العقود والصفقات المبرمة بالسيستم</div>
         </div>
       </div>
 
       <!-- 2. Total Paid / Collected -->
-      <div class="dash-kpi dash-kpi-green" routerLink="/finance" *ngIf="isAdmin()" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
-          <div>
-            <div class="dash-kpi-label">التحصيلات المسددة</div>
-            <div class="dash-kpi-sub">نسبة السداد: {{ getCollectionPercentage() }}%</div>
-          </div>
+      <div class="kpi-card card-emerald" routerLink="/finance" *ngIf="isAdmin()">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge emerald"><i class="fa-solid fa-circle-check"></i></div>
+          <span class="kpi-pill emerald"><i class="fa-solid fa-arrow-trend-up"></i> {{ getCollectionPercentage() }}% نسبة التحصيل</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalPaid || 0) | number:'1.0-0' }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> ج.م</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value emerald">{{ (crmStats.totalPaid || 0) | number:'1.0-0' }} <span class="kpi-currency">ج.م</span></div>
+          <div class="kpi-title">التحصيلات والمبالغ المسددة</div>
+          <div class="kpi-subtitle">إجمالي الإيرادات المحصلة فعلياً في الخزينة</div>
         </div>
       </div>
 
       <!-- 3. Remaining Balance -->
-      <div class="dash-kpi dash-kpi-amber" routerLink="/finance" *ngIf="isAdmin()" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-          <div>
-            <div class="dash-kpi-label">الرصيد المتبقي</div>
-            <div class="dash-kpi-sub">ذمم وأقساط مستحقة</div>
-          </div>
+      <div class="kpi-card card-amber" routerLink="/finance" *ngIf="isAdmin()">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge amber"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <span class="kpi-pill amber"><i class="fa-solid fa-hourglass-half"></i> ذمم مستحقة</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalRemaining || 0) | number:'1.0-0' }}</div>
-          <div class="dash-kpi-trend warn"><i class="fa-solid fa-hourglass-half"></i> ج.م</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value amber">{{ (crmStats.totalRemaining || 0) | number:'1.0-0' }} <span class="kpi-currency">ج.م</span></div>
+          <div class="kpi-title">الرصيد المتبقي لدى العملاء</div>
+          <div class="kpi-subtitle">الأقساط والمبالغ متبقية التحصيل</div>
         </div>
       </div>
 
       <!-- 4. Total Company Margin / Profits -->
-      <div class="dash-kpi dash-kpi-purple" routerLink="/finance" *ngIf="isAdmin()" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
-          <div>
-            <div class="dash-kpi-label">أرباح وهامش الوكالة</div>
-            <div class="dash-kpi-sub">الهامش الصافي التراكمي</div>
-          </div>
+      <div class="kpi-card card-purple" routerLink="/finance" *ngIf="isAdmin()">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge purple"><i class="fa-solid fa-chart-line"></i></div>
+          <span class="kpi-pill purple"><i class="fa-solid fa-sack-dollar"></i> صافي الربح</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num dash-kpi-num-sm">{{ (crmStats.totalMargin || 0) | number:'1.0-0' }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-sack-dollar"></i> ج.م</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value purple">{{ (crmStats.totalMargin || 0) | number:'1.0-0' }} <span class="kpi-currency">ج.م</span></div>
+          <div class="kpi-title">أرباح وهامش الوكالة</div>
+          <div class="kpi-subtitle">الهامش الصافي التراكمي للشركة</div>
         </div>
       </div>
 
       <!-- 5. Clients Count -->
-      <div class="dash-kpi dash-kpi-purple" routerLink="/clients" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-users"></i></div>
-          <div>
-            <div class="dash-kpi-label">دليل العملاء</div>
-            <div class="dash-kpi-sub">عملاء الوكالة VIP</div>
-          </div>
+      <div class="kpi-card card-cyan" routerLink="/clients">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge cyan"><i class="fa-solid fa-users"></i></div>
+          <span class="kpi-pill cyan"><i class="fa-solid fa-shield-halved"></i> عملاء نشطون</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ crmStats.clients }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-shield-halved"></i> نشطون</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value cyan">{{ crmStats.clients }} <span class="kpi-currency">عميل</span></div>
+          <div class="kpi-title">دليل وسجل العملاء</div>
+          <div class="kpi-subtitle">إجمالي قاعدة عملاء الوكالة المقيدين</div>
         </div>
       </div>
 
       <!-- 6. Active Tasks Count -->
-      <div class="dash-kpi dash-kpi-amber" routerLink="/tasks" style="cursor:pointer;">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-list-check"></i></div>
-          <div>
-            <div class="dash-kpi-label">المهام الجارية</div>
-            <div class="dash-kpi-sub">إنجاز المهام: {{ getOverallTasksCompletionRate() }}%</div>
-          </div>
+      <div class="kpi-card card-indigo" routerLink="/tasks">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge indigo"><i class="fa-solid fa-list-check"></i></div>
+          <span class="kpi-pill indigo"><i class="fa-solid fa-bars-progress"></i> {{ getOverallTasksCompletionRate() }}% إنجاز</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ crmStats.tasks }}</div>
-          <div class="dash-kpi-trend warn"><i class="fa-solid fa-bars-progress"></i> جارية</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value indigo">{{ crmStats.tasks }} <span class="kpi-currency">مهمة</span></div>
+          <div class="kpi-title">المهام الجارية والمخرجات</div>
+          <div class="kpi-subtitle">المهام الجارية تحت التنفيذ والمراجعة</div>
         </div>
       </div>
     </div>
@@ -262,61 +250,58 @@
       </div>
     </div>
 
-    <!-- KPI Row -->
-    <div class="dash-kpi-row">
-      <div class="dash-kpi dash-kpi-purple" (click)="setTab('projects')" style="cursor:pointer">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-folder-open"></i></div>
-          <div>
-            <div class="dash-kpi-label">المشاريع</div>
-            <div class="dash-kpi-sub">معرض الأعمال</div>
-          </div>
+    <!-- ── CMS METRICS KPI GRID ── -->
+    <div class="dash-kpi-grid grid-4-cols">
+      
+      <!-- 1. Projects -->
+      <div class="kpi-card card-purple" (click)="setTab('projects')">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge purple"><i class="fa-solid fa-folder-open"></i></div>
+          <span class="kpi-pill purple"><i class="fa-solid fa-arrow-trend-up"></i> منشور معرض الأعمال</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ overviewStats.projects }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> منشور</div>
-        </div>
-      </div>
-
-      <div class="dash-kpi dash-kpi-blue" (click)="setTab('services')" style="cursor:pointer">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-gears"></i></div>
-          <div>
-            <div class="dash-kpi-label">الخدمات</div>
-            <div class="dash-kpi-sub">دليل الخدمات</div>
-          </div>
-        </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ overviewStats.services }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-circle-check"></i> نشطة</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value purple">{{ overviewStats.projects }} <span class="kpi-currency">مشروع</span></div>
+          <div class="kpi-title">المشاريع والأعمال</div>
+          <div class="kpi-subtitle">معرض مشاريع الوكالة على الموقع</div>
         </div>
       </div>
 
-      <div class="dash-kpi dash-kpi-amber" (click)="setTab('testimonials')" style="cursor:pointer">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-star"></i></div>
-          <div>
-            <div class="dash-kpi-label">التقييمات</div>
-            <div class="dash-kpi-sub">آراء العملاء</div>
-          </div>
+      <!-- 2. Services -->
+      <div class="kpi-card card-blue" (click)="setTab('services')">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge blue"><i class="fa-solid fa-gears"></i></div>
+          <span class="kpi-pill blue"><i class="fa-solid fa-circle-check"></i> خدمات نشطة</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ overviewStats.testimonials }}</div>
-          <div class="dash-kpi-trend up"><i class="fa-solid fa-thumbs-up"></i> معتمدة</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value blue">{{ overviewStats.services }} <span class="kpi-currency">خدمة</span></div>
+          <div class="kpi-title">خدمات الوكالة</div>
+          <div class="kpi-subtitle">دليل الخدمات والباقات بالموقع</div>
         </div>
       </div>
 
-      <div class="dash-kpi dash-kpi-red" (click)="setTab('contact-hub')" style="cursor:pointer">
-        <div class="dash-kpi-left">
-          <div class="dash-kpi-icon"><i class="fa-solid fa-envelope"></i></div>
-          <div>
-            <div class="dash-kpi-label">الرسائل</div>
-            <div class="dash-kpi-sub">تحتاج رد</div>
-          </div>
+      <!-- 3. Testimonials -->
+      <div class="kpi-card card-amber" (click)="setTab('testimonials')">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge amber"><i class="fa-solid fa-star"></i></div>
+          <span class="kpi-pill amber"><i class="fa-solid fa-thumbs-up"></i> آراء معتمدة</span>
         </div>
-        <div class="dash-kpi-right">
-          <div class="dash-kpi-num">{{ overviewStats.inquiries }}</div>
-          <div class="dash-kpi-trend warn"><i class="fa-solid fa-bell"></i> واردة</div>
+        <div class="kpi-card-body">
+          <div class="kpi-value amber">{{ overviewStats.testimonials }} <span class="kpi-currency">رأي</span></div>
+          <div class="kpi-title">تقييمات العملاء</div>
+          <div class="kpi-subtitle">توصيات وآراء عملاء الوكالة</div>
+        </div>
+      </div>
+
+      <!-- 4. Messages / Inquiries -->
+      <div class="kpi-card card-rose" (click)="setTab('contact-hub')">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge rose"><i class="fa-solid fa-envelope"></i></div>
+          <span class="kpi-pill rose"><i class="fa-solid fa-bell"></i> رسائل جديدة</span>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value rose">{{ overviewStats.inquiries }} <span class="kpi-currency">رسالة</span></div>
+          <div class="kpi-title">استفسارات الموقع</div>
+          <div class="kpi-subtitle">رسائل نموذج اتصل بنا الواردة</div>
         </div>
       </div>
     </div>

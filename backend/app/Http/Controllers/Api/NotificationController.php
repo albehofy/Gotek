@@ -12,13 +12,16 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $notifications = NotificationModel::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
+        $query = NotificationModel::where('user_id', $user->id);
+
+        if ($user && in_array(strtolower($user->role), ['client'])) {
+            $query->whereNotIn('type', ['assignment', 'internal_assignment', 'status_change']);
+        }
+
+        $notifications = $query->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 20));
 
-        $unreadCount = NotificationModel::where('user_id', $user->id)
-            ->where('is_read', false)
-            ->count();
+        $unreadCount = (clone $query)->where('is_read', false)->count();
 
         return response()->json([
             'status' => 'success',
@@ -30,10 +33,13 @@ class NotificationController extends Controller
     public function unread()
     {
         $user = Auth::user();
-        $notifications = NotificationModel::where('user_id', $user->id)
-            ->where('is_read', false)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = NotificationModel::where('user_id', $user->id)->where('is_read', false);
+
+        if ($user && in_array(strtolower($user->role), ['client'])) {
+            $query->whereNotIn('type', ['assignment', 'internal_assignment', 'status_change']);
+        }
+
+        $notifications = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'status' => 'success',

@@ -11,6 +11,7 @@ use App\Models\FixedAsset;
 use App\Models\PayrollRecord;
 use App\Models\Department;
 use App\Models\Deal;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class FinanceController extends Controller
 
         // Department Manager scope limit if not admin/super_admin
         $deptId = null;
-        if (in_array($user->role, ['department_manager', 'Department Manager']) && $user->department_id) {
+        if ($user && in_array($user->role, ['department_manager', 'Department Manager']) && $user->department_id) {
             $deptId = $user->department_id;
         }
 
@@ -40,11 +41,13 @@ class FinanceController extends Controller
             $expenseQuery->where('department_id', $deptId);
         }
 
-        $totalIncome = (float) $incomeQuery->sum('amount');
+        $ledgerIncome = (float) $incomeQuery->sum('amount');
+        $paymentsIncome = (float) ClientPayment::sum('amount');
+        $tasksIncome = (float) Task::where('status', '!=', 'cancelled')->sum('client_price');
+        $totalIncome = max($ledgerIncome, $paymentsIncome, $tasksIncome);
 
-
-        $totalExpenses = $expenseQuery->sum('amount');
-        $netRemainingBalance = $totalIncome - $totalExpenses;
+        $totalExpenses = (float) $expenseQuery->sum('amount');
+        $netRemainingBalance = max(0, $totalIncome - $totalExpenses);
 
         // Custody Total Summary
         $activeCustody = CustodyAccount::where('status', 'open')->sum('issued_amount') - CustodyAccount::where('status', 'open')->sum('returned_amount');
@@ -377,6 +380,7 @@ class FinanceController extends Controller
 
         // Log net spent amount as expense
         if ($spent > 0) {
+            $notesSuffix = !empty($validated['notes']) ? ' | البيان والملاحظات: ' . $validated['notes'] : '';
             LedgerEntry::create([
                 'date' => now()->toDateString(),
                 'type' => 'expense',
@@ -384,7 +388,7 @@ class FinanceController extends Controller
                 'employee_id' => $custody->employee_id,
                 'amount' => $spent,
                 'payment_method' => 'cash',
-                'description' => 'مصروف العهدة الفعلي (العهدة المسلمة - المرجعة) للموظف: ' . $custody->employee?->name,
+                'description' => 'مصروف العهدة الفعلي للموظف: ' . $custody->employee?->name . $notesSuffix,
                 'created_by' => Auth::id()
             ]);
         }
@@ -399,8 +403,25 @@ class FinanceController extends Controller
         $report = [];
 
         foreach ($partneredDepts as $dept) {
-            $income = LedgerEntry::where('department_id', $dept->id)->where('type', 'income')->sum('amount');
-            $expenses = LedgerEntry::where('department_id', $dept->id)->where('type', 'expense')->sum('amount');
+            // Direct ledger income assigned to department
+            $ledgerIncome = (float) LedgerEntry::where('department_id', $dept->id)->where('type', 'income')->sum('amount');
+
+            // Deals belonging to this department
+            $dealIds = Deal::where('department_id', $dept->id)->pluck('id');
+            $dealPaymentsIncome = (float) ClientPayment::whereIn('deal_id', $dealIds)->sum('amount');
+
+            // Tasks created directly for this department
+            $deptTasksIncome = (float) Task::where('department_id', $dept->id)->where('status', '!=', 'cancelled')->sum('client_price');
+
+            // Total department gross revenue
+            $income = max($ledgerIncome, $dealPaymentsIncome, $deptTasksIncome);
+
+            // Department Direct Expenses
+            $ledgerExpenses = (float) LedgerEntry::where('department_id', $dept->id)->where('type', 'expense')->sum('amount');
+            $deptTaskCosts = (float) Task::where('department_id', $dept->id)->where('status', '!=', 'cancelled')->sum('employee_price');
+
+            $expenses = $ledgerExpenses + $deptTaskCosts;
+
             $netProfit = max(0, $income - $expenses);
 
             $partnerPct = (float) $dept->partner_percentage;

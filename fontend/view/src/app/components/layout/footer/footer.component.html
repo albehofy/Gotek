@@ -1,12 +1,19 @@
 <footer class="glass-footer">
   <div class="container">
     <div class="footer-top">
+      
+      <!-- Brand Column -->
       <div class="footer-brand">
         <a routerLink="/" class="nav-logo-txt" style="margin-bottom: 16px; display: inline-flex;">
-          <img src="assets/media-glow-logo.png" alt="Media Glow" style="height: 36px; filter: brightness(0) invert(1);" onerror="this.style.display='none'"/>
-          Media Glow<span>.</span>
+          <div class="logo-badge-icon sm">
+            <i class="pi pi-sparkles"></i>
+          </div>
+          <div class="logo-text-group">
+            <span class="logo-brand-name">Media Glow<span class="logo-dot">.</span></span>
+          </div>
         </a>
         <p class="footer-brand-desc">{{ (footerData?.desc | translate) || ('footer_desc' | translate) }}</p>
+        
         <div class="footer-social">
           @if (footerData?.socials?.facebook) {
             <a [href]="footerData.socials.facebook" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-facebook"></i></a>
@@ -32,6 +39,7 @@
         </div>
       </div>
 
+      <!-- Services -->
       <div>
         <div class="footer-col-title">{{ 'footer_svc' | translate }}</div>
         <ul class="footer-links">
@@ -41,6 +49,7 @@
         </ul>
       </div>
 
+      <!-- Company Links -->
       <div>
         <div class="footer-col-title">{{ 'footer_company' | translate }}</div>
         <ul class="footer-links">
@@ -50,6 +59,7 @@
         </ul>
       </div>
 
+      <!-- Contact Info -->
       <div>
         <div class="footer-col-title">{{ 'footer_contact' | translate }}</div>
         <ul class="footer-links">
@@ -57,8 +67,10 @@
           <li><a [href]="'https://wa.me/' + (footerData?.phone || '966500000000')"><i class="pi pi-whatsapp" style="margin-left:6px;color:#25d366;"></i> {{ footerData?.phone || ('footer_wa' | translate) }}</a></li>
         </ul>
       </div>
+
     </div>
 
+    <!-- Bottom Bar -->
     <div class="footer-bottom">
       <div class="footer-copy">
         <span>{{ (footerData?.copy | translate) || ('footer_copy' | translate) }}</span>

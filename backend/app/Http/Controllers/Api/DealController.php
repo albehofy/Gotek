@@ -7,6 +7,8 @@ use App\Models\Deal;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Department;
+use App\Models\ClientPayment;
+use App\Models\LedgerEntry;
 use App\Models\NotificationModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -210,9 +212,24 @@ class DealController extends Controller
         return response()->json(['status' => 'success', 'data' => $deal->load(['client', 'department', 'salesPerson'])]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $deal = Deal::findOrFail($id);
+        $deleteFinancials = filter_var($request->query('delete_financials', $request->input('delete_financials', false)), FILTER_VALIDATE_BOOLEAN);
+
+        if ($deleteFinancials) {
+            // Delete payments and financial ledger entries associated with this deal
+            ClientPayment::where('deal_id', $deal->id)->delete();
+            LedgerEntry::where('deal_id', $deal->id)->delete();
+        } else {
+            // Unlink payments and financial ledger entries so company revenue and payroll remain intact
+            ClientPayment::where('deal_id', $deal->id)->update(['deal_id' => null]);
+            LedgerEntry::where('deal_id', $deal->id)->update(['deal_id' => null]);
+        }
+
+        // Delete associated tasks
+        Task::where('deal_id', $deal->id)->delete();
+
         $deal->delete();
 
         return response()->json(['message' => 'تم حذف الصفقة بنجاح']);

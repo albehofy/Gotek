@@ -103,8 +103,9 @@ export class ApiService {
     return this.http.put<any>(`${API_BASE_URL}/deals/${id}`, data, { headers: this.getHeaders() });
   }
 
-  deleteDeal(id: string | number): Observable<any> {
-    return this.http.delete<any>(`${API_BASE_URL}/deals/${id}`, { headers: this.getHeaders() });
+  deleteDeal(id: string | number, deleteFinancials: boolean = false): Observable<any> {
+    const params = new HttpParams().set('delete_financials', deleteFinancials ? '1' : '0');
+    return this.http.delete<any>(`${API_BASE_URL}/deals/${id}`, { headers: this.getHeaders(), params });
   }
 
   // Tasks

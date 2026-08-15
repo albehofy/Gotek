@@ -649,11 +649,11 @@ import { ConfirmService } from '../../services/confirm.service';
 
               <!-- Team Assignment Section -->
               <div class="drawer-card">
-                <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الفريق المكلف بالمهمة</div>
+                <div class="dc-head"><i class="fa-solid fa-user-check"></i> {{ isClient() ? 'الموظف المكلف بالمهمة' : 'الفريق المكلف بالمهمة' }}</div>
                 <div class="team-assign-container" style="display:flex; flex-direction:column; gap:12px; margin-top:6px;">
 
-                  <!-- PrimeNG Grouped MultiSelect Dropdown -->
-                  <div class="assign-user-picker">
+                  <!-- PrimeNG Grouped MultiSelect Dropdown (Hidden for Client) -->
+                  <div class="assign-user-picker" *ngIf="!isClient()">
                     <p-multiSelect
                       [options]="groupedUsers"
                       [group]="true"
@@ -693,9 +693,9 @@ import { ConfirmService } from '../../services/confirm.service';
                       <div class="tc-av">{{ u.name?.charAt(0) }}</div>
                       <div class="tc-info">
                         <span class="tc-name">{{ u.name }}</span>
-                        <small class="tc-role">{{ u.email || 'عضو الفريق' }}</small>
+                        <small class="tc-role">{{ isClient() ? 'مسؤول التنفيذ بالمشروع' : (u.email || 'عضو الفريق') }}</small>
                       </div>
-                      <button class="tc-remove-btn" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
+                      <button class="tc-remove-btn" *ngIf="!isClient()" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
                         <i class="fa-solid fa-xmark"></i>
                       </button>
                     </div>
@@ -1359,13 +1359,13 @@ import { ConfirmService } from '../../services/confirm.service';
                 </div>
 
                 <div class="fg">
-                  <label>سعر العميل (ج.م)</label>
-                  <input type="number" pInputText formControlName="client_price" (input)="computeMargin()" placeholder="0" />
+                  <label>سعر العميل / قيمة المهمة (ج.م) (اختياري)</label>
+                  <input type="number" pInputText formControlName="client_price" (input)="computeMargin()" placeholder="0 (اختياري)..." />
                 </div>
 
                 <div class="fg">
-                  <label>تكلفة الموظف (ج.م)</label>
-                  <input type="number" pInputText formControlName="employee_price" (input)="computeMargin()" placeholder="0" />
+                  <label>تكلفة الموظف (ج.م) (اختياري)</label>
+                  <input type="number" pInputText formControlName="employee_price" (input)="computeMargin()" placeholder="0 (اختياري)..." />
                 </div>
 
                 <div class="fg full margin-preview" *ngIf="computedMarginVal > 0">
@@ -3909,13 +3909,17 @@ export class TasksBoardComponent implements OnInit {
 
   loadData(): void {
     this.apiService.getTasks().subscribe(res => {
-      this.tasks = res || [];
+      this.tasks = Array.isArray(res) ? res : (res?.data || []);
       this.checkAndOpenTaskFromUrl();
     });
-    this.apiService.getDeals().subscribe(res => this.deals = res || []);
-    this.apiService.getDepartments().subscribe(res => this.departments = res || []);
+    this.apiService.getDeals().subscribe(res => {
+      this.deals = Array.isArray(res) ? res : (res?.data || []);
+    });
+    this.apiService.getDepartments().subscribe(res => {
+      this.departments = Array.isArray(res) ? res : (res?.data || []);
+    });
     this.apiService.getUsers().subscribe(res => {
-      const arr = (res && res.data ? res.data : res) || [];
+      const arr = Array.isArray(res) ? res : (res?.data || []);
       this.allUsers = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
       this.buildGroupedUsers();
     });

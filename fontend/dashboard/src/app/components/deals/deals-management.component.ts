@@ -376,6 +376,7 @@ import { ConfirmService } from '../../services/confirm.service';
           </div>
         </form>
       </p-dialog>
+
     </div>
   `,
   styles: [`
@@ -532,15 +533,15 @@ export class DealsManagementComponent implements OnInit {
 
   confirmDeleteDeal(deal: any): void {
     this.confirmService.confirm({
-      title: 'حذف الصفقة والعقد',
-      message: `هل أنت تأكد من رغبتك في حذف الصفقة والعقد "${deal.title}" بشكل نهائي؟`,
-      confirmText: 'نعم، حذف الصفقة والعقد',
-      cancelText: 'إلغاء وتراجع',
+      title: 'تأكيد حذف الصفقة والعقد',
+      message: `هل أنت تأكد من رغبتك في حذف الصفقة "${deal.title}" والعقد والبيانات المرتبطة بها نهائياً؟`,
+      confirmText: 'نعم، حذف الصفقة',
+      cancelText: 'تراجع وإلغاء',
       type: 'danger',
       icon: 'fa-solid fa-trash-can',
       accept: () => {
         this.loading = true;
-        this.apiService.deleteDeal(deal.id).subscribe({
+        this.apiService.deleteDeal(deal.id, false).subscribe({
           next: () => {
             this.loading = false;
             this.toastService.success(`تم حذف الصفقة "${deal.title}" بنجاح`, 'تم الحذف');
@@ -654,10 +655,14 @@ export class DealsManagementComponent implements OnInit {
   }
 
   loadDropdownOptions(): void {
-    this.apiService.getUsers('client').subscribe(res => this.clients = res.data || []);
-    this.apiService.getDepartments().subscribe(res => this.departments = res || []);
+    this.apiService.getUsers('client').subscribe(res => {
+      this.clients = Array.isArray(res) ? res : (res?.data || []);
+    });
+    this.apiService.getDepartments().subscribe(res => {
+      this.departments = Array.isArray(res) ? res : (res?.data || []);
+    });
     this.apiService.getUsers().subscribe(res => {
-      const arr = res.data || [];
+      const arr = Array.isArray(res) ? res : (res?.data || []);
       this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
     });
   }

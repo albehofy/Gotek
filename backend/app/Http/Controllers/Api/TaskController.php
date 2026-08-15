@@ -116,6 +116,10 @@ class TaskController extends Controller
                 if ($currentUserId && (int)$uid === (int)$currentUserId) {
                     continue;
                 }
+                $targetUser = User::find($uid);
+                if ($targetUser && in_array(strtolower($targetUser->role), ['client'])) {
+                    continue;
+                }
                 NotificationModel::create([
                     'user_id' => $uid,
                     'type' => 'assignment',
@@ -265,6 +269,10 @@ class TaskController extends Controller
             if ($currentUserId && (int)$uid === (int)$currentUserId) {
                 continue;
             }
+            $targetUser = User::find($uid);
+            if ($targetUser && in_array(strtolower($targetUser->role), ['client'])) {
+                continue;
+            }
 
             NotificationModel::create([
                 'user_id' => $uid,
@@ -289,6 +297,10 @@ class TaskController extends Controller
         $currentUserId = auth()->id();
         foreach ($request->user_ids as $uid) {
             if ($currentUserId && (int)$uid === (int)$currentUserId) {
+                continue;
+            }
+            $targetUser = User::find($uid);
+            if ($targetUser && in_array(strtolower($targetUser->role), ['client'])) {
                 continue;
             }
             NotificationModel::create([

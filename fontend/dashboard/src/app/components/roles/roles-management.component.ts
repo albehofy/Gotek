@@ -91,7 +91,7 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
                   <span *ngIf="u.role === 'department_manager'" class="mgr-badge"><i class="fa-solid fa-crown"></i> مدير قسم</span>
                 </td>
                 <td style="color:var(--text-2);">{{ u.email }}</td>
-                <td><span class="badge badge-v" style="text-transform:uppercase;">{{ u.role }}</span></td>
+                <td><span class="badge badge-v">{{ getRoleLabel(u.role) }}</span></td>
                 <td style="color:var(--text-2);">{{ u.department?.name || 'عام / بدون قسم' }}</td>
                 <td>
                   <p-dropdown
@@ -282,6 +282,17 @@ export class RolesManagementComponent implements OnInit {
   users: any[] = [];
   departments: any[] = [];
   deptOptions: any[] = [];
+
+  getRoleLabel(role: string): string {
+    switch (role) {
+      case 'super_admin': return 'سوبر أدمن';
+      case 'admin': return 'مدير نظام';
+      case 'department_manager': return 'مدير قسم';
+      case 'employee': return 'موظف';
+      case 'client': return 'عميل';
+      default: return role || 'موظف';
+    }
+  }
 
   rolesList = [
     { id: 'employee', label: 'موظف (Employee)' },

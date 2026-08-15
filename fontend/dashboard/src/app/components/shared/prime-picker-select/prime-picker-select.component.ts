@@ -38,7 +38,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         <ul class="picker-options-list">
           <li 
             *ngFor="let item of filteredItems()" 
-            [class.active]="value === getItemValue(item)"
+            [class.active]="isItemSelected(item)"
             (click)="selectItem(item)"
           >
             <span>{{ getItemLabel(item) }}</span>
@@ -277,9 +277,11 @@ export class PrimePickerSelectComponent implements ControlValueAccessor, OnDestr
   onChangeFn: any = () => {};
   onTouchedFn: any = () => {};
 
+  private justOpened = false;
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (this.isOpen) {
+    if (this.isOpen && !this.justOpened) {
       const target = event.target as Node;
       const triggerEl = this.elementRef.nativeElement.querySelector('.picker-trigger');
       const isInsideTrigger = triggerEl && triggerEl.contains(target);
@@ -300,7 +302,10 @@ export class PrimePickerSelectComponent implements ControlValueAccessor, OnDestr
   }
 
   toggleDropdown(event?: Event) {
-    if (event) event.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (this.isOpen) {
       this.closeDropdown();
     } else {
@@ -310,6 +315,7 @@ export class PrimePickerSelectComponent implements ControlValueAccessor, OnDestr
 
   openDropdown() {
     this.isOpen = true;
+    this.justOpened = true;
     this.onTouchedFn();
     
     setTimeout(() => {
@@ -319,7 +325,8 @@ export class PrimePickerSelectComponent implements ControlValueAccessor, OnDestr
         this.document.body.appendChild(panel);
         this.updatePanelPosition();
       }
-    }, 0);
+      this.justOpened = false;
+    }, 50);
   }
 
   closeDropdown() {
@@ -400,7 +407,13 @@ export class PrimePickerSelectComponent implements ControlValueAccessor, OnDestr
   }
 
   get selectedItem() {
-    return this.items.find(i => this.getItemValue(i) === this.value);
+    if (this.value === null || this.value === undefined || this.value === '') return null;
+    return (this.items || []).find(i => String(this.getItemValue(i)) === String(this.value));
+  }
+
+  isItemSelected(item: any): boolean {
+    if (this.value === null || this.value === undefined || this.value === '') return false;
+    return String(this.getItemValue(item)) === String(this.value);
   }
 
   getItemLabel(item: any): string {

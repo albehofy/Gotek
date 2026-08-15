@@ -57,7 +57,14 @@ import { ToastService } from '../../services/toast.service';
           <p class="subtitle">سجل العمليات المالية، المصروفات، العهد المالية، توزيع أرباح الشركاء، المرتبات والأصول</p>
         </div>
 
-        <div class="header-actions no-print" style="display:flex; gap:10px; align-items:center;">
+        <div class="header-actions no-print" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="quick-header-date-presets" style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="hdr-date-chip" [class.active]="datePreset === 'today'" (click)="setDatePreset('today')">هذا اليوم</button>
+            <button type="button" class="hdr-date-chip" [class.active]="datePreset === 'week'" (click)="setDatePreset('week')">هذا الأسبوع</button>
+            <button type="button" class="hdr-date-chip" [class.active]="datePreset === 'month'" (click)="setDatePreset('month')">هذا الشهر</button>
+            <button type="button" class="hdr-date-chip" [class.active]="datePreset === 'year'" (click)="setDatePreset('year')">هذه السنة</button>
+          </div>
+
           <button type="button" class="btn btn-action primary" (click)="showFilterSidebar = true">
             <i class="fa-solid fa-sliders"></i> الفلترة والبحث المتقدم
             <span *ngIf="hasActiveFilters()" style="background:#f43f5e; color:#fff; font-size:0.7rem; padding:2px 6px; border-radius:100px; margin-right:4px; font-weight:800;">
@@ -343,7 +350,7 @@ import { ToastService } from '../../services/toast.service';
                   <td>{{ custody.issued_amount | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--emerald-light);">{{ custody.returned_amount | number:'1.2-2' }} ج.م</td>
                   <td style="color:var(--rose-light); font-weight:700;">{{ (custody.issued_amount - custody.returned_amount) | number:'1.2-2' }} ج.م</td>
-                  <td><span class="badge badge-v">{{ custody.status }}</span></td>
+                  <td><span class="badge" [ngClass]="getCustodyStatusClass(custody.status)">{{ getCustodyStatusLabel(custody.status) }}</span></td>
                   <td>
                     <button *ngIf="custody.status === 'open'" class="action-icon-btn btn-emerald" (click)="openReturnCustodyModal(custody)" data-tooltip="تسوية وتصفية حساب العهدة" title="تسوية وتصفية حساب العهدة">
                       <i class="fa-solid fa-file-invoice-dollar"></i>
@@ -636,17 +643,50 @@ import { ToastService } from '../../services/toast.service';
       </p-dialog>
 
       <!-- PrimeNG Dialog: Return Custody Modal -->
-      <p-dialog [(visible)]="showReturnCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسوية واسترجاع عهدة مالية" [style]="{ width: '90vw', maxWidth: '420px' }">
-        <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;" *ngIf="selectedCustody">
-          <small style="color:var(--text-2);">مبلغ العهدة الأصلية: <strong>{{ selectedCustody.issued_amount | number:'1.2-2' }} ج.م</strong></small>
-          <div class="form-group">
-            <label>المبلغ المتبقي / المرجع (ج.م) <span class="required">*</span></label>
-            <input type="number" pInputText [(ngModel)]="returnedAmount" placeholder="0" />
+      <p-dialog [(visible)]="showReturnCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسوية وتصفية عهدة مالية" [style]="{ width: '92vw', maxWidth: '500px' }">
+        <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;" *ngIf="selectedCustody">
+          
+          <div style="background:rgba(99, 102, 241, 0.08); border:1px solid var(--border); border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:0.88rem; color:var(--text-2);">الموظف: <strong style="color:var(--text);">{{ selectedCustody.employee?.name }}</strong></span>
+            <span style="font-size:0.88rem; color:var(--text-2);">مبلغ العهدة الأصلي: <strong style="color:var(--violet-light);">{{ selectedCustody.issued_amount | number:'1.2-2' }} ج.م</strong></span>
           </div>
+
+          <div class="form-group">
+            <label>المبلغ المتبقي / المرجع للخزينة (ج.م) <span class="required">*</span></label>
+            <input type="number" pInputText [(ngModel)]="returnedAmount" placeholder="0" />
+            <small style="color:var(--rose-light); font-weight:600; margin-top:4px; display:block;" *ngIf="selectedCustody.issued_amount - returnedAmount > 0">
+              <i class="fa-solid fa-calculator"></i> سيتم تسجيل مبلغ {{ (selectedCustody.issued_amount - returnedAmount) | number:'1.2-2' }} ج.م كمصروفات عهدة فعلية
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>تصنيف المصروفات الفعلي</label>
+            <p-dropdown
+              [(ngModel)]="returnCategoryId"
+              [options]="categories"
+              optionLabel="name_ar"
+              optionValue="id"
+              placeholder="اختر تصنيف المصروفات (اختياري)..."
+              [appendTo]="'body'"
+              [style]="{ width: '100%' }"
+            ></p-dropdown>
+          </div>
+
+          <div class="form-group">
+            <label>ملاحظات وبيان المصروفات (في أي البنود تم صرف العهدة) <span class="required">*</span></label>
+            <textarea
+              pTextarea
+              rows="3"
+              [(ngModel)]="returnNotes"
+              placeholder="مثال: تم شراء أدوات مكتبية ومستلزمات تصوير وتأمين انتقالات..."
+              style="width:100%; border-radius:10px; background:var(--bg-input); color:var(--text); border:1px solid var(--border); padding:10px; font-family:inherit; font-size:0.88rem;"
+            ></textarea>
+          </div>
+
         </div>
         <div class="dialog-footer-actions">
           <button type="button" class="btn-dialog-cancel" (click)="showReturnCustodyModal = false">إلغاء</button>
-          <button type="button" class="btn-dialog-submit" (click)="saveReturnCustody()">إتمام التسوية</button>
+          <button type="button" class="btn-dialog-submit" (click)="saveReturnCustody()">تأكيد وإتمام التسوية</button>
         </div>
       </p-dialog>
 
@@ -856,13 +896,60 @@ import { ToastService } from '../../services/toast.service';
             ></app-prime-picker-select>
           </div>
 
+          <!-- Fast Date Presets inside Filter Drawer -->
+          <div class="filter-field-group full-width">
+            <label><i class="fa-solid fa-clock-rotate-left"></i> اختصار الفلترة بالتاريخ</label>
+            <div class="date-preset-chips" style="display:flex; flex-wrap:wrap; gap:8px; width:100%; margin-bottom:8px;">
+              <button 
+                type="button" 
+                class="preset-chip" 
+                [class.active]="datePreset === 'today'" 
+                (click)="setDatePreset('today')"
+              >
+                <i class="fa-regular fa-sun"></i> هذا اليوم
+              </button>
+              <button 
+                type="button" 
+                class="preset-chip" 
+                [class.active]="datePreset === 'week'" 
+                (click)="setDatePreset('week')"
+              >
+                <i class="fa-solid fa-calendar-week"></i> هذا الأسبوع
+              </button>
+              <button 
+                type="button" 
+                class="preset-chip" 
+                [class.active]="datePreset === 'month'" 
+                (click)="setDatePreset('month')"
+              >
+                <i class="fa-solid fa-calendar-days"></i> هذا الشهر
+              </button>
+              <button 
+                type="button" 
+                class="preset-chip" 
+                [class.active]="datePreset === 'year'" 
+                (click)="setDatePreset('year')"
+              >
+                <i class="fa-solid fa-calendar"></i> هذه السنة
+              </button>
+              <button 
+                type="button" 
+                class="preset-chip" 
+                [class.active]="datePreset === 'custom'" 
+                (click)="setDatePreset('custom')"
+              >
+                <i class="fa-solid fa-pen-to-square"></i> تاريخ مخصص
+              </button>
+            </div>
+          </div>
+
           <!-- Filter 5 & 6: Date Range From & To (Side by Side Grid) -->
           <div class="date-range-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%;">
             <div class="filter-field-group">
               <label><i class="fa-regular fa-calendar-days"></i> من تاريخ</label>
               <p-datepicker
                 [(ngModel)]="filterFromDate"
-                (ngModelChange)="applyFilters()"
+                (ngModelChange)="datePreset = 'custom'; applyFilters()"
                 [appendTo]="'body'"
                 dateFormat="yy-mm-dd"
                 [showIcon]="true"
@@ -876,7 +963,7 @@ import { ToastService } from '../../services/toast.service';
               <label><i class="fa-regular fa-calendar-days"></i> إلى تاريخ</label>
               <p-datepicker
                 [(ngModel)]="filterToDate"
-                (ngModelChange)="applyFilters()"
+                (ngModelChange)="datePreset = 'custom'; applyFilters()"
                 [appendTo]="'body'"
                 dateFormat="yy-mm-dd"
                 [showIcon]="true"
@@ -1231,6 +1318,73 @@ import { ToastService } from '../../services/toast.service';
       gap: 12px;
       background: rgba(17, 18, 40, 0.95);
     }
+    .preset-chip {
+      padding: 7px 13px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      background: rgba(99, 102, 241, 0.08);
+      color: var(--text-2, #94a3b8);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preset-chip:hover {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: var(--violet, #6366f1);
+      color: var(--text, #ffffff);
+    }
+    .preset-chip.active {
+      background: var(--violet, #6366f1) !important;
+      color: #ffffff !important;
+      border-color: var(--violet, #6366f1) !important;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+    .hdr-date-chip {
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-2, #94a3b8);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .hdr-date-chip:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--violet, #6366f1);
+      color: var(--text, #ffffff);
+    }
+    .hdr-date-chip.active {
+      background: var(--violet, #6366f1) !important;
+      color: #ffffff !important;
+      border-color: var(--violet, #6366f1) !important;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+    }
+    body.light-theme .hdr-date-chip,
+    body.light-theme .preset-chip {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    body.light-theme .hdr-date-chip:hover,
+    body.light-theme .preset-chip:hover {
+      background: rgba(99, 102, 241, 0.1) !important;
+      border-color: #6366f1 !important;
+      color: #4f46e5 !important;
+    }
+    body.light-theme .hdr-date-chip.active,
+    body.light-theme .preset-chip.active {
+      background: #6366f1 !important;
+      color: #ffffff !important;
+      border-color: #6366f1 !important;
+    }
     .btn-reset-filters {
       flex: 1;
       padding: 12px 16px;
@@ -1413,8 +1567,37 @@ export class FinanceDashboardComponent implements OnInit {
   filterFromDate: any = null;
   filterToDate: any = null;
   selectedEmployeeStatement: any = null;
+  datePreset: string = 'custom';
 
   showFilterSidebar = false;
+
+  setDatePreset(preset: string): void {
+    this.datePreset = preset;
+    const now = new Date();
+
+    if (preset === 'today') {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      this.filterFromDate = today;
+      this.filterToDate = today;
+    } else if (preset === 'week') {
+      const dayOfWeek = now.getDay();
+      const diffToSat = (dayOfWeek === 6) ? 0 : (dayOfWeek + 1);
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - diffToSat);
+      this.filterFromDate = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate());
+      this.filterToDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (preset === 'month') {
+      this.filterFromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      this.filterToDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (preset === 'year') {
+      this.filterFromDate = new Date(now.getFullYear(), 0, 1);
+      this.filterToDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (preset === 'custom') {
+      // Keep current custom selection
+    }
+
+    this.onFilterChange();
+  }
 
   get activeFilterCount(): number {
     let count = 0;
@@ -1453,6 +1636,7 @@ export class FinanceDashboardComponent implements OnInit {
     this.filterPaymentMethod = '';
     this.filterFromDate = null;
     this.filterToDate = null;
+    this.datePreset = 'custom';
     this.selectedEmployeeStatement = null;
     this.ledgerPage = 1;
     this.loadLedger();
@@ -1662,6 +1846,8 @@ export class FinanceDashboardComponent implements OnInit {
   showReturnCustodyModal = false;
   selectedCustody: any = null;
   returnedAmount: number = 0;
+  returnNotes: string = '';
+  returnCategoryId: any = null;
 
   onCustodyDeptChange(): void {
     this.custodyEmpId = null;
@@ -1764,17 +1950,51 @@ export class FinanceDashboardComponent implements OnInit {
     });
   }
 
+  getCustodyStatusLabel(status: string): string {
+    if (!status) return 'نشطة';
+    const st = status.toLowerCase();
+    if (st === 'open' || st === 'issued' || st === 'active') return 'عهدَة نشطة';
+    if (st === 'settled' || st === 'closed' || st === 'returned') return 'تمت التسوية';
+    return status;
+  }
+
+  getCustodyStatusClass(status: string): string {
+    if (!status) return 'badge-a';
+    const st = status.toLowerCase();
+    if (st === 'open' || st === 'issued' || st === 'active') return 'badge-a';
+    if (st === 'settled' || st === 'closed' || st === 'returned') return 'badge-e';
+    return 'badge-v';
+  }
+
   openReturnCustodyModal(custody: any): void {
     this.selectedCustody = custody;
     this.returnedAmount = custody.issued_amount || 0;
+    this.returnNotes = '';
+    this.returnCategoryId = null;
     this.showReturnCustodyModal = true;
   }
 
   saveReturnCustody(): void {
     if (!this.selectedCustody) return;
-    this.apiService.returnCustody(this.selectedCustody.id, { returned_amount: +this.returnedAmount }).subscribe(() => {
-      this.showReturnCustodyModal = false;
-      this.loadAllData();
+    const payload: any = {
+      returned_amount: +this.returnedAmount
+    };
+    if (this.returnNotes && this.returnNotes.trim()) {
+      payload.notes = this.returnNotes.trim();
+    }
+    if (this.returnCategoryId) {
+      payload.spent_category_id = this.returnCategoryId;
+    }
+
+    this.apiService.returnCustody(this.selectedCustody.id, payload).subscribe({
+      next: () => {
+        this.showReturnCustodyModal = false;
+        this.toastService.success('تم إتمام تسوية وتصفية حساب العهدة بنجاح', 'تمت العملية');
+        this.loadAllData();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.message || 'تعذر إتمام تسوية العهدة');
+      }
     });
   }
 

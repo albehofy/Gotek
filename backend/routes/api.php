@@ -173,6 +173,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [InternalProjectController::class, 'destroy']);
     });
 
+    Route::post('/media/cleanup-old', function (\Illuminate\Http\Request $request) {
+        $years = (int) $request->input('years', 2);
+        \Illuminate\Support\Facades\Artisan::call('media:cleanup-old', ['--years' => $years]);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم الحذف التلقائي للميديا والملفات والأرشيف الأقدم من سنتين بنجاح',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    });
+
     Route::get('tasks/{taskId}/checklist', [ChecklistController::class, 'index']);
     Route::put('/checklist/{checkListId}/toggle', [ChecklistController::class, 'toggle']);
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index']);

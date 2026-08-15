@@ -21,9 +21,14 @@ import { ApiService } from '../../../services/api.service';
             <span>الإشعارات والتنبيهات</span>
             <span class="badge-count" *ngIf="unreadCount > 0">{{ unreadCount }} غير مقروء</span>
           </div>
-          <button type="button" class="btn-read-all" *ngIf="unreadCount > 0" (click)="markAllRead()" title="تحديد الكل كمقروء">
-            <i class="fa-solid fa-check-double"></i> قراءة الكل
-          </button>
+          <div class="header-actions-right" style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="btn-test-sound" (click)="playNotificationSound()" title="تجربة صوت الإشعارات">
+              <i class="fa-solid fa-volume-high"></i> تجربة الصوت
+            </button>
+            <button type="button" class="btn-read-all" *ngIf="unreadCount > 0" (click)="markAllRead()" title="تحديد الكل كمقروء">
+              <i class="fa-solid fa-check-double"></i> قراءة الكل
+            </button>
+          </div>
         </div>
 
         <div class="notification-body">
@@ -90,133 +95,111 @@ import { ApiService } from '../../../services/api.service';
     }
 
     .bell-btn.has-unread {
-      color: var(--violet-light);
-      border-color: var(--border-v);
-    }
-
-    body.light-theme .bell-btn,
-    :host-context(body.light-theme) .bell-btn {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      color: #64748b !important;
-    }
-
-    body.light-theme .bell-btn:hover,
-    :host-context(body.light-theme) .bell-btn:hover {
-      background: #f1f5f9 !important;
-      color: #4f46e5 !important;
-      border-color: #cbd5e1 !important;
+      color: #38bdf8;
     }
 
     .unread-badge {
       position: absolute;
       top: -4px;
       right: -4px;
-      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      background: #ef4444;
       color: #ffffff;
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      min-width: 18px;
-      height: 18px;
+      padding: 2px 6px;
       border-radius: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 4px;
-      box-shadow: 0 2px 8px rgba(244, 63, 94, 0.4);
       border: 2px solid var(--bg);
-      animation: pulse-ring 2s infinite;
-    }
-
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.5); }
-      70% { box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+      min-width: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
     }
 
     .notification-dropdown {
       position: absolute;
-      top: calc(100% + 12px);
+      top: calc(100% + 10px);
       left: 0;
-      width: 360px;
+      width: 380px;
       max-width: 90vw;
-      background: var(--bg-card);
-      border: 1px solid var(--border-v);
-      border-radius: var(--r-lg);
-      box-shadow: var(--shadow-lg), 0 20px 40px rgba(0, 0, 0, 0.5);
-      z-index: 2100;
-      display: flex;
-      flex-direction: column;
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      z-index: 999999;
       overflow: hidden;
-      animation: dropdownSlideIn 0.25s var(--ease);
-      direction: rtl;
+      animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes dropdownSlideIn {
-      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    body.light-theme .notification-dropdown,
-    :host-context(body.light-theme) .notification-dropdown {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15) !important;
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .notification-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(99, 102, 241, 0.04);
-    }
-
-    body.light-theme .notification-header,
-    :host-context(body.light-theme) .notification-header {
-      background: #f8fafc !important;
-      border-bottom-color: #e2e8f0 !important;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .header-title {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.88rem;
+      font-size: 0.92rem;
       font-weight: 800;
       color: var(--text);
     }
 
-    body.light-theme .header-title,
-    :host-context(body.light-theme) .header-title {
-      color: #0f172a !important;
-    }
-
     .header-title i {
-      color: var(--violet-light);
+      color: #6366f1;
     }
 
     .badge-count {
-      background: var(--violet-soft);
-      color: var(--violet-light);
       font-size: 0.7rem;
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
       padding: 2px 8px;
       border-radius: 100px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-test-sound {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.72rem;
       font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-test-sound:hover {
+      background: #6366f1;
+      color: #ffffff;
+      border-color: #6366f1;
     }
 
     .btn-read-all {
       background: transparent;
       border: none;
       color: var(--text-2);
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-size: 0.76rem;
+      font-weight: 700;
       cursor: pointer;
+      transition: color 0.2s;
       display: flex;
       align-items: center;
-      gap: 5px;
-      transition: color 0.2s;
+      gap: 4px;
+      padding: 0;
       font-family: inherit;
     }
 
@@ -230,56 +213,51 @@ import { ApiService } from '../../../services/api.service';
     }
 
     .notification-item {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: flex-start;
       gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       cursor: pointer;
       transition: background 0.2s;
       position: relative;
     }
 
-    .notification-item:last-child { border-bottom: none; }
-    .notification-item:hover { background: var(--violet-soft); }
-    .notification-item.unread { background: var(--violet-soft-2); }
+    .notification-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .notification-item.unread {
+      background: rgba(99, 102, 241, 0.08);
+    }
+
     .notification-item.unread::before {
       content: '';
       position: absolute;
-      right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 5px;
-      height: 24px;
-      background: var(--violet-light);
-      border-radius: 4px;
-    }
-
-    body.light-theme .notification-item,
-    :host-context(body.light-theme) .notification-item {
-      border-bottom-color: #f1f5f9 !important;
-    }
-    body.light-theme .notification-item:hover,
-    :host-context(body.light-theme) .notification-item:hover {
-      background: #f8fafc !important;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #6366f1;
     }
 
     .notif-icon {
       width: 34px;
       height: 34px;
-      border-radius: var(--r);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       flex-shrink: 0;
-      background: rgba(99, 102, 241, 0.12);
-      color: var(--violet-light);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-2);
     }
 
-    .notif-icon.assignment { background: rgba(16, 185, 129, 0.12); color: var(--emerald-light); }
-    .notif-icon.status_change { background: rgba(245, 158, 11, 0.12); color: var(--amber-light); }
-    .notif-icon.mention { background: rgba(236, 72, 153, 0.12); color: #ec4899; }
+    .notif-icon.assignment { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .notif-icon.mention { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+    .notif-icon.status_change { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .notif-icon.client_note { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
 
     .notif-content {
       flex: 1;
@@ -296,60 +274,51 @@ import { ApiService } from '../../../services/api.service';
       text-overflow: ellipsis;
     }
 
-    body.light-theme .notif-title,
-    :host-context(body.light-theme) .notif-title {
-      color: #0f172a !important;
-    }
-
     .notif-message {
       font-size: 0.78rem;
       color: var(--text-2);
-      line-height: 1.4;
+      margin-bottom: 4px;
+      line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    body.light-theme .notif-message,
-    :host-context(body.light-theme) .notif-message {
-      color: #64748b !important;
-    }
-
     .notif-time {
       font-size: 0.7rem;
-      color: var(--text-2);
-      margin-top: 4px;
+      color: var(--text-3, #64748b);
       display: flex;
       align-items: center;
       gap: 4px;
-      opacity: 0.75;
     }
 
     .btn-del-notif {
       background: transparent;
       border: none;
-      color: var(--text-2);
-      width: 22px;
-      height: 22px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
+      color: var(--text-3);
+      padding: 4px;
       cursor: pointer;
-      opacity: 0;
+      border-radius: 4px;
       transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .notification-item:hover .btn-del-notif {
-      opacity: 1;
+      font-size: 0.78rem;
     }
 
     .btn-del-notif:hover {
-      color: var(--rose-light);
-      background: var(--rose-soft);
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .empty-state {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-2);
+    }
+
+    .empty-state i {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      color: var(--text-3);
     }
   `]
 })
@@ -363,6 +332,9 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   isOpen = false;
   private pollInterval: any = null;
 
+  private previousUnreadCount = -1;
+  private previousFirstNotifId: any = null;
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (this.isOpen && !this.elementRef.nativeElement.contains(event.target)) {
@@ -374,7 +346,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
     this.loadNotifications();
     this.pollInterval = setInterval(() => {
       this.loadNotifications();
-    }, 25000);
+    }, 10000);
   }
 
   ngOnDestroy(): void {
@@ -383,11 +355,77 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
     }
   }
 
+  playNotificationSound(): void {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.9, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+
+      // Tone 1 - Loud High Chime (1046.5 Hz - C6)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(1046.5, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.9, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      osc1.connect(gain1);
+      gain1.connect(masterGain);
+      osc1.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 0.45);
+
+      // Tone 2 - Loud Harmonious High Chime (1567.98 Hz - G6)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1567.98, ctx.currentTime + 0.12);
+      gain2.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain2.gain.setValueAtTime(1.0, ctx.currentTime + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.75);
+      osc2.connect(gain2);
+      gain2.connect(masterGain);
+      osc2.start(ctx.currentTime + 0.12);
+      osc2.stop(ctx.currentTime + 0.75);
+
+      // Tone 3 - Bright Resonant Bell (2093 Hz - C7)
+      const osc3 = ctx.createOscillator();
+      const gain3 = ctx.createGain();
+      osc3.type = 'triangle';
+      osc3.frequency.setValueAtTime(2093, ctx.currentTime + 0.24);
+      gain3.gain.setValueAtTime(0.001, ctx.currentTime);
+      gain3.gain.setValueAtTime(0.85, ctx.currentTime + 0.24);
+      gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.95);
+      osc3.connect(gain3);
+      gain3.connect(masterGain);
+      osc3.start(ctx.currentTime + 0.24);
+      osc3.stop(ctx.currentTime + 0.95);
+
+    } catch (err) {
+      console.warn('Could not play notification sound:', err);
+    }
+  }
+
   loadNotifications(): void {
     this.apiService.getNotifications().subscribe(res => {
       if (res) {
-        this.unreadCount = res.unread_count || 0;
-        this.notifications = res.data?.data || res.data || [];
+        const newUnreadCount = res.unread_count || 0;
+        const newNotifications = res.data?.data || res.data || [];
+        const newFirstNotifId = newNotifications.length > 0 ? newNotifications[0].id : null;
+
+        // Play loud sound if new unread notification arrived
+        if (this.previousUnreadCount >= 0) {
+          if (newUnreadCount > this.previousUnreadCount || (newFirstNotifId && newFirstNotifId !== this.previousFirstNotifId && newUnreadCount > 0)) {
+            this.playNotificationSound();
+          }
+        }
+
+        this.previousUnreadCount = newUnreadCount;
+        this.previousFirstNotifId = newFirstNotifId;
+        this.unreadCount = newUnreadCount;
+        this.notifications = newNotifications;
       } else {
         this.unreadCount = 0;
         this.notifications = [];

@@ -68,53 +68,53 @@ export class ContactComponent implements OnInit {
           {
             icon: 'fa-solid fa-comments',
             label: 'contact_label_wa',
-            value: info.whatsapp_phone || '+966500000000',
-            sub: info.whatsapp_description || 'متاح 24/7 للرد الفوري',
-            link: { url: `https://wa.me/${info.whatsapp_phone?.replace('+', '')}`, text: 'فتح محادثة واتساب ←', target: '_blank' }
+            value: info.whatsapp_phone || '+201000001234',
+            sub: info.whatsapp_description || 'متاح 24/7 للرد الفوري بالمملكة ومصر',
+            link: { url: `https://wa.me/${info.whatsapp_phone?.replace('+', '') || '201000001234'}`, text: 'فتح محادثة واتساب ←', target: '_blank' }
           },
           {
             icon: 'fa-solid fa-envelope',
             label: 'contact_label_email',
-            value: info.official_email || 'contact@mediaglow.com',
+            value: info.official_email || 'info@mediaglow-eg.com',
             sub: 'نرد خلال 24 ساعة عمل',
-            link: { url: `mailto:${info.official_email}`, text: 'إرسال بريد إلكتروني ←', target: '_self' }
+            link: { url: `mailto:${info.official_email || 'info@mediaglow-eg.com'}`, text: 'إرسال بريد إلكتروني ←', target: '_self' }
           },
           {
             icon: 'fa-solid fa-location-dot',
-            label: 'العنوان والمقر الرئيسي',
-            value: info.company_address || 'المملكة العربية السعودية - الرياض',
-            sub: 'عرض على خرائط جوجل',
+            label: 'المقر الرئيسي — مصر',
+            value: info.company_address || 'جمهورية مصر العربية — القاهرة، التجمع الخامس',
+            sub: 'عرض المقر على خرائط جوجل',
             link: { url: info.google_map_location || 'https://maps.google.com', text: 'فتح الخريطة ←', target: '_blank' }
           },
           {
             icon: 'fa-solid fa-phone-volume',
-            label: 'الدعم العاجل والاستشارات',
-            value: info.emergency_support || 'support@mediaglow.com',
-            sub: 'للحالات الطارئة والمشاريع العاجلة'
+            label: 'الدعم والتواصل المباشر',
+            value: info.emergency_support || '+20 2 2345 6789',
+            sub: 'خدمة العملاء والاستشارات الإعلانية'
           }
         ];
       } else {
-        // Fallback placeholder data if backend fails
+        // Egyptian Fallback Data
         this.contactInfo = [
           {
             icon: 'fa-solid fa-comments',
             label: 'contact_label_wa',
-            value: '+966500000000',
-            sub: 'متاح 24/7 للرد الفوري',
-            link: { url: 'https://wa.me/966500000000', text: 'فتح محادثة واتساب ←', target: '_blank' }
+            value: '+20 100 000 1234',
+            sub: 'متاح 24/7 للرد الفوري بمصر والشرق الأوسط',
+            link: { url: 'https://wa.me/201000001234', text: 'فتح محادثة واتساب ←', target: '_blank' }
           },
           {
             icon: 'fa-solid fa-envelope',
             label: 'contact_label_email',
-            value: 'contact@mediaglow.com',
+            value: 'info@mediaglow-eg.com',
             sub: 'نرد خلال 24 ساعة عمل',
-            link: { url: 'mailto:contact@mediaglow.com', text: 'إرسال بريد إلكتروني ←', target: '_self' }
+            link: { url: 'mailto:info@mediaglow-eg.com', text: 'إرسال بريد إلكتروني ←', target: '_self' }
           },
           {
             icon: 'fa-solid fa-location-dot',
-            label: 'العنوان والمقر الرئيسي',
-            value: 'المملكة العربية السعودية - الرياض',
-            sub: 'عرض على خرائط جوجل',
+            label: 'المقر الرئيسي — مصر',
+            value: 'جمهورية مصر العربية — القاهرة، التجمع الخامس',
+            sub: 'عرض المقر على خرائط جوجل',
             link: { url: 'https://maps.google.com', text: 'فتح الخريطة ←', target: '_blank' }
           }
         ];
