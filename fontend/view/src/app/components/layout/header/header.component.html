@@ -1,73 +1,83 @@
-<header class="glass-nav" [class.scrolled]="isScrolled" id="nav">
-  <div class="container nav-container">
-    
+<!-- ─── TOP ANNOUNCEMENT STRIP ─── -->
+<div class="top-announcement">
+  <div class="container top-announcement__inner">
+    <div class="top-announcement__tag">
+      <span class="live-dot"></span>
+      <span>المقر الرئيسي: القاهرة الجديدة · جمهورية مصر العربية 🇪🇬</span>
+    </div>
+    <div class="top-announcement__info">
+      <span>استشارة تسويقية وتكنولوجية مجانية | اتصل بنا: </span>
+      <a href="tel:+201000000000" dir="ltr">+20 10 0000 0000</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── APPLE MINIMALIST NAVBAR ─── -->
+<header class="apple-header" [class.is-scrolled]="isScrolled">
+  <div class="container apple-header__inner">
+
     <!-- Brand Logo -->
-    <a routerLink="/" class="nav-logo-txt">
-      <div class="logo-badge-icon">
-        <i class="pi pi-sparkles"></i>
+    <a routerLink="/" class="brand-logo">
+      <div class="brand-logo__mark">
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="10" fill="#09090B"/>
+          <path d="M9 23L16 9L23 23" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 18H20" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
       </div>
-      <div class="logo-text-group">
-        <span class="logo-brand-name">Media Glow<span class="logo-dot">.</span></span>
-        <span class="logo-subtext">حلول الدعاية والإعلان الرقمية</span>
+      <div class="brand-logo__text">
+        <span class="name">Media<strong class="highlight">Glow</strong></span>
+        <span class="sub">وكالة النمو الرقمي</span>
       </div>
     </a>
-    
-    <!-- Nav Links -->
-    <ul class="nav-links">
-      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><i class="pi pi-home"></i> {{ 'home' | translate }}</a></li>
-      <li><a routerLink="/about" routerLinkActive="active"><i class="pi pi-compass"></i> {{ 'about' | translate }}</a></li>
-      <li><a routerLink="/services" routerLinkActive="active"><i class="pi pi-cog"></i> {{ 'services' | translate }}</a></li>
-      <li><a routerLink="/portfolio" routerLinkActive="active"><i class="pi pi-briefcase"></i> {{ 'portfolio' | translate }}</a></li>
-      <li><a routerLink="/blogs" routerLinkActive="active"><i class="pi pi-file"></i> {{ 'blogs' | translate }}</a></li>
-    </ul>
 
-    <!-- Nav Actions -->
-    <div class="nav-actions">
-      <button class="btn-lang-chip" (click)="toggleLang()" title="تغيير اللغة">
-        <i class="pi pi-globe"></i>
-        <span>{{ translationService.currentLang() === 'ar' ? 'EN' : 'عربي' }}</span>
+    <!-- Nav Menu -->
+    <nav class="nav-menu">
+      <a routerLink="/"          routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}">الرئيسية</a>
+      <a routerLink="/about"     routerLinkActive="active-link">من نحن</a>
+      <a routerLink="/services"  routerLinkActive="active-link">خدماتنا</a>
+      <a routerLink="/portfolio" routerLinkActive="active-link">أعمالنا</a>
+      <a routerLink="/blogs"     routerLinkActive="active-link">المدونة</a>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button class="lang-switcher" (click)="toggleLang()">
+        <span>{{ translationService.currentLang() === 'ar' ? 'English' : 'عربي' }}</span>
       </button>
 
-      <a routerLink="/contact" class="btn btn-primary nav-cta-btn">
-        <i class="pi pi-send"></i>
-        <span>{{ 'get_started' | translate }}</span>
+      <a routerLink="/contact" class="btn-apple-primary header-cta">
+        <span>احجز استشارة</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
       </a>
 
-      <div class="hamburger" [class.open]="isMenuOpen" (click)="toggleMenu()" title="القائمة">
-        <span></span><span></span><span></span>
-      </div>
+      <!-- Mobile Hamburger -->
+      <button class="mobile-toggle" (click)="toggleMenu()" [class.open]="isMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
 
   </div>
 </header>
 
-<!-- Mobile Menu Overlay -->
-<div class="mobile-menu-overlay" [class.open]="isMenuOpen" (click)="closeMenu()"></div>
-
-<!-- Mobile Sidebar Drawer -->
-<div class="mobile-menu-sidebar" [class.open]="isMenuOpen">
-  <div class="sidebar-header">
-    <a routerLink="/" class="nav-logo-txt" (click)="closeMenu()">
-      <div class="logo-badge-icon sm">
-        <i class="pi pi-sparkles"></i>
-      </div>
-      <span class="logo-brand-name">Media Glow<span class="logo-dot">.</span></span>
-    </a>
-    <div class="close-btn" (click)="closeMenu()">
-      <i class="pi pi-times"></i>
+<!-- Mobile Navigation Drawer -->
+<div class="mobile-overlay" [class.visible]="isMenuOpen" (click)="closeMenu()"></div>
+<div class="mobile-drawer" [class.open]="isMenuOpen">
+  <div class="mobile-drawer__top">
+    <div class="brand-logo">
+      <span class="name" style="font-size:1.2rem;color:#09090B;">Media<strong>Glow</strong></span>
     </div>
+    <button class="close-btn" (click)="closeMenu()">✕</button>
   </div>
 
-  <div class="sidebar-links">
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()"><i class="pi pi-home"></i> {{ 'home' | translate }}</a>
-    <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()"><i class="pi pi-compass"></i> {{ 'about' | translate }}</a>
-    <a routerLink="/services" routerLinkActive="active" (click)="closeMenu()"><i class="pi pi-cog"></i> {{ 'services' | translate }}</a>
-    <a routerLink="/portfolio" routerLinkActive="active" (click)="closeMenu()"><i class="pi pi-briefcase"></i> {{ 'portfolio' | translate }}</a>
-    <a routerLink="/blogs" routerLinkActive="active" (click)="closeMenu()"><i class="pi pi-file"></i> {{ 'blogs' | translate }}</a>
-    <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()"><i class="pi pi-envelope"></i> {{ 'contact' | translate }}</a>
-  </div>
-
-  <div class="sidebar-footer">
-    <a routerLink="/contact" class="btn btn-primary" (click)="closeMenu()" style="width: 100%;">{{ 'get_started' | translate }}</a>
-  </div>
+  <nav class="mobile-drawer__links">
+    <a routerLink="/"          (click)="closeMenu()">الرئيسية</a>
+    <a routerLink="/about"     (click)="closeMenu()">من نحن</a>
+    <a routerLink="/services"  (click)="closeMenu()">خدماتنا</a>
+    <a routerLink="/portfolio" (click)="closeMenu()">أعمالنا</a>
+    <a routerLink="/blogs"     (click)="closeMenu()">المدونة</a>
+    <a routerLink="/contact"   (click)="closeMenu()">تواصل معنا</a>
+  </nav>
 </div>

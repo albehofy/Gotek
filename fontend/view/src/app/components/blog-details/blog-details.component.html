@@ -1,76 +1,67 @@
-<!-- LOADING -->
+<!-- ════════════════════════════════════════════
+   BLOG DETAILS — NOIR EDITORIAL
+   Media Glow — Egyptian Digital Agency
+   ════════════════════════════════════════════ -->
+
 @if (loading) {
-  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-    <div style="font-size: 3rem; color: var(--orange); animation: pulse-glow 1.5s infinite;"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+  <div class="loader-wrap" style="min-height:70vh;">
+    <div class="loader-spinner"></div>
   </div>
 }
 
 @if (!loading && blog) {
-  <div class="bd-wrap">
-    <div class="glow-orb primary" style="top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 800px; opacity: 0.3;"></div>
-
-    <div class="container bd-container">
-      
-      <!-- Breadcrumb -->
-      <div class="bd-breadcrumbs">
-        <a routerLink="/">{{ 'home' | translate }}</a>
+  <section class="page-hero grid-bg">
+    <div class="container" style="max-width:900px;">
+      <div class="proj-hero-breadcrumb">
+        <a routerLink="/">الرئيسية</a>
         <span>/</span>
-        <a routerLink="/blogs">{{ 'blogs' | translate }}</a>
+        <a routerLink="/blogs">المدونة</a>
         <span>/</span>
-        <span class="current">{{ blog?.category | translate }}</span>
+        <span class="current">{{ (blog?.category?.name || blog?.category) | translate }}</span>
       </div>
 
-      <!-- Title -->
-      <h1 class="sec-title bd-title">{{ blog?.title | translate }}</h1>
+      <div class="label mt-16">{{ (blog?.category?.name || blog?.category || 'مقالات') | translate }}</div>
 
-      <!-- Meta -->
-      <div class="bd-meta">
-        <div class="bd-author-box">
-          <div class="bd-author-avatar">
-            {{ blog?.author?.charAt(0) || 'M' }}
-          </div>
-          <span class="bd-author-name">{{ blog?.author || 'Media Glow Team' }}</span>
+      <h1 class="h-display mt-16" style="font-size:clamp(2.2rem, 4.5vw, 4rem);">
+        {{ blog?.title | translate }}
+      </h1>
+
+      <div class="bd-meta mt-24">
+        <div class="bd-author">
+          <div class="bd-author-av">{{ (blog?.author?.name || blog?.author || 'M').charAt(0) }}</div>
+          <span style="font-weight:700;color:var(--c-white);">{{ blog?.author?.name || blog?.author || 'فريق ميديا جلو' }}</span>
         </div>
         <div class="bd-meta-dot"></div>
-        <div class="bd-date">{{ blog?.created_at | date:'longDate' }}</div>
+        <div style="color:var(--c-muted);font-size:0.88rem;">{{ blog?.created_at | date:'dd MMMM yyyy' }}</div>
       </div>
+    </div>
+  </section>
 
-      <!-- Featured Image -->
-      @if (blog?.image_url) {
-        <div class="glass-panel bd-image-box">
-          <img [src]="blog.image_url" [alt]="blog.title | translate" />
+  <section class="section bd-main">
+    <div class="container" style="max-width:900px;">
+
+      @if (blog?.image || blog?.image_url) {
+        <div class="card bd-cover">
+          <img [src]="blog.image || blog.image_url" [alt]="blog.title | translate" />
         </div>
       }
 
-      <!-- Content -->
-      <div class="glass-panel bd-content-card">
-        <div [innerHTML]="blog.content | translate"></div>
+      <div class="card bd-article mt-32">
+        <div class="article-content" [innerHTML]="blog.content | translate"></div>
       </div>
 
-      <!-- Footer Actions -->
-      <div class="bd-actions">
-        
-        <div class="bd-share-box">
-          <span class="bd-share-title">{{ 'share' | translate }}</span>
-          <button class="btn btn-glass bd-share-btn"><i class="fa-brands fa-linkedin"></i></button>
-          <button class="btn btn-glass bd-share-btn"><i class="fa-brands fa-twitter"></i></button>
-          <button class="btn btn-glass bd-share-btn"><i class="fa-solid fa-link"></i></button>
-        </div>
-
-        <button class="btn bd-love-btn" [ngClass]="isLoved ? 'btn-primary' : 'btn-glass'" (click)="toggleLove()">
-          <i class="fa-solid fa-heart" [style.color]="isLoved ? '#fff' : '#ef4444'"></i>
-          <span>{{ isLoved ? ('loved_it' | translate) : ('love_article' | translate) }}</span>
-          <span style="background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; margin-left: 8px;">{{ blog.likes + (isLoved ? 1 : 0) || (isLoved ? 1 : 0) }}</span>
+      <div class="bd-actions mt-32">
+        <button class="btn btn-outline" (click)="toggleLove()">
+          <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="isLoved ? '#FF4D00' : 'none'" stroke="#FF4D00" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span>{{ isLoved ? 'أعجبني هذا المقال' : 'إعجاب بالمقال' }}</span>
         </button>
-        
-      </div>
 
-      <div class="bd-back-btn-box">
-        <a routerLink="/blogs" class="btn btn-glass">
-          <i class="fa-solid fa-arrow-left"></i> {{ 'back_to_blogs' | translate }}
+        <a routerLink="/blogs" class="btn btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+          <span>العودة للمدونة</span>
         </a>
       </div>
 
     </div>
-  </div>
+  </section>
 }

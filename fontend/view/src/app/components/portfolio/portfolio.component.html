@@ -1,101 +1,91 @@
-<!-- HERO SECTION -->
-<section class="section portfolio-hero">
-  <div class="glow-orb primary"></div>
-  <div class="container">
-    <div class="sec-tag animate-up delay-1">
-      <p-tag [value]="(portfolioData?.hero?.tag | translate) || ('our_port' | translate)" severity="success" [rounded]="true" icon="pi pi-briefcase"></p-tag>
-    </div>
-    <h1 class="sec-title portfolio-hero-title animate-up delay-2">
-      {{ (portfolioData?.hero?.title | translate) || ('port_title_1' | translate) }}<br/>
-      <span>{{ (portfolioData?.hero?.subtitle | translate) || ('port_title_2' | translate) }}</span>
-    </h1>
-    <p class="sec-desc portfolio-hero-desc animate-up delay-3">
-      {{ (portfolioData?.hero?.desc | translate) || ('port_title_3' | translate) }}
-    </p>
-  </div>
-</section>
+<!-- ════════════════════════════════════════════
+   PORTFOLIO — STRIPE & APPLE LIGHT MODE
+   ════════════════════════════════════════════ -->
 
-<!-- PORTFOLIO FILTER & GRID -->
-<section class="section" style="padding-top: 0;">
+<section class="portfolio-hero pattern-bg">
   <div class="container">
-    <!-- Filters -->
-    <div class="portfolio-filter-bar" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 48px;">
-      <button class="btn" [ngClass]="activeCategory === 'all' ? 'btn-primary' : 'btn-glass'" (click)="setCategory('all')">
-        <i class="pi pi-th-large"></i>
-        <span>{{ 'all_proj' | translate }}</span>
+    <div class="badge-pill">معرض الأعمال</div>
+    <h1 class="portfolio-hero__title mt-16">
+      مشاريع صُنعت <br>
+      <span class="text-gradient-stripe">بإتقان وشغف إبداعي</span>
+    </h1>
+    <p class="portfolio-hero__sub mt-16">
+      نستعرض هنا مجموعة مختارة من أبرز مشاريعنا في بناء الهويات البصرية الفاخرة، الحملات التسويقية، وتطوير المنصات الرقمية.
+    </p>
+
+    <!-- Filter Buttons Row -->
+    <div class="portfolio-filters mt-32">
+      <button 
+        type="button"
+        class="filter-tab-btn" 
+        [class.is-active]="selectedCategory === 'all'"
+        (click)="filterCategory('all')"
+      >
+        الكل
       </button>
-      @for (cat of categories; track cat.id) {
-        <button class="btn" [ngClass]="activeCategory === cat.id ? 'btn-primary' : 'btn-glass'" (click)="setCategory(cat.id)">
-          <i class="pi pi-folder"></i>
-          <span>{{ cat.name | translate }}</span>
+      @for (cat of categories; track cat.id || cat.slug || $index) {
+        <button 
+          type="button"
+          class="filter-tab-btn" 
+          [class.is-active]="selectedCategory === (cat.id || cat.slug || cat.name)"
+          (click)="filterCategory(cat.id || cat.slug || cat.name)"
+        >
+          {{ cat.name | translate }}
         </button>
       }
     </div>
+  </div>
+</section>
 
-    <!-- Loader -->
+<section class="section portfolio-grid-section">
+  <div class="container">
+
     @if (loading) {
-      <div style="text-align: center; padding: 100px 0;">
-        <div style="font-size: 3rem; color: var(--orange);"><i class="pi pi-spin pi-spinner"></i></div>
+      <div class="loader-wrap">
+        <div class="loader-spinner"></div>
       </div>
     }
 
-    <!-- Grid -->
     @if (!loading && filteredProjects.length) {
-      <div class="portfolio-grid">
-        @for (p of filteredProjects; track p.id) {
-          <div class="glass-panel portfolio-card" [routerLink]="['/project', p.id]">
-            <div class="portfolio-img-box" [style.background]="p.color || 'rgba(99, 102, 241, 0.1)'">
-              @if (p.image || p.main_image) {
-                <img [src]="p.image || p.main_image" [alt]="p.title | translate" />
+      <div class="portfolio-grid-container">
+        @for (p of filteredProjects; track p.id || $index) {
+          <a [routerLink]="['/project', p.id]" class="glass-card portfolio-v7-card">
+            <!-- Card Thumbnail Header -->
+            <div class="portfolio-v7-card__thumb">
+              @if (p.image || p.main_image || p.image_url) {
+                <img [src]="p.image || p.main_image || p.image_url" [alt]="p.title | translate" />
               } @else {
-                <div class="portfolio-emoji-box"><i class="pi pi-bolt"></i></div>
+                <div class="portfolio-v7-card__placeholder">
+                  <span class="badge-pill">{{ (p.category?.name || p.category || 'مشروع رقمي') | translate }}</span>
+                </div>
               }
-              <div class="overlay"></div>
             </div>
-            
-            <div class="portfolio-card-info">
-              <div class="portfolio-card-meta" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <p-tag [value]="p.category?.name | translate" severity="info"></p-tag>
-                @if (p.completion_date) {
-                  <span class="portfolio-card-date" style="font-size: 0.8rem; color: var(--text-muted);"><i class="pi pi-calendar"></i> {{ p.completion_date | date:'yyyy' }}</span>
-                }
-              </div>
-              
-              <h3 class="portfolio-card-title">{{ p.title | translate }}</h3>
-              <p class="portfolio-card-desc">{{ p.description | translate }}</p>
-              
-              <div style="margin-top: 20px; display: flex; align-items: center; gap: 8px; color: var(--orange); font-weight: 700; font-size: 0.88rem;">
-                <span>استعراض تفاصيل المشروع</span>
-                <i class="pi pi-arrow-left"></i>
+
+            <!-- Card Body -->
+            <div class="portfolio-v7-card__body">
+              <span class="portfolio-v7-card__cat">{{ (p.category?.name || p.category || 'إبداعي') | translate }}</span>
+              <h3 class="portfolio-v7-card__title">{{ p.title | translate }}</h3>
+              @if (p.description) {
+                <p class="portfolio-v7-card__desc">{{ p.description | translate }}</p>
+              }
+
+              <div class="portfolio-v7-card__link mt-20">
+                <span>تصفح تفاصيل المشروع</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
               </div>
             </div>
-          </div>
+          </a>
         }
       </div>
     }
 
-    <!-- Empty State -->
     @if (!loading && !filteredProjects.length) {
-      <div class="portfolio-empty" style="text-align: center; padding: 80px 0; color: var(--text-muted);">
-        <i class="pi pi-folder-open" style="font-size: 3rem; margin-bottom: 16px;"></i>
-        <p>{{ 'no_projects' | translate }}</p>
+      <div class="glass-card text-center" style="padding: 60px 20px; max-width: 480px; margin: 0 auto;">
+        <h3 style="font-size: 1.3rem;">لا توجد مشاريع في هذا القسم حالياً</h3>
+        <p class="mt-8">اختر تصنيفاً آخر لمشاهدة مشاريعنا وأعمالنا الإبداعية.</p>
+        <button class="btn-secondary-outline mt-24" (click)="filterCategory('all')">عرض كل الأعمال</button>
       </div>
     }
-  </div>
-</section>
 
-<!-- CTA -->
-<section class="section portfolio-cta">
-  <div class="container">
-    <div class="glass-panel portfolio-cta-box" style="text-align: center; padding: 60px 40px;">
-      <div style="margin-bottom: 16px;">
-        <p-tag [value]="'مستعد لبدء مشروعك؟' | translate" severity="warn" [rounded]="true" icon="pi pi-rocket"></p-tag>
-      </div>
-      <h2 class="sec-title">{{ 'ready_partner_1' | translate }} <span>{{ 'ready_partner_2' | translate }}</span></h2>
-      <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 48px;">
-        <span>{{ 'start_proj' | translate }}</span>
-        <i class="pi pi-arrow-left"></i>
-      </a>
-    </div>
   </div>
 </section>

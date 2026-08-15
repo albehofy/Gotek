@@ -1,83 +1,85 @@
-<!-- HERO SECTION -->
-<section class="section page-hero">
-  <div class="page-hero-orb"></div>
+<!-- ════════════════════════════════════════════
+   BLOGS PAGE — STRIPE & APPLE LIGHT MODE
+   ════════════════════════════════════════════ -->
+
+<section class="blogs-hero pattern-bg">
   <div class="container">
-    <div class="sec-tag animate-up delay-1">
-      <p-tag [value]="(blogsPageData?.hero?.tag | translate) || ('blogs' | translate)" severity="info" [rounded]="true" icon="pi pi-book"></p-tag>
-    </div>
-    <h1 class="sec-title page-hero-title animate-up delay-2">
-      {{ (blogsPageData?.hero?.title | translate) || ('insights' | translate) }}<br/>
-      <span>{{ (blogsPageData?.hero?.subtitle | translate) || ('&_news' | translate) }}</span>
+    <div class="badge-pill">المدونة الرقمية</div>
+    <h1 class="blogs-hero__title mt-16">
+      رؤى وأفكار <br>
+      <span class="text-gradient-stripe">تثري معرفتك الرقمية</span>
     </h1>
-    <p class="sec-desc page-hero-desc animate-up delay-3">
-      {{ (blogsPageData?.hero?.desc | translate) || ('blogs_hero_desc' | translate) }}
+    <p class="blogs-hero__sub mt-16">
+      نشاركك أحدث مقالاتنا وتحليلاتنا حول استراتيجيات التسويق الرقمي، الهويات البصرية، والتكنولوجيا.
     </p>
 
-    <!-- Search -->
-    <div class="animate-up delay-3 search-bar-wrap" style="margin: 32px auto 0; max-width: 500px; position: relative;">
-      <i class="pi pi-search search-icon" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem;"></i>
-      <input type="text" [(ngModel)]="searchQuery" (input)="filterBlogs()" [placeholder]="'search_blogs' | translate" id="blogSearchInput" style="width: 100%; padding: 14px 48px 14px 20px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-light); border-radius: var(--radius-full); color: #fff; outline: none; font-family: inherit; font-size: 0.95rem; direction: rtl;" />
+    <!-- Search Input Box -->
+    <div class="blogs-search-wrap mt-32">
+      <input 
+        type="search" 
+        [(ngModel)]="searchQuery" 
+        (input)="filterBlogs()" 
+        placeholder="ابحث في المقالات والرؤى..." 
+        class="blogs-search-input" 
+      />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" class="blogs-search-icon">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
     </div>
   </div>
 </section>
 
-<!-- BLOGS GRID -->
-<section class="section blogs-main-section" style="padding-top: 0;">
+<section class="section blogs-grid-section">
   <div class="container">
-    <!-- Loader -->
+
     @if (loading) {
-      <div style="text-align: center; padding: 100px 0;">
-        <div style="font-size: 3rem; color: var(--orange);"><i class="pi pi-spin pi-spinner"></i></div>
+      <div class="loader-wrap">
+        <div class="loader-spinner"></div>
       </div>
     }
 
-    <!-- Grid -->
     @if (!loading && filteredBlogs.length) {
-      <div class="blogs-grid">
-        @for (b of filteredBlogs; track b.id) {
-          <div class="glass-panel blog-card" [routerLink]="['/blog-details', b.id]">
-            <div class="blog-thumb">
-              @if (b.image_url) {
-                <img class="blog-img" [src]="b.image_url" />
+      <div class="blogs-grid-container">
+        @for (b of filteredBlogs; track b.id || $index) {
+          <a [routerLink]="['/blog', b.id]" class="glass-card blog-v7-card">
+            <!-- Thumbnail Image -->
+            <div class="blog-v7-card__thumb">
+              @if (b.image || b.thumbnail || b.image_url) {
+                <img [src]="b.image || b.thumbnail || b.image_url" [alt]="b.title | translate" />
               } @else {
-                <div class="blog-thumb-placeholder" style="height: 200px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.08); font-size: 2.5rem; color: var(--violet-light);">
-                  <i class="pi pi-file-edit"></i>
+                <div class="blog-v7-card__placeholder">
+                  <span class="badge-pill">مقالات ميديا جلو</span>
                 </div>
               }
-              <div style="position: absolute; top: 16px; right: 16px; z-index: 2;">
-                <p-tag [value]="b.category | translate" severity="warn" [rounded]="true"></p-tag>
+            </div>
+
+            <!-- Card Body -->
+            <div class="blog-v7-card__body">
+              <span class="blog-v7-card__cat">{{ (b.category?.name || b.category || 'تسويق رقمي') | translate }}</span>
+              <h3 class="blog-v7-card__title">{{ b.title | translate }}</h3>
+              <p class="blog-v7-card__excerpt">{{ (b.excerpt || b.description) | translate }}</p>
+              
+              <!-- Footer Row -->
+              <div class="blog-v7-card__footer">
+                <span class="blog-v7-card__date">{{ b.created_at | date:'dd MMM yyyy' }}</span>
+                <span class="blog-v7-card__link">
+                  <span>اقرأ المزيد</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </span>
               </div>
             </div>
-            
-            <div class="blog-card-content" style="padding: 24px;">
-              <div class="blog-meta" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px; display: flex; items-center; gap: 12px;">
-                <span><i class="pi pi-calendar"></i> {{ b.created_at | date:'mediumDate' }}</span>
-                @if (b.read_time) {
-                  <span><i class="pi pi-clock"></i> {{ b.read_time }}</span>
-                }
-              </div>
-              
-              <h3 class="blog-title" style="font-size: 1.2rem; color: #fff; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">{{ b.title | translate }}</h3>
-              <p class="blog-desc" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px;">
-                {{ b.description | translate }}
-              </p>
-              
-              <div class="blog-card-footer" style="display: flex; align-items: center; gap: 8px; color: var(--orange); font-weight: 700; font-size: 0.88rem;">
-                <span>{{ 'read_more' | translate }}</span>
-                <i class="pi pi-arrow-left"></i>
-              </div>
-            </div>
-          </div>
+          </a>
         }
       </div>
     }
 
-    <!-- Empty State -->
     @if (!loading && !filteredBlogs.length) {
-      <div class="portfolio-empty" style="text-align: center; padding: 80px 0; color: var(--text-muted);">
-        <i class="pi pi-search" style="font-size: 3rem; margin-bottom: 16px;"></i>
-        <p style="font-size: 1.1rem;">{{ 'no_articles' | translate }}</p>
+      <div class="glass-card text-center" style="padding: 60px 20px; max-width: 480px; margin: 0 auto;">
+        <h3 style="font-size: 1.3rem;">لا توجد نتائج مطابقة للبحث</h3>
+        <p class="mt-8">جرب كلمات بحث أخرى أو استعرض كل المقالات.</p>
+        <button class="btn-secondary-outline mt-24" (click)="searchQuery=''; filterBlogs()">عرض كل المقالات</button>
       </div>
     }
+
   </div>
 </section>

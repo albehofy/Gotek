@@ -1,83 +1,88 @@
-<footer class="glass-footer">
-  <div class="container">
-    <div class="footer-top">
-      
-      <!-- Brand Column -->
-      <div class="footer-brand">
-        <a routerLink="/" class="nav-logo-txt" style="margin-bottom: 16px; display: inline-flex;">
-          <div class="logo-badge-icon sm">
-            <i class="pi pi-sparkles"></i>
-          </div>
-          <div class="logo-text-group">
-            <span class="logo-brand-name">Media Glow<span class="logo-dot">.</span></span>
-          </div>
-        </a>
-        <p class="footer-brand-desc">{{ (footerData?.desc | translate) || ('footer_desc' | translate) }}</p>
-        
-        <div class="footer-social">
-          @if (footerData?.socials?.facebook) {
-            <a [href]="footerData.socials.facebook" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-facebook"></i></a>
-          } @else {
-            <a href="https://www.facebook.com/mediaglow" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-facebook"></i></a>
-          }
-          @if (footerData?.socials?.instagram) {
-            <a [href]="footerData.socials.instagram" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-instagram"></i></a>
-          } @else {
-            <a href="https://www.instagram.com/mediaglow" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-instagram"></i></a>
-          }
-          @if (footerData?.socials?.twitter) {
-            <a [href]="footerData.socials.twitter" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-twitter"></i></a>
-          } @else {
-            <a href="https://x.com/mediaglow" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-twitter"></i></a>
-          }
-          @if (footerData?.socials?.linkedin) {
-            <a [href]="footerData.socials.linkedin" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-linkedin"></i></a>
-          }
-          @if (footerData?.socials?.youtube) {
-            <a [href]="footerData.socials.youtube" class="fs-btn" target="_blank" rel="noopener"><i class="pi pi-youtube"></i></a>
-          }
+<!-- ─── APPLE MINIMALIST FOOTER ─── -->
+<footer class="apple-footer">
+  <div class="container apple-footer__inner">
+
+    <!-- Brand Col -->
+    <div class="footer-col brand-col">
+      <a routerLink="/" class="brand-logo">
+        <div class="brand-logo__mark">
+          <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="10" fill="#09090B"/>
+            <path d="M9 23L16 9L23 23" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round"/>
+          </svg>
         </div>
-      </div>
+        <div class="brand-logo__text">
+          <span class="name">Media<strong>Glow</strong></span>
+          <span class="sub">وكالة النمو الرقمي</span>
+        </div>
+      </a>
+      <p class="mt-16" style="font-size:0.88rem;max-width:320px;">
+        شريكك الاستراتيجي لبناء الهويات البصرية المبتكرة، تطوير المنصات، وإدارة الحملات الرقمية في مصر والشرق الأوسط.
+      </p>
 
-      <!-- Services -->
-      <div>
-        <div class="footer-col-title">{{ 'footer_svc' | translate }}</div>
-        <ul class="footer-links">
-          <li><a routerLink="/services"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_ads' | translate }}</a></li>
-          <li><a routerLink="/services"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_brand' | translate }}</a></li>
-          <li><a routerLink="/services"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_social' | translate }}</a></li>
-        </ul>
+      <div class="social-links mt-20">
+        <a href="#" class="social-btn">Facebook</a>
+        <a href="#" class="social-btn">Instagram</a>
+        <a href="#" class="social-btn">LinkedIn</a>
+        <a href="#" class="social-btn">TikTok</a>
       </div>
-
-      <!-- Company Links -->
-      <div>
-        <div class="footer-col-title">{{ 'footer_company' | translate }}</div>
-        <ul class="footer-links">
-          <li><a routerLink="/about"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_about' | translate }}</a></li>
-          <li><a routerLink="/portfolio"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_port' | translate }}</a></li>
-          <li><a routerLink="/contact"><i class="pi pi-chevron-left" style="font-size:0.7rem;"></i> {{ 'footer_contact_link' | translate }}</a></li>
-        </ul>
-      </div>
-
-      <!-- Contact Info -->
-      <div>
-        <div class="footer-col-title">{{ 'footer_contact' | translate }}</div>
-        <ul class="footer-links">
-          <li><a [href]="'mailto:' + (footerData?.email || 'hello@mediaglow.com')"><i class="pi pi-envelope" style="margin-left:6px;color:#ff6b00;"></i> {{ footerData?.email || ('footer_email' | translate) }}</a></li>
-          <li><a [href]="'https://wa.me/' + (footerData?.phone || '966500000000')"><i class="pi pi-whatsapp" style="margin-left:6px;color:#25d366;"></i> {{ footerData?.phone || ('footer_wa' | translate) }}</a></li>
-        </ul>
-      </div>
-
     </div>
 
-    <!-- Bottom Bar -->
-    <div class="footer-bottom">
-      <div class="footer-copy">
-        <span>{{ (footerData?.copy | translate) || ('footer_copy' | translate) }}</span>
+    <!-- Quick Links -->
+    <div class="footer-col">
+      <div class="footer-col__title">روابط سريعة</div>
+      <ul class="footer-links-list">
+        <li><a routerLink="/">الرئيسية</a></li>
+        <li><a routerLink="/about">من نحن</a></li>
+        <li><a routerLink="/services">خدماتنا</a></li>
+        <li><a routerLink="/portfolio">معرض الأعمال</a></li>
+        <li><a routerLink="/blogs">المدونة</a></li>
+        <li><a routerLink="/contact">تواصل معنا</a></li>
+      </ul>
+    </div>
+
+    <!-- Services Links -->
+    <div class="footer-col">
+      <div class="footer-col__title">خدماتنا</div>
+      <ul class="footer-links-list">
+        <li><a routerLink="/services">إدارة الحملات الإعلانية</a></li>
+        <li><a routerLink="/services">تصميم الهوية البصرية</a></li>
+        <li><a routerLink="/services">تطوير المواقع والتطبيقات</a></li>
+        <li><a routerLink="/services">إدارة وسائل التواصل</a></li>
+        <li><a routerLink="/services">إنتاج المحتوى والفيديو</a></li>
+        <li><a routerLink="/services">SEO والنمو الرقمي</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="footer-col">
+      <div class="footer-col__title">معلومات التواصل</div>
+      <div class="footer-contact-items">
+        <div class="ci-row">
+          <span class="ci-label">العنوان:</span>
+          <span class="ci-val">القاهرة الجديدة، القاهرة، جمهورية مصر العربية 🇪🇬</span>
+        </div>
+        <div class="ci-row mt-12">
+          <span class="ci-label">الهاتف:</span>
+          <a href="tel:+201000000000" class="ci-val" dir="ltr">+20 10 0000 0000</a>
+        </div>
+        <div class="ci-row mt-12">
+          <span class="ci-label">البريد الإلكتروني:</span>
+          <a href="mailto:hello@mediaglow.eg" class="ci-val">hello&#64;mediaglow.eg</a>
+        </div>
       </div>
-      <div class="footer-legal">
-        <a href="#">{{ 'footer_privacy' | translate }}</a>
-        <a href="#">{{ 'footer_terms' | translate }}</a>
+    </div>
+
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="footer-bottom">
+    <div class="container footer-bottom__inner">
+      <span>© {{ currentYear }} Media Glow Agency · جميع الحقوق محفوظة · صُنع في مصر 🇪🇬</span>
+      <div class="bottom-links">
+        <a href="#">سياسة الخصوصية</a>
+        <span>·</span>
+        <a href="#">الشروط والأحكام</a>
       </div>
     </div>
   </div>

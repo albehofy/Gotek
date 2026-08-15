@@ -1,74 +1,78 @@
-<!-- HERO SECTION -->
-<section class="section services-hero">
-  <div class="glow-orb primary"></div>
+<!-- ════════════════════════════════════════════
+   SERVICES PAGE — STRIPE & APPLE LIGHT MODE
+   ════════════════════════════════════════════ -->
+
+<section class="services-hero pattern-bg">
   <div class="container">
-    <div class="sec-tag animate-up delay-1">
-      <p-tag [value]="(servicesPageData?.hero?.tag | translate) || ('services' | translate)" severity="warn" [rounded]="true" icon="pi pi-cog"></p-tag>
-    </div>
-    <h1 class="sec-title services-hero-title animate-up delay-2">
-      {{ (servicesPageData?.hero?.title | translate) || ('what_we' | translate) }}<br/>
-      <span>{{ (servicesPageData?.hero?.subtitle | translate) || ('svc_title_1' | translate) }}</span>
+    <div class="badge-pill">خدمات ميديا جلو الإبداعية</div>
+    <h1 class="services-hero__title mt-16">
+      حلول متكاملة <br>
+      <span class="text-gradient-stripe">تحدث فرقاً ملموساً لعلامتك</span>
     </h1>
-    <p class="sec-desc services-hero-desc animate-up delay-3">
-      {{ (servicesPageData?.hero?.desc | translate) || ('svc_title_3' | translate) }}
+    <p class="services-hero__sub mt-16">
+      نجمع بين التخطيط الاستراتيجي، التصميم البصري الفاخر، والتطوير البرمجي المتقدم لتقديم نتائج تحقق أهدافك وتزيد من صفقاتك.
     </p>
   </div>
 </section>
 
-<!-- SERVICES GRID -->
+<!-- SERVICES CARDS GRID -->
 <section class="section services-grid-section">
   <div class="container">
-    <div class="services-grid">
-      @for (s of services; track s.id || $index) {
-        <div class="glass-panel services-card" [id]="s.id">
-          <div class="services-card-number">0{{ $index + 1 }}</div>
-          
-          <div class="services-card-content">
-            <div class="services-icon-box">
-              <i [class]="s.iconClass || 'pi pi-sparkles'"></i>
-            </div>
-            <h3 class="services-card-title">{{ s.title | translate }}</h3>
-            <p class="services-card-description">{{ s.description | translate }}</p>
-            
-            @if (s.features && s.features.length) {
-              <div class="services-feat-container">
-                <div class="services-feat-title">{{ 'key_features' | translate }}</div>
-                <ul class="services-feat-list">
-                  @for (feat of s.features; track $index) {
-                    <li class="services-feat-item">
-                      <i class="pi pi-check-circle" style="color: var(--teal-light);"></i>
-                      <span>{{ feat | translate }}</span>
-                    </li>
-                  }
-                </ul>
-              </div>
-            }
-
-            <div style="margin-top: 24px; padding-top: 16px;">
-              <a [routerLink]="['/contact']" [queryParams]="{ service: s.title }" class="btn btn-primary" style="width: 100%;">
-                <span>طلب الخدمة الآن</span>
-                <i class="pi pi-arrow-left"></i>
-              </a>
+    <div class="services-v7-grid">
+      @for (s of (services.length ? services : defaultServices); track $index) {
+        <div class="glass-card service-v7-card">
+          <!-- Card Header Row -->
+          <div class="service-v7-card__head">
+            <span class="service-v7-num">0{{ $index + 1 }}</span>
+            <div class="service-v7-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </div>
           </div>
+
+          <!-- Title & Description -->
+          <h3 class="service-v7-title mt-20">{{ (s.title || s.name) | translate }}</h3>
+          <p class="service-v7-desc mt-12">{{ (s.desc || s.description) | translate }}</p>
+
+          <!-- Features List -->
+          @if (s.features && s.features.length) {
+            <ul class="service-v7-list mt-20">
+              @for (feat of s.features; track feat) {
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>{{ feat }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          <!-- Action Button -->
+          <a routerLink="/contact" class="btn-primary-blue mt-28" style="width:100%;justify-content:center;padding:14px 24px;font-size:0.9rem;">
+            <span>طلب الخدمة</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          </a>
         </div>
       }
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="section services-cta-section">
+<!-- PROCESS STEPS SECTION -->
+<section class="section process-v7-section">
   <div class="container">
-    <div class="glass-panel services-cta-box">
-      <div style="margin-bottom: 16px;">
-        <p-tag [value]="'جاهز للبدء؟' | translate" severity="contrast" [rounded]="true" icon="pi pi-send"></p-tag>
-      </div>
-      <h2 class="sec-title services-cta-title">{{ 'ready_start' | translate }} <span>{{ 'start_proj' | translate }}</span></h2>
-      <a routerLink="/contact" class="btn btn-primary" style="padding: 16px 48px;">
-        <span>{{ 'contact' | translate }}</span>
-        <i class="pi pi-arrow-left"></i>
-      </a>
+    <div class="text-center">
+      <div class="badge-pill" style="margin: 0 auto;">خطوات العمل</div>
+      <h2 class="mt-16" style="font-size: 2.4rem;">كيف نحول الفكرة إلى واقع ملموس</h2>
+      <p class="mt-12" style="max-width: 580px; margin-inline: auto;">خطوات واضحة ومدروسة لضمان أعلى جودة في التنفيذ</p>
+    </div>
+
+    <div class="process-v7-grid mt-48">
+      @for (step of processSteps; track $index) {
+        <div class="glass-card step-v7-card">
+          <span class="step-v7-num">0{{ $index + 1 }}</span>
+          <h4 class="step-v7-title mt-16">{{ step.title }}</h4>
+          <p class="step-v7-desc mt-8">{{ step.desc }}</p>
+        </div>
+      }
     </div>
   </div>
 </section>

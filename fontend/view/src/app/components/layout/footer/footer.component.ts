@@ -14,6 +14,7 @@ import { ApiService } from '../../../services/api.service';
 export class FooterComponent implements OnInit {
   apiService = inject(ApiService);
   footerData: any = null;
+  currentYear = new Date().getFullYear();
 
   ngOnInit() {
     this.apiService.getPageContent('footer').subscribe((res: any) => {

@@ -19,7 +19,7 @@ export class PortfolioComponent implements OnInit {
   projects: any[] = [];
   filteredProjects: any[] = [];
   categories: any[] = [];
-  activeCategory: any = 'all';
+  selectedCategory: any = 'all';
   loading = true;
   stats: any = {};
   portfolioData: any = {};
@@ -36,10 +36,11 @@ export class PortfolioComponent implements OnInit {
       this.projects = Array.isArray(data) && data.length ? data : fallbackProjects;
       this.filteredProjects = this.projects;
       
-      const catsMap = new Map<number, any>();
+      const catsMap = new Map<any, any>();
       this.projects.forEach(p => {
-        if (p.category && p.category.id) {
-          catsMap.set(p.category.id, p.category);
+        if (p.category && (p.category.id || p.category.name)) {
+          const key = p.category.id || p.category.name;
+          catsMap.set(key, p.category);
         }
       });
       this.categories = Array.from(catsMap.values());
@@ -57,12 +58,15 @@ export class PortfolioComponent implements OnInit {
     });
   }
 
-  setCategory(catId: any) {
-    this.activeCategory = catId;
+  filterCategory(catId: any) {
+    this.selectedCategory = catId;
     if (catId === 'all') {
       this.filteredProjects = this.projects;
     } else {
-      this.filteredProjects = this.projects.filter(p => p.category_id === catId);
+      this.filteredProjects = this.projects.filter(p => {
+        const pCatId = p.category_id || p.category?.id || p.category?.slug || p.category?.name || p.category;
+        return pCatId === catId;
+      });
     }
   }
 }

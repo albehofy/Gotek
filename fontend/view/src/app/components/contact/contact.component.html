@@ -1,143 +1,146 @@
-<!-- HERO SECTION -->
-<section class="section contact-hero">
-  <div class="glow-orb primary" style="top: 20%; left: 50%; transform: translateX(-50%); width: 700px; height: 700px; opacity: 0.4;"></div>
+<!-- ════════════════════════════════════════════
+   CONTACT — NOIR EDITORIAL
+   Media Glow — Egyptian Digital Agency
+   ════════════════════════════════════════════ -->
+
+<section class="page-hero grid-bg">
   <div class="container">
-    <div class="sec-tag animate-up delay-1">
-      <p-tag [value]="'contact_hero_label' | translate" severity="warn" [rounded]="true" icon="pi pi-envelope"></p-tag>
-    </div>
-    <h1 class="sec-title contact-hero-title animate-up delay-2">
-      {{ 'contact_hero_title_1' | translate }} <span>{{ 'contact_hero_title_2' | translate }}</span><br/>
-      {{ 'contact_hero_title_3' | translate }}
+    <div class="label fade-up d1">تواصل معنا</div>
+    <h1 class="h-display mt-16 fade-up d2">
+      لنبدأ رحلة النجاح <br>
+      <span class="text-fire">معاً اليوم</span>
     </h1>
-    <p class="sec-desc contact-hero-desc animate-up delay-3">
-      {{ 'contact_hero_desc' | translate }}
+    <p class="hero__sub mt-20 fade-up d3" style="max-width:600px;">
+      سواء كنت تبحث عن استشارة تسويقية، تصميم هوية فاخرة، أو تطوير منصة رقمية — فريقنا مستعد للإجابة عن استفساراتك.
     </p>
   </div>
 </section>
 
-<!-- CONTACT SECTION -->
-<section class="section" style="padding-top: 0;">
+<section class="section contact-main">
   <div class="container">
-    <div class="contact-layout-grid">
-      
-      <!-- INFO COLUMN -->
-      <div class="contact-info-col animate-up delay-1">
-        <h3>{{ 'contact_info_intro' | translate }}</h3>
-        
-        <div class="contact-info-list">
-          @for (info of contactInfo; track info.label) {
-            <div class="glass-panel contact-info-card">
-              <div class="contact-info-icon">
-                <i [class]="info.icon"></i>
+    <div class="contact-grid">
+
+      <!-- Form Column -->
+      <div class="contact-form-wrap card">
+        @if (!formSubmitted) {
+          <h3 class="h-card">أرسل تفاصيل مشروعك</h3>
+          <p class="mt-8" style="font-size:0.9rem;">سنقوم بالرد عليك خلال ساعات العمل الرسمية.</p>
+
+          <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="mt-32 contact-form">
+            <div class="fields-row">
+              <div class="field">
+                <label class="field-label">الاسم الكامل <span>*</span></label>
+                <input type="text" formControlName="name" placeholder="أدخل اسمك الكامل" class="field-input" />
               </div>
-              <div class="contact-info-content">
-                <div class="contact-info-label">{{ info.label | translate }}</div>
-                <div class="contact-info-value">{{ info.value | translate }}</div>
-                @if (info.sub) {
-                  <div class="contact-info-sub">{{ info.sub | translate }}</div>
-                }
-                @if (info.link) {
-                  <a [href]="info.link.url" class="btn btn-glass contact-info-link" [target]="info.link.target">{{ info.link.text | translate }}</a>
-                }
+              <div class="field">
+                <label class="field-label">رقم الهاتف <span>*</span></label>
+                <input type="tel" formControlName="phone" placeholder="+20 100 000 0000" class="field-input" dir="ltr" />
               </div>
             </div>
-          }
-        </div>
+
+            <div class="field mt-16">
+              <label class="field-label">البريد الإلكتروني <span>*</span></label>
+              <input type="email" formControlName="email" placeholder="example@domain.com" class="field-input" dir="ltr" />
+            </div>
+
+            <div class="field mt-16">
+              <label class="field-label">اسم الشركة / المؤسسة</label>
+              <input type="text" formControlName="company" placeholder="اسم شركتك" class="field-input" />
+            </div>
+
+            <div class="field mt-16">
+              <label class="field-label">الخدمة المطلوبة <span>*</span></label>
+              <select formControlName="service" class="field-input">
+                <option value="" disabled selected>اختر الخدمة المطلوبة</option>
+                @for (s of services; track s) {
+                  <option [value]="s">{{ s | translate }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="field mt-16">
+              <label class="field-label">الميزانية المتوقعة</label>
+              <div class="budget-options mt-8">
+                <button type="button" class="budget-btn" [class.is-active]="contactForm.get('budget')?.value === 'under_5k'" (click)="setBudget('under_5k')">أقل من 5,000 ج.م</button>
+                <button type="button" class="budget-btn" [class.is-active]="contactForm.get('budget')?.value === '5k_15k'" (click)="setBudget('5k_15k')">5,000 - 15,000 ج.م</button>
+                <button type="button" class="budget-btn" [class.is-active]="contactForm.get('budget')?.value === '15k_plus'" (click)="setBudget('15k_plus')">أكثر من 15,000 ج.م</button>
+              </div>
+            </div>
+
+            <div class="field mt-16">
+              <label class="field-label">تفاصيل المشروع <span>*</span></label>
+              <textarea formControlName="details" rows="5" placeholder="اكتب نبذة عن مشروعك وأهدافك..." class="field-input" style="resize:vertical;"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-fire mt-32" style="width:100%;justify-content:center;" [disabled]="contactForm.invalid || submitting">
+              @if (submitting) {
+                <span>جاري الإرسال...</span>
+              } @else {
+                <span>إرسال الرسالة</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+              }
+            </button>
+          </form>
+        } @else {
+          <div class="success-box text-center">
+            <div class="icon-box icon-box--fire" style="width:64px;height:64px;margin:0 auto;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h3 class="h-card mt-24">تم إرسال طلبك بنجاح!</h3>
+            <p class="mt-12">شكراً لتواصلك مع ميديا جلو. سيتواصل معك أحد مستشارينا قريباً جداً.</p>
+            <button (click)="resetForm()" class="btn btn-outline mt-32">إرسال رسالة أخرى</button>
+          </div>
+        }
       </div>
 
-      <!-- FORM COLUMN -->
-      <div class="animate-up delay-2">
-        <div class="glass-panel contact-form-container">
-          
-          @if (!formSubmitted) {
-            <div>
-              <h2 class="contact-form-title">
-                {{ 'contact_form_title' | translate }} <span>{{ 'contact_form_title_2' | translate }}</span>
-              </h2>
-              <p class="contact-form-subtitle">{{ 'contact_form_subtitle' | translate }}</p>
-              
-              <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form-grid">
-                
-                <div class="contact-form-group">
-                  <label class="contact-form-label">{{ 'contact_label_name' | translate }} <span>*</span></label>
-                  <input type="text" formControlName="name" [placeholder]="'name_placeholder' | translate" class="form-control" />
-                </div>
-                
-                <div class="contact-form-group">
-                  <label class="contact-form-label">{{ 'contact_label_phone_form' | translate }} <span>*</span></label>
-                  <input type="tel" formControlName="phone" [placeholder]="'phone_placeholder' | translate" class="form-control" />
-                </div>
-                
-                <div class="contact-form-group full-width">
-                  <label class="contact-form-label">{{ 'contact_label_email_form' | translate }} <span>*</span></label>
-                  <input type="email" formControlName="email" [placeholder]="'email_placeholder' | translate" class="form-control" />
-                </div>
-                
-                <div class="contact-form-group full-width">
-                  <label class="contact-form-label">{{ 'company_name' | translate }}</label>
-                  <input type="text" formControlName="company" [placeholder]="'company_placeholder' | translate" class="form-control" />
-                </div>
-                
-                <div class="contact-form-group full-width">
-                  <label class="contact-form-label">{{ 'contact_label_service' | translate }} <span>*</span></label>
-                  <select formControlName="service" class="form-control" style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a0a0ab%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
-                    <option value="" disabled selected>{{ 'select_service' | translate }}</option>
-                    @for (s of services; track s) {
-                      <option [value]="s">{{ s | translate }}</option>
-                    }
-                  </select>
-                </div>
-                
-                <div class="contact-form-group full-width">
-                  <label class="contact-form-label">{{ 'contact_label_budget' | translate }}</label>
-                  <div class="contact-budget-container">
-                    <button type="button" class="btn contact-budget-btn" [ngClass]="contactForm.get('budget')?.value === 'under_5k' ? 'btn-primary' : 'btn-glass'" (click)="setBudget('under_5k')">{{ 'contact_budget_starter' | translate }}</button>
-                    <button type="button" class="btn contact-budget-btn" [ngClass]="contactForm.get('budget')?.value === '5k_15k' ? 'btn-primary' : 'btn-glass'" (click)="setBudget('5k_15k')">{{ 'contact_budget_growth' | translate }}</button>
-                    <button type="button" class="btn contact-budget-btn" [ngClass]="contactForm.get('budget')?.value === '15k_plus' ? 'btn-primary' : 'btn-glass'" (click)="setBudget('15k_plus')">{{ 'contact_budget_scale' | translate }}</button>
-                  </div>
-                </div>
-                
-                <div class="contact-form-group full-width">
-                  <label class="contact-form-label">{{ 'contact_label_details' | translate }} <span>*</span></label>
-                  <textarea formControlName="details" [placeholder]="'message_placeholder' | translate" class="form-control" style="min-height: 150px; resize: vertical;"></textarea>
-                </div>
-                
-                <div class="contact-submit-row">
-                  <button type="submit" class="btn btn-primary contact-submit-btn" [disabled]="contactForm.invalid || submitting" style="opacity: {{ contactForm.invalid || submitting ? 0.6 : 1 }};">
-                    {{ submitting ? 'Sending...' : ('contact_submit' | translate) }}
-                  </button>
-                  <span class="contact-disclaimer"><i class="fa-solid fa-lock"></i> {{ 'contact_note' | translate }}</span>
-                </div>
-                
-              </form>
-            </div>
-          } @else {
-            <div class="contact-success-box">
-              <div class="contact-success-icon">
-                <i class="fa-solid fa-circle-check"></i>
-              </div>
-              <h3 class="contact-success-title">{{ 'contact_success_title' | translate }}</h3>
-              <p class="contact-success-desc">{{ 'contact_success_desc' | translate }}</p>
-              <button (click)="resetForm()" class="btn btn-primary">{{ 'send_another' | translate }}</button>
-            </div>
-          }
+      <!-- Info Column -->
+      <div class="contact-info-wrap">
+        <div class="card info-card">
+          <div class="icon-box icon-box--fire" style="width:40px;height:40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="mt-16">
+            <span class="field-label">المقر الرئيسي</span>
+            <h4 class="mt-4" style="font-size:1.1rem;color:var(--c-white);">القاهرة الجديدة، القاهرة</h4>
+            <p style="font-size:0.85rem;">جمهورية مصر العربية</p>
+          </div>
+        </div>
 
+        <div class="card info-card mt-16">
+          <div class="icon-box icon-box--fire" style="width:40px;height:40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12.1 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.6 16.92z"/></svg>
+          </div>
+          <div class="mt-16">
+            <span class="field-label">الهاتف المباشر</span>
+            <h4 class="mt-4" style="font-size:1.1rem;color:var(--c-white);" dir="ltr">+20 10 0000 0000</h4>
+            <p style="font-size:0.85rem;">الأحد – الخميس (9ص – 6م)</p>
+          </div>
+        </div>
+
+        <div class="card info-card mt-16">
+          <div class="icon-box icon-box--fire" style="width:40px;height:40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="mt-16">
+            <span class="field-label">البريد الإلكتروني</span>
+            <h4 class="mt-4" style="font-size:1.1rem;color:var(--c-white);">hello&#64;mediaglow.eg</h4>
+            <p style="font-size:0.85rem;">استجابة سريعة خلال 24 ساعة</p>
+          </div>
+        </div>
+
+        <!-- Google Map Embedded Frame -->
+        <div class="card map-card mt-16">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d110502.7357768637!2d31.17795174780604!3d30.059482649999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14583fa60b21beeb%3A0x79dfb296e8423bba!2sCairo%2C%20Egypt!5e0!3m2!1sen!2seg!4v1721000000000!5m2!1sen!2seg" 
+            width="100%" 
+            height="220" 
+            style="border:0; display:block; filter: invert(90%) hue-rotate(180deg);" 
+            allowfullscreen="" 
+            loading="lazy">
+          </iframe>
         </div>
       </div>
 
     </div>
   </div>
 </section>
-
-<!-- MAP -->
-<div class="contact-map-box">
-  <div class="contact-map-overlay"></div>
-  <div class="contact-map-card-wrapper">
-    <div class="glass-panel contact-map-card">
-      <div class="contact-map-icon"><i class="fa-solid fa-location-dot"></i></div>
-      <h3 class="contact-map-title">{{ 'contact_map_title' | translate }}</h3>
-      <p class="contact-map-desc">{{ 'contact_map_location' | translate }}</p>
-      <a href="https://maps.google.com" target="_blank" class="btn btn-primary" style="width: 100%;">{{ 'contact_map_btn' | translate }}</a>
-    </div>
-  </div>
-</div>

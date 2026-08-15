@@ -1,344 +1,207 @@
-/* ═══════════════════════════════════════════════════════════
-   MEDIA GLOW AGENCY — ULTRA LUXURY CYBER-GLASS DESIGN SYSTEM
-   http://localhost:4200 — Public Website View
-   Radiant Obsidian Dark Theme | Animated Aurora Gradients | RTL First
- ═══════════════════════════════════════════════════════════ */
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap");
+
+/* ══════════════════════════════════════════════════════════════════
+   MEDIA GLOW — APPLE & OPENAI MINIMALIST DESIGN SYSTEM (v9.0)
+   Pure Ivory White `#FFFFFF` · Soft Porcelain `#FAFAFA`
+   Deep Obsidian Text `#09090B` · Royal Sapphire Accent `#2563EB`
+   Ultra-Clean Card Aesthetics & Generous Cinema Typography
+   ══════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Brand Color Palette ── */
-  --orange:        #ff6b00;
-  --orange-mid:    #ff8c33;
-  --orange-light:  #ffb870;
-  --orange-glow:   rgba(255, 107, 0, 0.45);
-  --orange-subtle: rgba(255, 107, 0, 0.12);
+  /* Color Palette */
+  --bg-main:       #FFFFFF;
+  --bg-subtle:     #FAFAFA;
+  --bg-surface:    #F4F4F5;
+  --bg-card:       #FFFFFF;
+  
+  --border-light:  #E4E4E7;
+  --border-hover:  #A1A1AA;
 
-  --violet:        #7c3aed;
-  --violet-mid:    #a78bfa;
-  --violet-glow:   rgba(124, 58, 237, 0.4);
-  --violet-subtle: rgba(124, 58, 237, 0.1);
+  /* Primary Brand Accent */
+  --blue-primary:  #2563EB;
+  --blue-hover:    #1D4ED8;
+  --emerald-accent:#059669;
 
-  --teal:          #0ea5e9;
-  --teal-light:    #67e8f9;
-  --teal-glow:     rgba(14, 165, 233, 0.4);
-  --teal-subtle:   rgba(14, 165, 233, 0.1);
+  /* Text Colors */
+  --text-primary:  #09090B;
+  --text-secondary:#3F3F46;
+  --text-muted:    #71717A;
+  --text-faint:    #A1A1AA;
 
-  --amber:         #f59e0b;
-  --emerald:       #10b981;
-  --rose:          #f43f5e;
+  /* Fonts */
+  --font-arabic:  'Cairo', 'Tajawal', system-ui, sans-serif;
+  --font-english: 'Outfit', 'Plus Jakarta Sans', sans-serif;
 
-  /* ── Surface Colors & Glass ── */
-  --bg-main:       #040409;
-  --bg-deep:       #020205;
-  --bg-card:       rgba(13, 14, 26, 0.72);
-  --bg-card-hover: rgba(20, 22, 42, 0.92);
-  --bg-glass:      rgba(255, 255, 255, 0.04);
-  --bg-glass-md:   rgba(255, 255, 255, 0.08);
+  /* Radii */
+  --radius-sm:   12px;
+  --radius-md:   20px;
+  --radius-lg:   28px;
+  --radius-pill: 9999px;
 
-  /* ── Borders & Outlines ── */
-  --border-light:  rgba(255, 255, 255, 0.08);
-  --border-mid:    rgba(255, 255, 255, 0.15);
-  --border-orange: rgba(255, 107, 0, 0.45);
-  --border-violet: rgba(124, 58, 237, 0.4);
+  /* Elevation */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.06);
 
-  /* ── Typography Colors ── */
-  --text-primary:  #ffffff;
-  --text-secondary:#cbd5e1;
-  --text-muted:    #94a3b8;
-
-  /* ── Font Families ── */
-  --font-ar: 'Cairo', 'Tajawal', sans-serif;
-  --font-en: 'Outfit', sans-serif;
-
-  /* ── Glass Blur ── */
-  --blur-sm: blur(14px);
-  --blur-md: blur(28px);
-  --blur-lg: blur(54px);
-
-  /* ── Shadows & Glows ── */
-  --shadow-sm:     0 4px 20px rgba(0,0,0,0.5);
-  --shadow-md:     0 12px 40px rgba(0,0,0,0.65);
-  --shadow-lg:     0 24px 70px rgba(0,0,0,0.85);
-  --shadow-orange: 0 8px 32px rgba(255,107,0,0.45);
-  --shadow-card:   0 10px 35px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
-  --shadow-luxe:   0 20px 60px rgba(0,0,0,0.85), 0 0 60px rgba(255,107,0,0.25);
-
-  /* ── Shape & Spacing ── */
-  --radius-xs:     10px;
-  --radius-sm:     16px;
-  --radius-md:     24px;
-  --radius-lg:     38px;
-  --radius-full:   9999px;
+  /* Transitions */
+  --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-mid:  0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Reset & Base Setup ── */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Reset & Base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+img { display: block; max-width: 100%; height: auto; }
+ul { list-style: none; }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-  overflow-x: hidden;
-}
+html { font-size: 16px; scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   background-color: var(--bg-main);
-  background-image:
-    radial-gradient(ellipse 90% 70% at 15% 0%, rgba(124, 58, 237, 0.22) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 60% at 85% 15%, rgba(255, 107, 0, 0.22) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 50% 85%, rgba(14, 165, 233, 0.15) 0%, transparent 60%);
-  background-attachment: fixed;
   color: var(--text-primary);
-  font-family: var(--font-ar);
+  font-family: var(--font-arabic);
+  font-weight: 500;
   line-height: 1.8;
+  direction: rtl;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  direction: rtl;
   min-height: 100vh;
 }
 
-/* RTL Typography Fix: Ensure proper spacing on Arabic text */
-[dir="rtl"] *, [lang="ar"] * {
-  letter-spacing: 0 !important;
-}
-
-/* ── Custom Scrollbar ── */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-deep);
-}
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, var(--orange), var(--violet));
-  border-radius: 10px;
-}
-
-/* ── Typography Rules ── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-ar);
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.35 !important;
-  margin-bottom: 0.4em;
-}
-
-p {
-  line-height: 1.85;
-  color: var(--text-secondary);
-}
-
-/* ── Container Layout ── */
+/* Container */
 .container {
   width: 100%;
   max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 28px;
-}
-
-.section {
-  padding: 110px 0;
+  margin-inline: auto;
+  padding-inline: 32px;
   position: relative;
+  z-index: 2;
 }
 
-/* ── Glass Card System ── */
-.glass-panel {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
+.section { padding-block: 100px; position: relative; }
+
+/* Typography Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-arabic);
+  font-weight: 800;
+  line-height: 1.25 !important;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
-.glass-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 65%);
-  pointer-events: none;
-  border-radius: inherit;
+p { color: var(--text-secondary); font-size: 1.05rem; line-height: 1.85; }
+
+.text-gradient-apple {
+  background: linear-gradient(135deg, #09090B 0%, #2563EB 50%, #4F46E5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.glass-panel:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-orange);
-  box-shadow: var(--shadow-luxe);
-  transform: translateY(-8px);
-}
-
-/* ── Ambient Glowing Orbs ── */
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: 0;
-  animation: orbFloat 12s ease-in-out infinite alternate;
-}
-.glow-orb.primary   { background: radial-gradient(circle, rgba(255,107,0,0.45) 0%, transparent 70%); width: 650px; height: 650px; }
-.glow-orb.secondary { background: radial-gradient(circle, rgba(124,58,237,0.4) 0%, transparent 70%); width: 550px; height: 550px; }
-.glow-orb.teal      { background: radial-gradient(circle, rgba(14,165,233,0.35) 0%, transparent 70%); width: 450px; height: 450px; }
-
-@keyframes orbFloat {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(35px, -35px) scale(1.12); }
-}
-
-/* ── Luxury Buttons ── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 15px 36px;
-  font-family: var(--font-ar);
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  border: none;
-  outline: none;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8c33 50%, #e05d00 100%);
-  color: #ffffff !important;
-  box-shadow: var(--shadow-orange);
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.25), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.btn-primary:hover::before {
-  opacity: 1;
-}
-
-.btn-primary:hover {
-  transform: translateY(-4px) scale(1.03);
-  box-shadow: 0 18px 45px rgba(255,107,0,0.6);
-  color: #ffffff !important;
-}
-
-.btn-glass {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-light);
-  backdrop-filter: var(--blur-sm);
-}
-
-.btn-glass:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: var(--orange);
-  color: #ffffff !important;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-/* ── Section Tags ── */
-.sec-tag {
+/* Apple-Style Pill Badge */
+.badge-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
-  background: linear-gradient(135deg, rgba(255,107,0,0.18), rgba(124,58,237,0.12));
-  border: 1px solid rgba(255,107,0,0.35);
-  border-radius: var(--radius-full);
-  color: var(--orange-light);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--blue-primary);
+  padding: 8px 18px;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: var(--radius-pill);
+  background: rgba(37, 99, 235, 0.05);
+  width: fit-content;
+}
+
+.badge-pill--emerald {
+  color: var(--emerald-accent);
+  border-color: rgba(5, 150, 105, 0.15);
+  background: rgba(5, 150, 105, 0.05);
+}
+
+/* Apple & OpenAI Smooth Cards */
+.apple-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-mid);
+}
+
+.apple-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* Apple-Style Pill Buttons */
+.btn-apple-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  border-radius: var(--radius-pill);
+  background: var(--text-primary);
+  color: #FFFFFF !important;
+  font-family: var(--font-arabic);
   font-weight: 800;
-  text-transform: uppercase;
-  margin-bottom: 22px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(9, 9, 11, 0.15);
+  transition: all var(--transition-fast);
 }
 
-/* ── Section Typography ── */
-.sec-title {
-  font-size: clamp(2.3rem, 4.8vw, 3.6rem);
-  font-weight: 900;
-  margin-bottom: 24px;
-  line-height: 1.35 !important;
+.btn-apple-primary:hover {
+  background: #18181B;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(9, 9, 11, 0.25);
 }
 
-.sec-title span {
-  background: linear-gradient(135deg, var(--orange-mid) 0%, var(--orange-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.btn-apple-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary) !important;
+  font-family: var(--font-arabic);
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
-.sec-desc {
-  font-size: 1.15rem;
-  color: var(--text-secondary);
-  max-width: 700px;
-  line-height: 1.85;
+.btn-apple-outline:hover {
+  border-color: var(--text-primary);
+  transform: translateY(-2px);
 }
 
-/* ── Gradient Text Utility ── */
-.grad-text {
-  background: linear-gradient(135deg, var(--orange) 0%, var(--violet-mid) 50%, var(--teal-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Custom Inputs */
+.input-custom {
+  width: 100%;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-arabic);
+  font-weight: 600;
+  font-size: 0.98rem;
+  outline: none;
+  direction: rtl;
+  transition: all var(--transition-fast);
 }
 
-/* ── PrimeNG Tag Overrides ── */
-.p-tag {
-  font-family: var(--font-ar) !important;
-  font-weight: 800 !important;
-  font-size: 0.86rem !important;
-  padding: 7px 16px !important;
+.input-custom:focus {
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
-.p-tag.p-tag-warn {
-  background: rgba(255,107,0,0.2) !important;
-  color: var(--orange-light) !important;
-  border: 1px solid rgba(255,107,0,0.4) !important;
-}
-.p-tag.p-tag-info {
-  background: rgba(14,165,233,0.18) !important;
-  color: var(--teal-light) !important;
-  border: 1px solid rgba(14,165,233,0.35) !important;
-}
-.p-tag.p-tag-success {
-  background: rgba(16,185,129,0.18) !important;
-  color: #6ee7b7 !important;
-  border: 1px solid rgba(16,185,129,0.35) !important;
-}
-.p-tag.p-tag-contrast {
-  background: rgba(124,58,237,0.18) !important;
-  color: var(--violet-mid) !important;
-  border: 1px solid rgba(124,58,237,0.35) !important;
-}
-
-/* ── Responsive Rules ── */
-@media (max-width: 1024px) {
-  .section { padding: 85px 0; }
-}
+/* Responsive */
 @media (max-width: 768px) {
-  .section { padding: 65px 0; }
-  .container { padding: 0 20px; }
-}
-@media (max-width: 480px) {
-  .section { padding: 50px 0; }
+  .container { padding-inline: 20px; }
+  .section { padding-block: 60px; }
 }
