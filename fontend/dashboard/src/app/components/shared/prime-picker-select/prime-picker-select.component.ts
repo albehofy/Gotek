@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter, forwardRef, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, forwardRef, ElementRef, HostListener, inject, OnDestroy } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 
 @Component({
@@ -15,13 +15,13 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
   ],
   template: `
     <div class="prime-picker-wrapper" [class.open]="isOpen">
-      <div class="picker-trigger" (click)="toggleDropdown()">
+      <div class="picker-trigger" (click)="toggleDropdown($event)">
         <span class="selected-label" *ngIf="selectedItem">{{ getItemLabel(selectedItem) }}</span>
         <span class="placeholder-text" *ngIf="!selectedItem">{{ placeholder }}</span>
         <i class="pi pi-chevron-down toggle-icon"></i>
       </div>
 
-      <div class="picker-dropdown-panel" *ngIf="isOpen">
+      <div class="picker-dropdown-panel" *ngIf="isOpen" [ngStyle]="panelStyle" (click)="$event.stopPropagation()">
         <!-- Search Input Header -->
         <div class="picker-search-box">
           <i class="pi pi-search search-icon"></i>
@@ -49,8 +49,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
           </li>
         </ul>
 
-        <!-- Inline "+ Add New" Shortcut Button -->
-        <div class="picker-footer-action">
+        <!-- Inline "+ Add New" Shortcut Button (Shown only when listener attached) -->
+        <div class="picker-footer-action" *ngIf="addNew.observed">
           <button type="button" class="btn-inline-add" (click)="triggerAddNew($event)">
             <i class="pi pi-plus"></i> {{ addNewLabel }}
           </button>
@@ -75,6 +75,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       color: var(--text, #ffffff);
       font-size: 0.9rem;
       cursor: pointer;
+      min-height: 44px;
+      box-sizing: border-box;
       transition: all 0.25s ease;
     }
     .picker-trigger:hover {
@@ -83,7 +85,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     }
     :host-context(body.light-theme) .picker-trigger {
       background: #ffffff !important;
-      border-color: rgba(99, 102, 241, 0.2) !important;
+      border-color: #cbd5e1 !important;
       color: #0f172a !important;
     }
     :host-context(body.light-theme) .picker-trigger:hover {
@@ -107,25 +109,25 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     .open .toggle-icon {
       transform: rotate(180deg);
     }
+
+    /* Fixed Body-Appended Panel positioning */
     .picker-dropdown-panel {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      z-index: 1050;
+      position: fixed !important;
+      z-index: 99999999 !important;
       background: #111228;
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 14px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       max-height: 320px;
+      box-sizing: border-box;
     }
     :host-context(body.light-theme) .picker-dropdown-panel {
       background: #ffffff !important;
-      border-color: rgba(99, 102, 241, 0.25) !important;
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2) !important;
     }
     .picker-search-box {
       display: flex;
@@ -137,7 +139,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     }
     :host-context(body.light-theme) .picker-search-box {
       background: #f8fafc !important;
-      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
+      border-bottom-color: #e2e8f0 !important;
     }
     .picker-search-box input {
       flex: 1;
@@ -249,7 +251,12 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     }
   `]
 })
-export class PrimePickerSelectComponent implements ControlValueAccessor {
+export class PrimePickerSelectComponent implements ControlValueAccessor, OnDestroy {
+  private elementRef = inject(ElementRef);
+  private document = inject(DOCUMENT);
+
+  private portalPanelEl: HTMLElement | null = null;
+
   @Input() items: any[] = [];
   @Input() optionLabel = 'name';
   @Input() optionValue = 'id';
@@ -265,9 +272,132 @@ export class PrimePickerSelectComponent implements ControlValueAccessor {
   value: any = null;
   isOpen = false;
   searchQuery = '';
+  panelStyle: any = {};
 
   onChangeFn: any = () => {};
   onTouchedFn: any = () => {};
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isOpen) {
+      const target = event.target as Node;
+      const triggerEl = this.elementRef.nativeElement.querySelector('.picker-trigger');
+      const isInsideTrigger = triggerEl && triggerEl.contains(target);
+      const isInsidePanel = this.portalPanelEl && this.portalPanelEl.contains(target);
+
+      if (!isInsideTrigger && !isInsidePanel) {
+        this.closeDropdown();
+      }
+    }
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  @HostListener('window:resize', ['$event'])
+  onWindowChange(): void {
+    if (this.isOpen) {
+      this.updatePanelPosition();
+    }
+  }
+
+  toggleDropdown(event?: Event) {
+    if (event) event.stopPropagation();
+    if (this.isOpen) {
+      this.closeDropdown();
+    } else {
+      this.openDropdown();
+    }
+  }
+
+  openDropdown() {
+    this.isOpen = true;
+    this.onTouchedFn();
+    
+    setTimeout(() => {
+      const panel = this.elementRef.nativeElement.querySelector('.picker-dropdown-panel');
+      if (panel) {
+        this.portalPanelEl = panel;
+        this.document.body.appendChild(panel);
+        this.updatePanelPosition();
+      }
+    }, 0);
+  }
+
+  closeDropdown() {
+    this.isOpen = false;
+    this.removePanelFromBody();
+  }
+
+  removePanelFromBody() {
+    if (this.portalPanelEl && this.portalPanelEl.parentNode) {
+      this.portalPanelEl.parentNode.removeChild(this.portalPanelEl);
+      this.portalPanelEl = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.removePanelFromBody();
+  }
+
+  updatePanelPosition(): void {
+    if (!this.isOpen) return;
+    const triggerEl = this.elementRef.nativeElement.querySelector('.picker-trigger');
+    if (!triggerEl) return;
+    const rect = triggerEl.getBoundingClientRect();
+    
+    const panelEl = this.portalPanelEl || this.elementRef.nativeElement.querySelector('.picker-dropdown-panel');
+    let actualHeight = 180;
+    if (panelEl && panelEl.offsetHeight > 0) {
+      actualHeight = panelEl.offsetHeight;
+    } else {
+      const itemsCount = this.filteredItems().length;
+      actualHeight = Math.min(260, (itemsCount * 40) + 55);
+    }
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    
+    let top = rect.bottom + 4;
+    if (spaceBelow < actualHeight && spaceAbove > spaceBelow) {
+      top = Math.max(10, rect.top - actualHeight - 4);
+    }
+
+    this.panelStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+      'z-index': '99999999'
+    };
+
+    if (this.portalPanelEl) {
+      Object.assign(this.portalPanelEl.style, this.panelStyle);
+    }
+  }
+
+  selectItem(item: any) {
+    this.value = this.getItemValue(item);
+    this.onChangeFn(this.value);
+    this.onChange.emit(this.value);
+    this.closeDropdown();
+  }
+
+  triggerAddNew(event: Event) {
+    event.stopPropagation();
+    this.closeDropdown();
+    this.addNew.emit();
+  }
+
+  writeValue(val: any): void {
+    this.value = val;
+  }
+
+  registerOnChange(fn: any): void {
+    this.onChangeFn = fn;
+  }
+
+  registerOnTouched(fn: any): void {
+    this.onTouchedFn = fn;
+  }
 
   get selectedItem() {
     return this.items.find(i => this.getItemValue(i) === this.value);
@@ -298,35 +428,5 @@ export class PrimePickerSelectComponent implements ControlValueAccessor {
       const sub = this.getItemSubLabel(item).toLowerCase();
       return label.includes(q) || sub.includes(q);
     });
-  }
-
-  toggleDropdown() {
-    this.isOpen = !this.isOpen;
-    if (this.isOpen) this.onTouchedFn();
-  }
-
-  selectItem(item: any) {
-    this.value = this.getItemValue(item);
-    this.onChangeFn(this.value);
-    this.onChange.emit(this.value);
-    this.isOpen = false;
-  }
-
-  triggerAddNew(event: Event) {
-    event.stopPropagation();
-    this.isOpen = false;
-    this.addNew.emit();
-  }
-
-  writeValue(val: any): void {
-    this.value = val;
-  }
-
-  registerOnChange(fn: any): void {
-    this.onChangeFn = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouchedFn = fn;
   }
 }

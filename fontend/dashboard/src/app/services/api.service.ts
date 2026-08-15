@@ -247,6 +247,14 @@ export class ApiService {
     return this.http.post<any>(`${API_BASE_URL}/departments/${deptId}/sub-categories`, data, { headers: this.getHeaders() });
   }
 
+  updateSubCategory(subId: string | number, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/departments/sub-categories/${subId}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteSubCategory(subId: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/departments/sub-categories/${subId}`, { headers: this.getHeaders() });
+  }
+
   deleteDepartment(id: string | number): Observable<any> {
     return this.http.delete<any>(`${API_BASE_URL}/departments/${id}`, { headers: this.getHeaders() });
   }
@@ -361,10 +369,19 @@ export class ApiService {
     return this.http.post<any>(`${API_BASE_URL}/finance/fixed-assets`, data, { headers: this.getHeaders() });
   }
 
-  getPayrollSummary(month?: number, year?: number): Observable<any> {
+  getPayrollSummary(queryParams?: any): Observable<any> {
     let params = new HttpParams();
-    if (month) params = params.set('month', month.toString());
-    if (year) params = params.set('year', year.toString());
+    if (queryParams) {
+      if (typeof queryParams === 'object') {
+        Object.keys(queryParams).forEach(key => {
+          if (queryParams[key] !== null && queryParams[key] !== undefined && queryParams[key] !== '') {
+            params = params.set(key, queryParams[key].toString());
+          }
+        });
+      } else {
+        params = params.set('month', queryParams.toString());
+      }
+    }
     return this.http.get<any>(`${API_BASE_URL}/finance/payroll`, { headers: this.getHeaders(), params }).pipe(catchError(this.handleError('getPayrollSummary', [])));
   }
 

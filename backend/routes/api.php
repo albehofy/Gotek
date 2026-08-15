@@ -104,6 +104,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [DepartmentController::class, 'show']);
         Route::put('/{id}', [DepartmentController::class, 'update']);
         Route::post('/{id}/sub-categories', [DepartmentController::class, 'addSubCategory']);
+        Route::put('/sub-categories/{subId}', [DepartmentController::class, 'updateSubCategory']);
+        Route::delete('/sub-categories/{subId}', [DepartmentController::class, 'deleteSubCategory']);
         Route::delete('/{id}', [DepartmentController::class, 'destroy']);
     });
 

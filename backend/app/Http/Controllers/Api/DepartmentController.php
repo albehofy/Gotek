@@ -100,6 +100,31 @@ class DepartmentController extends Controller
         return response()->json(['status' => 'success', 'data' => $sub], 201);
     }
 
+    public function updateSubCategory(Request $request, $subId)
+    {
+        $sub = SubCategory::findOrFail($subId);
+        $validated = $request->validate([
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $sub->update([
+            'name_ar' => $validated['name_ar'],
+            'name_en' => $validated['name_en'] ?? $validated['name_ar'],
+            'description' => $validated['description'] ?? $sub->description,
+        ]);
+
+        return response()->json(['status' => 'success', 'data' => $sub]);
+    }
+
+    public function deleteSubCategory($subId)
+    {
+        $sub = SubCategory::findOrFail($subId);
+        $sub->delete();
+        return response()->json(['status' => 'success', 'message' => 'تم حذف التصنيف الفرعي بنجاح']);
+    }
+
     public function destroy($id)
     {
         $department = Department::findOrFail($id);

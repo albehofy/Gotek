@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
@@ -16,6 +17,7 @@ export class LoginComponent implements OnInit {
   fb = inject(FormBuilder);
   router = inject(Router);
   apiService = inject(ApiService);
+  toastService = inject(ToastService);
 
   loginForm!: FormGroup;
   loading = false;
@@ -31,7 +33,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     this.loginForm = this.fb.group({
-      email: ['admin@mediaglow.com', [Validators.required, Validators.email]],
+      email: ['admin@mediaglow.com', Validators.required],
       password: ['password', Validators.required],
       rememberMe: [true]
     });
@@ -50,7 +52,11 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.toastService.warning('يرجى كتابة البريد الإلكتروني وكلمة المرور بشكل صحيح');
+      return;
+    }
 
     this.loading = true;
     this.showError = false;
@@ -61,6 +67,7 @@ export class LoginComponent implements OnInit {
       next: (res) => {
         this.loading = false;
         if (res && res.success) {
+          this.toastService.success(`مرحباً بك مجدداً ${res.user?.name || ''}!`, 'تم تسجيل الدخول بنجاح');
           localStorage.setItem('mediaglow_client_token', res.token || 'demo_token_123');
           const user = res.user;
           if (user) {
@@ -75,11 +82,13 @@ export class LoginComponent implements OnInit {
           }
         } else {
           this.showError = true;
+          this.toastService.error('بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور');
         }
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
         this.showError = true;
+        this.toastService.error(err.error?.message || 'بيانات الدخول غير صحيحة، يرجى التأكد من البيانات');
       }
     });
   }

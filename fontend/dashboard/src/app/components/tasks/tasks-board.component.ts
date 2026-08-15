@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-tasks-board',
@@ -995,12 +996,13 @@ import { MultiSelectModule } from 'primeng/multiselect';
                     <div class="form-grid">
                       <div class="fg">
                         <label class="fg-lbl">الأولوية</label>
-                        <select [(ngModel)]="subtaskForm.priority" class="w-full st-dialog-select">
-                          <option value="low">منخفض</option>
-                          <option value="medium">متوسط</option>
-                          <option value="high">مرتفع</option>
-                          <option value="urgent">عاجل</option>
-                        </select>
+                        <app-prime-picker-select
+                          [(ngModel)]="subtaskForm.priority"
+                          [items]="priorityList"
+                          optionLabel="label"
+                          optionValue="id"
+                          placeholder="اختر الأولوية..."
+                        ></app-prime-picker-select>
                       </div>
                       <div class="fg">
                         <label class="fg-lbl">إسناد لموظف</label>
@@ -1230,12 +1232,13 @@ import { MultiSelectModule } from 'primeng/multiselect';
               <!-- Priority Selector -->
               <div class="fg">
                 <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-bolt" style="color:var(--amber)"></i> الأولوية</label>
-                <select [(ngModel)]="subtaskForm.priority" class="w-full st-dialog-select">
-                  <option value="low">منخفض (Low)</option>
-                  <option value="medium">متوسط (Medium)</option>
-                  <option value="high">مرتفع (High)</option>
-                  <option value="urgent">عاجل (Urgent)</option>
-                </select>
+                <app-prime-picker-select
+                  [(ngModel)]="subtaskForm.priority"
+                  [items]="priorityList"
+                  optionLabel="label"
+                  optionValue="id"
+                  placeholder="اختر الأولوية..."
+                ></app-prime-picker-select>
               </div>
 
               <!-- Employee Assign Dropdown -->
@@ -3653,11 +3656,19 @@ export class TasksBoardComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastService = inject(ToastService);
   private pendingTaskIdFromUrl: number | null = null;
 
   tasks: any[] = [];
   deals: any[] = [];
   departments: any[] = [];
+
+  priorityList = [
+    { id: 'low', label: 'منخفض (Low)' },
+    { id: 'medium', label: 'متوسط (Medium)' },
+    { id: 'high', label: 'مرتفع (High)' },
+    { id: 'urgent', label: 'عاجل (Urgent)' }
+  ];
 
   columns = [
     { key: 'new',             title: 'جديد',             color: '#a5b4fc' },
@@ -3892,7 +3903,8 @@ export class TasksBoardComponent implements OnInit {
     this.apiService.getDeals().subscribe(res => this.deals = res || []);
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
     this.apiService.getUsers().subscribe(res => {
-      this.allUsers = (res && res.data ? res.data : res) || [];
+      const arr = (res && res.data ? res.data : res) || [];
+      this.allUsers = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
       this.buildGroupedUsers();
     });
   }
@@ -4268,7 +4280,11 @@ export class TasksBoardComponent implements OnInit {
   }
 
   saveTask(): void {
-    if (this.taskForm.invalid) return;
+    if (this.taskForm.invalid) {
+      this.taskForm.markAllAsTouched();
+      this.toastService.warning('يرجى كتابة عنوان المهمة والحقول المطلوبة بشكل صحيح قبل الحفظ');
+      return;
+    }
     this.loading = true;
     const taskVal = { ...this.taskForm.value };
 
@@ -4285,8 +4301,16 @@ export class TasksBoardComponent implements OnInit {
     }
 
     this.apiService.createTask(taskVal).subscribe({
-      next: () => { this.loading = false; this.showCreateModal = false; this.loadData(); },
-      error: () => this.loading = false
+      next: () => {
+        this.loading = false;
+        this.toastService.success('تم إنشاء المهمة الجديدة بنجاح', 'تمت العملية');
+        this.showCreateModal = false;
+        this.loadData();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err.error?.message || 'تعذر حفظ المهمة الجديدة');
+      }
     });
   }
 

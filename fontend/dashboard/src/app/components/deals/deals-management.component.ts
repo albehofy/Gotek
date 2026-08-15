@@ -8,6 +8,9 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
+import { DatePickerModule } from 'primeng/datepicker';
+
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-deals-management',
@@ -21,7 +24,8 @@ import { DropdownModule } from 'primeng/dropdown';
     DialogModule,
     InputTextModule,
     TextareaModule,
-    DropdownModule
+    DropdownModule,
+    DatePickerModule
   ],
   template: `
     <div class="crm-module-container">
@@ -41,15 +45,15 @@ import { DropdownModule } from 'primeng/dropdown';
           <i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" [(ngModel)]="searchQuery" (input)="onFilterChange()" placeholder="البحث بعنوان الصفقة أو نطاق العمل..." />
         </div>
-        <div class="filter-dropdown">
-          <select [(ngModel)]="selectedStatus" (change)="onFilterChange()" class="filter-dropdown-select">
-            <option value="">جميع الحالات</option>
-            <option value="pending">معلقة / تحت المراجعة</option>
-            <option value="active">نشطة / جارية</option>
-            <option value="won">مكتملة / ناجحة</option>
-            <option value="closed">مغلقة</option>
-            <option value="cancelled">ملغاة</option>
-          </select>
+        <div class="filter-dropdown" style="min-width: 200px;">
+          <app-prime-picker-select
+            [(ngModel)]="selectedStatus"
+            (onChange)="onFilterChange()"
+            [items]="statusList"
+            optionLabel="label"
+            optionValue="id"
+            placeholder="جميع الحالات"
+          ></app-prime-picker-select>
         </div>
       </div>
 
@@ -77,9 +81,8 @@ import { DropdownModule } from 'primeng/dropdown';
                     <i class="fa-solid fa-file-contract" style="color:var(--violet-light); margin-left:6px;"></i>
                     {{ deal.title }}
                   </div>
-                  <small style="color:var(--text-2); font-weight:normal; font-size:0.75rem;" *ngIf="deal.agreed_scope">النطاق: {{ deal.agreed_scope | slice:0:55 }}{{ (deal.agreed_scope?.length || 0) > 55 ? '...' : '' }}</small>
                 </td>
-                <td style="color:var(--text-2); font-weight:500;">{{ deal.client?.name || 'عميل عام' }}</td>
+                <td style="color:var(--text-2); font-weight:500;">{{ getClientName(deal) }}</td>
                 <td><span class="badge badge-t">{{ deal.department?.name || 'عام' }}</span></td>
                 <td>
                   <div *ngIf="deal.sales_person" style="font-weight:600; color:var(--text);">{{ deal.sales_person.name }}</div>
@@ -103,6 +106,9 @@ import { DropdownModule } from 'primeng/dropdown';
                     </button>
                     <button class="action-icon-btn btn-emerald" *ngIf="!isClient()" (click)="openPaymentModal(deal)" title="تسجيل دفعة مالية جديدة">
                       <i class="fa-solid fa-money-bill-wave"></i>
+                    </button>
+                    <button class="action-icon-btn btn-rose" *ngIf="isManagerOrAdmin()" (click)="confirmDeleteDeal(deal)" title="حذف الصفقة والعقد">
+                      <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </div>
                 </td>
@@ -159,10 +165,13 @@ import { DropdownModule } from 'primeng/dropdown';
       <!-- PrimeNG Dialog: Add Deal -->
       <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إنشاء صفقة وعقد جديد" [style]="{ width: '92vw', maxWidth: '680px' }">
         <form [formGroup]="dealForm" (ngSubmit)="saveDeal()">
-          <div class="form-grid" style="padding: 10px 0;">
+          <div class="form-grid" style="padding: 20px 0 10px;">
             <div class="form-group full-width">
               <label>عنوان الصفقة <span class="required">*</span></label>
-              <input type="text" pInputText formControlName="title" placeholder="مثال: الهوية البصرية والحملة الإعلانية" />
+              <input type="text" pInputText formControlName="title" placeholder="مثال: الهوية البصرية والحملة الإعلانية" [class.is-invalid]="dealForm.get('title')?.invalid && (dealForm.get('title')?.touched || dealForm.get('title')?.dirty)" />
+              <small class="field-error-msg" *ngIf="dealForm.get('title')?.invalid && (dealForm.get('title')?.touched || dealForm.get('title')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> عنوان الصفقة والعقد مطلوب
+              </small>
             </div>
             <div class="form-group">
               <label>العميل المستهدف</label>
@@ -187,39 +196,96 @@ import { DropdownModule } from 'primeng/dropdown';
               ></app-prime-picker-select>
             </div>
             <div class="form-group">
-              <label>مسؤول المبيعات</label>
+              <label>مسؤول المبيعات (اختياري)</label>
               <app-prime-picker-select
                 formControlName="sales_person_id"
-                [items]="employees"
+                [items]="employeesWithNoneOption"
                 optionLabel="name"
                 optionValue="id"
-                placeholder="اختر الموظف..."
+                placeholder="بدون مسؤول مبيعات (اختياري)..."
               ></app-prime-picker-select>
             </div>
             <div class="form-group">
-              <label>نوع العمولة</label>
-              <p-dropdown
+              <label>نوع العمولة (اختياري)</label>
+              <app-prime-picker-select
                 formControlName="sales_commission_type"
-                [appendTo]="'body'"
-                [options]="[
-                  { label: 'مبلغ ثابت (ج.م)', value: 'fixed' },
-                  { label: 'نسبة مئوية (%)', value: 'percentage' }
+                [items]="[
+                  { label: 'بدون عمولة (لا يوجد)', id: 'none' },
+                  { label: 'مبلغ ثابت (ج.م)', id: 'fixed' },
+                  { label: 'نسبة مئوية (%)', id: 'percentage' }
                 ]"
                 optionLabel="label"
-                optionValue="value"
-              ></p-dropdown>
+                optionValue="id"
+                placeholder="اختر نوع العمولة..."
+              ></app-prime-picker-select>
             </div>
-            <div class="form-group">
+            <div class="form-group" *ngIf="dealForm.value.sales_commission_type && dealForm.value.sales_commission_type !== 'none'">
               <label>قيمة العمولة</label>
               <input type="number" pInputText formControlName="sales_commission_value" placeholder="مثال: 500 أو 10" />
             </div>
             <div class="form-group">
               <label>قيمة العقد الإجمالية (ج.م) <span class="required">*</span></label>
-              <input type="number" pInputText formControlName="total_price" placeholder="12000" />
+              <input type="number" pInputText formControlName="total_price" placeholder="12000" [class.is-invalid]="dealForm.get('total_price')?.invalid && (dealForm.get('total_price')?.touched || dealForm.get('total_price')?.dirty)" />
+              <small class="field-error-msg" *ngIf="dealForm.get('total_price')?.invalid && (dealForm.get('total_price')?.touched || dealForm.get('total_price')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> قيمة العقد الإجمالية مطلوبة وتساوي 0 أو أكثر
+              </small>
             </div>
             <div class="form-group full-width">
               <label>النطاق والمواصفات المتفق عليها</label>
               <textarea pTextarea formControlName="agreed_scope" rows="3" placeholder="تفاصيل العقد والمخرجات المطلوبة..."></textarea>
+            </div>
+
+            <!-- Tasks Builder Section inside Deal Modal -->
+            <div class="full-width tasks-builder-section">
+              <div class="tasks-builder-head">
+                <label style="font-weight:800; color:var(--violet-light); font-size:0.88rem; margin:0;">
+                  <i class="fa-solid fa-list-check" style="margin-left:6px;"></i> المهام والمخرجات التنفيذية للصفقة (تُسند تلقائياً لمدير القسم)
+                </label>
+                <button type="button" class="btn-add-task-row" (click)="addTaskRow()">
+                  <i class="fa-solid fa-plus"></i> إضافة مهمة تنفيذية
+                </button>
+              </div>
+
+              <div class="tasks-list-rows" *ngIf="dealTasks.length > 0">
+                <div class="task-input-card" *ngFor="let t of dealTasks; let idx = index">
+                  <div class="task-card-inner">
+                    <!-- Top Row: Task Title -->
+                    <div class="form-group task-title-group">
+                      <label>عنوان المهمة <span class="required">*</span></label>
+                      <input type="text" pInputText [(ngModel)]="t.title" [ngModelOptions]="{standalone: true}" placeholder="عنوان المهمة التنفيذية..." />
+                    </div>
+
+                    <!-- Bottom Row: Executing Department + Client Price + Delete Button -->
+                    <div class="task-details-row">
+                      <div class="form-group flex-dept">
+                        <label>القسم المنفذ</label>
+                        <app-prime-picker-select
+                          [(ngModel)]="t.department_id"
+                          [ngModelOptions]="{standalone: true}"
+                          [items]="departments"
+                          optionLabel="name"
+                          optionValue="id"
+                          placeholder="نفس قسم الصفقة (تلقائي)"
+                        ></app-prime-picker-select>
+                      </div>
+                      <div class="form-group flex-price">
+                        <label>السعر للعميل (ج.م)</label>
+                        <input type="number" pInputText [(ngModel)]="t.client_price" [ngModelOptions]="{standalone: true}" placeholder="0" />
+                      </div>
+                      <div class="form-group flex-del">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn-remove-task-row" (click)="removeTaskRow(idx)" title="حذف المهمة">
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="dealTasks.length === 0" class="tasks-empty-hint">
+                <i class="fa-solid fa-info-circle"></i> يمكنك إضافة المهام التنفيذية المطلوبة هنا لتوزيعها تلقائياً على مديري الأقسام عند الحفظ.
+              </div>
             </div>
           </div>
 
@@ -243,7 +309,7 @@ import { DropdownModule } from 'primeng/dropdown';
             </div>
             <div class="form-group">
               <label>تاريخ السداد</label>
-              <input type="date" pInputText formControlName="payment_date" />
+              <p-datepicker formControlName="payment_date" dateFormat="yy-mm-dd" [showIcon]="true" [iconDisplay]="'input'" [appendTo]="'body'" placeholder="اختر تاريخ السداد..." styleClass="w-full"></p-datepicker>
             </div>
             <div class="form-group">
               <label>طريقة التحصيل / الدفع <span class="required">*</span></label>
@@ -270,6 +336,41 @@ import { DropdownModule } from 'primeng/dropdown';
             <button type="button" class="btn-dialog-cancel" (click)="closePaymentModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="paymentForm.invalid || loading">
               {{ loading ? 'جاري المعالجة...' : 'تأكيد وتسجيل الدفعة' }}
+            </button>
+          </div>
+        </form>
+      </p-dialog>
+
+      <!-- PrimeNG Dialog: Quick Add Client Modal -->
+      <p-dialog [(visible)]="showAddClientModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة عميل جديد" [style]="{ width: '92vw', maxWidth: '480px' }">
+        <form [formGroup]="quickClientForm" (ngSubmit)="saveQuickClient()">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group">
+              <label>الاسم الكامل / الشركة <span class="required">*</span></label>
+              <input type="text" pInputText formControlName="name" placeholder="مثال: شركة الأمل للتجارة" />
+            </div>
+            <div class="form-group">
+              <label>البريد الإلكتروني <span class="required">*</span></label>
+              <input type="email" pInputText formControlName="email" placeholder="client@example.com" />
+            </div>
+            <div class="form-group">
+              <label>رقم الموبايل / الهاتف</label>
+              <input type="text" pInputText formControlName="phone" placeholder="010xxxxxxx" />
+            </div>
+            <div class="form-group">
+              <label>كلمة المرور الافتراضية <span class="required">*</span></label>
+              <div class="password-wrapper">
+                <input [type]="showQuickClientPw ? 'text' : 'password'" pInputText formControlName="password" placeholder="••••••••" />
+                <button type="button" class="btn-toggle-pw" (click)="showQuickClientPw = !showQuickClientPw" [title]="showQuickClientPw ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
+                  <i class="fa-solid" [ngClass]="showQuickClientPw ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="showAddClientModal = false">إلغاء</button>
+            <button type="submit" class="btn-dialog-submit" [disabled]="quickClientForm.invalid || loading">
+              {{ loading ? 'جاري الحفظ...' : 'حفظ وتحديد العميل' }}
             </button>
           </div>
         </form>
@@ -301,6 +402,10 @@ import { DropdownModule } from 'primeng/dropdown';
     .btn-violet:hover { background: var(--violet); color: #ffffff; }
     .btn-emerald { background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.25); }
     .btn-emerald:hover { background: #10b981; color: #ffffff; }
+    .btn-rose { background: rgba(244, 63, 94, 0.12); color: #fb7185; border-color: rgba(244, 63, 94, 0.25); }
+    .btn-rose:hover { background: #f43f5e; color: #ffffff; }
+    :host-context(body.light-theme) .btn-rose { background: #fff1f2 !important; border-color: #fecdd3 !important; color: #e11d48 !important; }
+    :host-context(body.light-theme) .btn-rose:hover { background: #e11d48 !important; color: #ffffff !important; }
 
     /* Status Pills */
     .status-pill { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; }
@@ -316,6 +421,26 @@ import { DropdownModule } from 'primeng/dropdown';
 
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .full-width { grid-column: span 2; }
+
+    /* Task Builder inside Deal Modal */
+    .tasks-builder-section { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 12px; }
+    .tasks-builder-head { display: flex; justify-content: space-between; align-items: center; }
+    .btn-add-task-row { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.25); padding: 6px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
+    .btn-add-task-row:hover { background: var(--violet); color: #fff; }
+    .tasks-list-rows { display: flex; flex-direction: column; gap: 12px; }
+    .task-input-card { background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 14px; padding: 14px 16px; transition: all 0.2s ease; }
+    .task-input-card:hover { background: rgba(99, 102, 241, 0.07); border-color: rgba(99, 102, 241, 0.35); }
+    :host-context(body.light-theme) .task-input-card { background: #f8fafc !important; border-color: #cbd5e1 !important; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03) !important; }
+    .task-card-inner { display: flex; flex-direction: column; gap: 12px; }
+    .task-details-row { display: flex; gap: 12px; align-items: flex-end; }
+    .flex-dept { flex: 2; min-width: 0; }
+    .flex-price { flex: 1; min-width: 110px; }
+    .flex-del { flex-shrink: 0; }
+    .btn-remove-task-row { width: 44px; height: 44px; border-radius: 12px; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fda4af; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
+    .btn-remove-task-row:hover { background: #f43f5e; color: #ffffff; border-color: #f43f5e; }
+    :host-context(body.light-theme) .btn-remove-task-row { background: #fff1f2 !important; border-color: #fecdd3 !important; color: #e11d48 !important; }
+    :host-context(body.light-theme) .btn-remove-task-row:hover { background: #e11d48 !important; color: #ffffff !important; }
+    .tasks-empty-hint { font-size: 0.82rem; color: var(--text-2); background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.2); padding: 12px 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px; }
 
     /* Light Theme Overrides */
     :host-context(body.light-theme) .crm-module-container { background: #f8fafc !important; }
@@ -335,19 +460,32 @@ export class DealsManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   deals: any[] = [];
   clients: any[] = [];
   departments: any[] = [];
   employees: any[] = [];
 
+  statusList = [
+    { id: '', label: 'جميع الحالات' },
+    { id: 'pending', label: 'معلقة / تحت المراجعة' },
+    { id: 'active', label: 'نشطة / جارية' },
+    { id: 'won', label: 'مكتملة / ناجحة' },
+    { id: 'closed', label: 'مغلقة' },
+    { id: 'cancelled', label: 'ملغاة' }
+  ];
+
   showAddModal = false;
   showPaymentModal = false;
+  showAddClientModal = false;
+  showQuickClientPw = false;
   selectedDeal: any = null;
   loading = false;
 
   dealForm!: FormGroup;
   paymentForm!: FormGroup;
+  quickClientForm!: FormGroup;
 
   currentUser: any = null;
 
@@ -356,6 +494,23 @@ export class DealsManagementComponent implements OnInit {
   currentPage = 1;
   pageSize = 5;
   totalRecords = 0;
+
+  getClientName(item: any): string {
+    if (!item) return 'عميل عام';
+    if (typeof item === 'string' && item.trim()) return item === '[object Object]' ? 'عميل عام' : item;
+    if (typeof item.client_name === 'string' && item.client_name.trim() && item.client_name !== '[object Object]') return item.client_name;
+    if (item.client_name && typeof item.client_name === 'object') {
+      const n = item.client_name.name || item.client_name.client_name;
+      if (n && typeof n === 'string' && n !== '[object Object]') return n;
+    }
+    if (typeof item.client === 'string' && item.client.trim() && item.client !== '[object Object]') return item.client;
+    if (item.client && typeof item.client === 'object') {
+      const n = item.client.name || item.client.client_name || item.client.company || item.client.full_name;
+      if (n && typeof n === 'string' && n !== '[object Object]') return n;
+    }
+    if (typeof item.name === 'string' && item.name.trim() && item.name !== '[object Object]') return item.name;
+    return 'عميل عام';
+  }
 
   isClient(): boolean {
     const userStr = localStorage.getItem('user');
@@ -366,6 +521,116 @@ export class DealsManagementComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  isManagerOrAdmin(): boolean {
+    if (!this.currentUser) return true;
+    return ['super_admin', 'admin', 'department_manager'].includes(this.currentUser.role);
+  }
+
+  confirmDeleteDeal(deal: any): void {
+    if (confirm(`هل أنت تأكد من حذف الصفقة والعقد "${deal.title}" بشكل نهائي؟`)) {
+      this.loading = true;
+      this.apiService.deleteDeal(deal.id).subscribe({
+        next: () => {
+          this.loading = false;
+          this.toastService.success(`تم حذف الصفقة "${deal.title}" بنجاح`, 'تم الحذف');
+          this.loadData();
+        },
+        error: (err) => {
+          this.loading = false;
+          this.toastService.error(err.error?.message || 'تعذر حذف الصفقة', 'خطأ بالحذف');
+        }
+      });
+    }
+  }
+
+  saveQuickClient(): void {
+    if (this.quickClientForm.invalid) {
+      this.quickClientForm.markAllAsTouched();
+      this.toastService.warning('يرجى إدخال بيانات العميل بشكل صحيح');
+      return;
+    }
+    this.loading = true;
+
+    const payload = {
+      ...this.quickClientForm.value,
+      role: 'client'
+    };
+
+    this.apiService.createUser(payload).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.toastService.success('تم إضافة العميل الجديد بنجاح');
+        this.showAddClientModal = false;
+        if (res && res.data) {
+          this.clients.push(res.data);
+          this.dealForm.patchValue({ client_id: res.data.id });
+        }
+        this.loadDropdownOptions();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err.error?.message || 'تعذر إضافة العميل');
+      }
+    });
+  }
+
+  saveDeal(): void {
+    if (this.dealForm.invalid) {
+      this.dealForm.markAllAsTouched();
+      this.toastService.warning('يرجى ملء جميع الحقول المطلوبة بشكل صحيح قبل الحفظ', 'بيانات غير مكتملة');
+      return;
+    }
+    this.loading = true;
+
+    const validTasks = (this.dealTasks || []).filter(t => t.title && t.title.trim());
+    const payload = {
+      ...this.dealForm.value,
+      tasks: validTasks
+    };
+
+    this.apiService.createDeal(payload).subscribe({
+      next: () => {
+        this.loading = false;
+        this.toastService.success('تم إنشاء الصفقة والعقد بنجاح', 'تمت العملية');
+        this.closeAddModal();
+        this.loadData();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err.error?.message || 'تعذر حفظ الصفقة والعقد');
+      }
+    });
+  }
+
+  savePayment(): void {
+    if (this.paymentForm.invalid || !this.selectedDeal) {
+      this.paymentForm.markAllAsTouched();
+      this.toastService.warning('يرجى إدخال المبلغ وتاريخ الدفعة بشكل صحيح');
+      return;
+    }
+    this.loading = true;
+
+    const payload = {
+      ...this.paymentForm.value,
+      payment_date: this.formatDatePayload(this.paymentForm.value.payment_date),
+      deal_id: this.selectedDeal.id,
+      client_id: this.selectedDeal.client_id
+    };
+
+    this.apiService.storeClientPayment(payload).subscribe({
+      next: () => {
+        this.loading = false;
+        this.toastService.success('تم تسجيل الدفعة المالية بنجاح', 'تمت الدفعة');
+        this.closePaymentModal();
+        this.loadData();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err.error?.message || 'تعذر تسجيل الدفعة المالية');
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -381,7 +646,17 @@ export class DealsManagementComponent implements OnInit {
   loadDropdownOptions(): void {
     this.apiService.getUsers('client').subscribe(res => this.clients = res.data || []);
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
-    this.apiService.getUsers().subscribe(res => this.employees = res.data || []);
+    this.apiService.getUsers().subscribe(res => {
+      const arr = res.data || [];
+      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
+    });
+  }
+
+  get employeesWithNoneOption(): any[] {
+    return [
+      { id: null, name: 'بدون مسؤول مبيعات (لا يوجد)' },
+      ...this.employees
+    ];
   }
 
   initForms(): void {
@@ -390,7 +665,7 @@ export class DealsManagementComponent implements OnInit {
       client_id: [null],
       department_id: [null],
       sales_person_id: [null],
-      sales_commission_type: ['fixed'],
+      sales_commission_type: ['none'],
       sales_commission_value: [0],
       total_price: [0, [Validators.required, Validators.min(0)]],
       agreed_scope: ['']
@@ -401,6 +676,13 @@ export class DealsManagementComponent implements OnInit {
       payment_date: [new Date().toISOString().split('T')[0], Validators.required],
       payment_method: ['cash', Validators.required],
       receipt_ref: ['']
+    });
+
+    this.quickClientForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      password: ['password123', Validators.required]
     });
   }
 
@@ -482,9 +764,28 @@ export class DealsManagementComponent implements OnInit {
     this.router.navigate(['/deals', deal.id]);
   }
 
+  dealTasks: any[] = [];
+
+  addTaskRow(): void {
+    this.dealTasks.push({
+      title: '',
+      department_id: this.dealForm?.value?.department_id || null,
+      client_price: 0
+    });
+  }
+
+  removeTaskRow(idx: number): void {
+    this.dealTasks.splice(idx, 1);
+  }
+
   openAddDealModal(): void {
     this.dealForm.reset({ sales_commission_type: 'fixed', sales_commission_value: 0, total_price: 0 });
+    this.dealTasks = [];
     this.showAddModal = true;
+  }
+
+  openAddModal(): void {
+    this.openAddDealModal();
   }
 
   closeAddModal(): void {
@@ -492,30 +793,9 @@ export class DealsManagementComponent implements OnInit {
   }
 
   triggerQuickAddClient(): void {
-    const clientName = prompt('أدخل اسم العميل الجديد:');
-    if (clientName) {
-      const email = clientName.toLowerCase().replace(/\s+/g, '') + '@client.com';
-      this.apiService.createUser({ name: clientName, email, password: 'password123', role: 'client' }).subscribe(res => {
-        if (res.data) {
-          this.clients.push(res.data);
-          this.dealForm.patchValue({ client_id: res.data.id });
-        }
-      });
-    }
-  }
-
-  saveDeal(): void {
-    if (this.dealForm.invalid) return;
-    this.loading = true;
-
-    this.apiService.createDeal(this.dealForm.value).subscribe({
-      next: () => {
-        this.loading = false;
-        this.closeAddModal();
-        this.loadData();
-      },
-      error: () => this.loading = false
-    });
+    this.quickClientForm.reset({ password: 'password123' });
+    this.showQuickClientPw = false;
+    this.showAddClientModal = true;
   }
 
   openPaymentModal(deal: any): void {
@@ -533,23 +813,15 @@ export class DealsManagementComponent implements OnInit {
     this.selectedDeal = null;
   }
 
-  savePayment(): void {
-    if (this.paymentForm.invalid || !this.selectedDeal) return;
-    this.loading = true;
-
-    const payload = {
-      ...this.paymentForm.value,
-      deal_id: this.selectedDeal.id,
-      client_id: this.selectedDeal.client_id
-    };
-
-    this.apiService.storeClientPayment(payload).subscribe({
-      next: () => {
-        this.loading = false;
-        this.closePaymentModal();
-        this.loadData();
-      },
-      error: () => this.loading = false
-    });
+  formatDatePayload(val: any): string {
+    if (!val) return new Date().toISOString().split('T')[0];
+    if (val instanceof Date) {
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, '0');
+      const d = String(val.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    if (typeof val === 'string') return val.split('T')[0];
+    return String(val);
   }
 }

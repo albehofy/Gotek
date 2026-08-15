@@ -24,6 +24,7 @@ class RegisterRequest extends FormRequest
         return [
             'name'     => 'required|string|min:3|max:50',
             'email'    => 'required|email|unique:users,email',
+            'phone'    => 'nullable|string',
             'password' => 'required|string|min:8', 
             'password_confirmation' => 'required|string|min:8|same:password',
             'role'     => 'nullable|string|in:admin,manager,employee,client'

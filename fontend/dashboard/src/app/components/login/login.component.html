@@ -103,27 +103,31 @@
       <!-- Error Alert Banner -->
       <div class="error-alert-banner" *ngIf="showError">
         <i class="fa-solid fa-circle-exclamation"></i>
-        <span>بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور.</span>
+        <span>بيانات الدخول غير صحيحة، يرجى التأكد من البريد/رقم الموبايل وكلمة المرور.</span>
       </div>
 
       <!-- Login Form -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
         
-        <!-- Email Input -->
+        <!-- Email or Phone Input -->
         <div class="form-group">
-          <label for="emailInput">البريد الإلكتروني <span class="required">*</span></label>
+          <label for="emailInput">البريد الإلكتروني أو رقم الموبايل <span class="required">*</span></label>
           <div class="input-wrapper">
-            <i class="fa-solid fa-envelope input-icon"></i>
+            <i class="fa-solid fa-user input-icon"></i>
             <input 
               id="emailInput"
-              type="email" 
+              type="text" 
               pInputText
               formControlName="email" 
-              placeholder="name@mediaglow.com" 
+              placeholder="010xxxxxxx أو name@mediaglow.com" 
               class="form-control"
-              autocomplete="email"
+              [class.is-invalid]="loginForm.get('email')?.invalid && (loginForm.get('email')?.touched || loginForm.get('email')?.dirty)"
+              autocomplete="username"
             />
           </div>
+          <small class="field-error-msg" *ngIf="loginForm.get('email')?.invalid && (loginForm.get('email')?.touched || loginForm.get('email')?.dirty)">
+            <i class="fa-solid fa-circle-exclamation"></i> البريد الإلكتروني أو اسم المستخدم مطلوب
+          </small>
         </div>
 
         <!-- Password Input -->
@@ -140,12 +144,16 @@
               formControlName="password" 
               placeholder="••••••••" 
               class="form-control"
+              [class.is-invalid]="loginForm.get('password')?.invalid && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)"
               autocomplete="current-password"
             />
             <button type="button" class="eye-toggle-btn" (click)="togglePassword()" [title]="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
               <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
             </button>
           </div>
+          <small class="field-error-msg" *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)">
+            <i class="fa-solid fa-circle-exclamation"></i> كلمة المرور مطلوبة
+          </small>
         </div>
 
         <!-- Remember Me & Options -->

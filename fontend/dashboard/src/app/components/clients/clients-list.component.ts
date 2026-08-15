@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 
@@ -39,32 +40,33 @@ import { InputTextModule } from 'primeng/inputtext';
                 <th>#</th>
                 <th>اسم العميل</th>
                 <th>البريد الإلكتروني</th>
+                <th>رقم الموبايل</th>
                 <th>عدد الصفقات</th>
                 <th>إجمالي المدفوعات</th>
                 <th>المتبقي (المستحق)</th>
-                <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let client of clients; let i = index" class="client-row-clickable" (click)="goToClientDetails(client)" title="انقر لفتح بوابة وملف العميل">
+              <tr *ngFor="let client of clients; let i = index">
                 <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td>
                   <div class="client-cell">
+                    <button class="open-client-btn" (click)="goToClientDetails(client)" title="فتح ملف العميل">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </button>
                     <div class="client-av">{{ getInitial(client) }}</div>
                     <div>
-                      <div class="client-name">{{ client.client_name || client.name || '—' }}</div>
+                      <a class="client-name-link" (click)="goToClientDetails(client)" title="فتح ملف العميل">
+                        {{ client.client_name || client.name || '—' }}
+                      </a>
                     </div>
                   </div>
                 </td>
                 <td style="color:var(--text-2);">{{ client.client_email || client.email || '—' }}</td>
+                <td style="color:var(--text-2); font-weight:600; direction:ltr; text-align:right;">{{ client.phone || client.client_phone || '—' }}</td>
                 <td><span class="badge badge-v">{{ client.deals_count || 0 }} صفقات</span></td>
                 <td style="color:var(--emerald-light); font-weight:700;">{{ (client.total_paid || 0) | number:'1.2-2' }} ج.م</td>
                 <td style="color:var(--rose-light); font-weight:700;">{{ (client.outstanding_balance || 0) | number:'1.2-2' }} ج.م</td>
-                <td>
-                  <button class="action-icon-btn btn-indigo" (click)="$event.stopPropagation(); goToClientDetails(client)" title="فتح بوابة وملف العميل الكامل">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                  </button>
-                </td>
               </tr>
               <tr *ngIf="clients.length === 0">
                 <td colspan="7">
@@ -121,17 +123,36 @@ import { InputTextModule } from 'primeng/inputtext';
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
               <label>الاسم الكامل <span class="required">*</span></label>
-              <input type="text" pInputText formControlName="name" placeholder="مثال: شركة النور للتجارة" />
+              <input type="text" pInputText formControlName="name" placeholder="مثال: شركة النور للتجارة" [class.is-invalid]="clientForm.get('name')?.invalid && (clientForm.get('name')?.touched || clientForm.get('name')?.dirty)" />
+              <small class="field-error-msg" *ngIf="clientForm.get('name')?.invalid && (clientForm.get('name')?.touched || clientForm.get('name')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> اسم العميل الكامل مطلوب
+              </small>
             </div>
 
             <div class="form-group">
               <label>البريد الإلكتروني <span class="required">*</span></label>
-              <input type="email" pInputText formControlName="email" placeholder="client@example.com" />
+              <input type="email" pInputText formControlName="email" placeholder="client@example.com" [class.is-invalid]="clientForm.get('email')?.invalid && (clientForm.get('email')?.touched || clientForm.get('email')?.dirty)" />
+              <small class="field-error-msg" *ngIf="clientForm.get('email')?.invalid && (clientForm.get('email')?.touched || clientForm.get('email')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> البريد الإلكتروني غير صحيح أو مطلوب
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label>رقم الموبايل / الهاتف</label>
+              <input type="text" pInputText formControlName="phone" placeholder="مثال: 01012345678" />
             </div>
 
             <div class="form-group">
               <label>كلمة المرور الافتراضية <span class="required">*</span></label>
-              <input type="password" pInputText formControlName="password" placeholder="••••••••" />
+              <div class="password-wrapper">
+                <input [type]="showPassword ? 'text' : 'password'" pInputText formControlName="password" placeholder="••••••••" [class.is-invalid]="clientForm.get('password')?.invalid && (clientForm.get('password')?.touched || clientForm.get('password')?.dirty)" />
+                <button type="button" class="btn-toggle-pw" (click)="togglePassword()" [title]="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
+                  <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+              <small class="field-error-msg" *ngIf="clientForm.get('password')?.invalid && (clientForm.get('password')?.touched || clientForm.get('password')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> كلمة المرور مطلوبة
+              </small>
             </div>
           </div>
 
@@ -164,8 +185,12 @@ import { InputTextModule } from 'primeng/inputtext';
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
     .client-cell { display: flex; align-items: center; gap: 10px; }
+    .open-client-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .open-client-btn:hover { background: var(--violet); color: #ffffff; transform: scale(1.08); }
     .client-av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--teal)); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0; }
     .client-name { font-weight: 700; color: var(--text); }
+    .client-name-link { font-weight: 700; color: var(--text); cursor: pointer; text-decoration: none; transition: color 0.2s; }
+    .client-name-link:hover { color: var(--violet-light); text-decoration: underline; }
     .btn-action { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); padding: 6px 12px; border-radius: var(--r); font-size: 0.76rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
     .btn-action:hover { background: rgba(255,255,255,0.08); color: var(--text); }
     .btn-action.primary { color: var(--violet-light); background: var(--violet-soft); border-color: rgba(124,58,237,0.2); }
@@ -181,6 +206,10 @@ import { InputTextModule } from 'primeng/inputtext';
     .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
     .form-group input { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
     .form-group input:focus { border-color: var(--violet); background: rgba(124,58,237,0.06); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+    .password-wrapper input { width: 100%; padding-left: 38px !important; }
+    .btn-toggle-pw { position: absolute; left: 10px; background: transparent; border: none; color: var(--text-2); cursor: pointer; padding: 6px; font-size: 0.92rem; display: flex; align-items: center; justify-content: center; transition: color 0.2s; z-index: 2; }
+    .btn-toggle-pw:hover { color: var(--violet-light); }
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
     .required { color: var(--rose-light); }
   `]
@@ -189,6 +218,7 @@ export class ClientsListComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   clients: any[] = [];
   searchQuery = '';
@@ -215,6 +245,7 @@ export class ClientsListComponent implements OnInit {
     this.clientForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      phone: [''],
       password: ['password123', Validators.required]
     });
   }
@@ -227,7 +258,7 @@ export class ClientsListComponent implements OnInit {
     const params = {
       page: this.currentPage,
       per_page: this.pageSize,
-      search: this.searchQuery
+      search: this.searchQuery ? this.searchQuery.trim() : ''
     };
 
     this.apiService.getClientBalances(params).subscribe(res => {
@@ -248,11 +279,24 @@ export class ClientsListComponent implements OnInit {
         this.totalRecords = raw.length;
       }
 
-      this.clients = raw.map((c: any) => ({
+      let processed = raw.map((c: any) => ({
         ...c,
         name: c.client_name || c.name || '',
-        email: c.client_email || c.email || ''
+        email: c.client_email || c.email || '',
+        phone: c.phone || c.client_phone || ''
       }));
+
+      if (this.searchQuery && this.searchQuery.trim()) {
+        const q = this.searchQuery.trim().toLowerCase();
+        processed = processed.filter((c: any) =>
+          (c.name && c.name.toLowerCase().includes(q)) ||
+          (c.email && c.email.toLowerCase().includes(q)) ||
+          (c.phone && c.phone.toLowerCase().includes(q))
+        );
+        this.totalRecords = processed.length;
+      }
+
+      this.clients = processed;
     });
   }
 
@@ -280,7 +324,14 @@ export class ClientsListComponent implements OnInit {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
+  showPassword = false;
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
   openAddModal(): void {
+    this.showPassword = false;
     this.clientForm.reset({ password: 'password123' });
     this.showAddModal = true;
   }
@@ -290,7 +341,11 @@ export class ClientsListComponent implements OnInit {
   }
 
   saveClient(): void {
-    if (this.clientForm.invalid) return;
+    if (this.clientForm.invalid) {
+      this.clientForm.markAllAsTouched();
+      this.toastService.warning('يرجى إدخال اسم العميل والبريد الإلكتروني بشكل صحيح');
+      return;
+    }
     this.loading = true;
 
     const payload = {
@@ -301,10 +356,14 @@ export class ClientsListComponent implements OnInit {
     this.apiService.createUser(payload).subscribe({
       next: () => {
         this.loading = false;
+        this.toastService.success('تم إضافة العميل الجديد بنجاح', 'تمت العملية');
         this.closeAddModal();
         this.loadClients();
       },
-      error: () => this.loading = false
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err.error?.message || 'تعذر إضافة العميل');
+      }
     });
   }
 

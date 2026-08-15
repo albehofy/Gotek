@@ -52,6 +52,52 @@ class FinanceController extends Controller
         // Assets Total (Super Admin / Admin view)
         $totalFixedAssets = FixedAsset::where('status', 'active')->sum('value');
 
+        // Receivables (Uncollected amounts owed to company by clients)
+        $allDeals = Deal::all();
+        $totalReceivables = 0;
+        foreach ($allDeals as $d) {
+            $unpaid = max(0, (float) $d->calculated_total - (float) $d->calculated_paid);
+            $totalReceivables += $unpaid;
+        }
+
+        // Monthly Obligations (Owed BY company: Base Salaries + Task Earnings + Commissions - Advances - Deductions + Bonuses)
+        $employees = User::whereIn('role', ['employee', 'department_manager', 'manager', 'sales', 'admin', 'super_admin'])->get();
+        $totalMonthlyObligations = 0;
+        $totalTaskEarnings = 0;
+        $totalCommissions = 0;
+
+        foreach ($employees as $employee) {
+            $paymentType = $employee->payment_type ?? 'salary_based';
+            $baseSalary = (float) $employee->base_salary;
+
+            $completedTasks = $employee->tasks()->whereIn('status', ['done', 'approved', 'completed'])->get();
+            $empTaskEarn = 0;
+            foreach ($completedTasks as $t) {
+                $empTaskEarn += (float) ($t->employee_price ?? $t->client_price ?? 0);
+            }
+            $totalTaskEarnings += $empTaskEarn;
+
+            $empComm = 0;
+            if (in_array($paymentType, ['percentage_based', 'hybrid', 'commission'])) {
+                $salesDeals = Deal::where('sales_person_id', $employee->id)->get();
+                foreach ($salesDeals as $d) {
+                    if ($d->sales_commission_type === 'percentage') {
+                        $empComm += ($d->calculated_total * (float) $d->sales_commission_value) / 100;
+                    } else {
+                        $empComm += (float) $d->sales_commission_value;
+                    }
+                }
+            }
+            $totalCommissions += $empComm;
+
+            $advances = LedgerEntry::where('employee_id', $employee->id)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%سلف%'); })->sum('amount');
+            $deductions = LedgerEntry::where('employee_id', $employee->id)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%خصومات%'); })->sum('amount');
+            $bonuses = LedgerEntry::where('employee_id', $employee->id)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%مكافآت%')->orWhere('name_ar', 'like', '%حوافز%'); })->sum('amount');
+
+            $empNet = max(0, $baseSalary + $empTaskEarn + $empComm - $advances - $deductions + $bonuses);
+            $totalMonthlyObligations += $empNet;
+        }
+
         return response()->json([
             'status' => 'success',
             'summary' => [
@@ -61,6 +107,10 @@ class FinanceController extends Controller
                 'active_custody_float' => (float) $activeCustody,
                 'total_fixed_assets' => (float) $totalFixedAssets,
                 'company_capital' => (float) ($netRemainingBalance + $totalFixedAssets),
+                'total_receivables' => (float) $totalReceivables,
+                'monthly_obligations' => (float) $totalMonthlyObligations,
+                'total_task_earnings' => (float) $totalTaskEarnings,
+                'total_commissions' => (float) $totalCommissions,
             ]
         ]);
     }
@@ -86,6 +136,28 @@ class FinanceController extends Controller
         }
         if ($request->filled('payment_method')) {
             $query->where('payment_method', $request->payment_method);
+        }
+        if ($request->filled('from_date')) {
+            $query->where('date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->where('date', '<=', $request->to_date);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function($catQ) use ($search) {
+                      $catQ->where('name_ar', 'like', "%{$search}%")
+                           ->orWhere('name_en', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('client', function($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('employee', function($eq) use ($search) {
+                      $eq->where('name', 'like', "%{$search}%");
+                  });
+            });
         }
 
         $entries = $query->paginate($request->get('per_page', 25));
@@ -134,14 +206,25 @@ class FinanceController extends Controller
     }
 
     // --- Client Partial Payments & Outstanding Balances ---
-    public function getClientBalances()
+    public function getClientBalances(Request $request)
     {
         $user = Auth::user();
         if ($user && $user->role === 'client') {
             return response()->json(['message' => 'غير مسموح للعملاء بفتح كشف أرصدة العملاء'], 403);
         }
 
-        $clients = User::where('role', 'client')->get();
+        $query = User::where('role', 'client');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $clients = $query->get();
         $report = [];
 
         foreach ($clients as $client) {
@@ -155,9 +238,13 @@ class FinanceController extends Controller
             }
 
             $report[] = [
+                'id' => $client->id,
                 'client_id' => $client->id,
                 'client_name' => $client->name,
+                'name' => $client->name,
                 'client_email' => $client->email,
+                'email' => $client->email,
+                'phone' => $client->phone,
                 'deals_count' => $deals->count(),
                 'total_billed' => $totalBilled,
                 'total_paid' => $totalPaid,
@@ -236,7 +323,7 @@ class FinanceController extends Controller
             'returned_amount' => 0,
             'spent_amount' => $validated['issued_amount'],
             'status' => 'open',
-            'notes' => $validated['notes'],
+            'notes' => $validated['notes'] ?? null,
             'created_by' => Auth::id()
         ]);
 
@@ -365,8 +452,17 @@ class FinanceController extends Controller
         $month = $request->get('month', now()->month);
         $year = $request->get('year', now()->year);
 
-        $employees = User::whereIn('role', ['employee', 'department_manager', 'manager'])->get();
+        $empQuery = User::whereIn('role', ['employee', 'department_manager', 'manager', 'sales', 'admin', 'super_admin']);
+
+        if ($request->filled('employee_id')) {
+            $empQuery->where('id', $request->employee_id);
+        }
+
+        $employees = $empQuery->get();
         $payrollList = [];
+
+        $fromDate = $request->get('from_date');
+        $toDate = $request->get('to_date');
 
         foreach ($employees as $employee) {
             $paymentType = $employee->payment_type ?? 'salary_based';
@@ -374,17 +470,31 @@ class FinanceController extends Controller
 
             // Task earnings for task_based or hybrid
             $taskEarnings = 0;
-            if (in_array($paymentType, ['task_based', 'hybrid'])) {
-                $completedTasks = $employee->tasks()->where('status', 'done')->get();
-                foreach ($completedTasks as $t) {
-                    $taskEarnings += (float) $t->employee_price;
-                }
+            $tQuery = $employee->tasks()->whereIn('status', ['done', 'approved', 'completed']);
+
+            if ($fromDate) {
+                $tQuery->whereDate('updated_at', '>=', $fromDate);
+            }
+            if ($toDate) {
+                $tQuery->whereDate('updated_at', '<=', $toDate);
+            }
+
+            $completedTasks = $tQuery->with('deal')->get();
+            foreach ($completedTasks as $t) {
+                $taskEarnings += (float) ($t->employee_price ?? $t->client_price ?? 0);
             }
 
             // Commission earnings
             $commissionEarnings = 0;
-            if (in_array($paymentType, ['percentage_based', 'hybrid'])) {
-                $salesDeals = Deal::where('sales_person_id', $employee->id)->get();
+            if (in_array($paymentType, ['percentage_based', 'hybrid', 'commission'])) {
+                $dQuery = Deal::where('sales_person_id', $employee->id);
+                if ($fromDate) {
+                    $dQuery->whereDate('created_at', '>=', $fromDate);
+                }
+                if ($toDate) {
+                    $dQuery->whereDate('created_at', '<=', $toDate);
+                }
+                $salesDeals = $dQuery->get();
                 foreach ($salesDeals as $d) {
                     if ($d->sales_commission_type === 'percentage') {
                         $commissionEarnings += ($d->calculated_total * (float) $d->sales_commission_value) / 100;
@@ -394,18 +504,31 @@ class FinanceController extends Controller
                 }
             }
 
-            // Advances, Deductions, Bonuses from ledger/payroll
-            $advances = LedgerEntry::where('employee_id', $employee->id)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%سلف%'); })->sum('amount');
-            $deductions = LedgerEntry::where('employee_id', $employee->id)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%خصومات%'); })->sum('amount');
-            $bonuses = LedgerEntry::where('employee_id', $employee->id)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%مكافآت%')->orWhere('name_ar', 'like', '%حوافز%'); })->sum('amount');
+            // Advances, Deductions, Bonuses from ledger
+            $lQuery = LedgerEntry::where('employee_id', $employee->id);
+            if ($fromDate) {
+                $lQuery->whereDate('date', '>=', $fromDate);
+            }
+            if ($toDate) {
+                $lQuery->whereDate('date', '<=', $toDate);
+            }
 
-            // HYBRID FORMULA CONFIRMED: net_payable = base + task + commission - advances - deductions + bonuses
+            $advances = (clone $lQuery)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%سلف%'); })->sum('amount');
+            $deductions = (clone $lQuery)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%خصومات%'); })->sum('amount');
+            $bonuses = (clone $lQuery)->where('type', 'expense')->whereHas('category', function($q) { $q->where('name_ar', 'like', '%مكافآت%')->orWhere('name_ar', 'like', '%حوافز%'); })->sum('amount');
+
+            // Custody issued & returned
+            $custodyIssued = CustodyAccount::where('employee_id', $employee->id)->sum('issued_amount');
+            $custodyReturned = CustodyAccount::where('employee_id', $employee->id)->sum('returned_amount');
+
             $netPayable = max(0, $baseSalary + $taskEarnings + $commissionEarnings - $advances - $deductions + $bonuses);
 
             $payrollList[] = [
                 'employee_id' => $employee->id,
                 'employee_name' => $employee->name,
-                'department_name' => $employee->department?->name ?? 'General',
+                'employee_email' => $employee->email,
+                'employee_phone' => $employee->phone,
+                'department_name' => $employee->department?->name ?? 'العامة',
                 'payment_type' => $paymentType,
                 'month' => (int) $month,
                 'year' => (int) $year,
@@ -415,7 +538,20 @@ class FinanceController extends Controller
                 'advances' => (float) $advances,
                 'deductions' => (float) $deductions,
                 'bonuses' => (float) $bonuses,
+                'custody_issued' => (float) $custodyIssued,
+                'custody_returned' => (float) $custodyReturned,
                 'net_payable' => (float) $netPayable,
+                'tasks_count' => $completedTasks->count(),
+                'tasks_list' => $completedTasks->map(function($t) {
+                    return [
+                        'id' => $t->id,
+                        'title' => $t->title,
+                        'status' => $t->status,
+                        'deal_title' => $t->deal?->title ?? 'مستقلة',
+                        'price' => (float) ($t->employee_price ?? $t->client_price ?? 0),
+                        'date' => $t->updated_at ? $t->updated_at->format('Y-m-d') : null
+                    ];
+                })
             ];
         }
 

@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
+import { DatePickerModule } from 'primeng/datepicker';
 
 @Component({
   selector: 'app-client-detail',
@@ -17,7 +18,8 @@ import { DropdownModule } from 'primeng/dropdown';
     ReactiveFormsModule,
     DialogModule,
     InputTextModule,
-    DropdownModule
+    DropdownModule,
+    DatePickerModule
   ],
   template: `
     <div class="client-detail-container">
@@ -261,8 +263,8 @@ import { DropdownModule } from 'primeng/dropdown';
                   </td>
                   <td style="font-weight:700;">{{ (task.client_price || 0) | number:'1.2-2' }} ج.م</td>
                   <td>
-                    <span class="task-status-pill" [ngClass]="'tstatus-' + (task.status || 'pending')">
-                      <i class="fa-solid" [ngClass]="task.status === 'completed' ? 'fa-circle-check' : (task.status === 'in_progress' ? 'fa-spinner fa-spin' : 'fa-hourglass-start')"></i>
+                    <span class="task-status-pill" [ngClass]="getTaskStatusClass(task.status)">
+                      <i class="fa-solid" [ngClass]="getTaskStatusIcon(task.status)"></i>
                       {{ getTaskStatusLabel(task.status) }}
                     </span>
                   </td>
@@ -303,7 +305,7 @@ import { DropdownModule } from 'primeng/dropdown';
             
             <div class="form-group">
               <label>تاريخ السداد</label>
-              <input type="date" pInputText formControlName="payment_date" />
+              <p-datepicker formControlName="payment_date" dateFormat="yy-mm-dd" [showIcon]="true" [iconDisplay]="'input'" [appendTo]="'body'" placeholder="اختر تاريخ السداد..." styleClass="w-full"></p-datepicker>
             </div>
 
             <div class="form-group">
@@ -428,9 +430,11 @@ import { DropdownModule } from 'primeng/dropdown';
     .status-cancelled { background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
 
     .task-status-pill { font-size: 0.76rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; display: inline-flex; align-items: center; gap: 6px; }
-    .tstatus-completed { background: rgba(16, 185, 129, 0.12); color: #34d399; }
-    .tstatus-in_progress { background: rgba(99, 102, 241, 0.12); color: #818cf8; }
-    .tstatus-pending { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+    .tstatus-done { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tstatus-progress { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tstatus-review { background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .tstatus-pending { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .tstatus-cancelled { background: rgba(244, 63, 94, 0.15); color: #f87171; border: 1px solid rgba(244, 63, 94, 0.3); }
 
     .empty-state { text-align: center; padding: 32px 16px; color: var(--text-2); background: rgba(0, 0, 0, 0.1); border: 1px dashed var(--border); border-radius: 14px; }
     .empty-state i { font-size: 2.2rem; margin-bottom: 8px; opacity: 0.4; display: block; }
@@ -536,13 +540,40 @@ export class ClientDetailComponent implements OnInit {
     }
   }
 
+  isTaskCompleted(status: string): boolean {
+    return ['completed', 'done', 'approved'].includes(status);
+  }
+
+  isTaskInProgress(status: string): boolean {
+    return ['in_progress', 'content_creator'].includes(status);
+  }
+
+  isTaskInReview(status: string): boolean {
+    return ['in_review', 'client_review', 'client_feedback'].includes(status);
+  }
+
   getTaskStatusLabel(status: string): string {
-    switch (status) {
-      case 'completed': return 'مكتملة';
-      case 'in_progress': return 'قيد التنفيذ';
-      case 'pending':
-      default: return 'قيد الانتظار';
-    }
+    if (this.isTaskCompleted(status)) return 'مكتملة ومعتمدة';
+    if (this.isTaskInReview(status)) return 'بانتظار الاعتماد والمراجعة';
+    if (this.isTaskInProgress(status)) return 'قيد التنفيذ والعمليات';
+    if (status === 'cancelled') return 'ملغاة';
+    return 'قيد الانتظار';
+  }
+
+  getTaskStatusIcon(status: string): string {
+    if (this.isTaskCompleted(status)) return 'fa-circle-check text-emerald';
+    if (this.isTaskInReview(status)) return 'fa-eye text-cyan';
+    if (this.isTaskInProgress(status)) return 'fa-spinner fa-spin text-amber';
+    if (status === 'cancelled') return 'fa-ban text-rose';
+    return 'fa-hourglass-start text-violet';
+  }
+
+  getTaskStatusClass(status: string): string {
+    if (this.isTaskCompleted(status)) return 'tstatus-done';
+    if (this.isTaskInReview(status)) return 'tstatus-review';
+    if (this.isTaskInProgress(status)) return 'tstatus-progress';
+    if (status === 'cancelled') return 'tstatus-cancelled';
+    return 'tstatus-pending';
   }
 
   getPaymentMethodLabel(method: string): string {
@@ -648,12 +679,25 @@ export class ClientDetailComponent implements OnInit {
     this.showPaymentModal = true;
   }
 
+  formatDatePayload(val: any): string {
+    if (!val) return new Date().toISOString().split('T')[0];
+    if (val instanceof Date) {
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, '0');
+      const d = String(val.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    if (typeof val === 'string') return val.split('T')[0];
+    return String(val);
+  }
+
   savePayment(): void {
     if (this.paymentForm.invalid || !this.client) return;
     this.submitting = true;
 
     const payload = {
       ...this.paymentForm.value,
+      payment_date: this.formatDatePayload(this.paymentForm.value.payment_date),
       client_id: this.client.id || this.clientId
     };
 

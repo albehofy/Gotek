@@ -183,7 +183,7 @@
               </div>
               <div class="dash-row-info">
                 <div class="dash-row-name">{{ d.title || 'صفقة' }}</div>
-                <div class="dash-row-meta"><i class="fa-solid fa-building"></i> {{ d.client_name || d.client || 'عميل محدد' }}</div>
+                <div class="dash-row-meta"><i class="fa-solid fa-building"></i> {{ getClientName(d) }}</div>
               </div>
               <div class="dash-row-end">
                 <div class="dash-amount">{{ (d.calculated_total || d.value || d.amount || 0) | number }} <span>ج.م</span></div>
@@ -211,7 +211,7 @@
               </div>
               <div class="dash-row-info">
                 <div class="dash-row-name">{{ t.title || 'مهمة' }}</div>
-                <div class="dash-row-meta"><i class="fa-solid fa-user-gear"></i> {{ t.assignee_name || t.assigned_to_name || (t.users && t.users.length ? t.users[0].name : 'فريق الوكالة') }}</div>
+                <div class="dash-row-meta"><i class="fa-solid fa-user-gear"></i> {{ getAssigneeName(t) }}</div>
               </div>
               <div class="dash-row-end">
                 <span class="dash-priority"
@@ -372,7 +372,7 @@
                 <div class="dash-row-meta">{{ p.category?.name_ar || p.category?.name_en || 'عام' }}</div>
               </div>
               <div class="dash-row-end">
-                <span class="dash-client-tag">{{ p.client || '—' }}</span>
+                <span class="dash-client-tag">{{ getClientName(p) }}</span>
               </div>
             </div>
           </ng-container>
@@ -689,7 +689,7 @@
                 </td>
                 <td><strong>{{ p.title_ar || p.title_en || p.title?.ar || p.title?.en || p.title }}</strong></td>
                 <td><span class="badge badge-blue">{{ p.category?.name_ar || p.category?.name_en || p.category?.name?.ar || 'عام' }}</span></td>
-                <td>{{ p.client || '—' }}</td>
+                <td>{{ getClientName(p) }}</td>
                 <td>
                   <div class="table-actions">
                     <button class="action-icon-btn btn-amber" (click)="editProject(p)" data-tooltip="تعديل بيانات المشروع" title="تعديل بيانات المشروع"><i class="fa-solid fa-pen-to-square"></i></button>

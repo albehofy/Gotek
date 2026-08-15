@@ -21,7 +21,23 @@ class UserController extends Controller
         $query = User::with(['department', 'roleModel']);
 
         if ($request->filled('role')) {
-            $query->where('role', $request->role);
+            if (in_array($request->role, ['employee', 'staff'])) {
+                $query->where(function($q) {
+                    $q->where('role', '!=', 'client')
+                      ->orWhereNull('role');
+                });
+            } else {
+                $query->where('role', $request->role);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
         }
 
         if ($request->has('per_page') || $request->has('page')) {
@@ -61,6 +77,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string',
             'password' => 'required|string|min:6',
             'role' => 'required|string',
             'department_id' => 'nullable|exists:departments,id',
@@ -74,6 +91,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'role_id' => $roleModel ? $roleModel->id : null,
@@ -93,6 +111,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
+            'phone' => 'nullable|string',
             'password' => 'nullable|string|min:6',
             'role' => 'required|string',
             'department_id' => 'nullable|exists:departments,id',
@@ -106,6 +125,7 @@ class UserController extends Controller
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? $user->phone,
             'role' => $validated['role'],
             'role_id' => $roleModel ? $roleModel->id : $user->role_id,
             'department_id' => $validated['department_id'] ?? $user->department_id,

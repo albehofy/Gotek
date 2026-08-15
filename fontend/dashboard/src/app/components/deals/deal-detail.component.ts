@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
+import { DatePickerModule } from 'primeng/datepicker';
 
 @Component({
   selector: 'app-deal-detail',
@@ -17,7 +18,8 @@ import { DropdownModule } from 'primeng/dropdown';
     ReactiveFormsModule,
     DialogModule,
     InputTextModule,
-    DropdownModule
+    DropdownModule,
+    DatePickerModule
   ],
   template: `
     <div class="crm-module-container">
@@ -251,8 +253,8 @@ import { DropdownModule } from 'primeng/dropdown';
                       {{ (t.created_at | date:'yyyy/MM/dd') || 'غير محدد' }}
                     </td>
                     <td>
-                      <span class="task-status-pill" [ngClass]="'tstatus-' + (t.status || 'pending')">
-                        <i class="fa-solid" [ngClass]="t.status === 'completed' ? 'fa-circle-check' : (t.status === 'in_progress' ? 'fa-spinner fa-spin' : 'fa-hourglass-start')"></i>
+                      <span class="task-status-pill" [ngClass]="getTaskStatusClass(t.status)">
+                        <i class="fa-solid" [ngClass]="getTaskStatusIcon(t.status)"></i>
                         {{ getTaskStatusLabel(t.status) }}
                       </span>
                     </td>
@@ -282,7 +284,7 @@ import { DropdownModule } from 'primeng/dropdown';
             </div>
             <div class="form-group">
               <label>تاريخ السداد</label>
-              <input type="date" pInputText formControlName="payment_date" />
+              <p-datepicker formControlName="payment_date" dateFormat="yy-mm-dd" [showIcon]="true" [iconDisplay]="'input'" [appendTo]="'body'" placeholder="اختر تاريخ السداد..." styleClass="w-full"></p-datepicker>
             </div>
             <div class="form-group">
               <label>طريقة التحصيل / الدفع <span class="required">*</span></label>
@@ -518,13 +520,40 @@ export class DealDetailComponent implements OnInit {
     }
   }
 
+  isTaskCompleted(status: string): boolean {
+    return ['completed', 'done', 'approved'].includes(status);
+  }
+
+  isTaskInProgress(status: string): boolean {
+    return ['in_progress', 'content_creator'].includes(status);
+  }
+
+  isTaskInReview(status: string): boolean {
+    return ['in_review', 'client_review', 'client_feedback'].includes(status);
+  }
+
   getTaskStatusLabel(status: string): string {
-    switch (status) {
-      case 'completed': return 'مكتملة';
-      case 'in_progress': return 'قيد التنفيذ';
-      case 'pending':
-      default: return 'قيد الانتظار';
-    }
+    if (this.isTaskCompleted(status)) return 'مكتملة ومعتمدة';
+    if (this.isTaskInReview(status)) return 'بانتظار الاعتماد والمراجعة';
+    if (this.isTaskInProgress(status)) return 'قيد التنفيذ والعمليات';
+    if (status === 'cancelled') return 'ملغاة';
+    return 'قيد الانتظار';
+  }
+
+  getTaskStatusIcon(status: string): string {
+    if (this.isTaskCompleted(status)) return 'fa-circle-check text-emerald';
+    if (this.isTaskInReview(status)) return 'fa-eye text-cyan';
+    if (this.isTaskInProgress(status)) return 'fa-spinner fa-spin text-amber';
+    if (status === 'cancelled') return 'fa-ban text-rose';
+    return 'fa-hourglass-start text-violet';
+  }
+
+  getTaskStatusClass(status: string): string {
+    if (this.isTaskCompleted(status)) return 'tstatus-done';
+    if (this.isTaskInReview(status)) return 'tstatus-review';
+    if (this.isTaskInProgress(status)) return 'tstatus-progress';
+    if (status === 'cancelled') return 'tstatus-cancelled';
+    return 'tstatus-pending';
   }
 
   getPaymentMethodLabel(method: string): string {
@@ -539,7 +568,7 @@ export class DealDetailComponent implements OnInit {
 
   getCompletedTasksCount(): number {
     if (!this.deal || !this.deal.tasks) return 0;
-    return this.deal.tasks.filter((t: any) => t.status === 'completed').length;
+    return this.deal.tasks.filter((t: any) => this.isTaskCompleted(t.status)).length;
   }
 
   openPaymentModal(): void {
@@ -552,12 +581,25 @@ export class DealDetailComponent implements OnInit {
     this.showPaymentModal = true;
   }
 
+  formatDatePayload(val: any): string {
+    if (!val) return new Date().toISOString().split('T')[0];
+    if (val instanceof Date) {
+      const y = val.getFullYear();
+      const m = String(val.getMonth() + 1).padStart(2, '0');
+      const d = String(val.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    if (typeof val === 'string') return val.split('T')[0];
+    return String(val);
+  }
+
   savePayment(): void {
     if (this.paymentForm.invalid || !this.deal) return;
     this.submitting = true;
 
     const payload = {
       ...this.paymentForm.value,
+      payment_date: this.formatDatePayload(this.paymentForm.value.payment_date),
       deal_id: this.deal.id,
       client_id: this.deal.client_id
     };

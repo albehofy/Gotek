@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
@@ -9,19 +9,20 @@ import { ApiService } from '../../../services/api.service';
   imports: [CommonModule],
   template: `
     <div class="notification-bell-wrapper">
-      <button class="bell-btn" (click)="toggleDropdown()">
-        <i class="fa-solid fa-bell bell-icon"></i>
-        <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      <button type="button" class="bell-btn" (click)="toggleDropdown($event)" [class.has-unread]="unreadCount > 0" title="الإشعارات والتنبيهات">
+        <i class="fa-solid fa-bell"></i>
+        <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
       </button>
 
       <div class="notification-dropdown" *ngIf="isOpen">
         <div class="notification-header">
           <div class="header-title">
+            <i class="fa-solid fa-bell"></i>
             <span>الإشعارات والتنبيهات</span>
-            <span class="count-pill" *ngIf="unreadCount > 0">{{ unreadCount }} غير مقروء</span>
+            <span class="badge-count" *ngIf="unreadCount > 0">{{ unreadCount }} غير مقروء</span>
           </div>
-          <button class="btn-mark-all" (click)="markAllRead()" *ngIf="unreadCount > 0">
-            تحديد الكل كـ مقروء
+          <button type="button" class="btn-read-all" *ngIf="unreadCount > 0" (click)="markAllRead()" title="تحديد الكل كمقروء">
+            <i class="fa-solid fa-check-double"></i> قراءة الكل
           </button>
         </div>
 
@@ -31,22 +32,22 @@ import { ApiService } from '../../../services/api.service';
             [class.unread]="!notif.is_read"
             (click)="markAsRead(notif)"
           >
-            <div class="notif-icon-col" [ngClass]="notif.type">
+            <div class="notif-icon" [ngClass]="notif.type || 'info'">
               <i [class]="getNotifIcon(notif.type)"></i>
             </div>
-            <div class="notif-content-col">
-              <div class="notif-title">{{ notif.title }}</div>
-              <div class="notif-message">{{ notif.message }}</div>
-              <small class="notif-time">{{ notif.created_at | date:'short' }}</small>
+            <div class="notif-content">
+              <div class="notif-title">{{ notif.title || notif.data?.title || 'تنبيه جديد' }}</div>
+              <div class="notif-message">{{ notif.message || notif.data?.message || notif.body }}</div>
+              <div class="notif-time"><i class="fa-regular fa-clock"></i> {{ notif.created_at | date:'yyyy-MM-dd HH:mm' }}</div>
             </div>
-            <button class="btn-del-notif" (click)="deleteNotif(notif, $event)">
+            <button type="button" class="btn-del-notif" (click)="deleteNotif(notif, $event)" title="حذف الإشعار">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
 
           <div class="empty-state" *ngIf="notifications.length === 0">
-            <i class="fa-solid fa-bell-slash"></i>
-            <p>لا توجد تنبيهات حالياً</p>
+            <i class="fa-regular fa-bell-slash"></i>
+            <p>لا توجد إشعارات جديدة حالياً</p>
           </div>
         </div>
       </div>
@@ -54,52 +55,65 @@ import { ApiService } from '../../../services/api.service';
   `,
   styles: [`
     :host {
-      display: inline-flex;
-      align-items: center;
+      display: inline-block;
       position: relative;
     }
 
-    /* ─── Bell Button ─────────────────────────────────────────── */
+    .notification-bell-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
     .bell-btn {
       position: relative;
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.04);
       color: var(--text-2);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 1.1rem;
       cursor: pointer;
-      transition: all 0.25s;
-      font-size: 0.95rem;
+      transition: all 0.25s var(--ease);
+      padding: 0;
     }
+
     .bell-btn:hover {
+      background: var(--violet-soft);
       border-color: var(--border-v);
       color: var(--violet-light);
-      background: var(--violet-soft);
+      transform: translateY(-1px);
+    }
+
+    .bell-btn.has-unread {
+      color: var(--violet-light);
+      border-color: var(--border-v);
     }
 
     body.light-theme .bell-btn,
     :host-context(body.light-theme) .bell-btn {
-      background: rgba(99, 102, 241, 0.06);
-      border-color: rgba(99, 102, 241, 0.18);
-      color: #334155;
-    }
-    body.light-theme .bell-btn:hover,
-    :host-context(body.light-theme) .bell-btn:hover {
-      background: rgba(99, 102, 241, 0.12);
-      border-color: rgba(99, 102, 241, 0.35);
-      color: #4f46e5;
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      color: #64748b !important;
     }
 
-    /* ─── Unread Badge ─────────────────────────────────────────── */
+    body.light-theme .bell-btn:hover,
+    :host-context(body.light-theme) .bell-btn:hover {
+      background: #f1f5f9 !important;
+      color: #4f46e5 !important;
+      border-color: #cbd5e1 !important;
+    }
+
     .unread-badge {
       position: absolute;
-      top: -4px; right: -4px;
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: #fff;
+      top: -4px;
+      right: -4px;
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      color: #ffffff;
       font-size: 0.65rem;
       font-weight: 800;
       min-width: 18px;
@@ -109,49 +123,60 @@ import { ApiService } from '../../../services/api.service';
       align-items: center;
       justify-content: center;
       padding: 0 4px;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
-      border: 2px solid var(--bg-surface, #0b0c1b);
-    }
-    body.light-theme .unread-badge {
-      border-color: #ffffff;
+      box-shadow: 0 2px 8px rgba(244, 63, 94, 0.4);
+      border: 2px solid var(--bg);
+      animation: pulse-ring 2s infinite;
     }
 
-    /* ─── Notification Dropdown ───────────────────────────────── */
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+
     .notification-dropdown {
       position: absolute;
-      top: calc(100% + 8px);
+      top: calc(100% + 12px);
       left: 0;
       width: 360px;
       max-width: 90vw;
-      background: linear-gradient(165deg, rgba(16, 17, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: 16px;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-      z-index: 1300;
-      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border-v);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg), 0 20px 40px rgba(0, 0, 0, 0.5);
+      z-index: 2100;
       display: flex;
       flex-direction: column;
-      max-height: 480px;
+      overflow: hidden;
+      animation: dropdownSlideIn 0.25s var(--ease);
+      direction: rtl;
     }
+
+    @keyframes dropdownSlideIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     body.light-theme .notification-dropdown,
     :host-context(body.light-theme) .notification-dropdown {
       background: #ffffff !important;
-      border-color: rgba(99, 102, 241, 0.2) !important;
-      box-shadow: 0 15px 40px rgba(15, 23, 42, 0.15) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15) !important;
     }
 
     .notification-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(99, 102, 241, 0.05);
+      background: rgba(99, 102, 241, 0.04);
     }
+
     body.light-theme .notification-header,
     :host-context(body.light-theme) .notification-header {
       background: #f8fafc !important;
-      border-bottom-color: rgba(99, 102, 241, 0.12) !important;
+      border-bottom-color: #e2e8f0 !important;
     }
 
     .header-title {
@@ -160,187 +185,190 @@ import { ApiService } from '../../../services/api.service';
       gap: 8px;
       font-size: 0.88rem;
       font-weight: 800;
-      color: var(--text, #ffffff);
+      color: var(--text);
     }
-    body.light-theme .header-title { color: #0f172a !important; }
 
-    .count-pill {
-      font-size: 0.68rem;
+    body.light-theme .header-title,
+    :host-context(body.light-theme) .header-title {
+      color: #0f172a !important;
+    }
+
+    .header-title i {
+      color: var(--violet-light);
+    }
+
+    .badge-count {
+      background: var(--violet-soft);
+      color: var(--violet-light);
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 100px;
       font-weight: 700;
-      color: #4f46e5;
-      border-color: rgba(99,102,241,0.25);
     }
 
-    .btn-mark-all {
+    .btn-read-all {
       background: transparent;
       border: none;
-      color: var(--violet-light);
-      font-size: 0.76rem;
+      color: var(--text-2);
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: background 0.2s;
-      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+      font-family: inherit;
     }
-    .btn-mark-all:hover { background: var(--violet-soft); }
-    body.light-theme .btn-mark-all,
-    :host-context(body.light-theme) .btn-mark-all { color: #4f46e5; }
 
-    /* ─── Body / Items ─────────────────────────────────────────── */
+    .btn-read-all:hover {
+      color: var(--violet-light);
+    }
+
     .notification-body {
       max-height: 380px;
       overflow-y: auto;
     }
 
     .notification-item {
-      padding: 14px 18px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background 0.2s;
       position: relative;
     }
+
     .notification-item:last-child { border-bottom: none; }
     .notification-item:hover { background: var(--violet-soft); }
     .notification-item.unread { background: var(--violet-soft-2); }
     .notification-item.unread::before {
       content: '';
       position: absolute;
-      left: 0; top: 20%; bottom: 20%;
-      width: 3px;
-      background: linear-gradient(to bottom, var(--violet), var(--teal));
-      border-radius: 0 4px 4px 0;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 5px;
+      height: 24px;
+      background: var(--violet-light);
+      border-radius: 4px;
     }
 
     body.light-theme .notification-item,
     :host-context(body.light-theme) .notification-item {
-      border-bottom-color: rgba(99,102,241,0.08);
+      border-bottom-color: #f1f5f9 !important;
     }
     body.light-theme .notification-item:hover,
     :host-context(body.light-theme) .notification-item:hover {
-      background: rgba(99,102,241,0.06);
+      background: #f8fafc !important;
     }
 
-    /* ─── Notification Icon ────────────────────────────────────── */
-    .notif-icon-col {
-      width: 36px; height: 36px;
-      border-radius: 10px;
+    .notif-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--r);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       flex-shrink: 0;
-      background: var(--violet-soft);
+      background: rgba(99, 102, 241, 0.12);
       color: var(--violet-light);
     }
-    .notif-icon-col.assignment { background: rgba(59,130,246,0.18); color: #60a5fa; }
-    .notif-icon-col.mention    { background: rgba(168,85,247,0.18); color: #c084fc; }
-    .notif-icon-col.status_change { background: rgba(16,185,129,0.18); color: #34d399; }
-    .notif-icon-col.client_note  { background: rgba(245,158,11,0.18); color: #fbbf24; }
 
-    body.light-theme .notif-icon-col.assignment,
-    :host-context(body.light-theme) .notif-icon-col.assignment { background: rgba(59,130,246,0.1); color: #2563eb; }
-    body.light-theme .notif-icon-col.mention,
-    :host-context(body.light-theme) .notif-icon-col.mention { background: rgba(168,85,247,0.1); color: #7c3aed; }
-    body.light-theme .notif-icon-col.status_change,
-    :host-context(body.light-theme) .notif-icon-col.status_change { background: rgba(16,185,129,0.1); color: #059669; }
-    body.light-theme .notif-icon-col.client_note,
-    :host-context(body.light-theme) .notif-icon-col.client_note { background: rgba(217,119,6,0.1); color: #d97706; }
+    .notif-icon.assignment { background: rgba(16, 185, 129, 0.12); color: var(--emerald-light); }
+    .notif-icon.status_change { background: rgba(245, 158, 11, 0.12); color: var(--amber-light); }
+    .notif-icon.mention { background: rgba(236, 72, 153, 0.12); color: #ec4899; }
 
-    /* ─── Notification Text ────────────────────────────────────── */
-    .notif-content-col { flex: 1; min-width: 0; }
+    .notif-content {
+      flex: 1;
+      min-width: 0;
+    }
 
     .notif-title {
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 700;
       color: var(--text);
-      line-height: 1.3;
+      margin-bottom: 2px;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
     }
+
     body.light-theme .notif-title,
-    :host-context(body.light-theme) .notif-title { color: #0f172a !important; }
+    :host-context(body.light-theme) .notif-title {
+      color: #0f172a !important;
+    }
 
     .notif-message {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-2);
-      margin-top: 3px;
       line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
+
     body.light-theme .notif-message,
-    :host-context(body.light-theme) .notif-message { color: #475569 !important; }
+    :host-context(body.light-theme) .notif-message {
+      color: #64748b !important;
+    }
 
     .notif-time {
       font-size: 0.7rem;
-      color: var(--text-3);
+      color: var(--text-2);
       margin-top: 4px;
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.75;
     }
-    body.light-theme .notif-time,
-    :host-context(body.light-theme) .notif-time { color: #94a3b8 !important; }
 
-    /* ─── Delete Button ────────────────────────────────────────── */
     .btn-del-notif {
       background: transparent;
       border: none;
-      color: var(--text-3);
+      color: var(--text-2);
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
       cursor: pointer;
-      padding: 4px 6px;
-      border-radius: 6px;
-      font-size: 0.78rem;
+      opacity: 0;
       transition: all 0.2s;
       flex-shrink: 0;
     }
+
+    .notification-item:hover .btn-del-notif {
+      opacity: 1;
+    }
+
     .btn-del-notif:hover {
       color: var(--rose-light);
       background: var(--rose-soft);
-    }
-
-    /* ─── Empty State ──────────────────────────────────────────── */
-    .empty-state {
-      padding: 42px 20px;
-      text-align: center;
-      color: var(--text-2);
-    }
-    .empty-state i {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-      display: block;
-      color: var(--violet-light);
-      opacity: 0.85;
-    }
-    .empty-state p {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: var(--text);
-      margin: 0;
-    }
-    body.light-theme .empty-state i,
-    :host-context(body.light-theme) .empty-state i {
-      color: #4f46e5 !important;
-      opacity: 0.9 !important;
-    }
-    body.light-theme .empty-state p,
-    :host-context(body.light-theme) .empty-state p {
-      color: #0f172a !important;
     }
   `]
 })
 export class NotificationCenterComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private router = inject(Router);
+  private elementRef = inject(ElementRef);
 
   notifications: any[] = [];
   unreadCount = 0;
   isOpen = false;
   private pollInterval: any = null;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isOpen && !this.elementRef.nativeElement.contains(event.target)) {
+      this.isOpen = false;
+    }
+  }
 
   ngOnInit(): void {
     this.loadNotifications();
@@ -367,7 +395,8 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleDropdown(): void {
+  toggleDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.loadNotifications();

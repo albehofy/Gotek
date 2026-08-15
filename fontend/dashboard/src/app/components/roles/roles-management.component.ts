@@ -181,11 +181,17 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
               <label>الاسم كامل <span class="required">*</span></label>
-              <input type="text" pInputText formControlName="name" placeholder="مثال: محمد علي" />
+              <input type="text" pInputText formControlName="name" placeholder="مثال: محمد علي" [class.is-invalid]="userForm.get('name')?.invalid && (userForm.get('name')?.touched || userForm.get('name')?.dirty)" />
+              <small class="field-error-msg" *ngIf="userForm.get('name')?.invalid && (userForm.get('name')?.touched || userForm.get('name')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> اسم المستخدم الكامل مطلوب
+              </small>
             </div>
             <div class="form-group">
               <label>البريد الإلكتروني <span class="required">*</span></label>
-              <input type="email" pInputText formControlName="email" placeholder="user@mediaglow.com" />
+              <input type="email" pInputText formControlName="email" placeholder="user@mediaglow.com" [class.is-invalid]="userForm.get('email')?.invalid && (userForm.get('email')?.touched || userForm.get('email')?.dirty)" />
+              <small class="field-error-msg" *ngIf="userForm.get('email')?.invalid && (userForm.get('email')?.touched || userForm.get('email')?.dirty)">
+                <i class="fa-solid fa-circle-exclamation"></i> البريد الإلكتروني غير صحيح أو مطلوب
+              </small>
             </div>
             <div class="form-group">
               <label>كلمة المرور <span class="required">*</span></label>
@@ -193,12 +199,13 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
             </div>
             <div class="form-group">
               <label>الدور <span class="required">*</span></label>
-              <select formControlName="role" class="custom-select-input">
-                <option value="employee">موظف (Employee)</option>
-                <option value="department_manager">مدير قسم (Department Manager)</option>
-                <option value="admin">مدير نظام (Admin)</option>
-                <option value="client">عميل (Client)</option>
-              </select>
+              <app-prime-picker-select
+                formControlName="role"
+                [items]="rolesList"
+                optionLabel="label"
+                optionValue="id"
+                placeholder="اختر الدور والصلحيات..."
+              ></app-prime-picker-select>
             </div>
             <div class="form-group">
               <label>القسم المسند إليه</label>
@@ -265,12 +272,20 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
 export class RolesManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
+  private toastService = inject(ToastService);
 
   roles: any[] = [];
   permissions: any[] = [];
   users: any[] = [];
   departments: any[] = [];
   deptOptions: any[] = [];
+
+  rolesList = [
+    { id: 'employee', label: 'موظف (Employee)' },
+    { id: 'department_manager', label: 'مدير قسم (Department Manager)' },
+    { id: 'admin', label: 'مدير نظام (Admin)' },
+    { id: 'client', label: 'عميل (Client)' }
+  ];
 
   showAddModal = false;
   loading = false;
@@ -407,31 +422,41 @@ export class RolesManagementComponent implements OnInit {
   }
 
   saveUser(): void {
-    if (this.userForm.invalid) return;
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      this.toastService.warning('يرجى إدخال اسم المستخدم والبريد الإلكتروني وكلمة المرور بشكل صحيح');
+      return;
+    }
     this.loading = true;
 
     this.apiService.createUser(this.userForm.value).subscribe({
       next: () => {
         this.loading = false;
+        this.toastService.success('تم إضافة المستخدم الجديد بنجاح', 'تمت العملية');
         this.showAddModal = false;
         this.loadData();
       },
       error: (err) => {
         this.loading = false;
-        alert(err.error?.message || 'حدث خطأ أثناء إضافة المستخدم.');
+        this.toastService.error(err.error?.message || 'حدث خطأ أثناء إضافة المستخدم');
       }
     });
   }
 
   confirmDeleteUser(user: any): void {
     if (user.id === this.currentUser?.id) {
-      alert('لا يمكنك حذف حسابك الشخصي.');
+      this.toastService.error('لا يمكنك حذف حسابك الشخصي الحالى');
       return;
     }
     if (confirm(`هل أنت تأكد من حذف المستخدم "${user.name}"؟`)) {
       this.apiService.deleteUser(user.id).subscribe({
-        next: () => this.loadData(),
-        error: () => alert('حدث خطأ أثناء حذف المستخدم.')
+        next: () => {
+          this.toastService.success(`تم حذف المستخدم "${user.name}" بنجاح`);
+          this.loadData();
+        },
+        error: (err) => {
+          this.toastService.error(err.error?.message || 'تعذر حذف المستخدم');
+        }
       });
     }
   }

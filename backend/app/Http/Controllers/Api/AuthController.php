@@ -12,17 +12,28 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        $login = $request->input('email') ?? $request->input('login') ?? $request->input('phone');
+
         $request->validate([
-            'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        if (!$login) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الرجاء إدخال البريد الإلكتروني أو رقم الموبايل'
+            ], 422);
+        }
+
+        $user = User::where(function ($query) use ($login) {
+            $query->where('email', $login)
+                  ->orWhere('phone', $login);
+        })->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'بيانات الدخول غير صحيحة يا فنان'
+                'message' => 'بيانات الدخول غير صحيحة'
             ], 401);
         }
 
@@ -38,6 +49,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone,
                 'role' => $user->role,
                 'department_id' => $user->department_id,
             ]
@@ -46,20 +58,21 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $request->validated();
+        $data = $request->validated();
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'client'
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'] ?? 'client'
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'message' => 'تم إنشاء الحساب بنجاح يا فنان',
+            'message' => 'تم إنشاء الحساب بنجاح',
             'token' => $token,
             'token_type' => 'Bearer',
             'role' => $user->role,

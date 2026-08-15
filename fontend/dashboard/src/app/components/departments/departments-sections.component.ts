@@ -6,6 +6,7 @@ import { PrimePickerSelectComponent } from '../shared/prime-picker-select/prime-
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-departments-sections',
@@ -114,9 +115,19 @@ import { TextareaModule } from 'primeng/textarea';
               </div>
 
               <div class="chips-flex">
-                <span class="sub-chip" *ngFor="let sub of dept.sub_categories">
-                  <i class="fa-solid fa-tag"></i> {{ sub.name_ar || sub.name_en }}
-                </span>
+                <div class="sub-chip-wrapper" *ngFor="let sub of dept.sub_categories">
+                  <span class="sub-chip">
+                    <i class="fa-solid fa-tag"></i> {{ sub.name_ar || sub.name_en }}
+                    <span class="sub-chip-actions" *ngIf="isManagerOrAdmin()">
+                      <button type="button" class="sub-action-btn edit" (click)="openEditSubCategoryModal(sub, dept)" title="تعديل التصنيف الفرعي">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button type="button" class="sub-action-btn delete" (click)="confirmDeleteSubCategory(sub, dept)" title="حذف التصنيف الفرعي">
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
+                    </span>
+                  </span>
+                </div>
                 <div class="empty-chips-note" *ngIf="!dept.sub_categories || dept.sub_categories.length === 0">
                   لا توجد تصنيفات فرعية مضافة بعد
                 </div>
@@ -139,13 +150,14 @@ import { TextareaModule } from 'primeng/textarea';
       <!-- PrimeNG Dialog: Add / Edit Department -->
       <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="editingDeptId ? 'تعديل بيانات القسم' : 'إنشاء قسم جديد'" [style]="{ width: '92vw', maxWidth: '540px' }">
         <form [formGroup]="deptForm" (ngSubmit)="saveDepartment()">
-          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
-              <label>اسم القسم <span class="required">*</span></label>
+              <label><i class="fa-solid fa-folder" style="color:var(--violet-light); margin-left:4px;"></i> اسم القسم <span class="required">*</span></label>
               <input type="text" pInputText formControlName="name" placeholder="مثال: قسم إنتاج الفيديو والصوت" />
             </div>
+
             <div class="form-group">
-              <label>مسؤول القسم / المدير</label>
+              <label><i class="fa-solid fa-user-shield" style="color:var(--violet-light); margin-left:4px;"></i> مسؤول القسم / المدير</label>
               <app-prime-picker-select
                 formControlName="manager_id"
                 [items]="employees"
@@ -155,17 +167,25 @@ import { TextareaModule } from 'primeng/textarea';
                 addNewLabel="+ إضافة موظف جديد لتعيينه كمدير"
                 (addNew)="openAddEmployeeModal()"
               ></app-prime-picker-select>
-              <small style="color:var(--text-2); font-size:0.72rem; margin-top:2px;">اختيار مدير القسم يمنحه صلاحية متابعة جميع صفقات ومهام هذا القسم تلقائياً.</small>
+              <small style="color:var(--text-2); font-size:0.74rem; margin-top:3px; display:block;">اختيار مدير القسم يمنحه صلاحية متابعة جميع صفقات ومهام هذا القسم تلقائياً.</small>
             </div>
 
-            <!-- Partnerships on Sections -->
-            <div class="form-group checkbox-group">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.86rem; color:var(--text);">
+            <!-- Partnerships Toggle Switch Card -->
+            <div class="partner-toggle-card" (click)="togglePartnerCheckbox()" [class.active]="deptForm.value.has_partner">
+              <div class="partner-toggle-info">
+                <i class="fa-solid fa-handshake"></i>
+                <div class="partner-toggle-text">
+                  <span class="partner-toggle-title">شريك خارجي (شراكة قسم / مشروع مشترك)</span>
+                  <span class="partner-toggle-sub">تفعيل اقتسام الأرباح ونسب الشراكة مع طرف خارجي لهذا القسم</span>
+                </div>
+              </div>
+              <label class="custom-switch" (click)="$event.stopPropagation()">
                 <input type="checkbox" formControlName="has_partner" (change)="togglePartnerFields()" />
-                شريك خارجي (شراكة قسم / مشروع مشترك)
+                <span class="switch-slider"></span>
               </label>
             </div>
-            <div *ngIf="deptForm.value.has_partner" class="partner-fields-box" style="background:rgba(217,119,6,0.06); padding:14px; border-radius:12px; border:1px dashed rgba(217,119,6,0.3); display:flex; flex-direction:column; gap:12px;">
+
+            <div *ngIf="deptForm.value.has_partner" class="partner-fields-box" style="background:rgba(217,119,6,0.06); padding:16px; border-radius:14px; border:1px dashed rgba(217,119,6,0.35); display:flex; flex-direction:column; gap:12px;">
               <div class="form-group">
                 <label>اسم الشريك الخارجي</label>
                 <input type="text" pInputText formControlName="partner_name" placeholder="مثال: شركة بروتيك للإنتاج" />
@@ -176,8 +196,9 @@ import { TextareaModule } from 'primeng/textarea';
                 <small style="color:var(--text-2);">تُقسم أرباح هذا القسم بناءً على هذه النسبة.</small>
               </div>
             </div>
+
             <div class="form-group">
-              <label>الوصف والمهام</label>
+              <label><i class="fa-solid fa-align-right" style="color:var(--violet-light); margin-left:4px;"></i> الوصف والمهام</label>
               <textarea pTextarea formControlName="description" rows="3" placeholder="وصف مهام وتخصص هذا القسم..."></textarea>
             </div>
           </div>
@@ -210,11 +231,13 @@ import { TextareaModule } from 'primeng/textarea';
             </div>
             <div class="form-group">
               <label>الدور والصلاحيات <span class="required">*</span></label>
-              <select formControlName="role" class="custom-select-input">
-                <option value="employee">موظف (Employee)</option>
-                <option value="department_manager">مدير قسم (Department Manager)</option>
-                <option value="admin">مدير نظام (Admin)</option>
-              </select>
+              <app-prime-picker-select
+                formControlName="role"
+                [items]="rolesList"
+                optionLabel="label"
+                optionValue="id"
+                placeholder="اختر الدور والصلاحيات..."
+              ></app-prime-picker-select>
             </div>
             <div class="form-group">
               <label>القسم المسند إليه الموظف</label>
@@ -230,12 +253,13 @@ import { TextareaModule } from 'primeng/textarea';
             <div class="form-grid-2col">
               <div class="form-group">
                 <label>نظام الراتب/الاستحقاق</label>
-                <select formControlName="payment_type" class="custom-select-input">
-                  <option value="salary_based">راتب ثابت</option>
-                  <option value="task_based">بالمهام / القطعة</option>
-                  <option value="percentage_based">نسبة مئوية</option>
-                  <option value="hybrid">هجين (راتب + عمولة)</option>
-                </select>
+                <app-prime-picker-select
+                  formControlName="payment_type"
+                  [items]="paymentTypesList"
+                  optionLabel="label"
+                  optionValue="id"
+                  placeholder="اختر نظام الراتب..."
+                ></app-prime-picker-select>
               </div>
               <div class="form-group">
                 <label>الراتب الأساسي ($)</label>
@@ -273,6 +297,28 @@ import { TextareaModule } from 'primeng/textarea';
             <button type="button" class="btn-dialog-cancel" (click)="showSubModal = false">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="subForm.invalid || loading">
               {{ loading ? 'جاري الإضافة...' : 'حفظ وإضافة التصنيف' }}
+            </button>
+          </div>
+        </form>
+      </p-dialog>
+
+      <!-- PrimeNG Dialog: Edit SubCategory -->
+      <p-dialog [(visible)]="showSubEditModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تعديل التصنيف الفرعي" [style]="{ width: '92vw', maxWidth: '460px' }">
+        <form [formGroup]="subForm" (ngSubmit)="saveSubCategoryEdit()">
+          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group">
+              <label>اسم التصنيف الفرعي (بالعربي) <span class="required">*</span></label>
+              <input type="text" pInputText formControlName="name_ar" placeholder="مثال: تصاميم سوشيال ميديا..." />
+            </div>
+            <div class="form-group">
+              <label>اسم التصنيف الفرعي (بالإنجليزي)</label>
+              <input type="text" pInputText formControlName="name_en" placeholder="Sub-category name..." />
+            </div>
+          </div>
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="showSubEditModal = false">إلغاء</button>
+            <button type="submit" class="btn-dialog-submit" [disabled]="subForm.invalid || loading">
+              {{ loading ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
             </button>
           </div>
         </form>
@@ -348,7 +394,55 @@ import { TextareaModule } from 'primeng/textarea';
     .emp-initial { width: 18px; height: 18px; border-radius: 50%; background: var(--violet); color: #ffffff; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
     .emp-name { font-size: 0.76rem; font-weight: 600; color: var(--text); }
 
-    .sub-chip { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 4px 10px; border-radius: 100px; font-size: 0.74rem; color: var(--text-2); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    .sub-chip-wrapper { display: inline-flex; }
+    .sub-chip { 
+      background: rgba(99, 102, 241, 0.08); 
+      border: 1px solid rgba(99, 102, 241, 0.2); 
+      padding: 5px 12px; 
+      border-radius: 100px; 
+      font-size: 0.78rem; 
+      color: var(--text); 
+      font-weight: 700; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 6px; 
+      transition: all 0.2s ease;
+    }
+    .sub-chip:hover {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: rgba(99, 102, 241, 0.45);
+      color: #ffffff;
+    }
+    .sub-chip-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 4px;
+      padding-right: 6px;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .sub-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.72rem;
+      transition: all 0.2s ease;
+    }
+    .sub-action-btn.edit:hover {
+      background: rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+    }
+    .sub-action-btn.delete:hover {
+      background: rgba(244, 63, 94, 0.35);
+      color: #fda4af;
+    }
     .empty-chips-note { color: var(--text-3); font-size: 0.76rem; font-style: italic; }
 
     /* Footer Actions */
@@ -364,6 +458,113 @@ import { TextareaModule } from 'primeng/textarea';
     .form-group input, .form-group textarea, .custom-select-input { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: #fff; outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
     .custom-select-input option { background: #121224; color: #fff; }
     .required { color: var(--rose-light); }
+
+    .partner-toggle-card {
+      background: rgba(99, 102, 241, 0.04);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .partner-toggle-card:hover {
+      background: rgba(99, 102, 241, 0.08);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    .partner-toggle-card.active {
+      background: rgba(217, 119, 6, 0.08);
+      border-color: rgba(217, 119, 6, 0.4);
+    }
+    .partner-toggle-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .partner-toggle-info i {
+      font-size: 1.2rem;
+      color: var(--violet-light, #818cf8);
+    }
+    .partner-toggle-card.active .partner-toggle-info i {
+      color: #f59e0b;
+    }
+    .partner-toggle-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .partner-toggle-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .partner-toggle-sub {
+      font-size: 0.74rem;
+      color: var(--text-2);
+    }
+
+    /* Custom Switch Slider */
+    .custom-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .custom-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: .3s;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    .custom-switch input:checked + .switch-slider {
+      background-color: #6366f1;
+      border-color: #6366f1;
+    }
+    .custom-switch input:checked + .switch-slider:before {
+      transform: translateX(20px);
+    }
+
+    :host-context(body.light-theme) .partner-toggle-card {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    :host-context(body.light-theme) .partner-toggle-card.active {
+      background: #fffbeb !important;
+      border-color: #fde68a !important;
+    }
+    :host-context(body.light-theme) .partner-toggle-title {
+      color: #0f172a !important;
+    }
+    :host-context(body.light-theme) .partner-toggle-sub {
+      color: #64748b !important;
+    }
+    :host-context(body.light-theme) .switch-slider {
+      background-color: #cbd5e1;
+      border-color: #94a3b8;
+    }
 
     .form-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -445,14 +646,30 @@ import { TextareaModule } from 'primeng/textarea';
 export class DepartmentsSectionsComponent implements OnInit {
   private apiService = inject(ApiService);
   private fb = inject(FormBuilder);
+  private toastService = inject(ToastService);
 
   departments: any[] = [];
   employees: any[] = [];
 
+  rolesList = [
+    { id: 'employee', label: 'موظف (Employee)' },
+    { id: 'department_manager', label: 'مدير قسم (Department Manager)' },
+    { id: 'admin', label: 'مدير نظام (Admin)' }
+  ];
+
+  paymentTypesList = [
+    { id: 'salary_based', label: 'راتب ثابت' },
+    { id: 'task_based', label: 'بالمهام / القطعة' },
+    { id: 'percentage_based', label: 'نسبة مئوية' },
+    { id: 'hybrid', label: 'هجين (راتب + عمولة)' }
+  ];
+
   showAddModal = false;
   showSubModal = false;
+  showSubEditModal = false;
   showEmployeeModal = false;
   editingDeptId: number | null = null;
+  editingSubCategory: any = null;
   selectedDept: any = null;
   loading = false;
 
@@ -518,7 +735,16 @@ export class DepartmentsSectionsComponent implements OnInit {
 
   loadData(): void {
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
-    this.apiService.getUsers().subscribe(res => this.employees = res.data || []);
+    this.apiService.getUsers().subscribe(res => {
+      const arr = res.data || [];
+      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
+    });
+  }
+
+  togglePartnerCheckbox(): void {
+    const current = this.deptForm.value.has_partner;
+    this.deptForm.patchValue({ has_partner: !current });
+    this.togglePartnerFields();
   }
 
   togglePartnerFields(): void {
@@ -560,27 +786,39 @@ export class DepartmentsSectionsComponent implements OnInit {
   }
 
   saveDepartment(): void {
-    if (this.deptForm.invalid) return;
+    if (this.deptForm.invalid) {
+      this.deptForm.markAllAsTouched();
+      this.toastService.warning('يرجى كتابة اسم القسم والحقول المطلوبة بشكل صحيح قبل الحفظ');
+      return;
+    }
     this.loading = true;
 
     if (this.editingDeptId) {
       this.apiService.updateDepartment(this.editingDeptId, this.deptForm.value).subscribe({
         next: () => {
           this.loading = false;
+          this.toastService.success('تم تحديث بيانات القسم بنجاح', 'تمت العملية');
           this.showAddModal = false;
           this.editingDeptId = null;
           this.loadData();
         },
-        error: () => this.loading = false
+        error: (err) => {
+          this.loading = false;
+          this.toastService.error(err.error?.message || 'تعذر تحديث القسم');
+        }
       });
     } else {
       this.apiService.createDepartment(this.deptForm.value).subscribe({
         next: () => {
           this.loading = false;
+          this.toastService.success('تم إنشاء القسم الجديد بنجاح', 'تمت العملية');
           this.showAddModal = false;
           this.loadData();
         },
-        error: () => this.loading = false
+        error: (err) => {
+          this.loading = false;
+          this.toastService.error(err.error?.message || 'تعذر إضافة القسم');
+        }
       });
     }
   }
@@ -632,5 +870,43 @@ export class DepartmentsSectionsComponent implements OnInit {
       },
       error: () => this.loading = false
     });
+  }
+
+  openEditSubCategoryModal(sub: any, dept: any): void {
+    this.editingSubCategory = sub;
+    this.selectedDept = dept;
+    this.subForm.patchValue({
+      name_ar: sub.name_ar || sub.name_en || '',
+      name_en: sub.name_en || ''
+    });
+    this.showSubEditModal = true;
+  }
+
+  saveSubCategoryEdit(): void {
+    if (this.subForm.invalid || !this.editingSubCategory) return;
+    this.loading = true;
+
+    this.apiService.updateSubCategory(this.editingSubCategory.id, this.subForm.value).subscribe({
+      next: () => {
+        this.loading = false;
+        this.showSubEditModal = false;
+        this.editingSubCategory = null;
+        this.loadData();
+      },
+      error: () => this.loading = false
+    });
+  }
+
+  confirmDeleteSubCategory(sub: any, dept: any): void {
+    if (confirm(`هل أنت تأكد من حذف التصنيف الفرعي "${sub.name_ar || sub.name_en}"؟`)) {
+      this.loading = true;
+      this.apiService.deleteSubCategory(sub.id).subscribe({
+        next: () => {
+          this.loading = false;
+          this.loadData();
+        },
+        error: () => this.loading = false
+      });
+    }
   }
 }

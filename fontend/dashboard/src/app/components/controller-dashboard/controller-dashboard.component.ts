@@ -37,6 +37,81 @@ export class ControllerDashboardComponent implements OnInit {
     return ['super_admin', 'admin', 'department_manager'].includes(this.currentUser.role);
   }
 
+  getClientName(item: any): string {
+    if (!item) return 'عميل محدد';
+
+    if (typeof item === 'string' && item.trim()) {
+      return item === '[object Object]' ? 'عميل محدد' : item;
+    }
+
+    if (typeof item.client_name === 'string' && item.client_name.trim() && item.client_name !== '[object Object]') {
+      return item.client_name;
+    }
+    if (item.client_name && typeof item.client_name === 'object') {
+      const n = item.client_name.name || item.client_name.client_name || item.client_name.title;
+      if (n && typeof n === 'string' && n !== '[object Object]') return n;
+    }
+
+    if (typeof item.client === 'string' && item.client.trim() && item.client !== '[object Object]') {
+      return item.client;
+    }
+    if (item.client && typeof item.client === 'object') {
+      const n = item.client.name || item.client.client_name || item.client.title || item.client.company || item.client.full_name;
+      if (n && typeof n === 'string' && n !== '[object Object]') return n;
+    }
+
+    if (typeof item.name === 'string' && item.name.trim() && item.name !== '[object Object]') {
+      return item.name;
+    }
+
+    if (typeof item.company_name === 'string' && item.company_name.trim() && item.company_name !== '[object Object]') {
+      return item.company_name;
+    }
+
+    return 'عميل محدد';
+  }
+
+  getAssigneeName(t: any): string {
+    if (!t) return 'فريق الوكالة';
+
+    if (typeof t === 'string' && t.trim() && t !== '[object Object]') return t;
+
+    if (typeof t.assignee_name === 'string' && t.assignee_name.trim() && t.assignee_name !== '[object Object]') {
+      return t.assignee_name;
+    }
+    if (typeof t.assigned_to_name === 'string' && t.assigned_to_name.trim() && t.assigned_to_name !== '[object Object]') {
+      return t.assigned_to_name;
+    }
+
+    if (typeof t.assignee === 'string' && t.assignee.trim() && t.assignee !== '[object Object]') {
+      return t.assignee;
+    }
+    if (t.assignee && typeof t.assignee === 'object') {
+      const n = t.assignee.name || t.assignee.full_name;
+      if (n && typeof n === 'string' && n !== '[object Object]') return n;
+    }
+
+    if (typeof t.assigned_to === 'string' && t.assigned_to.trim() && t.assigned_to !== '[object Object]') {
+      return t.assigned_to;
+    }
+    if (t.assigned_to && typeof t.assigned_to === 'object') {
+      const n = t.assigned_to.name || t.assigned_to.full_name;
+      if (n && typeof n === 'string' && n !== '[object Object]') return n;
+    }
+
+    if (t.users && Array.isArray(t.users) && t.users.length > 0) {
+      const u = t.users[0];
+      if (typeof u === 'string' && u.trim() && u !== '[object Object]') return u;
+      if (u && typeof u === 'object') {
+        const n = u.name || u.full_name || u.email;
+        if (n && typeof n === 'string' && n !== '[object Object]') return n;
+      }
+    }
+
+    return 'فريق الوكالة';
+  }
+
+
 
   // FormGroups
   projectForm!: FormGroup;
