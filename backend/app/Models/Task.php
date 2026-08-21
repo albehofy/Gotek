@@ -90,4 +90,24 @@ class Task extends Model
     {
         return $this->hasMany(TaskCustomFieldValue::class, 'task_id')->with('field');
     }
+
+    public function assignedMembers()
+    {
+        return $this->belongsToMany(User::class, 'task_user');
+    }
+
+    public function checklists()
+    {
+        return $this->hasMany(TaskChecklist::class, 'task_id');
+    }
+
+    public function internalProject()
+    {
+        return $this->belongsTo(InternalProject::class, 'internal_project_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

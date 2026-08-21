@@ -550,7 +550,7 @@ class TaskController extends Controller
             'description' => $request->description ?? $request->scope ?? '',
             'scope' => $request->scope ?? $request->description ?? null,
             'parent_id' => $parent->id,
-            'status' => 'new',
+            'status' => 'todo',
             'priority' => $request->priority ?? $parent->priority ?? 'medium',
             'deal_id' => $parent->deal_id,
             'department_id' => $parent->department_id,

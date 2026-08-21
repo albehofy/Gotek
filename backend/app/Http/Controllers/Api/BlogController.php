@@ -72,7 +72,9 @@ public function update(StoreBlogRequest $request, Blog $blog)
     }
     public function destroy(Blog $blog)
     {
-        Storage::disk('public')->delete($blog->media_path);
+        if ($blog->media_path) {
+            Storage::disk('public')->delete($blog->media_path);
+        }
         $blog->delete();
         return response()->json(['message' => 'Blog deleted']);
     }

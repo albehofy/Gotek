@@ -38,7 +38,7 @@ class InternalProjectController extends Controller
             if ($request->filled('first_task_title')) {
                 $task = $project->tasks()->create([
                     'title' => $request->first_task_title,
-                    'description' => $request->first_task_description ?? null,
+                    'description' => $request->first_task_description ?? $request->first_task_title ?? '',
                     'status' => 'todo',
                     'department_id' => $validated['department_id'],
                 ]);

@@ -95,7 +95,7 @@ class ClientPortalController extends Controller
         ]);
 
         // Update task status to client_feedback if client leaves note
-        $task->update(['status' => 'client_feedback']);
+        $task->update(['status' => 'changes_requested']);
 
         // Send notification to department manager & assigned staff (excluding the acting client)
         $recipients = $task->users->pluck('id')->toArray();

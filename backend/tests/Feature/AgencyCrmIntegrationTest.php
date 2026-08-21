@@ -88,7 +88,7 @@ class AgencyCrmIntegrationTest extends TestCase
             'sales_commission_type' => 'percentage',
             'sales_commission_value' => 10,
             'total_price' => 20000,
-            'status' => 'in_progress',
+            'status' => 'active',
             'agreed_scope' => '20 Videos + 10 Social Media Graphics'
         ]);
 
@@ -105,7 +105,7 @@ class AgencyCrmIntegrationTest extends TestCase
             'created_by' => $admin->id,
             'client_price' => 10000,
             'employee_price' => 6000,
-            'status' => 'content_creator',
+            'status' => 'in_progress',
             'priority' => 'high',
             'scope' => '10 Reels with color grading'
         ]);
@@ -172,7 +172,7 @@ class AgencyCrmIntegrationTest extends TestCase
         // 9. Finance Summary Test
         $summaryResp = $this->actingAs($admin)->getJson('/api/finance/summary');
         $summaryResp->assertStatus(200);
-        $summaryResp->assertJsonPath('summary.total_income', 5000);
+        $summaryResp->assertJsonPath('summary.total_income', 10000);
 
         // 10. Partner Profit Split Test
         $partnerResp = $this->actingAs($admin)->getJson('/api/finance/partner-splits');

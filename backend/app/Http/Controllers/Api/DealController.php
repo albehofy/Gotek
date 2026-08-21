@@ -117,7 +117,7 @@ class DealController extends Controller
                     'client_id' => $deal->client_id,
                     'department_id' => $targetDeptId,
                     'client_price' => $tData['client_price'] ?? 0,
-                    'status' => 'new',
+                    'status' => 'todo',
                     'created_by' => Auth::id()
                 ]);
 
