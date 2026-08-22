@@ -1,0 +1,125 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-title">
+      <i class="fa-solid fa-newspaper"></i>
+      <h2>مقالات ومدونة | Blog & Articles</h2>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="بحث..." [(ngModel)]="searchQuery" (input)="filterBlogs()">
+      </div>
+      <button class="btn btn-primary add-btn" (click)="openDrawer()">
+        <i class="fa-solid fa-plus"></i>
+        إضافة مقالة
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && filteredBlogs.length === 0">
+    <i class="fa-regular fa-folder-open"></i>
+    <p>لا توجد مقالات بعد</p>
+  </div>
+
+  <div class="blogs-list" *ngIf="!isLoading && filteredBlogs.length > 0">
+    <div class="blog-row" *ngFor="let blog of filteredBlogs">
+      <div class="blog-thumb">
+        <img *ngIf="blog.media_path" [src]="blog.media_path" [alt]="blog.img_alt || 'Blog Image'">
+        <i *ngIf="!blog.media_path" class="fa-solid fa-newspaper placeholder-icon"></i>
+      </div>
+      
+      <div class="blog-content">
+        <h3 class="blog-title-ar">{{ getBlogTitle(blog) }}</h3>
+        <h4 class="blog-title-en">{{ getBlogTitleEn(blog) }}</h4>
+        <p class="blog-desc">{{ getBlogDesc(blog) }}</p>
+      </div>
+
+      <div class="blog-meta">
+        <div class="meta-item">
+          <i class="fa-solid fa-calendar"></i>
+          <span>{{ formatDate(blog.created_at) }}</span>
+        </div>
+        <div class="meta-item loves">
+          <i class="fa-solid fa-heart"></i>
+          <span>{{ blog.loves_count || 0 }}</span>
+        </div>
+      </div>
+
+      <div class="blog-actions">
+        <button class="btn-action edit" (click)="openDrawer(blog)">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button class="btn-action delete" (click)="deleteBlog(blog)">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+  <div class="drawer" [class.open]="isDrawerOpen">
+    <div class="drawer-header">
+      <h3>{{ isEditMode ? 'تعديل المقالة' : 'إضافة مقالة جديدة' }}</h3>
+      <button class="close-btn" (click)="closeDrawer()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="drawer-body">
+      <form (ngSubmit)="saveBlog()" #blogForm="ngForm">
+        
+        <div class="form-group">
+          <label>عنوان المقالة بالعربية *</label>
+          <input type="text" name="title_ar" [(ngModel)]="formData.title_ar" required>
+        </div>
+
+        <div class="form-group">
+          <label>Blog Title in English *</label>
+          <input type="text" name="title_en" [(ngModel)]="formData.title_en" required dir="ltr">
+        </div>
+
+        <div class="form-group">
+          <label>محتوى المقالة بالعربية *</label>
+          <textarea name="description_ar" [(ngModel)]="formData.description_ar" rows="6" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Blog Content in English *</label>
+          <textarea name="description_en" [(ngModel)]="formData.description_en" rows="6" required dir="ltr"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Alt Text (نص بديل للصورة)</label>
+          <input type="text" name="img_alt" [(ngModel)]="formData.img_alt">
+        </div>
+
+        <div class="form-group upload-zone">
+          <label>صورة المقالة</label>
+          <div class="upload-area" (click)="fileInput.click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>انقر لرفع صورة</p>
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
+          </div>
+          <div class="image-preview" *ngIf="previewImage">
+            <img [src]="previewImage" alt="Preview">
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" (click)="closeDrawer()">إلغاء</button>
+      <button class="btn btn-primary" (click)="saveBlog()" [disabled]="!blogForm.valid">
+        <i class="fa-solid fa-check"></i> حفظ
+      </button>
+    </div>
+  </div>
+</div>

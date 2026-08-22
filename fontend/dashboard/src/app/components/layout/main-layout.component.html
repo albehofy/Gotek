@@ -75,6 +75,12 @@
           <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>
         </a>
 
+        <!-- Portfolio Management (Top-Level, Admins only) -->
+        <a class="sb-item" *ngIf="isAdmin()" routerLink="/portfolio" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" data-tooltip="إدارة الموقع والمشاريع">
+          <span class="sb-icon"><i class="fa-solid fa-briefcase"></i></span>
+          <span class="sb-text">معرض الأعمال والموقع</span>
+        </a>
+
         <!-- Website Section Dropdown (Admins only) -->
         <div class="nav-dropdown" [class.open]="websiteMenuOpen" *ngIf="isAdmin()">
           <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;" data-tooltip="الموقع الإلكتروني">
@@ -87,27 +93,29 @@
               <span class="sb-icon"><i class="fa-solid fa-chart-pie"></i></span>
               <span class="sb-text">نظرة عامة على الموقع</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('projects')" (click)="navigateToTab('projects')" data-tooltip="المشاريع والأعمال">
-              <span class="sb-icon"><i class="fa-solid fa-folder-open"></i></span>
+
+            <!-- Portfolio Management Links → dedicated /portfolio/* routes -->
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/projects" routerLinkActive="active" data-tooltip="المشاريع والأعمال">
+              <span class="sb-icon"><i class="fa-solid fa-diagram-project"></i></span>
               <span class="sb-text">المشاريع والأعمال</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('categories')" (click)="navigateToTab('categories')" data-tooltip="التصنيفات">
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/categories" routerLinkActive="active" data-tooltip="التصنيفات">
               <span class="sb-icon"><i class="fa-solid fa-tags"></i></span>
               <span class="sb-text">التصنيفات</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('services')" (click)="navigateToTab('services')" data-tooltip="دليل الخدمات">
-              <span class="sb-icon"><i class="fa-solid fa-gears"></i></span>
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/services" routerLinkActive="active" data-tooltip="دليل الخدمات">
+              <span class="sb-icon"><i class="fa-solid fa-toolbox"></i></span>
               <span class="sb-text">دليل الخدمات</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('blogs')" (click)="navigateToTab('blogs')" data-tooltip="المقالات والمدونة">
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/blogs" routerLinkActive="active" data-tooltip="المقالات والمدونة">
               <span class="sb-icon"><i class="fa-solid fa-newspaper"></i></span>
               <span class="sb-text">المقالات والمدونة</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('testimonials')" (click)="navigateToTab('testimonials')" data-tooltip="آراء العملاء">
-              <span class="sb-icon"><i class="fa-solid fa-comments"></i></span>
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/testimonials" routerLinkActive="active" data-tooltip="آراء العملاء">
+              <span class="sb-icon"><i class="fa-solid fa-quote-left"></i></span>
               <span class="sb-text">آراء العملاء</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('faqs')" (click)="navigateToTab('faqs')" data-tooltip="الأسئلة الشائعة">
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/faqs" routerLinkActive="active" data-tooltip="الأسئلة الشائعة">
               <span class="sb-icon"><i class="fa-solid fa-circle-question"></i></span>
               <span class="sb-text">الأسئلة الشائعة</span>
             </a>
@@ -122,8 +130,8 @@
               <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
               <span class="sb-text">الصفحة الرئيسية</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('about-page')" (click)="navigateToTab('about-page')" data-tooltip="صفحة عن الوكالة">
-              <span class="sb-icon"><i class="fa-solid fa-circle-info"></i></span>
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/about" routerLinkActive="active" data-tooltip="صفحة عن الوكالة">
+              <span class="sb-icon"><i class="fa-solid fa-building-user"></i></span>
               <span class="sb-text">صفحة عن الوكالة</span>
             </a>
             <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('services-page')" (click)="navigateToTab('services-page')" data-tooltip="صفحة الخدمات">

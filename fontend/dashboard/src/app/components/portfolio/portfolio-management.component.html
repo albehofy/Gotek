@@ -1,0 +1,26 @@
+<div class="portfolio-shell">
+  <header class="portfolio-header">
+    <div class="header-title">
+      <i class="fa-solid fa-briefcase header-icon"></i>
+      <div>
+        <h1>إدارة المحتوى الرقمي | Portfolio Management</h1>
+        <p class="subtitle">إدارة مشاريع الوكالة وصفحات الموقع الإلكتروني</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="portfolio-tabs">
+    <a *ngFor="let tab of tabs" 
+       [routerLink]="tab.route" 
+       routerLinkActive="active" 
+       class="tab-link">
+      <i [class]="tab.icon"></i>
+      <span class="tab-label-ar">{{ tab.labelAr }}</span>
+      <span class="tab-label-en">{{ tab.labelEn }}</span>
+    </a>
+  </nav>
+
+  <main class="portfolio-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

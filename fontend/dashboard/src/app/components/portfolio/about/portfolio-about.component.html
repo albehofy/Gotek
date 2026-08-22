@@ -1,0 +1,155 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-title">
+      <i class="fa-solid fa-building-user"></i>
+      <h2>عن الوكالة | About Page Editor</h2>
+    </div>
+    
+    <div class="header-actions">
+      <span class="success-msg" *ngIf="saveMessage">{{ saveMessage }}</span>
+      <button class="btn btn-primary" (click)="saveAbout()" [disabled]="isSaving || isLoading">
+        <i class="fa-solid" [class.fa-spinner]="isSaving" [class.fa-spin]="isSaving" [class.fa-check]="!isSaving"></i>
+        {{ isSaving ? 'جاري الحفظ...' : 'حفظ جميع التغييرات | Save All Changes' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <div class="editor-content" *ngIf="!isLoading">
+    <!-- Accordions -->
+    <div class="accordion-item" *ngFor="let section of sections">
+      <div class="accordion-header" (click)="toggleSection(section.id)">
+        <h3>{{ section.title }}</h3>
+        <i class="fa-solid" [class.fa-chevron-down]="expandedSection !== section.id" [class.fa-chevron-up]="expandedSection === section.id"></i>
+      </div>
+      
+      <div class="accordion-body" *ngIf="expandedSection === section.id">
+        <div class="form-grid">
+          <!-- Arabic Side -->
+          <div class="form-col">
+            <h4 class="col-title">عربي (AR)</h4>
+            
+            <ng-container *ngIf="section.id === 'hero'">
+              <div class="form-group">
+                <label>Label</label>
+                <input type="text" [(ngModel)]="aboutData.content[section.id].ar.label">
+              </div>
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" [(ngModel)]="aboutData.content[section.id].ar.title1">
+              </div>
+            </ng-container>
+            
+            <ng-container *ngIf="section.id !== 'hero'">
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" [(ngModel)]="aboutData.content[section.id].ar.title">
+              </div>
+            </ng-container>
+            
+            <div class="form-group">
+              <label>Description</label>
+              <textarea [(ngModel)]="aboutData.content[section.id].ar.desc" rows="4"></textarea>
+            </div>
+          </div>
+          
+          <!-- English Side -->
+          <div class="form-col ltr-col">
+            <h4 class="col-title">English (EN)</h4>
+            
+            <ng-container *ngIf="section.id === 'hero'">
+              <div class="form-group">
+                <label>Label</label>
+                <input type="text" [(ngModel)]="aboutData.content[section.id].en.label" dir="ltr">
+              </div>
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" [(ngModel)]="aboutData.content[section.id].en.title1" dir="ltr">
+              </div>
+            </ng-container>
+            
+            <ng-container *ngIf="section.id !== 'hero'">
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" [(ngModel)]="aboutData.content[section.id].en.title" dir="ltr">
+              </div>
+            </ng-container>
+            
+            <div class="form-group">
+              <label>Description</label>
+              <textarea [(ngModel)]="aboutData.content[section.id].en.desc" rows="4" dir="ltr"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-section">
+      <div class="timeline-header">
+        <h3>محطات الوكالة | Agency Timeline</h3>
+      </div>
+      
+      <div class="timeline-list">
+        <div class="timeline-item" *ngFor="let item of aboutData.timeline; let i = index">
+          <div class="timeline-icon">
+            <i class="fa-solid fa-circle-dot"></i>
+          </div>
+          <div class="timeline-content">
+            <div class="tl-year">{{ item.year }}</div>
+            <div class="tl-details">
+              <div>
+                <strong>AR:</strong> {{ item.title?.ar || item.title_ar }} <br>
+                <span class="text-muted">{{ item.description?.ar || item.desc_ar }}</span>
+              </div>
+              <div dir="ltr">
+                <strong>EN:</strong> {{ item.title?.en || item.title_en }} <br>
+                <span class="text-muted">{{ item.description?.en || item.desc_en }}</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn-action delete" (click)="deleteTimelineEntry(i)">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Add New Timeline Entry -->
+      <div class="timeline-form">
+        <h4>إضافة محطة جديدة</h4>
+        <div class="form-row">
+          <div class="form-group" style="flex: 0 0 100px;">
+            <label>Year *</label>
+            <input type="text" [(ngModel)]="newTimelineEntry.year" dir="ltr">
+          </div>
+          <div class="form-group">
+            <label>Title AR *</label>
+            <input type="text" [(ngModel)]="newTimelineEntry.title_ar">
+          </div>
+          <div class="form-group">
+            <label>Title EN</label>
+            <input type="text" [(ngModel)]="newTimelineEntry.title_en" dir="ltr">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Desc AR *</label>
+            <textarea [(ngModel)]="newTimelineEntry.desc_ar" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Desc EN</label>
+            <textarea [(ngModel)]="newTimelineEntry.desc_en" rows="2" dir="ltr"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-secondary" (click)="addTimelineEntry()" [disabled]="!newTimelineEntry.year || !newTimelineEntry.title_ar || !newTimelineEntry.desc_ar">
+          <i class="fa-solid fa-plus"></i> إضافة للمحطات
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>

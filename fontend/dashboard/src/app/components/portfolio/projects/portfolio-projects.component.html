@@ -1,0 +1,247 @@
+<div class="projects-container">
+  
+  <div class="top-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" placeholder="بحث في المشاريع... / Search..." 
+             [(ngModel)]="searchQuery" (ngModelChange)="filterProjects()" class="search-input">
+    </div>
+
+    <div class="filters">
+      <div class="category-filter">
+        <i class="fa-solid fa-filter"></i>
+        <select [(ngModel)]="selectedCategoryFilter" (ngModelChange)="filterProjects()">
+          <option value="">كل التصنيفات</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">
+            {{ cat.name?.ar || cat.name_ar || cat.name }}
+          </option>
+        </select>
+      </div>
+      
+      <button class="btn-add" (click)="openAddDrawer()">
+        <i class="fa-solid fa-plus"></i> إضافة مشروع
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && filteredProjects.length === 0">
+    <i class="fa-regular fa-folder-open empty-icon"></i>
+    <h3>لا توجد مشاريع بعد</h3>
+    <p>No projects yet</p>
+    <button class="btn-add" (click)="openAddDrawer()">
+      <i class="fa-solid fa-plus"></i> إضافة مشروع
+    </button>
+  </div>
+
+  <div class="project-grid" *ngIf="!loading && filteredProjects.length > 0">
+    <div class="project-card" *ngFor="let p of filteredProjects">
+      
+      <div class="card-img-wrapper">
+        <img [src]="p.image || 'assets/placeholder.png'" alt="Project" class="card-img">
+        <div class="card-overlay">
+          <a [routerLink]="['/portfolio/projects', p.id]" class="action-btn" title="View"><i class="fa-solid fa-eye"></i></a>
+          <button class="action-btn" title="Edit" (click)="openEditDrawer(p)"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button class="action-btn" title="Delete" (click)="deleteProject(p.id)"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+      </div>
+      
+      <div class="card-content">
+        <div class="card-header">
+          <span class="category-badge" *ngIf="getCategoryName(p)">{{ getCategoryName(p) }}</span>
+          <i *ngIf="p.ViewInHome" class="fa-solid fa-star star-badge" title="معروض في الرئيسية"></i>
+        </div>
+        
+        <h3 class="title-ar">{{ getProjectTitle(p) }}</h3>
+        <h4 class="title-en">{{ getProjectTitleEn(p) }}</h4>
+        
+        <div class="client-info" *ngIf="p.client">
+          <i class="fa-solid fa-building"></i> <span>{{ p.client }}</span>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<!-- Drawer Backdrop -->
+<div class="drawer-backdrop" *ngIf="showDrawer" (click)="closeDrawer()"></div>
+
+<!-- Side Drawer -->
+<div class="side-drawer" [class.open]="showDrawer">
+  <div class="drawer-header">
+    <h2>{{ isEditing ? 'تعديل المشروع' : 'إضافة مشروع' }}</h2>
+    <button class="btn-close" (click)="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <div class="drawer-body">
+    <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+      
+      <fieldset class="form-group-section">
+        <legend>المعلومات الأساسية / Basic Info</legend>
+        
+        <div class="form-field">
+          <label>العنوان بالعربية *</label>
+          <input type="text" formControlName="title_ar" required>
+        </div>
+        
+        <div class="form-field">
+          <label>Title in English *</label>
+          <input type="text" formControlName="title_en" required>
+        </div>
+        
+        <div class="form-field">
+          <label>التصنيف *</label>
+          <select formControlName="category_id" required>
+            <option value="" disabled>اختر التصنيف</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.name?.ar || cat.name_ar || cat.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="form-field col">
+            <label>اللون</label>
+            <input type="color" formControlName="color">
+          </div>
+          <div class="form-field col">
+            <label>الإيموجي</label>
+            <input type="text" formControlName="emoji">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-field col">
+            <label>اسم العميل</label>
+            <input type="text" formControlName="client">
+          </div>
+          <div class="form-field col">
+            <label>المدة الزمنية</label>
+            <input type="text" formControlName="timeline">
+          </div>
+        </div>
+
+        <div class="form-field toggle-field">
+          <label>
+            <input type="checkbox" formControlName="ViewInHome">
+            <span>عرض في الصفحة الرئيسية</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-section">
+        <legend>الوصف / Description</legend>
+        <div class="form-field">
+          <label>الوصف بالعربية</label>
+          <textarea formControlName="description_ar" rows="3"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Description in English</label>
+          <textarea formControlName="description_en" rows="3"></textarea>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-section">
+        <legend>الصورة الرئيسية / Main Image</legend>
+        <div class="image-drop-zone" (click)="mainImageInput.click()">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <p>انقر لاختيار الصورة الرئيسية</p>
+          <input type="file" #mainImageInput (change)="onMainImageChange($event)" accept="image/*" hidden>
+        </div>
+        <div class="image-preview-wrapper" *ngIf="projectImagePreview">
+          <img [src]="projectImagePreview" class="preview-img">
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-section">
+        <legend>معرض الصور / Gallery</legend>
+        <div class="image-drop-zone" (click)="galleryInput.click()">
+          <i class="fa-solid fa-images"></i>
+          <p>انقر لاختيار صور إضافية</p>
+          <input type="file" #galleryInput (change)="onGalleryChange($event)" accept="image/*" multiple hidden>
+        </div>
+        
+        <div class="gallery-grid">
+          <!-- Existing Images -->
+          <div class="gallery-item" *ngFor="let url of existingGallery; let i = index">
+            <img [src]="url" alt="gallery image">
+            <button type="button" class="btn-remove" (click)="removeGalleryItem(i, true)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          
+          <!-- New Images -->
+          <div class="gallery-item" *ngFor="let prev of galleryPreviews; let i = index">
+            <img [src]="prev" alt="gallery image">
+            <button type="button" class="btn-remove" (click)="removeGalleryItem(i, false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-section">
+        <legend>تفاصيل المشروع / Project Details</legend>
+        <div class="form-field">
+          <label>التحدي بالعربية</label>
+          <textarea formControlName="challenge_ar" rows="2"></textarea>
+        </div>
+        <div class="form-field">
+          <label>The Challenge in English</label>
+          <textarea formControlName="challenge_en" rows="2"></textarea>
+        </div>
+        <div class="form-field">
+          <label>الحل بالعربية</label>
+          <textarea formControlName="solution_ar" rows="2"></textarea>
+        </div>
+        <div class="form-field">
+          <label>The Solution in English</label>
+          <textarea formControlName="solution_en" rows="2"></textarea>
+        </div>
+        <div class="form-field">
+          <label>النتائج (مفصولة بفاصلة)</label>
+          <input type="text" formControlName="results_str">
+        </div>
+        <div class="form-field">
+          <label>المخرجات (مفصولة بفاصلة)</label>
+          <input type="text" formControlName="deliverables_str">
+        </div>
+        <div class="form-field">
+          <label>الوسوم / Tags (مفصولة بفاصلة)</label>
+          <input type="text" formControlName="tags_str">
+        </div>
+      </fieldset>
+
+      <fieldset class="form-group-section">
+        <legend>رأي العميل / Client Testimonial</legend>
+        <div class="form-field">
+          <label>الاسم</label>
+          <input type="text" formControlName="testimonial_name">
+        </div>
+        <div class="form-field">
+          <label>المنصب</label>
+          <input type="text" formControlName="testimonial_role">
+        </div>
+        <div class="form-field">
+          <label>النص</label>
+          <textarea formControlName="testimonial_text" rows="3"></textarea>
+        </div>
+      </fieldset>
+
+    </form>
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn-cancel" (click)="closeDrawer()">
+      <i class="fa-solid fa-xmark"></i> إلغاء
+    </button>
+    <button class="btn-save" (click)="saveProject()" [disabled]="savingProject">
+      <i class="fa-solid fa-check"></i> 
+      {{ savingProject ? 'جاري الحفظ...' : 'حفظ' }}
+    </button>
+  </div>
+</div>

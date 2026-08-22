@@ -1,0 +1,143 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-title">
+      <i class="fa-solid fa-toolbox"></i>
+      <h2>خدمات الوكالة | Agency Services</h2>
+    </div>
+    <button class="btn btn-primary add-btn" (click)="openDrawer()">
+      <i class="fa-solid fa-plus"></i>
+      إضافة خدمة
+    </button>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && services.length === 0">
+    <i class="fa-regular fa-folder-open"></i>
+    <p>لا توجد خدمات بعد</p>
+  </div>
+
+  <div class="services-grid" *ngIf="!isLoading && services.length > 0">
+    <div class="service-card" *ngFor="let service of services">
+      <div class="card-order-badge">#{{ service.order }}</div>
+      <div class="card-icon">
+        <i [class]="service.icon || 'fa-solid fa-star'"></i>
+      </div>
+      <h3 class="card-title-ar">{{ getServiceTitle(service) }}</h3>
+      <h4 class="card-title-en">{{ getServiceTitleEn(service) }}</h4>
+      <p class="card-desc">{{ getServiceDesc(service) }}</p>
+      
+      <div class="card-actions">
+        <button class="btn-action edit" (click)="openDrawer(service)">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button class="btn-action delete" (click)="deleteService(service)">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-overlay" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+  <div class="drawer" [class.open]="isDrawerOpen">
+    <div class="drawer-header">
+      <h3>{{ isEditMode ? 'تعديل الخدمة' : 'إضافة خدمة جديدة' }}</h3>
+      <button class="close-btn" (click)="closeDrawer()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="drawer-body">
+      <form (ngSubmit)="saveService()" #serviceForm="ngForm">
+        
+        <div class="form-group">
+          <label>اختر أيقونة</label>
+          <div class="icon-picker">
+            <div class="icon-option" 
+                 *ngFor="let opt of icons"
+                 [class.selected]="formData.icon === opt.icon"
+                 (click)="selectIcon(opt.icon)">
+              <i [class]="opt.icon"></i>
+              <span>{{ opt.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>الترتيب (Order)</label>
+          <input type="number" name="order" [(ngModel)]="formData.order" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>العنوان بالعربية *</label>
+            <input type="text" name="title_ar" [(ngModel)]="formData.title_ar" required>
+          </div>
+          <div class="form-group">
+            <label>Title in English *</label>
+            <input type="text" name="title_en" [(ngModel)]="formData.title_en" required dir="ltr">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>العنوان الفرعي بالعربية</label>
+            <input type="text" name="subtitle_ar" [(ngModel)]="formData.subtitle_ar">
+          </div>
+          <div class="form-group">
+            <label>Subtitle in English</label>
+            <input type="text" name="subtitle_en" [(ngModel)]="formData.subtitle_en" dir="ltr">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>الوصف بالعربية *</label>
+          <textarea name="description_ar" [(ngModel)]="formData.description_ar" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Description in English *</label>
+          <textarea name="description_en" [(ngModel)]="formData.description_en" rows="3" required dir="ltr"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>مزايا الخدمة بالعربية (كل ميزة في سطر)</label>
+            <textarea name="features_ar" [(ngModel)]="formData.features_ar" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Service Features in English (one per line)</label>
+            <textarea name="features_en" [(ngModel)]="formData.features_en" rows="4" dir="ltr"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row three-cols">
+          <div class="form-group">
+            <label>CTA Text AR</label>
+            <input type="text" name="cta_text_ar" [(ngModel)]="formData.cta_text_ar">
+          </div>
+          <div class="form-group">
+            <label>CTA Text EN</label>
+            <input type="text" name="cta_text_en" [(ngModel)]="formData.cta_text_en" dir="ltr">
+          </div>
+          <div class="form-group">
+            <label>CTA URL</label>
+            <input type="text" name="cta_url" [(ngModel)]="formData.cta_url" dir="ltr">
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" (click)="closeDrawer()">إلغاء</button>
+      <button class="btn btn-primary" (click)="saveService()" [disabled]="!serviceForm.valid">
+        <i class="fa-solid fa-check"></i> حفظ
+      </button>
+    </div>
+  </div>
+</div>

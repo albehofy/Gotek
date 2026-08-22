@@ -1,0 +1,120 @@
+<div class="page-container" dir="rtl">
+  <!-- Toast Message -->
+  <div class="toast-message" *ngIf="infoMessage">
+    {{ infoMessage }}
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-title">
+      <i class="fa-solid fa-tags"></i>
+      <h2>تصنيفات المشاريع | Project Categories</h2>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fa-solid fa-plus"></i>
+      <span>إضافة تصنيف</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && categories.length === 0">
+    <i class="fa-regular fa-folder-open"></i>
+    <h3>لا توجد تصنيفات</h3>
+    <button class="btn btn-primary mt-3" (click)="openModal()">
+      <i class="fa-solid fa-plus"></i> إضافة تصنيف جديد
+    </button>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="card-grid" *ngIf="!isLoading && categories.length > 0">
+    <div class="category-card" *ngFor="let cat of categories">
+      <div class="card-image">
+        <img *ngIf="cat.image" [src]="cat.image" alt="Category Image">
+        <div class="placeholder-img" *ngIf="!cat.image">
+          <i class="fa-solid fa-tags"></i>
+        </div>
+      </div>
+      <div class="card-content">
+        <h3 class="name-ar">{{ getCategoryNameAr(cat) }}</h3>
+        <h4 class="name-en">{{ getCategoryNameEn(cat) }}</h4>
+        <p class="description">{{ getCategoryDescAr(cat) || getCategoryDescEn(cat) }}</p>
+      </div>
+      <div class="card-actions">
+        <button class="btn-icon edit" (click)="openModal(cat)" title="تعديل">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button class="btn-icon delete" (click)="deleteCategory(cat.id)" title="حذف">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal-box" *ngIf="showModal">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'تعديل تصنيف' : 'إضافة تصنيف جديد' }}</h3>
+      <button class="btn-close-custom" (click)="closeModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+        
+        <div class="form-group">
+          <label>الاسم بالعربية <span class="text-danger">*</span></label>
+          <input type="text" formControlName="name_ar" class="form-control" placeholder="اسم التصنيف">
+          <div class="error-msg" *ngIf="categoryForm.get('name_ar')?.touched && categoryForm.get('name_ar')?.invalid">
+            هذا الحقل مطلوب
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Name in English <span class="text-danger">*</span></label>
+          <input type="text" formControlName="name_en" class="form-control" placeholder="Category Name" dir="ltr">
+          <div class="error-msg" *ngIf="categoryForm.get('name_en')?.touched && categoryForm.get('name_en')?.invalid">
+            هذا الحقل مطلوب
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>الوصف بالعربية</label>
+          <textarea formControlName="description_ar" class="form-control" rows="3" placeholder="وصف التصنيف"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Description in English</label>
+          <textarea formControlName="description_en" class="form-control" rows="3" placeholder="Category Description" dir="ltr"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>صورة التصنيف</label>
+          <div class="upload-zone" (click)="fileInput.click()">
+            <input type="file" #fileInput (change)="onFileChange($event)" style="display: none" accept="image/*">
+            <div *ngIf="!imagePreview" class="upload-prompt">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>اضغط لرفع صورة</p>
+            </div>
+            <img *ngIf="imagePreview" [src]="imagePreview" class="img-preview" alt="Preview">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">إلغاء</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+            <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+            <span *ngIf="!isSaving">حفظ</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

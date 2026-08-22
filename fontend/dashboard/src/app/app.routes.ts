@@ -66,6 +66,47 @@ export const routes: Routes = [
         path: 'roles', 
         canActivate: [roleGuard(['super_admin', 'admin'])],
         loadComponent: () => import('./components/roles/roles-management.component').then(m => m.RolesManagementComponent) 
+      },
+      // ── Portfolio Management ────────────────────────────────────────────────
+      {
+        path: 'portfolio',
+        canActivate: [roleGuard(['super_admin', 'admin'])],
+        loadComponent: () => import('./components/portfolio/portfolio-management.component').then(m => m.PortfolioManagementComponent),
+        children: [
+          { path: '', redirectTo: 'projects', pathMatch: 'full' },
+          {
+            path: 'projects',
+            loadComponent: () => import('./components/portfolio/projects/portfolio-projects.component').then(m => m.PortfolioProjectsComponent)
+          },
+          {
+            path: 'projects/:id',
+            loadComponent: () => import('./components/portfolio/projects/portfolio-project-detail.component').then(m => m.PortfolioProjectDetailComponent)
+          },
+          {
+            path: 'categories',
+            loadComponent: () => import('./components/portfolio/categories/portfolio-categories.component').then(m => m.PortfolioCategoriesComponent)
+          },
+          {
+            path: 'services',
+            loadComponent: () => import('./components/portfolio/services/portfolio-services.component').then(m => m.PortfolioServicesComponent)
+          },
+          {
+            path: 'blogs',
+            loadComponent: () => import('./components/portfolio/blogs/portfolio-blogs.component').then(m => m.PortfolioBlogsComponent)
+          },
+          {
+            path: 'testimonials',
+            loadComponent: () => import('./components/portfolio/testimonials/portfolio-testimonials.component').then(m => m.PortfolioTestimonialsComponent)
+          },
+          {
+            path: 'faqs',
+            loadComponent: () => import('./components/portfolio/faqs/portfolio-faqs.component').then(m => m.PortfolioFaqsComponent)
+          },
+          {
+            path: 'about',
+            loadComponent: () => import('./components/portfolio/about/portfolio-about.component').then(m => m.PortfolioAboutComponent)
+          }
+        ]
       }
     ]
   },

@@ -139,6 +139,7 @@ export class MainLayoutComponent implements OnInit {
     if (path.startsWith('finance')) return 'المالية والخزينة';
     if (path.startsWith('client-portal')) return 'بوابة العملاء';
     if (path.startsWith('roles')) return 'الأدوار والصلاحيات';
+    if (path.startsWith('portfolio')) return 'معرض الأعمال والموقع';
     return path;
   }
 }

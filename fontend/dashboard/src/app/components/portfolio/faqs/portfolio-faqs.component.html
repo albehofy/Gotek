@@ -1,0 +1,149 @@
+<div class="page-container" dir="rtl">
+  <!-- Toast Message -->
+  <div class="toast-message" *ngIf="infoMessage">
+    {{ infoMessage }}
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-title">
+      <i class="fa-solid fa-circle-question"></i>
+      <h2>الأسئلة الشائعة | FAQs</h2>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fa-solid fa-plus"></i>
+      <span>إضافة سؤال</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && faqs.length === 0">
+    <i class="fa-regular fa-folder-open"></i>
+    <h3>لا توجد أسئلة بعد</h3>
+    <button class="btn btn-primary mt-3" (click)="openModal()">
+      <i class="fa-solid fa-plus"></i> إضافة سؤال جديد
+    </button>
+  </div>
+
+  <!-- Accordion List -->
+  <div class="accordion-list" *ngIf="!isLoading && faqs.length > 0">
+    <div class="faq-item" *ngFor="let faq of faqs" [class.expanded]="expandedFaqId === faq.id">
+      
+      <div class="faq-header" (click)="toggleExpand(faq.id)">
+        <div class="faq-title-area">
+          <i class="fa-solid fa-circle-question faq-icon"></i>
+          <div class="faq-questions">
+            <h4 class="question-ar">{{ faq.question_ar }}</h4>
+            <span class="question-en">{{ faq.question_en }}</span>
+          </div>
+        </div>
+        
+        <div class="faq-actions-area">
+          <span class="badge" [class.badge-active]="faq.is_active" [class.badge-inactive]="!faq.is_active">
+            {{ faq.is_active ? 'مفعل' : 'معطل' }}
+          </span>
+          <div class="actions">
+            <button class="btn-icon edit" (click)="openModal(faq, $event)" title="تعديل">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn-icon delete" (click)="deleteFaq(faq.id, $event)" title="حذف">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+          <i class="fa-solid fa-chevron-down expand-icon"></i>
+        </div>
+      </div>
+
+      <div class="faq-body" [style.maxHeight]="expandedFaqId === faq.id ? '500px' : '0'">
+        <div class="faq-content">
+          <div class="answer-block ar-block">
+            <label>الإجابة بالعربية:</label>
+            <p>{{ faq.answer_ar }}</p>
+          </div>
+          <div class="answer-block en-block" dir="ltr">
+            <label>Answer in English:</label>
+            <p>{{ faq.answer_en }}</p>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal-box" *ngIf="showModal">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'تعديل سؤال' : 'إضافة سؤال جديد' }}</h3>
+      <button class="btn-close-custom" (click)="closeModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="faqForm" (ngSubmit)="saveFaq()">
+        
+        <div class="form-group">
+          <label>السؤال بالعربية <span class="text-danger">*</span></label>
+          <input type="text" formControlName="question_ar" class="form-control">
+          <div class="error-msg" *ngIf="faqForm.get('question_ar')?.touched && faqForm.get('question_ar')?.invalid">
+            مطلوب
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Question in English <span class="text-danger">*</span></label>
+          <input type="text" formControlName="question_en" class="form-control" dir="ltr">
+          <div class="error-msg" *ngIf="faqForm.get('question_en')?.touched && faqForm.get('question_en')?.invalid">
+            مطلوب
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>الإجابة بالعربية <span class="text-danger">*</span></label>
+          <textarea formControlName="answer_ar" class="form-control" rows="3"></textarea>
+          <div class="error-msg" *ngIf="faqForm.get('answer_ar')?.touched && faqForm.get('answer_ar')?.invalid">
+            مطلوب
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Answer in English <span class="text-danger">*</span></label>
+          <textarea formControlName="answer_en" class="form-control" rows="3" dir="ltr"></textarea>
+          <div class="error-msg" *ngIf="faqForm.get('answer_en')?.touched && faqForm.get('answer_en')?.invalid">
+            مطلوب
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col form-group">
+            <label>الترتيب</label>
+            <input type="number" formControlName="sort_order" class="form-control">
+          </div>
+          <div class="col form-group toggle-group">
+            <label>حالة التفعيل</label>
+            <label class="switch">
+              <input type="checkbox" formControlName="is_active">
+              <span class="slider round"></span>
+            </label>
+            <span class="status-text">{{ faqForm.get('is_active')?.value ? 'فعال' : 'معطل' }}</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">إلغاء</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+            <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+            <span *ngIf="!isSaving">حفظ</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

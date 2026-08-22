@@ -1,0 +1,167 @@
+<div class="detail-page" *ngIf="!loading && project">
+
+  <!-- Back Button & Breadcrumb -->
+  <div class="detail-topbar">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fa-solid fa-arrow-right"></i>
+      <span>العودة للمشاريع</span>
+    </button>
+    <div class="breadcrumb-trail">
+      <span>معرض الأعمال</span>
+      <i class="fa-solid fa-chevron-left sep-icon"></i>
+      <span>{{ getTitle() }}</span>
+    </div>
+  </div>
+
+  <!-- Hero Banner -->
+  <div class="detail-hero" [style.background-color]="project.color || '#1a1a2e'">
+    <img *ngIf="project.image" [src]="project.image" [alt]="project.img_alt || getTitle()" class="hero-img" />
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <div class="category-badge-hero" *ngIf="getCategoryName()">{{ getCategoryName() }}</div>
+        <h1 class="hero-title-ar">{{ getTitle() }}</h1>
+        <p class="hero-title-en" *ngIf="getTitleEn()">{{ getTitleEn() }}</p>
+        <div class="hero-meta">
+          <span *ngIf="project.client"><i class="fa-solid fa-building"></i> {{ project.client }}</span>
+          <span *ngIf="project.timeline"><i class="fa-solid fa-calendar-days"></i> {{ project.timeline }}</span>
+          <span *ngIf="project.ViewInHome" class="featured-badge"><i class="fa-solid fa-star"></i> مميز</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-body">
+
+    <!-- Overview Description -->
+    <section class="detail-section" *ngIf="getDescription()">
+      <div class="section-header">
+        <i class="fa-solid fa-align-right section-icon"></i>
+        <div>
+          <h2 class="section-title">نظرة عامة على المشروع</h2>
+          <p class="section-subtitle">Project Overview</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <p class="text-ar">{{ getDescription() }}</p>
+        <p class="text-en" *ngIf="getDescriptionEn()">{{ getDescriptionEn() }}</p>
+      </div>
+    </section>
+
+    <!-- Challenge & Solution (2-col layout) -->
+    <div class="challenge-solution-grid" *ngIf="getChallenge() || getSolution()">
+      <section class="cs-card challenge-card" *ngIf="getChallenge()">
+        <div class="cs-icon-wrap challenge-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3>التحدي <span class="en-label">The Challenge</span></h3>
+        <p class="text-ar">{{ getChallenge() }}</p>
+        <p class="text-en" *ngIf="getChallengeEn()">{{ getChallengeEn() }}</p>
+      </section>
+      <section class="cs-card solution-card" *ngIf="getSolution()">
+        <div class="cs-icon-wrap solution-icon">
+          <i class="fa-solid fa-lightbulb"></i>
+        </div>
+        <h3>الحل <span class="en-label">The Solution</span></h3>
+        <p class="text-ar">{{ getSolution() }}</p>
+        <p class="text-en" *ngIf="getSolutionEn()">{{ getSolutionEn() }}</p>
+      </section>
+    </div>
+
+    <!-- Results -->
+    <section class="detail-section" *ngIf="getResults().length > 0">
+      <div class="section-header">
+        <i class="fa-solid fa-chart-line section-icon"></i>
+        <div>
+          <h2 class="section-title">النتائج والمخرجات</h2>
+          <p class="section-subtitle">Results</p>
+        </div>
+      </div>
+      <div class="results-grid">
+        <div class="result-chip" *ngFor="let r of getResults()">
+          <i class="fa-solid fa-check"></i>
+          <span>{{ r }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="detail-section" *ngIf="getGallery().length > 0">
+      <div class="section-header">
+        <i class="fa-solid fa-images section-icon"></i>
+        <div>
+          <h2 class="section-title">معرض الصور</h2>
+          <p class="section-subtitle">Gallery</p>
+        </div>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-thumb" *ngFor="let img of getGallery(); let i = index" (click)="openLightbox(i)">
+          <img [src]="img" [alt]="'صورة ' + (i+1)" loading="lazy" />
+          <div class="gallery-thumb-overlay">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tags -->
+    <section class="detail-section" *ngIf="getTags().length > 0">
+      <div class="section-header">
+        <i class="fa-solid fa-tags section-icon"></i>
+        <div>
+          <h2 class="section-title">الوسوم</h2>
+          <p class="section-subtitle">Tags</p>
+        </div>
+      </div>
+      <div class="tags-row">
+        <span class="tag-chip" *ngFor="let t of getTags()">{{ t }}</span>
+      </div>
+    </section>
+
+    <!-- Client Testimonial -->
+    <section class="detail-section testimonial-section" *ngIf="getTestimonialText()">
+      <div class="testimonial-card">
+        <i class="fa-solid fa-quote-right quote-watermark"></i>
+        <p class="testimonial-text">{{ getTestimonialText() }}</p>
+        <div class="testimonial-author" *ngIf="getTestimonialName()">
+          <div class="author-avatar">{{ getTestimonialName().charAt(0) }}</div>
+          <div>
+            <div class="author-name">{{ getTestimonialName() }}</div>
+            <div class="author-role" *ngIf="getTestimonialRole()">{{ getTestimonialRole() }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="detail-loading" *ngIf="loading">
+  <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+  <p>جاري تحميل المشروع...</p>
+</div>
+
+<!-- Not Found State -->
+<div class="detail-not-found" *ngIf="!loading && !project">
+  <i class="fa-regular fa-folder-open fa-3x"></i>
+  <h3>المشروع غير موجود</h3>
+  <p>Project not found</p>
+  <button class="back-btn" (click)="goBack()">
+    <i class="fa-solid fa-arrow-right"></i> العودة
+  </button>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" *ngIf="lightboxOpen" (click)="closeLightbox()">
+  <button class="lightbox-close" (click)="closeLightbox()">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+  <button class="lightbox-nav prev" (click)="$event.stopPropagation(); prevImage()" *ngIf="getGallery().length > 1">
+    <i class="fa-solid fa-chevron-right"></i>
+  </button>
+  <img [src]="getGallery()[lightboxIndex]" class="lightbox-img" (click)="$event.stopPropagation()" />
+  <button class="lightbox-nav next" (click)="$event.stopPropagation(); nextImage()" *ngIf="getGallery().length > 1">
+    <i class="fa-solid fa-chevron-left"></i>
+  </button>
+  <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ getGallery().length }}</div>
+</div>

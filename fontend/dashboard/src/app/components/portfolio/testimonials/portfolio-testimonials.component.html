@@ -1,0 +1,153 @@
+<div class="page-container" dir="rtl">
+  <!-- Toast Message -->
+  <div class="toast-message" *ngIf="infoMessage">
+    {{ infoMessage }}
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-title">
+      <i class="fa-solid fa-quote-left"></i>
+      <h2>آراء العملاء | Client Testimonials</h2>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fa-solid fa-plus"></i>
+      <span>إضافة رأي</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && testimonials.length === 0">
+    <i class="fa-regular fa-folder-open"></i>
+    <h3>لا توجد آراء عملاء بعد</h3>
+    <button class="btn btn-primary mt-3" (click)="openModal()">
+      <i class="fa-solid fa-plus"></i> إضافة رأي جديد
+    </button>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="card-grid" *ngIf="!isLoading && testimonials.length > 0">
+    <div class="testimonial-card" *ngFor="let t of testimonials">
+      <i class="fa-solid fa-quote-left watermark"></i>
+      
+      <div class="card-content">
+        <p class="feedback-ar">{{ getFeedbackAr(t) }}</p>
+        <p class="feedback-en">{{ getFeedbackEn(t) }}</p>
+        
+        <div class="rating-stars">
+          <ng-container *ngFor="let isFilled of getStarArray(t.rating)">
+            <i class="fa-solid fa-star" *ngIf="isFilled"></i>
+            <i class="fa-regular fa-star" *ngIf="!isFilled"></i>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="client-info">
+          <div class="avatar" [ngStyle]="{'background-color': t.avatar_color || '#8a2be2'}">
+            {{ t.client_name ? t.client_name.charAt(0).toUpperCase() : 'U' }}
+          </div>
+          <div class="client-details">
+            <h4>{{ t.client_name }}</h4>
+            <span class="job-title">{{ t.job_title }}</span>
+            <span class="company" *ngIf="t.company_name">{{ t.company_name }}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-icon edit" (click)="openModal(t)" title="تعديل">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+          <button class="btn-icon delete" (click)="deleteTestimonial(t.id)" title="حذف">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal-box" *ngIf="showModal">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'تعديل رأي' : 'إضافة رأي جديد' }}</h3>
+      <button class="btn-close-custom" (click)="closeModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="testimonialForm" (ngSubmit)="saveTestimonial()">
+        
+        <div class="row">
+          <div class="col form-group">
+            <label>اسم العميل <span class="text-danger">*</span></label>
+            <input type="text" formControlName="client_name" class="form-control">
+            <div class="error-msg" *ngIf="testimonialForm.get('client_name')?.touched && testimonialForm.get('client_name')?.invalid">
+              مطلوب
+            </div>
+          </div>
+          <div class="col form-group">
+            <label>المسمى الوظيفي <span class="text-danger">*</span></label>
+            <input type="text" formControlName="job_title" class="form-control">
+            <div class="error-msg" *ngIf="testimonialForm.get('job_title')?.touched && testimonialForm.get('job_title')?.invalid">
+              مطلوب
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>اسم الشركة</label>
+          <input type="text" formControlName="company_name" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>رأي العميل بالعربية <span class="text-danger">*</span></label>
+          <textarea formControlName="feedback_ar" class="form-control" rows="3"></textarea>
+          <div class="error-msg" *ngIf="testimonialForm.get('feedback_ar')?.touched && testimonialForm.get('feedback_ar')?.invalid">
+            مطلوب
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Feedback in English <span class="text-danger">*</span></label>
+          <textarea formControlName="feedback_en" class="form-control" rows="3" dir="ltr"></textarea>
+          <div class="error-msg" *ngIf="testimonialForm.get('feedback_en')?.touched && testimonialForm.get('feedback_en')?.invalid">
+            مطلوب
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col form-group">
+            <label>التقييم</label>
+            <div class="star-selector">
+              <i *ngFor="let i of [1,2,3,4,5]" 
+                 [class.fa-solid]="i <= testimonialForm.get('rating')?.value"
+                 [class.fa-regular]="i > testimonialForm.get('rating')?.value"
+                 class="fa-star"
+                 (click)="setRating(i)">
+              </i>
+            </div>
+          </div>
+          <div class="col form-group">
+            <label>لون الصورة الرمزية</label>
+            <input type="color" formControlName="avatar_color" class="form-control color-picker">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">إلغاء</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+            <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+            <span *ngIf="!isSaving">حفظ</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
