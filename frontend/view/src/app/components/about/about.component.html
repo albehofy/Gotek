@@ -1,0 +1,91 @@
+<!-- ════════════════════════════════════════════
+     ABOUT — MINIMALIST EDITORIAL STORY
+     ════════════════════════════════════════════ -->
+
+<section class="about-hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dash"></span>
+      <span>{{ translationService.translate('nav.about') }}</span>
+    </div>
+
+    <h1>
+      <span>{{ translationService.currentLang() === 'ar' ? 'نبني علامات تجارية' : 'We Build Brands' }}</span>
+      <span class="accent"> {{ translationService.currentLang() === 'ar' ? 'تترك أثراً حقيقياً' : 'That Make An Impact' }}</span>
+    </h1>
+
+    <p class="lead">
+      {{ translationService.currentLang() === 'ar'
+         ? 'ميديا جلو استوديو تسويق وتصميم رقمي في القاهرة، بنجمع بين الفكر الاستراتيجي، الهوية البصرية الجذابة، والهندسة البرمجية المتقنة.'
+         : 'Media Glow is a digital marketing and design studio based in Cairo, blending strategic thinking, brand identity, and clean web engineering.' }}
+    </p>
+  </div>
+</section>
+
+<!-- Values / Pillars -->
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="head-block">
+      <div class="eyebrow">
+        <span class="dash"></span>
+        <span>{{ translationService.currentLang() === 'ar' ? 'مبادئنا' : 'Our Values' }}</span>
+      </div>
+      <h2>{{ translationService.currentLang() === 'ar' ? 'كيف نفكر ونعمل' : 'How We Think & Operate' }}</h2>
+    </div>
+
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-num">01</div>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'الوضوح التام' : 'Total Clarity' }}</h3>
+        <p>{{ translationService.currentLang() === 'ar' ? 'لا تعقيد ولا مصطلحات مبهمة — بنشاركك كل خطوة وخطة عمل بوضوح وشفافية.' : 'No jargon or guesswork — we share every step, milestone, and metric with complete transparency.' }}</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">02</div>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'التركيز على العائد' : 'ROI Driven' }}</h3>
+        <p>{{ translationService.currentLang() === 'ar' ? 'هدفنا مش مجرد أرقام وإعجابات، هدفنا زيادة مبيعاتك ونمو علامتك في السوق.' : 'Our goal is not vanity likes, but tangible customer growth and bottom-line revenue.' }}</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">03</div>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'حرفية التفاصيل' : 'Craft in Detail' }}</h3>
+        <p>{{ translationService.currentLang() === 'ar' ? 'من الخطوط والألوان حتى سرعة تحميل الكود، كل تفصيلة معمولة بعناية.' : 'From typography and palette to page speed and code architecture, everything is polished.' }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline / Milestones -->
+<section class="section">
+  <div class="wrap">
+    <div class="head-block">
+      <div class="eyebrow">
+        <span class="dash"></span>
+        <span>{{ translationService.currentLang() === 'ar' ? 'محطاتنا' : 'Our Journey' }}</span>
+      </div>
+      <h2>{{ translationService.currentLang() === 'ar' ? 'رحلة نمو مستمرة' : 'Milestones in Our Growth' }}</h2>
+    </div>
+
+    <div class="timeline-list">
+      <div class="timeline-row" *ngFor="let t of timeline">
+        <div class="t-year">{{ t.year }}</div>
+        <div class="t-content">
+          <h3>{{ t.title?.ar || t.title_ar || t.title }}</h3>
+          <p>{{ t.desc || t.description?.ar || t.description_ar || t.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
+    <h2>{{ translationService.translate('cta.title') }}</h2>
+    <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+    <a routerLink="/contact" class="btn btn-solid">
+      <span>{{ translationService.translate('cta.btn') }}</span>
+    </a>
+  </div>
+</section>

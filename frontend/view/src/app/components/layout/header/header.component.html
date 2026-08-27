@@ -1,0 +1,42 @@
+<header>
+  <div class="nav">
+    <a routerLink="/" class="logo-text">
+      {{ translationService.translate('brand') }}<span class="dot">.</span>
+    </a>
+
+    <nav class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">{{ translationService.translate('nav.home') }}</a>
+      <a routerLink="/services" routerLinkActive="active">{{ translationService.translate('nav.services') }}</a>
+      <a routerLink="/portfolio" routerLinkActive="active">{{ translationService.translate('nav.work') }}</a>
+      <a routerLink="/about" routerLinkActive="active">{{ translationService.translate('nav.about') }}</a>
+      <a routerLink="/blogs" routerLinkActive="active">{{ translationService.translate('nav.blogs') }}</a>
+      <a routerLink="/contact" routerLinkActive="active">{{ translationService.translate('nav.contact') }}</a>
+    </nav>
+
+    <div class="nav-actions">
+      <div class="lang-toggle" (click)="toggleLang()">
+        <span [class.active]="translationService.currentLang() === 'ar'">AR</span> /
+        <span [class.active]="translationService.currentLang() === 'en'">EN</span>
+      </div>
+
+      <a routerLink="/contact" class="btn btn-solid desktop-cta">
+        <span>{{ translationService.translate('nav.cta') }}</span>
+      </a>
+
+      <button class="hamburger" (click)="toggleMenu()">
+        <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-menu" *ngIf="isMenuOpen">
+    <a routerLink="/" (click)="closeMenu()">{{ translationService.translate('nav.home') }}</a>
+    <a routerLink="/services" (click)="closeMenu()">{{ translationService.translate('nav.services') }}</a>
+    <a routerLink="/portfolio" (click)="closeMenu()">{{ translationService.translate('nav.work') }}</a>
+    <a routerLink="/about" (click)="closeMenu()">{{ translationService.translate('nav.about') }}</a>
+    <a routerLink="/blogs" (click)="closeMenu()">{{ translationService.translate('nav.blogs') }}</a>
+    <a routerLink="/contact" (click)="closeMenu()">{{ translationService.translate('nav.contact') }}</a>
+    <a routerLink="/contact" class="btn btn-solid mt-12" (click)="closeMenu()">{{ translationService.translate('nav.cta') }}</a>
+  </div>
+</header>

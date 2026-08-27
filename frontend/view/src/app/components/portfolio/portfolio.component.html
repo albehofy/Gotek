@@ -1,0 +1,77 @@
+<!-- ════════════════════════════════════════════
+     PORTFOLIO — MINIMALIST EDITORIAL SHOWCASE
+     ════════════════════════════════════════════ -->
+
+<section class="portfolio-hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dash"></span>
+      <span>{{ translationService.currentLang() === 'ar' ? 'معرض الأعمال' : 'Portfolio Showcase' }}</span>
+    </div>
+
+    <h1>
+      <span>{{ translationService.currentLang() === 'ar' ? 'مشاريع بنفخر بيها' : 'Selected Work' }}</span>
+    </h1>
+
+    <p class="lead">
+      {{ translationService.currentLang() === 'ar' 
+         ? 'نستعرض هنا أبرز أعمالنا في بناء الهويات، المنصات، والحملات التسويقية للعلامات الطموحة.'
+         : 'A curated selection of our work in brand identity, digital marketing, and web development.' }}
+    </p>
+
+    <!-- Filter Buttons Row -->
+    <div class="portfolio-filters">
+      <button 
+        type="button"
+        class="filter-btn" 
+        [class.active]="selectedCategory === 'all'"
+        (click)="filterCategory('all')"
+      >
+        {{ translationService.currentLang() === 'ar' ? 'الكل' : 'All' }}
+      </button>
+
+      <button 
+        *ngFor="let cat of categories"
+        type="button"
+        class="filter-btn" 
+        [class.active]="selectedCategory === (cat.id || cat.slug || cat.name)"
+        (click)="filterCategory(cat.id || cat.slug || cat.name)"
+      >
+        {{ cat.name_ar || cat.name || cat }}
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="wrap">
+
+    <div *ngIf="loading" class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>{{ translationService.currentLang() === 'ar' ? 'جاري تحميل المشاريع...' : 'Loading projects...' }}</p>
+    </div>
+
+    <div *ngIf="!loading && filteredProjects.length" class="projects-grid">
+      <a *ngFor="let p of filteredProjects; let i = index" [routerLink]="['/project', p.id]" class="project-card">
+        <div class="project-thumb">
+          <img *ngIf="p.image || p.main_image" [src]="p.image || p.main_image" [alt]="p.title?.ar || p.title || 'Project'" class="media-img" />
+          <div *ngIf="!p.image && !p.main_image" class="media" [class]="'media-p' + (i % 3 + 1)"></div>
+        </div>
+
+        <div class="project-tag">
+          {{ p.category?.name_ar || p.category?.name || p.category || (translationService.currentLang() === 'ar' ? 'مشروع رقمي' : 'Digital Project') }}
+        </div>
+
+        <h3>{{ p.title?.ar || p.title_ar || (typeof p.title === 'string' ? p.title : '') || 'مشروع ميديا جلو' }}</h3>
+        <div class="meta">{{ p.description?.ar || p.description_ar || (typeof p.description === 'string' ? p.description : '') || '' }}</div>
+      </a>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && !filteredProjects.length" class="empty-state">
+      <i class="fa-regular fa-folder-open"></i>
+      <h3>{{ translationService.currentLang() === 'ar' ? 'لا توجد مشاريع في هذا التصنيف' : 'No projects in this category' }}</h3>
+    </div>
+
+  </div>
+</section>

@@ -1,0 +1,63 @@
+<!-- ════════════════════════════════════════════
+     BLOGS — MINIMALIST EDITORIAL ARTICLES
+     ════════════════════════════════════════════ -->
+
+<section class="blogs-hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dash"></span>
+      <span>{{ translationService.translate('nav.blogs') }}</span>
+    </div>
+
+    <h1>
+      <span>{{ translationService.currentLang() === 'ar' ? 'أفكار ومقالات في التسويق والتصميم' : 'Insights & Thoughts' }}</span>
+    </h1>
+
+    <p class="lead">
+      {{ translationService.currentLang() === 'ar'
+         ? 'نشارك خبراتنا وتحليلاتنا لمساعدتك على اتخاذ قرارات تسويقية وتقنية مبنية على أرقام وتجارب حقيقية.'
+         : 'Insights, industry analysis, and guides to help you make smarter marketing and tech decisions.' }}
+    </p>
+
+    <!-- Search Input -->
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="filterBlogs()" 
+        [placeholder]="translationService.currentLang() === 'ar' ? 'ابحث في المقالات...' : 'Search articles...'" 
+      />
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="articles-grid">
+      <a *ngFor="let b of filteredBlogs" [routerLink]="['/blog-details', b.id]" class="article-card">
+        <div class="art-thumb">
+          <img *ngIf="b.media_path || b.image" [src]="b.media_path || b.image" [alt]="b.title?.ar || b.title" />
+          <div *ngIf="!b.media_path && !b.image" class="art-placeholder">
+            <i class="fa-solid fa-newspaper"></i>
+          </div>
+        </div>
+
+        <div class="art-body">
+          <div class="art-tag">{{ b.category || (translationService.currentLang() === 'ar' ? 'مقال' : 'Article') }}</div>
+          <h3>{{ b.title?.ar || b.title_ar || b.title }}</h3>
+          <p>{{ b.description?.ar || b.description_ar || b.description }}</p>
+          <span class="read-more">
+            <span>{{ translationService.currentLang() === 'ar' ? 'اقرأ المقال' : 'Read Article' }}</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </span>
+        </div>
+      </a>
+    </div>
+
+    <div *ngIf="!filteredBlogs.length" class="empty-state">
+      <i class="fa-regular fa-folder-open"></i>
+      <h3>{{ translationService.currentLang() === 'ar' ? 'لا توجد نتائج بحث مطابقة' : 'No articles match your search' }}</h3>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,223 @@
+<!-- ══════════════════════════════════════════════════════════════════
+     HERO SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dash"></span>
+      <span>{{ translationService.translate('hero.eyebrow') }}</span>
+    </div>
+
+    <h1>
+      <span>{{ translationService.translate('hero.line1') }}</span>
+      <span class="accent"> {{ translationService.translate('hero.line2') }}</span>
+    </h1>
+
+    <div class="hero-bottom">
+      <p class="lead">{{ translationService.translate('hero.sub') }}</p>
+      <div class="hero-actions">
+        <a routerLink="/contact" class="btn btn-solid">
+          <span>{{ translationService.translate('hero.btn1') }}</span>
+        </a>
+        <a routerLink="/portfolio" class="link-arrow">
+          <span>{{ translationService.translate('hero.btn2') }}</span>
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     LOGO STRIP
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="logo-strip">
+  <div class="wrap">
+    <span class="cap">{{ translationService.translate('strip.cap') }}</span>
+    <div class="logo-row">
+      <span>Qirmiz</span>
+      <span>Al&nbsp;Noor</span>
+      <span>Takamol</span>
+      <span>Nilewave</span>
+      <span>Orbita</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SERVICES SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="head-block">
+      <div class="eyebrow">
+        <span class="dash"></span>
+        <span>{{ translationService.translate('services.eyebrow') }}</span>
+      </div>
+      <h2>{{ translationService.translate('services.title') }}</h2>
+      <p class="sub">{{ translationService.translate('services.sub') }}</p>
+    </div>
+
+    <div class="services-list">
+      <div class="service-row" routerLink="/services">
+        <i class="si fa-solid fa-palette"></i>
+        <h3>{{ translationService.translate('services.s1.t') }}</h3>
+        <p>{{ translationService.translate('services.s1.d') }}</p>
+        <i class="arrow fa-solid fa-arrow-left"></i>
+      </div>
+
+      <div class="service-row" routerLink="/services">
+        <i class="si fa-solid fa-bullhorn"></i>
+        <h3>{{ translationService.translate('services.s2.t') }}</h3>
+        <p>{{ translationService.translate('services.s2.d') }}</p>
+        <i class="arrow fa-solid fa-arrow-left"></i>
+      </div>
+
+      <div class="service-row" routerLink="/services">
+        <i class="si fa-solid fa-code"></i>
+        <h3>{{ translationService.translate('services.s3.t') }}</h3>
+        <p>{{ translationService.translate('services.s3.d') }}</p>
+        <i class="arrow fa-solid fa-arrow-left"></i>
+      </div>
+
+      <div class="service-row" routerLink="/services">
+        <i class="si fa-solid fa-chart-line"></i>
+        <h3>{{ translationService.translate('services.s4.t') }}</h3>
+        <p>{{ translationService.translate('services.s4.d') }}</p>
+        <i class="arrow fa-solid fa-arrow-left"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SELECTED WORK SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="section section-soft" id="work">
+  <div class="wrap">
+    <div class="head-row">
+      <div class="head-block" style="margin-bottom:0;">
+        <div class="eyebrow">
+          <span class="dash"></span>
+          <span>{{ translationService.translate('work.eyebrow') }}</span>
+        </div>
+        <h2>{{ translationService.translate('work.title') }}</h2>
+      </div>
+      <a routerLink="/portfolio" class="link-arrow">
+        <span>{{ translationService.translate('work.viewall') }}</span>
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+    </div>
+
+    <div class="projects-grid">
+      <!-- Card 1 -->
+      <a [routerLink]="projects.length > 0 ? ['/project', projects[0].id] : ['/portfolio']" class="project-card p1">
+        <div class="project-thumb">
+          <img *ngIf="projects.length > 0 && projects[0].image" [src]="projects[0].image" alt="Project 1" class="media-img" />
+          <div *ngIf="!projects.length || !projects[0].image" class="media"></div>
+        </div>
+        <div class="project-tag">{{ projects.length > 0 ? (getCategoryName(projects[0]) || translationService.translate('work.p1.tag')) : translationService.translate('work.p1.tag') }}</div>
+        <h3>{{ projects.length > 0 ? (getProjectTitle(projects[0]) || translationService.translate('work.p1.t')) : translationService.translate('work.p1.t') }}</h3>
+        <div class="meta">{{ projects.length > 0 ? (getProjectDesc(projects[0]) || translationService.translate('work.p1.d')) : translationService.translate('work.p1.d') }}</div>
+      </a>
+
+      <!-- Card 2 -->
+      <a [routerLink]="projects.length > 1 ? ['/project', projects[1].id] : ['/portfolio']" class="project-card p2">
+        <div class="project-thumb">
+          <img *ngIf="projects.length > 1 && projects[1].image" [src]="projects[1].image" alt="Project 2" class="media-img" />
+          <div *ngIf="projects.length < 2 || !projects[1].image" class="media"></div>
+        </div>
+        <div class="project-tag">{{ projects.length > 1 ? (getCategoryName(projects[1]) || translationService.translate('work.p2.tag')) : translationService.translate('work.p2.tag') }}</div>
+        <h3>{{ projects.length > 1 ? (getProjectTitle(projects[1]) || translationService.translate('work.p2.t')) : translationService.translate('work.p2.t') }}</h3>
+        <div class="meta">{{ projects.length > 1 ? (getProjectDesc(projects[1]) || translationService.translate('work.p2.d')) : translationService.translate('work.p2.d') }}</div>
+      </a>
+
+      <!-- Card 3 -->
+      <a [routerLink]="projects.length > 2 ? ['/project', projects[2].id] : ['/portfolio']" class="project-card p3">
+        <div class="project-thumb">
+          <img *ngIf="projects.length > 2 && projects[2].image" [src]="projects[2].image" alt="Project 3" class="media-img" />
+          <div *ngIf="projects.length < 3 || !projects[2].image" class="media"></div>
+        </div>
+        <div class="project-tag">{{ projects.length > 2 ? (getCategoryName(projects[2]) || translationService.translate('work.p3.tag')) : translationService.translate('work.p3.tag') }}</div>
+        <h3>{{ projects.length > 2 ? (getProjectTitle(projects[2]) || translationService.translate('work.p3.t')) : translationService.translate('work.p3.t') }}</h3>
+        <div class="meta">{{ projects.length > 2 ? (getProjectDesc(projects[2]) || translationService.translate('work.p3.d')) : translationService.translate('work.p3.d') }}</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PROCESS SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="section" id="process">
+  <div class="wrap">
+    <div class="head-block">
+      <div class="eyebrow">
+        <span class="dash"></span>
+        <span>{{ translationService.translate('process.eyebrow') }}</span>
+      </div>
+      <h2>{{ translationService.translate('process.title') }}</h2>
+    </div>
+
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="process-num">01</div>
+        <h3>{{ translationService.translate('process.s1.t') }}</h3>
+        <p>{{ translationService.translate('process.s1.d') }}</p>
+      </div>
+
+      <div class="process-step">
+        <div class="process-num">02</div>
+        <h3>{{ translationService.translate('process.s2.t') }}</h3>
+        <p>{{ translationService.translate('process.s2.d') }}</p>
+      </div>
+
+      <div class="process-step">
+        <div class="process-num">03</div>
+        <h3>{{ translationService.translate('process.s3.t') }}</h3>
+        <p>{{ translationService.translate('process.s3.d') }}</p>
+      </div>
+
+      <div class="process-step">
+        <div class="process-num">04</div>
+        <h3>{{ translationService.translate('process.s4.t') }}</h3>
+        <p>{{ translationService.translate('process.s4.d') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TESTIMONIAL SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="section section-soft">
+  <div class="wrap testi">
+    <i class="fa-solid fa-quote-right quote-icon"></i>
+    <p>{{ translationService.translate('testi.t1') }}</p>
+    <div class="testi-person">
+      <b>{{ translationService.translate('testi.n1') }}</b> — <span>{{ translationService.translate('testi.r1') }}</span>
+    </div>
+    <div class="testi-dots">
+      <span [class.active]="activeTestimonialIndex === 0" (click)="setTestimonialIndex(0)"></span>
+      <span [class.active]="activeTestimonialIndex === 1" (click)="setTestimonialIndex(1)"></span>
+      <span [class.active]="activeTestimonialIndex === 2" (click)="setTestimonialIndex(2)"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     CTA SECTION
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="cta" id="contact">
+  <div class="wrap">
+    <div class="eyebrow" style="justify-content:center;">
+      <span class="dash"></span>
+      <span>{{ translationService.translate('cta.eyebrow') }}</span>
+    </div>
+    <h2>{{ translationService.translate('cta.title') }}</h2>
+    <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+    <a routerLink="/contact" class="btn btn-solid">
+      <span>{{ translationService.translate('cta.btn') }}</span>
+    </a>
+  </div>
+</section>

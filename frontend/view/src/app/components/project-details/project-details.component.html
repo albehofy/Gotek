@@ -1,0 +1,87 @@
+<div class="project-details-page" *ngIf="project">
+  <!-- Top Hero -->
+  <section class="project-hero">
+    <div class="wrap">
+      <a routerLink="/portfolio" class="back-link">
+        <i class="fa-solid fa-arrow-right"></i>
+        <span>{{ (translationService.currentLang() === 'ar' ? 'العودة لجميع الأعمال' : 'Back to all work') }}</span>
+      </a>
+
+      <div class="project-tag mt-24">
+        {{ project.category?.name_ar || project.category?.name || project.category || 'مشروع ميديا جلو' }}
+      </div>
+
+      <h1 class="project-title">
+        {{ project.title?.ar || project.title_ar || (typeof project.title === 'string' ? project.title : '') || 'مشروع' }}
+      </h1>
+
+      <p class="lead" *ngIf="project.description">
+        {{ project.description?.ar || project.description_ar || (typeof project.description === 'string' ? project.description : '') }}
+      </p>
+
+      <!-- Project Metadata Grid -->
+      <div class="meta-strip">
+        <div class="meta-item" *ngIf="project.client">
+          <span class="meta-lbl">{{ translationService.currentLang() === 'ar' ? 'العميل' : 'Client' }}</span>
+          <span class="meta-val">{{ project.client }}</span>
+        </div>
+        <div class="meta-item" *ngIf="project.timeline">
+          <span class="meta-lbl">{{ translationService.currentLang() === 'ar' ? 'المدة' : 'Timeline' }}</span>
+          <span class="meta-val">{{ project.timeline }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">{{ translationService.currentLang() === 'ar' ? 'الخدمة' : 'Service' }}</span>
+          <span class="meta-val">{{ project.category?.name_ar || project.category?.name || 'استشارات' }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Showcase Image -->
+  <div class="wrap mb-50" *ngIf="activeImage || project.image || project.main_image">
+    <div class="main-image-wrap">
+      <img [src]="activeImage || project.image || project.main_image" [alt]="project.title?.ar || project.title" />
+    </div>
+
+    <!-- Gallery Thumbs -->
+    <div class="gallery-thumbs" *ngIf="project.gallery && project.gallery.length > 1">
+      <div 
+        *ngFor="let g of project.gallery" 
+        class="thumb-box" 
+        [class.active]="activeImage === g"
+        (click)="setActiveImage(g)"
+      >
+        <img [src]="g" alt="Gallery item" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Challenge & Solution Section -->
+  <section class="section section-soft" *ngIf="project.challenge || project.solution">
+    <div class="wrap cs-grid">
+      <div class="cs-col" *ngIf="project.challenge">
+        <div class="eyebrow"><span class="dash"></span> <span>{{ translationService.currentLang() === 'ar' ? 'التحدي' : 'The Challenge' }}</span></div>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'ما واجهه المشروع' : 'The Problem' }}</h3>
+        <p>{{ project.challenge?.ar || project.challenge_ar || (typeof project.challenge === 'string' ? project.challenge : '') }}</p>
+      </div>
+
+      <div class="cs-col" *ngIf="project.solution">
+        <div class="eyebrow"><span class="dash"></span> <span>{{ translationService.currentLang() === 'ar' ? 'الحل' : 'The Solution' }}</span></div>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'رؤية وتنفيذ ميديا جلو' : 'Our Approach' }}</h3>
+        <p>{{ project.solution?.ar || project.solution_ar || (typeof project.solution === 'string' ? project.solution : '') }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="wrap">
+      <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
+      <h2>{{ translationService.translate('cta.title') }}</h2>
+      <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+      <a routerLink="/contact" class="btn btn-solid">
+        <span>{{ translationService.translate('cta.btn') }}</span>
+      </a>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,100 @@
+<!-- ════════════════════════════════════════════
+     CONTACT — MINIMALIST EDITORIAL INQUIRY
+     ════════════════════════════════════════════ -->
+
+<section class="contact-hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dash"></span>
+      <span>{{ translationService.translate('nav.contact') }}</span>
+    </div>
+
+    <h1>
+      <span>{{ translationService.translate('cta.title') }}</span>
+    </h1>
+
+    <p class="lead">
+      {{ translationService.translate('cta.sub') }}
+    </p>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="wrap contact-grid">
+    <!-- Left / Details Column -->
+    <div class="contact-info">
+      <div class="info-item">
+        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</span>
+        <a href="mailto:hello@mediaglow.agency" dir="ltr" class="info-val">hello&#64;mediaglow.agency</a>
+      </div>
+
+      <div class="info-item">
+        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الهاتف والواتساب' : 'Phone & WhatsApp' }}</span>
+        <a href="tel:+201000000000" dir="ltr" class="info-val">+20 100 000 0000</a>
+      </div>
+
+      <div class="info-item">
+        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الموقع' : 'Location' }}</span>
+        <span class="info-val">{{ translationService.translate('foot.l7') }}</span>
+      </div>
+
+      <div class="info-item mt-24">
+        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'أوقات العمل' : 'Working Hours' }}</span>
+        <span class="info-val-sub">{{ translationService.currentLang() === 'ar' ? 'الأحد – الخميس: 9:00 ص – 6:00 م' : 'Sunday – Thursday: 9:00 AM – 6:00 PM' }}</span>
+      </div>
+    </div>
+
+    <!-- Right / Form Column -->
+    <div class="contact-form-wrap">
+      <div *ngIf="formSubmitted" class="success-box">
+        <i class="fa-solid fa-circle-check"></i>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'تم استلام طلبك بنجاح!' : 'Thank You! Message Received.' }}</h3>
+        <p>{{ translationService.currentLang() === 'ar' ? 'سيتواصل معك أحد مستشارينا خلال أقل من 24 ساعة لبدء استشارتك المجانية.' : 'Our consulting team will reach out within 24 hours to schedule your free consultation.' }}</p>
+      </div>
+
+      <form *ngIf="!formSubmitted" [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="inquiry-form">
+        <!-- Name -->
+        <div class="form-group">
+          <label>{{ translationService.currentLang() === 'ar' ? 'الاسم الكامل *' : 'Full Name *' }}</label>
+          <input type="text" formControlName="name" [placeholder]="translationService.currentLang() === 'ar' ? 'مثال: أحمد محمد' : 'e.g. John Doe'" />
+        </div>
+
+        <!-- Phone & Email row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ translationService.currentLang() === 'ar' ? 'رقم الهاتف / الواتساب *' : 'Phone / WhatsApp *' }}</label>
+            <input type="tel" formControlName="phone" [placeholder]="translationService.currentLang() === 'ar' ? '01000000000' : '+20 100 000 0000'" dir="ltr" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ translationService.currentLang() === 'ar' ? 'البريد الإلكتروني *' : 'Email Address *' }}</label>
+            <input type="email" formControlName="email" placeholder="name@company.com" dir="ltr" />
+          </div>
+        </div>
+
+        <!-- Service Required -->
+        <div class="form-group">
+          <label>{{ translationService.currentLang() === 'ar' ? 'الخدمة المطلوبة *' : 'Service Needed *' }}</label>
+          <select formControlName="service">
+            <option value="">{{ translationService.currentLang() === 'ar' ? '-- اختر الخدمة --' : '-- Select Service --' }}</option>
+            <option *ngFor="let s of services" [value]="s.key">
+              {{ translationService.currentLang() === 'ar' ? s.ar : s.en }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Details -->
+        <div class="form-group">
+          <label>{{ translationService.currentLang() === 'ar' ? 'تفاصيل المشروع أو التحدي *' : 'Project Details *' }}</label>
+          <textarea formControlName="details" rows="5" [placeholder]="translationService.currentLang() === 'ar' ? 'احكيلنا عن علامتك التجارية وأهدافك القادمة...' : 'Tell us about your brand, goals, and timeline...'"></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-solid w-100" [disabled]="submitting">
+          <span *ngIf="!submitting">{{ translationService.translate('cta.btn') }}</span>
+          <span *ngIf="submitting"><i class="fa-solid fa-spinner fa-spin"></i> {{ translationService.currentLang() === 'ar' ? 'جاري الإرسال...' : 'Sending...' }}</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>

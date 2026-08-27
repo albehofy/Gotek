@@ -1,0 +1,49 @@
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <!-- Brand column -->
+      <div class="foot-brand">
+        <div class="logo-text">
+          {{ translationService.translate('brand') }}<span class="dot">.</span>
+        </div>
+        <p>{{ translationService.translate('foot.desc') }}</p>
+        <div class="social-row">
+          <a href="https://instagram.com" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="https://tiktok.com" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i></a>
+          <a href="https://wa.me/201000000000" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <!-- Company column -->
+      <div class="foot-col">
+        <h4>{{ translationService.translate('foot.h1') }}</h4>
+        <a routerLink="/about">{{ translationService.translate('foot.l1') }}</a>
+        <a routerLink="/portfolio">{{ translationService.translate('foot.l2') }}</a>
+        <a routerLink="/blogs">{{ translationService.translate('foot.l3') }}</a>
+      </div>
+
+      <!-- Services column -->
+      <div class="foot-col">
+        <h4>{{ translationService.translate('foot.h2') }}</h4>
+        <a routerLink="/services">{{ translationService.translate('foot.l4') }}</a>
+        <a routerLink="/services">{{ translationService.translate('foot.l5') }}</a>
+        <a routerLink="/services">{{ translationService.translate('foot.l6') }}</a>
+      </div>
+
+      <!-- Contact column -->
+      <div class="foot-col">
+        <h4>{{ translationService.translate('foot.h3') }}</h4>
+        <a href="tel:+201000000000" dir="ltr" style="text-align:start"><span class="num">+20 100 000 0000</span></a>
+        <a href="mailto:hello@mediaglow.agency" dir="ltr" style="text-align:start">hello&#64;mediaglow.agency</a>
+        <span>{{ translationService.translate('foot.l7') }}</span>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="foot-bottom">
+      <span>{{ translationService.translate('foot.copy') }}</span>
+      <span>{{ translationService.translate('foot.made') }}</span>
+    </div>
+  </div>
+</footer>

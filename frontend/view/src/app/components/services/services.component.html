@@ -1,0 +1,65 @@
+<!-- ════════════════════════════════════════════
+     SERVICES — MINIMALIST EDITORIAL LIST
+     ════════════════════════════════════════════ -->
+
+<section class="services-hero">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dash"></span>
+      <span>{{ translationService.translate('services.eyebrow') }}</span>
+    </div>
+
+    <h1>
+      <span>{{ translationService.translate('services.title') }}</span>
+    </h1>
+
+    <p class="lead">
+      {{ translationService.translate('services.sub') }}
+    </p>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="services-list-detailed">
+      <div class="service-block" *ngFor="let s of (services.length ? services : defaultServices); let i = index">
+        <div class="sb-header">
+          <div class="sb-num">0{{ i + 1 }}</div>
+          <div class="sb-icon">
+            <i class="fa-solid" [class]="s.icon || 'fa-palette'"></i>
+          </div>
+          <div class="sb-title">
+            <h3>{{ s.title?.ar || s.title_ar || s.title }}</h3>
+            <p>{{ s.desc || s.description?.ar || s.description_ar || s.description }}</p>
+          </div>
+        </div>
+
+        <div class="sb-features" *ngIf="s.features && s.features.length">
+          <div class="feature-item" *ngFor="let f of s.features">
+            <i class="fa-solid fa-check"></i>
+            <span>{{ f }}</span>
+          </div>
+        </div>
+
+        <div class="sb-cta">
+          <a routerLink="/contact" class="btn btn-line">
+            <span>{{ translationService.currentLang() === 'ar' ? 'طلب الخدمة' : 'Request Service' }}</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
+    <h2>{{ translationService.translate('cta.title') }}</h2>
+    <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+    <a routerLink="/contact" class="btn btn-solid">
+      <span>{{ translationService.translate('cta.btn') }}</span>
+    </a>
+  </div>
+</section>
