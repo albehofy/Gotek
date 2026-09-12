@@ -1,0 +1,231 @@
+<div class="cms-overview-root" dir="rtl">
+  
+  <!-- Header -->
+  <div class="overview-header">
+    <div class="header-info">
+      <div class="badge-cms">
+        <span class="pulse-dot"></span>
+        <span>مركز إدارة المحتوى والموقع — CMS</span>
+      </div>
+      <h2>نظرة عامة على الموقع الإلكتروني</h2>
+      <p class="subtitle">متابعة إحصائيات المعرض والخدمات والمقالات ورسائل العملاء الواردة لحظياً.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-action btn-outline" (click)="refresh()" [disabled]="loading" title="تحديث البيانات">
+        <i class="fa-solid fa-rotate" [class.fa-spin]="loading"></i>
+        <span>تحديث</span>
+      </button>
+      <a href="/" target="_blank" class="btn-action btn-primary" title="معاينة الموقع في صفحة جديدة">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        <span>زيارة الموقع الرئيسي</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="loading-bar" *ngIf="loading">
+    <div class="loading-progress"></div>
+  </div>
+
+  <!-- Metrics Grid (6 KPI Cards) -->
+  <div class="kpi-grid">
+    
+    <!-- 1. Projects -->
+    <a routerLink="/portfolio/projects" class="kpi-card card-projects">
+      <div class="kpi-top">
+        <div class="kpi-icon"><i class="fa-solid fa-diagram-project"></i></div>
+        <span class="kpi-arrow"><i class="fa-solid fa-arrow-left"></i></span>
+      </div>
+      <div class="kpi-value">{{ stats.projects }}</div>
+      <div class="kpi-title">المشاريع المنشورة</div>
+      <div class="kpi-desc">معرض أعمال ودراسات الحالة بالموقع</div>
+    </a>
+
+    <!-- 2. Services -->
+    <a routerLink="/portfolio/services" class="kpi-card card-services">
+      <div class="kpi-top">
+        <div class="kpi-icon"><i class="fa-solid fa-toolbox"></i></div>
+        <span class="kpi-arrow"><i class="fa-solid fa-arrow-left"></i></span>
+      </div>
+      <div class="kpi-value">{{ stats.services }}</div>
+      <div class="kpi-title">خدمات الوكالة</div>
+      <div class="kpi-desc">دليل الخدمات والباقات المعروضة للعملاء</div>
+    </a>
+
+    <!-- 3. Blogs -->
+    <a routerLink="/portfolio/blogs" class="kpi-card card-blogs">
+      <div class="kpi-top">
+        <div class="kpi-icon"><i class="fa-solid fa-newspaper"></i></div>
+        <span class="kpi-arrow"><i class="fa-solid fa-arrow-left"></i></span>
+      </div>
+      <div class="kpi-value">{{ stats.blogs }}</div>
+      <div class="kpi-title">المقالات والمدونة</div>
+      <div class="kpi-desc">المحتوى المعرفي ومقالات الـ SEO</div>
+    </a>
+
+    <!-- 4. Testimonials -->
+    <a routerLink="/portfolio/testimonials" class="kpi-card card-testimonials">
+      <div class="kpi-top">
+        <div class="kpi-icon"><i class="fa-solid fa-quote-left"></i></div>
+        <span class="kpi-arrow"><i class="fa-solid fa-arrow-left"></i></span>
+      </div>
+      <div class="kpi-value">{{ stats.testimonials }}</div>
+      <div class="kpi-title">آراء العملاء</div>
+      <div class="kpi-desc">التوصيات والتقييمات المعتمدة</div>
+    </a>
+
+    <!-- 5. Categories -->
+    <a routerLink="/portfolio/categories" class="kpi-card card-categories">
+      <div class="kpi-top">
+        <div class="kpi-icon"><i class="fa-solid fa-tags"></i></div>
+        <span class="kpi-arrow"><i class="fa-solid fa-arrow-left"></i></span>
+      </div>
+      <div class="kpi-value">{{ stats.categories }}</div>
+      <div class="kpi-title">التصنيفات</div>
+      <div class="kpi-desc">تصنيفات المشاريع والخدمات</div>
+    </a>
+
+    <!-- 6. Inquiries -->
+    <a routerLink="/portfolio/inquiries" class="kpi-card card-inquiries">
+      <div class="kpi-top">
+        <div class="kpi-icon"><i class="fa-solid fa-inbox"></i></div>
+        <span class="kpi-pill" *ngIf="stats.inquiries > 0">{{ stats.inquiries }} جديد</span>
+        <span class="kpi-arrow" *ngIf="stats.inquiries === 0"><i class="fa-solid fa-arrow-left"></i></span>
+      </div>
+      <div class="kpi-value">{{ stats.inquiries }}</div>
+      <div class="kpi-title">رسائل واستفسارات الموقع</div>
+      <div class="kpi-desc">طلبات العملاء القادمة من نموذج التواصل</div>
+    </a>
+
+  </div>
+
+  <!-- Quick Actions Bar -->
+  <div class="quick-actions-bar">
+    <div class="qa-title"><i class="fa-solid fa-bolt"></i> وصول وإجراءات سريعة:</div>
+    <div class="qa-buttons">
+      <a routerLink="/portfolio/projects" class="qa-btn"><i class="fa-solid fa-plus"></i> إضافة مشروع</a>
+      <a routerLink="/portfolio/services" class="qa-btn"><i class="fa-solid fa-plus"></i> إضافة خدمة</a>
+      <a routerLink="/portfolio/blogs" class="qa-btn"><i class="fa-solid fa-pen-nib"></i> كتابة مقال</a>
+      <a routerLink="/portfolio/pages" class="qa-btn"><i class="fa-solid fa-pen-to-square"></i> محرر نصوص الصفحات</a>
+      <a routerLink="/portfolio/pages" class="qa-btn"><i class="fa-solid fa-sliders"></i> تعديل الفوتر</a>
+      <a routerLink="/portfolio/inquiries" class="qa-btn"><i class="fa-solid fa-phone"></i> قنوات التواصل الرسمية</a>
+    </div>
+  </div>
+
+  <!-- Split Sections (Recent Inquiries & Contact Channels Summary) -->
+  <div class="overview-grid">
+    
+    <!-- Left Column: Recent Inquiries -->
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <i class="fa-solid fa-envelope-open-text text-amber"></i>
+          <div>
+            <h3>أحدث طلبات واستفسارات العملاء</h3>
+            <p>آخر الرسائل الواردة من زوار الموقع</p>
+          </div>
+        </div>
+        <a routerLink="/portfolio/inquiries" class="link-more">عرض جميع الرسائل ({{ stats.inquiries }}) ←</a>
+      </div>
+
+      <div class="card-body">
+        <div class="table-wrap" *ngIf="recentInquiries.length > 0">
+          <table class="cms-table">
+            <thead>
+              <tr>
+                <th>العميل</th>
+                <th>الخدمة المطلوبة</th>
+                <th>التاريخ</th>
+                <th>التواصل</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inq of recentInquiries">
+                <td>
+                  <div class="client-name">{{ inq.name || inq.full_name || 'زائر الموقع' }}</div>
+                  <div class="client-sub">{{ inq.company || inq.company_name || 'عميل فردي' }}</div>
+                </td>
+                <td>
+                  <span class="service-tag">{{ inq.service || inq.service_needed || 'عام' }}</span>
+                </td>
+                <td class="date-cell">{{ inq.created_at | date:'shortDate' }}</td>
+                <td>
+                  <div class="contact-links">
+                    <a *ngIf="inq.phone" [href]="'tel:' + inq.phone" class="icon-link" title="اتصال هاتف"><i class="fa-solid fa-phone"></i></a>
+                    <a *ngIf="inq.email" [href]="'mailto:' + inq.email" class="icon-link" title="إرسال بريد"><i class="fa-solid fa-envelope"></i></a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-inquiries" *ngIf="recentInquiries.length === 0">
+          <i class="fa-regular fa-folder-open empty-icon"></i>
+          <h4>لا توجد رسائل جديدة واردة</h4>
+          <p>جميع طلبات العملاء معالجة أو لم يتم استلام استفسارات بعد.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Official Contact Channels Status -->
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <i class="fa-solid fa-headset text-indigo"></i>
+          <div>
+            <h3>قنوات التواصل والاتصال بالموقع</h3>
+            <p>البيانات المعروضة لزوار الموقع للاتصال والدعم</p>
+          </div>
+        </div>
+        <a routerLink="/portfolio/inquiries" class="link-more">تعديل البيانات ←</a>
+      </div>
+
+      <div class="card-body">
+        <div class="channel-list">
+          
+          <div class="channel-item">
+            <div class="channel-icon whatsapp"><i class="fa-brands fa-whatsapp"></i></div>
+            <div class="channel-details">
+              <span class="channel-label">رقم الواتساب</span>
+              <span class="channel-val" dir="ltr">{{ contactInfo?.whatsapp_support?.phone || contactInfo?.whatsapp_phone || '+966 50 000 0000' }}</span>
+            </div>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-icon email"><i class="fa-solid fa-envelope"></i></div>
+            <div class="channel-details">
+              <span class="channel-label">البريد الإلكتروني الرسمي</span>
+              <span class="channel-val" dir="ltr">{{ contactInfo?.official_email?.email || contactInfo?.official_email || 'info@mediaglow.agency' }}</span>
+            </div>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-icon location"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="channel-details">
+              <span class="channel-label">عنوان مقر الشركة</span>
+              <span class="channel-val">{{ contactInfo?.location?.address || contactInfo?.company_address || 'المملكة العربية السعودية / جمهورية مصر العربية' }}</span>
+            </div>
+          </div>
+
+          <div class="channel-item">
+            <div class="channel-icon emergency"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="channel-details">
+              <span class="channel-label">الدعم وحالات الطوارئ</span>
+              <span class="channel-val">{{ contactInfo?.emergency_support || 'متاح 24/7 للعملاء والمشاريع النشطة' }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="channels-footer">
+          <a routerLink="/portfolio/inquiries" class="btn-edit-channels">
+            <i class="fa-solid fa-pen"></i> تعديل بيانات قنوات الاتصال بالموقع
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

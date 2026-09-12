@@ -32,7 +32,7 @@ import { ToastService } from '../../services/toast.service';
       <i class="fa-solid fa-shield-halved" style="font-size:3.5rem; color:var(--rose-light, #f43f5e);"></i>
       <h2 style="color:var(--text, #fff); font-weight:900; font-size:1.4rem; margin:0;">غير مسموح بفتح الإدارة والمالية العامة</h2>
       <p style="color:var(--text-2, #94a3b8); font-size:0.9rem; max-width:450px; margin:0;">هذه الصفحة خاصة بحسابات وإدارة الوكالة فقط ولا تتاح لحسابات العملاء.</p>
-      <button class="btn btn-primary" (click)="redirectToDashboard()" style="padding:10px 24px; border-radius:12px; font-weight:700; cursor:pointer; background:linear-gradient(135deg, #6366f1, #4f46e5); color:#fff; border:none;">
+      <button class="btn btn-primary" (click)="redirectToDashboard()" style="padding:10px 24px; border-radius: 8px; font-weight:700; cursor:pointer; background:linear-gradient(135deg, #6366f1, #4f46e5); color:#fff; border:none;">
         <i class="fa-solid fa-arrow-right"></i> الرجوع للوحة التحكم
       </button>
     </div>
@@ -67,7 +67,7 @@ import { ToastService } from '../../services/toast.service';
 
           <button type="button" class="btn btn-action primary" (click)="showFilterSidebar = true">
             <i class="fa-solid fa-sliders"></i> الفلترة والبحث المتقدم
-            <span *ngIf="hasActiveFilters()" style="background:#f43f5e; color:#fff; font-size:0.7rem; padding:2px 6px; border-radius:100px; margin-right:4px; font-weight:800;">
+            <span *ngIf="hasActiveFilters()" style="background:#f43f5e; color:#fff; font-size:0.7rem; padding:2px 6px; border-radius: 8px; margin-right:4px; font-weight:800;">
               {{ activeFilterCount }}
             </span>
           </button>
@@ -646,7 +646,7 @@ import { ToastService } from '../../services/toast.service';
       <p-dialog [(visible)]="showReturnCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسوية وتصفية عهدة مالية" [style]="{ width: '92vw', maxWidth: '500px' }">
         <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;" *ngIf="selectedCustody">
           
-          <div style="background:rgba(99, 102, 241, 0.08); border:1px solid var(--border); border-radius:12px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="background:rgba(99, 102, 241, 0.08); border:1px solid var(--border); border-radius: 8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <span style="font-size:0.88rem; color:var(--text-2);">الموظف: <strong style="color:var(--text);">{{ selectedCustody.employee?.name }}</strong></span>
             <span style="font-size:0.88rem; color:var(--text-2);">مبلغ العهدة الأصلي: <strong style="color:var(--violet-light);">{{ selectedCustody.issued_amount | number:'1.2-2' }} ج.م</strong></span>
           </div>
@@ -679,7 +679,7 @@ import { ToastService } from '../../services/toast.service';
               rows="3"
               [(ngModel)]="returnNotes"
               placeholder="مثال: تم شراء أدوات مكتبية ومستلزمات تصوير وتأمين انتقالات..."
-              style="width:100%; border-radius:10px; background:var(--bg-input); color:var(--text); border:1px solid var(--border); padding:10px; font-family:inherit; font-size:0.88rem;"
+              style="width:100%; border-radius: 8px; background:var(--bg-input); color:var(--text); border:1px solid var(--border); padding:10px; font-family:inherit; font-size:0.88rem;"
             ></textarea>
           </div>
 
@@ -701,7 +701,7 @@ import { ToastService } from '../../services/toast.service';
       >
         <div *ngIf="selectedEmployeeStatement" style="padding: 8px 0;">
           <!-- Employee Meta Subtitle -->
-          <div style="background:rgba(99, 102, 241, 0.06); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="background:rgba(99, 102, 241, 0.06); border:1px solid var(--border); border-radius: 8px; padding:12px 16px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
               <h4 style="font-size:0.95rem; font-weight:800; color:var(--text); margin:0;">
                 {{ selectedEmployeeStatement.employee_name }}
@@ -999,7 +999,7 @@ import { ToastService } from '../../services/toast.service';
     .header-actions .btn-primary {
       height: 42px !important;
       padding: 0 18px !important;
-      border-radius: 12px !important;
+      border-radius: 8px !important;
       font-size: 0.86rem !important;
       font-weight: 700 !important;
       display: inline-flex !important;
@@ -1068,7 +1068,7 @@ import { ToastService } from '../../services/toast.service';
     .kpi-card {
       background: var(--bg-card, #111228);
       border: 1px solid var(--border, rgba(99, 102, 241, 0.18));
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 22px 24px;
       position: relative;
       overflow: hidden;
@@ -1086,7 +1086,7 @@ import { ToastService } from '../../services/toast.service';
       left: 0;
       right: 0;
       height: 4px;
-      border-radius: 16px 16px 0 0;
+      border-radius: 8px 8px 0 0;
     }
     .kpi-card:hover {
       transform: translateY(-4px);
@@ -1112,7 +1112,7 @@ import { ToastService } from '../../services/toast.service';
     .kpi-icon-badge {
       width: 40px;
       height: 40px;
-      border-radius: 12px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1193,7 +1193,7 @@ import { ToastService } from '../../services/toast.service';
     .crm-table td { padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.86rem; color: var(--text); vertical-align: middle; }
     .crm-table tr:last-child td { border-bottom: none; }
     .crm-table tr:hover td { background: rgba(99, 102, 241, 0.04); }
-    .method-badge { background: rgba(255,255,255,0.06); border: 1px solid var(--border); padding: 3px 8px; border-radius: 100px; font-size: 0.7rem; font-weight: 600; color: var(--text-2); }
+    .method-badge { background: rgba(255,255,255,0.06); border: 1px solid var(--border); padding: 3px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; color: var(--text-2); }
     .btn-action { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-2); padding: 6px 12px; border-radius: var(--r); font-size: 0.76rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
     .btn-action:hover { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border-color: rgba(99, 102, 241, 0.25); }
     .btn-action.primary { color: var(--violet-light); background: var(--violet-soft); border-color: rgba(124,58,237,0.2); }
@@ -1202,35 +1202,49 @@ import { ToastService } from '../../services/toast.service';
     .text-danger { color: var(--rose-light); font-weight: 700; }
     .required { color: var(--rose-light); }
 
-    /* Side Drawer Filter Modal Styles - CRM System Standard */
+    /* Centered Filter Modal Styles - CRM System Standard */
     .filter-drawer-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100vw;
       height: 100vh;
       background: rgba(10, 11, 26, 0.75);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 2990;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      box-sizing: border-box;
     }
     .filter-drawer-panel {
       position: fixed;
-      top: 0;
-      right: 0;
-      width: 420px;
-      max-width: 90vw;
-      height: 100vh;
+      top: 50%;
+      left: 50%;
+      right: auto;
+      bottom: auto;
+      width: 480px;
+      max-width: 92vw;
+      height: auto;
+      max-height: 90vh;
       background: var(--bg-card, #111228);
-      border-left: 1px solid var(--border-v, rgba(99, 102, 241, 0.3));
-      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.85);
+      border: 1px solid var(--border-v, rgba(99, 102, 241, 0.3));
+      border-radius: 8px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85);
       z-index: 3000;
       display: flex;
       flex-direction: column;
-      transform: translateX(100%);
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.96);
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
     }
     .filter-drawer-panel.open {
-      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
     }
     .filter-drawer-header {
       padding: 22px 24px;
@@ -1255,7 +1269,7 @@ import { ToastService } from '../../services/toast.service';
       color: var(--text-2, #94a3b8);
       width: 34px;
       height: 34px;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -1294,7 +1308,7 @@ import { ToastService } from '../../services/toast.service';
       width: 100% !important;
       background: var(--bg-input, rgba(255, 255, 255, 0.04)) !important;
       border: 1px solid var(--border, rgba(99, 102, 241, 0.25)) !important;
-      border-radius: 12px !important;
+      border-radius: 8px !important;
       color: var(--text, #f3f4f6) !important;
       font-family: 'Cairo', 'Inter', sans-serif !important;
       font-size: 0.88rem !important;
@@ -1320,7 +1334,7 @@ import { ToastService } from '../../services/toast.service';
     }
     .preset-chip {
       padding: 7px 13px;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 0.8rem;
       font-weight: 700;
       border: 1px solid rgba(99, 102, 241, 0.25);
@@ -1346,7 +1360,7 @@ import { ToastService } from '../../services/toast.service';
     }
     .hdr-date-chip {
       padding: 6px 14px;
-      border-radius: 100px;
+      border-radius: 8px;
       font-size: 0.8rem;
       font-weight: 700;
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1388,7 +1402,7 @@ import { ToastService } from '../../services/toast.service';
     .btn-reset-filters {
       flex: 1;
       padding: 12px 16px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: var(--text-2, #94a3b8);
@@ -1410,7 +1424,7 @@ import { ToastService } from '../../services/toast.service';
     .btn-apply-filters {
       flex: 1.4;
       padding: 12px 16px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: linear-gradient(135deg, #6366f1, #4f46e5);
       border: none;
       color: #ffffff;
@@ -1431,8 +1445,8 @@ import { ToastService } from '../../services/toast.service';
     }
     body.light-theme .filter-drawer-panel {
       background: #ffffff !important;
-      border-left-color: #cbd5e1 !important;
-      box-shadow: -15px 0 45px rgba(15, 23, 42, 0.15) !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 25px 50px rgba(15, 23, 42, 0.2) !important;
     }
     body.light-theme .filter-drawer-header {
       background: #f8fafc !important;
@@ -1804,8 +1818,8 @@ export class FinanceDashboardComponent implements OnInit {
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
     this.apiService.getFixedAssets().subscribe(res => this.fixedAssets = res.data || []);
     this.apiService.getUsers().subscribe(res => {
-      const arr = res.data || [];
-      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
+      const arr = Array.isArray(res) ? res : (res.data || []);
+      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client' && !u.is_hold);
     });
   }
 

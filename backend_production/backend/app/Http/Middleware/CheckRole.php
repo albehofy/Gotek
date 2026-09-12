@@ -15,7 +15,11 @@ class CheckRole
         }
 
         // 2. التأكد إن الـ role بتاعه موجود ضمن المسموح لهم في الـ Route
-        if (!in_array(Auth::user()->role, $roles)) {
+        $user = Auth::user();
+        $hasRole = in_array($user->role, $roles) ||
+            (method_exists($user, 'hasRole') && collect($roles)->contains(fn($r) => $user->hasRole($r)));
+
+        if (!$hasRole) {
             return response()->json(['message' => 'ليس لديك صلاحية للقيام بهذا الإجراء'], 403);
         }
 

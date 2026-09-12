@@ -269,6 +269,121 @@ import { TextareaModule } from 'primeng/textarea';
 
 
 
+      <!-- ── 5. CLIENT DELIVERABLES & TASKS SECTION ── -->
+      <div class="section-container margin-top">
+        <div class="section-head">
+          <div>
+            <h2><i class="fa-solid fa-list-check text-cyan"></i> مخرجات ومهام المشاريع للاعتماد</h2>
+            <p>عرض المخرجات والمرفقات، الخطوات التنفيذية، وملاحظات المراجعة والاعتماد</p>
+          </div>
+        </div>
+
+        <div class="client-tasks-grid">
+          <div class="client-task-card glass-panel" *ngFor="let task of (portalData.tasks || [])">
+            <div class="ct-header">
+              <div>
+                <h4 class="ct-title">{{ task.title }}</h4>
+                <div class="ct-deal-name" *ngIf="task.deal">
+                  <i class="fa-solid fa-handshake"></i> {{ task.deal.title }}
+                </div>
+              </div>
+              <span class="ct-status-badge" [ngClass]="getTaskStatusBadgeClass(task)">
+                {{ getTaskStatusLabel(task) }}
+              </span>
+            </div>
+
+            <!-- Scope / Description -->
+            <div class="ct-scope" *ngIf="task.scope || task.description">
+              <p>{{ task.scope || task.description }}</p>
+            </div>
+
+            <!-- Subtasks Checklist -->
+            <div class="ct-subtasks-box" *ngIf="task.subtasks && task.subtasks.length > 0">
+              <div class="subtasks-title" style="font-size:0.8rem; font-weight:700; color:var(--text); display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span><i class="fa-solid fa-bars-progress"></i> الخطوات التنفيذية</span>
+                <span>{{ getCompletedSubtasksCount(task) }} / {{ task.subtasks.length }} منجزة</span>
+              </div>
+              <div class="subtask-item" *ngFor="let st of task.subtasks" [class.completed]="st.is_completed || st.status === 'done'" style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:6px; font-size:0.82rem; background:rgba(255,255,255,0.03); margin-bottom:4px;">
+                <i class="fa-solid" [ngClass]="(st.is_completed || st.status === 'done') ? 'fa-circle-check text-emerald' : 'fa-circle-notch text-muted'"></i>
+                <span>{{ st.title }}</span>
+              </div>
+            </div>
+
+            <!-- Attachments & Media Deliverables -->
+            <div class="ct-attachments" *ngIf="task.attachments && task.attachments.length > 0">
+              <span class="att-head"><i class="fa-solid fa-paperclip"></i> المرفقات والمخرجات (انقر للمعاينة):</span>
+              <div class="att-grid">
+                <div 
+                  *ngFor="let att of task.attachments" 
+                  class="att-thumb-interactive"
+                  (click)="isImage(att) ? openLightbox(getFileUrl(att), $event) : openFileUrl(getFileUrl(att), $event)"
+                  [title]="att.file_name || 'عرض المرفق'"
+                >
+                  <ng-container *ngIf="isImage(att)">
+                    <img [src]="getFileUrl(att)" alt="المرفق" class="att-portal-img" />
+                    <div class="att-zoom-overlay">
+                      <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="!isImage(att)">
+                    <div class="file-icon-box">
+                      <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <span class="att-doc-name">{{ att.file_name || 'مستند' }}</span>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes & Feedback Thread -->
+            <div class="ct-notes-thread" *ngIf="task.notes && task.notes.length > 0">
+              <span class="thread-head"><i class="fa-regular fa-comments"></i> سجل الملاحظات والتواصل:</span>
+              <div class="note-bubble" *ngFor="let note of task.notes">
+                <div class="note-author-row">
+                  <span class="author-name">
+                    <i class="fa-solid" [ngClass]="note.user?.role === 'client' ? 'fa-user-tie' : 'fa-headset'"></i>
+                    {{ note.user?.name || 'فريق العمل' }}
+                  </span>
+                  <span class="note-time">{{ note.created_at | date:'yyyy/MM/dd HH:mm' }}</span>
+                </div>
+                <div class="note-text">{{ note.note }}</div>
+              </div>
+            </div>
+
+            <!-- Approval / Revision Action Buttons -->
+            <div class="ct-actions" *ngIf="isTaskAwaitingReview(task)">
+              <button type="button" class="btn-client-approve" (click)="approveTask(task)">
+                <i class="fa-solid fa-circle-check"></i> اعتماد واستلام المخرج
+              </button>
+              <button type="button" class="btn-client-revision" (click)="openNoteModalForTask(task)">
+                <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات وملاحظات
+              </button>
+            </div>
+
+            <!-- Approved State Banner -->
+            <div class="approved-banner" *ngIf="['completed', 'done', 'approved'].includes(task.status)" style="margin-top:14px; padding:10px 14px; border-radius:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); color:#34d399; font-weight:700; font-size:0.86rem; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-circle-check"></i> تم اعتماد هذا المخرج بنجاح
+            </div>
+          </div>
+
+          <div class="empty-glass-card" *ngIf="!portalData.tasks || portalData.tasks.length === 0">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <p>لا توجد مخرجات أو مهام مسجلة حالياً للاعتماد.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Lightbox Modal -->
+      <div class="portal-lightbox" *ngIf="expandedImageUrl" (click)="expandedImageUrl = null">
+        <div class="pl-content" (click)="$event.stopPropagation()">
+          <img [src]="expandedImageUrl" alt="معاينة المرفق بالكامل" />
+          <div class="pl-bar">
+            <a [href]="expandedImageUrl" target="_blank" download class="pl-btn" title="تحميل"><i class="fa-solid fa-download"></i> تحميل الصورة</a>
+            <button type="button" class="pl-btn pl-close" (click)="expandedImageUrl = null" title="إغلاق"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+          </div>
+        </div>
+      </div>
+
       <!-- PrimeNG Dialog for Client Revision Notes -->
       <p-dialog [(visible)]="showRevisionDialog" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="طلب تعديل وملاحظات العميل" [style]="{ width: '92vw', maxWidth: '520px' }">
         <div style="padding: 10px 0;" dir="rtl">
@@ -279,7 +394,7 @@ import { TextareaModule } from 'primeng/textarea';
             <label style="font-weight:700; font-size:0.85rem; margin-bottom:6px; display:block; color:var(--text);">
               <i class="fa-solid fa-pen-to-square" style="color:var(--amber-light);"></i> تفاصيل التعديل المطلوب <span style="color:var(--rose-light);">*</span>
             </label>
-            <textarea [(ngModel)]="revisionText" pInputTextarea rows="4" placeholder="اكتب ملاحظاتك وتعديلاتك بالتفصيل..." style="width:100%; border-radius:12px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;" dir="rtl"></textarea>
+            <textarea [(ngModel)]="revisionText" pInputTextarea rows="4" placeholder="اكتب ملاحظاتك وتعديلاتك بالتفصيل..." style="width:100%; border-radius: 8px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;" dir="rtl"></textarea>
           </div>
           <div class="dialog-footer-actions">
             <button type="button" class="btn-dialog-cancel" (click)="showRevisionDialog = false">إلغاء</button>
@@ -315,14 +430,14 @@ import { TextareaModule } from 'primeng/textarea';
       margin-bottom: 28px;
     }
     .hero-main-info { display: flex; align-items: center; gap: 18px; }
-    .client-avatar-badge { width: 56px; height: 56px; border-radius: 16px; background: rgba(99,102,241,0.2); border: 1px solid var(--violet-light, #818cf8); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
-    .eyebrow-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); padding: 4px 12px; border-radius: 100px; font-size: 0.76rem; font-weight: 700; color: var(--violet-light, #a5b4fc); margin-bottom: 6px; }
+    .client-avatar-badge { width: 56px; height: 56px; border-radius: 8px; background: rgba(99,102,241,0.2); border: 1px solid var(--violet-light, #818cf8); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
+    .eyebrow-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); padding: 4px 12px; border-radius: 8px; font-size: 0.76rem; font-weight: 700; color: var(--violet-light, #a5b4fc); margin-bottom: 6px; }
     .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399; }
     .portal-title { font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: 4px; }
     .portal-sub { font-size: 0.86rem; color: var(--text-2, #94a3b8); }
     
     .hero-quick-stats { display: flex; gap: 12px; }
-    .h-stat-pill { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 14px; display: flex; flex-direction: column; }
+    .h-stat-pill { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 8px; display: flex; flex-direction: column; }
     .h-stat-label { font-size: 0.72rem; color: var(--text-3, #64748b); }
     .h-stat-num { font-size: 1rem; font-weight: 800; color: #fff; margin-top: 2px; }
     .h-stat-num.cyan { color: #67e8f9; }
@@ -332,13 +447,13 @@ import { TextareaModule } from 'primeng/textarea';
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-top: 28px; margin-bottom: 36px; }
     .metric-card { padding: 22px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: var(--r-lg, 16px); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
     .mc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .mc-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .mc-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
     .mc-icon.violet { background: rgba(99,102,241,0.15); color: #a5b4fc; }
     .mc-icon.emerald { background: rgba(16,185,129,0.15); color: #34d399; }
     .mc-icon.rose { background: rgba(239,68,68,0.15); color: #f87171; }
     .mc-icon.cyan { background: rgba(6,182,212,0.15); color: #67e8f9; }
 
-    .mc-badge { font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; background: rgba(255,255,255,0.06); color: var(--text-2); }
+    .mc-badge { font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-2); }
     .mc-badge.emerald { background: rgba(16,185,129,0.12); color: #34d399; }
     .mc-badge.rose { background: rgba(239,68,68,0.12); color: #f87171; }
     .mc-badge.cyan { background: rgba(6,182,212,0.12); color: #67e8f9; }
@@ -360,10 +475,10 @@ import { TextareaModule } from 'primeng/textarea';
     .card-title-head h3 { font-size: 1rem; font-weight: 800; color: #fff; }
     .card-title-head p { font-size: 0.78rem; color: var(--text-2); margin-top: 2px; }
 
-    .visual-progress-box { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 14px; }
+    .visual-progress-box { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 8px; }
     .pb-header { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
-    .pb-track-lg { height: 12px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; }
-    .pb-fill-lg { height: 100%; border-radius: 100px; transition: width 0.6s ease; }
+    .pb-track-lg { height: 12px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
+    .pb-fill-lg { height: 100%; border-radius: 8px; transition: width 0.6s ease; }
     .pb-fill-lg.emerald { background: linear-gradient(90deg, #10b981, #34d399); box-shadow: 0 0 12px rgba(16,185,129,0.4); }
     .pb-fill-lg.cyan { background: linear-gradient(90deg, #06b6d4, #67e8f9); box-shadow: 0 0 12px rgba(6,182,212,0.4); }
     .pb-legend { display: flex; gap: 16px; margin-top: 14px; font-size: 0.78rem; color: var(--text-2); flex-wrap: wrap; }
@@ -384,27 +499,27 @@ import { TextareaModule } from 'primeng/textarea';
     .deal-card { padding: 22px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: var(--r-lg, 16px); display: flex; flex-direction: column; justify-content: space-between; }
     .dc-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .dc-title { font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.3; }
-    .dc-status-pill { font-size: 0.72rem; font-weight: 800; background: rgba(99,102,241,0.15); color: #a5b4fc; padding: 3px 10px; border-radius: 100px; display: inline-block; margin-top: 6px; }
+    .dc-status-pill { font-size: 0.72rem; font-weight: 800; background: rgba(99,102,241,0.15); color: #a5b4fc; padding: 3px 10px; border-radius: 8px; display: inline-block; margin-top: 6px; }
     
-    .dc-amount-badge { text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 12px; }
+    .dc-amount-badge { text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; }
     .dc-amount-badge small { display: block; font-size: 0.68rem; color: var(--text-3); }
     .dc-amount-badge strong { font-size: 1.05rem; color: #fff; font-weight: 900; }
 
-    .dc-financial-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(255,255,255,0.025); padding: 10px 14px; border-radius: 12px; }
+    .dc-financial-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(255,255,255,0.025); padding: 10px 14px; border-radius: 8px; }
     .df-stat { display: flex; flex-direction: column; }
     .df-lbl { font-size: 0.7rem; color: var(--text-3); }
     .df-val { font-size: 0.95rem; font-weight: 800; margin-top: 2px; }
 
     .deal-progress-box { margin-top: 14px; }
     .dp-header { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-2); font-weight: 700; margin-bottom: 6px; }
-    .dp-track { height: 7px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; }
-    .dp-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 100px; }
+    .dp-track { height: 7px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; }
+    .dp-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 8px; }
 
     .dc-scope { margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: var(--text-2); }
     .dc-scope small { font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px; }
 
     /* Ledger Card */
-    .ledger-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; overflow: hidden; }
+    .ledger-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow: hidden; }
     .crm-table { width: 100%; min-width: 700px; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
     .crm-table th { padding: 12px 16px; border-bottom: 1px solid rgba(99, 102, 241, 0.18); color: var(--violet-light); font-size: 0.74rem; font-weight: 800; text-transform: uppercase; background: rgba(99, 102, 241, 0.05); white-space: nowrap; }
     .crm-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; color: var(--text); vertical-align: middle; white-space: nowrap; }
@@ -412,31 +527,31 @@ import { TextareaModule } from 'primeng/textarea';
 
     /* CLIENT TASKS CARDS GRID & SUBTASKS */
     .client-tasks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; }
-    .client-task-card { padding: 24px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.25s ease; box-shadow: var(--shadow-sm); }
+    .client-task-card { padding: 24px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.25s ease; box-shadow: var(--shadow-sm); }
     .client-task-card.need-review { border-color: rgba(6,182,212,0.4); box-shadow: 0 8px 28px rgba(6,182,212,0.15); }
     
     .ct-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
     .ct-title { font-size: 1.1rem; font-weight: 800; color: #fff; line-height: 1.35; margin: 0; }
     .ct-deal-name { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--violet-light); margin-top: 5px; font-weight: 700; background: rgba(99, 102, 241, 0.1); padding: 3px 10px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2); }
     
-    .ct-status-badge { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; background: rgba(255,255,255,0.06); color: var(--text-2); flex-shrink: 0; white-space: nowrap; }
+    .ct-status-badge { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 8px; background: rgba(255,255,255,0.06); color: var(--text-2); flex-shrink: 0; white-space: nowrap; }
     .ct-status-badge.review { background: rgba(6,182,212,0.18); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); }
     .ct-status-badge.done { background: rgba(16,185,129,0.18); color: #34d399; }
     .ct-status-badge.feedback { background: rgba(245,158,11,0.18); color: #fbbf24; }
 
-    .ct-scope { font-size: 0.88rem; color: var(--text-2); margin-bottom: 14px; line-height: 1.6; background: rgba(255,255,255,0.025); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); }
+    .ct-scope { font-size: 0.88rem; color: var(--text-2); margin-bottom: 14px; line-height: 1.6; background: rgba(255,255,255,0.025); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); }
 
     /* Subtasks Checklist Box */
-    .ct-subtasks-box { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .ct-subtasks-box { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
     .subtasks-head { display: flex; justify-content: space-between; align-items: center; }
     .subtasks-title { font-size: 0.78rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 6px; }
-    .subtasks-count { font-size: 0.72rem; font-weight: 700; background: rgba(99, 102, 241, 0.12); color: var(--violet-light); padding: 2px 8px; border-radius: 100px; border: 1px solid rgba(99, 102, 241, 0.25); }
+    .subtasks-count { font-size: 0.72rem; font-weight: 700; background: rgba(99, 102, 241, 0.12); color: var(--violet-light); padding: 2px 8px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.25); }
     
     .subtasks-list { display: flex; flex-direction: column; gap: 8px; }
-    .subtask-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; font-size: 0.84rem; color: var(--text-2); transition: all 0.2s; }
+    .subtask-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 8px; font-size: 0.84rem; color: var(--text-2); transition: all 0.2s; }
     .subtask-item.completed { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); color: var(--text); }
     .subtask-title { flex: 1; font-weight: 600; }
-    .subtask-badge { font-size: 0.68rem; font-weight: 700; color: #34d399; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 100px; }
+    .subtask-badge { font-size: 0.68rem; font-weight: 700; color: #34d399; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 8px; }
     
     .text-emerald { color: #34d399 !important; }
     .text-muted { color: var(--text-3) !important; }
@@ -444,23 +559,23 @@ import { TextareaModule } from 'primeng/textarea';
     .ct-attachments { margin-bottom: 14px; }
     .att-head { font-size: 0.76rem; font-weight: 700; color: var(--text-2); display: block; margin-bottom: 8px; }
     .att-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-    .att-thumb { width: 58px; height: 58px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+    .att-thumb { width: 58px; height: 58px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
     .att-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .file-icon-box { color: var(--violet-light); font-size: 1.25rem; }
 
     .ct-notes-thread { margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
     .thread-head { font-size: 0.76rem; font-weight: 700; color: var(--text-2); display: block; margin-bottom: 4px; }
-    .note-bubble { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 10px 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .note-bubble { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; }
     .note-author-row { display: flex; justify-content: space-between; align-items: center; }
     .author-name { font-size: 0.78rem; font-weight: 800; color: var(--violet-light); display: flex; align-items: center; gap: 6px; }
     .note-time { font-size: 0.7rem; color: var(--text-3); }
     .note-text { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
 
     .ct-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-    .btn-client-approve { flex: 1; min-width: 150px; padding: 11px 14px; border: none; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 0.84rem; font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(16,185,129,0.3); transition: all 0.2s ease; }
+    .btn-client-approve { flex: 1; min-width: 150px; padding: 11px 14px; border: none; border-radius: 8px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 0.84rem; font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(16,185,129,0.3); transition: all 0.2s ease; }
     .btn-client-approve:hover { transform: translateY(-1.5px); box-shadow: 0 6px 20px rgba(16,185,129,0.45); }
 
-    .btn-client-revision { flex: 1; min-width: 150px; padding: 11px 14px; border: none; border-radius: 12px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.84rem; font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(245,158,11,0.3); transition: all 0.2s ease; }
+    .btn-client-revision { flex: 1; min-width: 150px; padding: 11px 14px; border: none; border-radius: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.84rem; font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(245,158,11,0.3); transition: all 0.2s ease; }
     .btn-client-revision:hover { transform: translateY(-1.5px); box-shadow: 0 6px 20px rgba(245,158,11,0.45); }
 
     .empty-glass-card { text-align: center; padding: 36px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); color: var(--text-2); grid-column: 1 / -1; }
@@ -501,9 +616,127 @@ import { TextareaModule } from 'primeng/textarea';
     :host-context(body.light-theme) .subtask-item.completed { background: #ecfdf5 !important; border-color: #a7f3d0 !important; color: #065f46 !important; }
     :host-context(body.light-theme) .subtasks-title { color: #0f172a !important; }
 
+    .client-tasks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 18px; }
+    .client-task-card { background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.08)); border-radius: var(--r-lg, 16px); padding: 22px; display: flex; flex-direction: column; justify-content: space-between; }
+    
+    .att-thumb-interactive {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+    }
+    .att-thumb-interactive:hover {
+      transform: translateY(-2px);
+      border-color: var(--violet-light, #818cf8);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+    .att-portal-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .att-zoom-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .att-thumb-interactive:hover .att-zoom-overlay {
+      opacity: 1;
+    }
+    .att-doc-name {
+      font-size: 0.65rem;
+      color: var(--text-2);
+      text-align: center;
+      padding: 0 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    /* ── LIGHTBOX OVERLAY ── */
+    .portal-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 9999999;
+      background: rgba(0, 0, 0, 0.94);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      animation: fadeIn 0.2s ease;
+    }
+    .pl-content {
+      position: relative;
+      max-width: 92vw;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: default;
+    }
+    .pl-content img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+    .pl-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .pl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pl-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .pl-close {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+    .pl-close:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+
     :host-context(body.light-theme) .note-bubble { background: #f8fafc !important; border-color: #e2e8f0 !important; }
     :host-context(body.light-theme) .note-text { color: #1e293b !important; }
     :host-context(body.light-theme) .author-name { color: #4338ca !important; }
+    :host-context(body.light-theme) .att-thumb-interactive { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+    :host-context(body.light-theme) .att-doc-name { color: #334155 !important; }
   `]
 })
 export class ClientPortalViewComponent implements OnInit {
@@ -515,6 +748,30 @@ export class ClientPortalViewComponent implements OnInit {
   showRevisionDialog = false;
   activeTaskForRevision: any = null;
   revisionText = '';
+
+  expandedImageUrl: string | null = null;
+
+  openLightbox(url: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (url) this.expandedImageUrl = url;
+  }
+
+  openFileUrl(url: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (url) window.open(url, '_blank');
+  }
+
+  getFileUrl(att: any): string {
+    if (!att) return '';
+    const raw = typeof att === 'string' ? att : (att.file_url || att.url || att.file_path || att.path || '');
+    return this.apiService.getStorageUrl(raw);
+  }
 
   ngOnInit(): void {
     this.loadPortalData();
@@ -651,8 +908,12 @@ export class ClientPortalViewComponent implements OnInit {
   }
 
   isImage(att: any): boolean {
-    const url = att?.file_url || att?.url || att?.file_name || '';
-    return /\.(jpg|jpeg|png|webp|avif|gif)$/i.test(url);
+    if (!att) return false;
+    if (att.is_image === true || att.is_image === 1 || att.is_image === '1') return true;
+    const path = (att.file_url || att.file_path || att.url || att.path || att.file_name || '').toLowerCase();
+    if (path.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)($|\?)/i)) return true;
+    if ((att.file_type && att.file_type.includes('image')) || (att.mime_type && att.mime_type.includes('image'))) return true;
+    return false;
   }
 
   approveTask(task: any): void {

@@ -253,7 +253,7 @@ import { ConfirmService } from '../../services/confirm.service';
             </div>
 
             <!-- Subtasks Checklist Section (الخطوات والمهام الفرعية) -->
-            <div class="client-subtasks-box" *ngIf="task.subtasks && task.subtasks.length > 0" style="margin-top:10px; background:rgba(99,102,241,0.06); border:1px dashed rgba(99,102,241,0.25); border-radius:12px; padding:10px 14px;">
+            <div class="client-subtasks-box" *ngIf="task.subtasks && task.subtasks.length > 0" style="margin-top:10px; background:rgba(99,102,241,0.06); border:1px dashed rgba(99,102,241,0.25); border-radius: 8px; padding:10px 14px;">
               <div style="font-size:0.78rem; font-weight:800; color:var(--violet-light, #818cf8); margin-bottom:6px; display:flex; align-items:center; justify-content:space-between;">
                 <span><i class="fa-solid fa-list-check"></i> الخطوات الفرعية ({{ getCompletedSubtasksCount(task) }}/{{ task.subtasks.length }})</span>
               </div>
@@ -299,8 +299,8 @@ import { ConfirmService } from '../../services/confirm.service';
 
           <!-- Card Footer Actions -->
           <div class="client-card-footer" (click)="$event.stopPropagation()">
-            <!-- If task is pending approval or in progress -->
-            <div class="client-actions-grid" *ngIf="task.status !== 'done' && task.status !== 'approved'">
+            <!-- If task is strictly in client_review stage -->
+            <div class="client-actions-grid" *ngIf="task.status === 'client_review'">
               <button 
                 type="button" 
                 class="btn-client-approve" 
@@ -315,6 +315,14 @@ import { ConfirmService } from '../../services/confirm.service';
               >
                 <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
               </button>
+            </div>
+
+            <!-- If task is in progress / internal review before client review -->
+            <div class="client-approved-bar" *ngIf="task.status !== 'client_review' && task.status !== 'done' && task.status !== 'approved'">
+              <div class="approved-status-text" style="color:var(--text-2);">
+                <i class="fa-solid fa-clock-rotate-left" style="color:#fbbf24;"></i>
+                <span>قيد التنفيذ والمراجعة الفنية</span>
+              </div>
             </div>
 
             <!-- If task is already done/approved -->
@@ -569,32 +577,37 @@ import { ConfirmService } from '../../services/confirm.service';
                 </div>
               </div>
 
-              <!-- Client Review Interactive Actions (للعميل فقط) -->
-              <div class="drawer-card client-review-actions-card" *ngIf="isClient()" style="background:linear-gradient(135deg, rgba(6,182,212,0.12), rgba(99,102,241,0.12)); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:16px;">
+              <!-- Client Review Interactive Actions (للعميل أو الإدارة نيابة عن العميل) -->
+              <div class="drawer-card client-review-actions-card" *ngIf="isClient() || canApproveOnBehalfOfClient(selectedTask)" style="background:linear-gradient(135deg, rgba(6,182,212,0.12), rgba(99,102,241,0.12)); border:1px solid rgba(6,182,212,0.3); border-radius: 8px; padding:16px;">
                 <div class="dc-head" style="color:#67e8f9; font-weight:800; font-size:0.95rem; margin-bottom:8px;">
                   <i class="fa-solid fa-stamp"></i> حالة اعتماد وتفاعل العميل
                 </div>
 
                 <!-- If task is already approved/done -->
-                <div *ngIf="['done', 'approved', 'completed'].includes(selectedTask.status)" style="display:flex; align-items:center; gap:10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:12px 16px; border-radius:12px; color:#34d399; font-weight:800; font-size:0.9rem;">
+                <div *ngIf="['done', 'approved', 'completed'].includes(selectedTask.status)" style="display:flex; align-items:center; gap:10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); padding:12px 16px; border-radius: 8px; color:#34d399; font-weight:800; font-size:0.9rem;">
                   <i class="fa-solid fa-shield-check" style="font-size:1.2rem;"></i>
-                  <span>تم اعتماد واستلام هذه المهمة بنجاح من قبلكم.</span>
+                  <span>تم اعتماد واستلام هذه المهمة بنجاح.</span>
                 </div>
 
-                <!-- Interactive approval/revision buttons (if task is in review/feedback) -->
-                <ng-container *ngIf="!['done', 'approved', 'completed'].includes(selectedTask.status)">
+                <!-- Interactive approval/revision buttons (strictly in client_review status) -->
+                <ng-container *ngIf="selectedTask.status === 'client_review'">
                   <p style="font-size:0.83rem; color:var(--text-2); margin-bottom:12px; line-height:1.5;">
-                    المهمة جاهزة للمعاينة الآن. يرجى الاطلاع على المرفقات والتفاصيل ثم اتخاذ الإجراء المناسب:
+                    {{ isClient() ? 'المهمة جاهزة للمعاينة الآن. يرجى الاطلاع على المرفقات والتفاصيل ثم اتخاذ الإجراء المناسب:' : 'المهمة في مرحلة مراجعة العميل (Client Review). يمكنك اعتماد المهمة نيابة عن العميل بصفتك الإدارية:' }}
                   </p>
                   <div class="client-btn-actions" style="display:flex; gap:10px;">
-                    <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(selectedTask)" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
-                      <i class="fa-solid fa-check-double"></i> اعتماد المهمة واستلامها
+                    <button type="button" class="btn btn-emerald" (click)="approveTaskByClient(selectedTask)" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius: 8px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                      <i class="fa-solid fa-check-double"></i> {{ isClient() ? 'اعتماد المهمة واستلامها' : 'اعتماد نيابة عن العميل' }}
                     </button>
-                    <button type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 14px rgba(245,158,11,0.35);">
+                    <button *ngIf="isClient()" type="button" class="btn btn-amber" (click)="openRevisionModal()" style="flex:1; padding:12px; font-size:0.86rem; font-weight:800; border-radius: 8px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:none; box-shadow:0 4px 14px rgba(245,158,11,0.35);">
                       <i class="fa-solid fa-pen-to-square"></i> طلب تعديلات
                     </button>
                   </div>
                 </ng-container>
+
+                <!-- If client is viewing but task is not in client_review yet -->
+                <div *ngIf="isClient() && selectedTask.status !== 'client_review' && !['done', 'approved', 'completed'].includes(selectedTask.status)" style="color:var(--text-2); font-size:0.82rem; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
+                  <i class="fa-solid fa-clock-rotate-left" style="color:#fbbf24; margin-left:6px;"></i> المهمة قيد التنفيذ والمراجعة الفنية، وستتاح خيارات الاعتماد فور إرسالها لمرحلة مراجعة العميل.
+                </div>
               </div>
 
               <!-- Priority Switcher (تعديل الأولوية) -->
@@ -678,8 +691,8 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="dc-head"><i class="fa-solid fa-user-check"></i> {{ isClient() ? 'الموظف المكلف بالمهمة' : 'الفريق المكلف بالمهمة' }}</div>
                 <div class="team-assign-container" style="display:flex; flex-direction:column; gap:12px; margin-top:6px;">
 
-                  <!-- User Picker Dropdown using app-prime-picker-select (Hidden for Client) -->
-                  <div class="assign-user-picker" *ngIf="!isClient()">
+                  <!-- User Picker Dropdown using app-prime-picker-select (Hidden for Client and Regular Employees) -->
+                  <div class="assign-user-picker" *ngIf="!isClient() && !isRegularEmployee()">
                     <app-prime-picker-select
                       [items]="unassignedUsers()"
                       optionLabel="name"
@@ -698,7 +711,7 @@ import { ConfirmService } from '../../services/confirm.service';
                         <span class="tc-name">{{ u.name }}</span>
                         <small class="tc-role">{{ isClient() ? 'مسؤول التنفيذ بالمشروع' : (u.email || 'عضو الفريق') }}</small>
                       </div>
-                      <button class="tc-remove-btn" *ngIf="!isClient()" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
+                      <button class="tc-remove-btn" *ngIf="!isClient() && !isRegularEmployee()" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
                         <i class="fa-solid fa-xmark"></i>
                       </button>
                     </div>
@@ -740,7 +753,7 @@ import { ConfirmService } from '../../services/confirm.service';
                         <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي فقط' }}</span>
                       </button>
                     </div>
-                    <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
+                    <div *ngIf="!isImage(att)" class="att-doc" style="position:relative; cursor:pointer;" (click)="openFileUrl(getFileUrl(att), $event)" [title]="'فتح وتحميل: ' + (att.file_name || att.name || 'مستند')">
                       <i class="fa-solid fa-file-pdf"></i>
                       <span>{{ att.file_name || att.name || 'مستند' }}</span>
                       <button 
@@ -785,18 +798,18 @@ import { ConfirmService } from '../../services/confirm.service';
               <div class="drawer-card subtasks-embedded-card" *ngIf="(selectedTask.subtasks || []).length > 0">
                 <div class="dc-head flex-between" style="display:flex; justify-content:space-between; align-items:center;">
                   <span style="font-weight:800; color:var(--teal-light, #38bdf8);"><i class="fa-solid fa-list-check"></i> المهام والخطوات الفرعية التابعة للمهمة</span>
-                  <span class="badge-sub-progress" style="background:rgba(99,102,241,0.12); color:var(--violet-light); font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:100px; border:1px solid rgba(99,102,241,0.25);">
+                  <span class="badge-sub-progress" style="background:rgba(99,102,241,0.12); color:var(--violet-light); font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius: 8px; border:1px solid rgba(99,102,241,0.25);">
                     {{ getCompletedSubtasksCount(selectedTask) }} من {{ selectedTask.subtasks.length }} مكتملة ({{ getSubtasksProgressPercent(selectedTask) }}%)
                   </span>
                 </div>
-                <div class="subtask-progress-bar" style="height:8px; background:rgba(255,255,255,0.08); border-radius:100px; overflow:hidden; margin:10px 0;">
-                  <div class="subtask-progress-fill" [style.width.%]="getSubtasksProgressPercent(selectedTask)" style="height:100%; background:linear-gradient(90deg, var(--teal, #06b6d4), var(--emerald, #10b981)); border-radius:100px;"></div>
+                <div class="subtask-progress-bar" style="height:8px; background:rgba(255,255,255,0.08); border-radius: 8px; overflow:hidden; margin:10px 0;">
+                  <div class="subtask-progress-fill" [style.width.%]="getSubtasksProgressPercent(selectedTask)" style="height:100%; background:linear-gradient(90deg, var(--teal, #06b6d4), var(--emerald, #10b981)); border-radius: 8px;"></div>
                 </div>
                 <div class="subtask-list" style="display:flex; flex-direction:column; gap:8px;">
-                  <div class="subtask-item-row" *ngFor="let st of selectedTask.subtasks" [class.completed]="st.status === 'done' || st.is_completed" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px;">
+                  <div class="subtask-item-row" *ngFor="let st of selectedTask.subtasks" [class.completed]="st.status === 'done' || st.is_completed" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius: 8px;">
                     <input type="checkbox" [checked]="st.status === 'done' || st.is_completed" (change)="toggleSubtaskStatus(selectedTask, st)" style="width:16px; height:16px; cursor:pointer;" />
                     <span class="st-title" style="flex:1; font-size:0.86rem; font-weight:700; color:var(--text);" [style.text-decoration]="(st.status === 'done' || st.is_completed) ? 'line-through' : 'none'">{{ st.title }}</span>
-                    <span class="st-status" [class.done]="st.status === 'done' || st.is_completed" style="font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:100px;" [style.background]="(st.status === 'done' || st.is_completed) ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'" [style.color]="(st.status === 'done' || st.is_completed) ? '#34d399' : '#fbbf24'">
+                    <span class="st-status" [class.done]="st.status === 'done' || st.is_completed" style="font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius: 8px;" [style.background]="(st.status === 'done' || st.is_completed) ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'" [style.color]="(st.status === 'done' || st.is_completed) ? '#34d399' : '#fbbf24'">
                       {{ (st.status === 'done' || st.is_completed) ? 'مكتملة' : 'قيد التنفيذ' }}
                     </span>
                   </div>
@@ -820,7 +833,7 @@ import { ConfirmService } from '../../services/confirm.service';
                           class="note-vis-chip" 
                           *ngIf="!isClient()" 
                           (click)="toggleNoteVisibility(selectedTask, note)"
-                          style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:100px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s;"
+                          style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius: 8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s;"
                           [style.background]="note.visible_to_client !== false ? 'rgba(6,182,212,0.18)' : 'rgba(245,158,11,0.18)'"
                           [style.color]="note.visible_to_client !== false ? '#67e8f9' : '#fbbf24'"
                           [style.border]="note.visible_to_client !== false ? '1px solid rgba(6,182,212,0.3)' : '1px solid rgba(245,158,11,0.3)'"
@@ -864,7 +877,7 @@ import { ConfirmService } from '../../services/confirm.service';
               <div class="subtasks-drawer-view" dir="rtl" style="display:flex; flex-direction:column; gap:16px;">
 
                 <!-- Progress & Stats Header -->
-                <div class="subtask-progress-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius:16px; border:1px solid rgba(99,102,241,0.2);">
+                <div class="subtask-progress-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius: 8px; border:1px solid rgba(99,102,241,0.2);">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <strong style="font-size:0.92rem; color:var(--text);"><i class="fa-solid fa-list-check" style="color:var(--violet-light)"></i> إنجاز المهام الفرعية</strong>
                     <span class="subtask-progress-pill" *ngIf="(selectedTask.subtasks || []).length">
@@ -1123,7 +1136,7 @@ import { ConfirmService } from '../../services/confirm.service';
         <div class="subtask-detail-modal-body" *ngIf="selectedSubtask" dir="rtl" style="display:flex; flex-direction:column; gap:16px; padding-top:8px;">
 
           <!-- Title & Priority Header Card -->
-          <div class="st-hd-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius:14px; border:1px solid rgba(99,102,241,0.2); display:flex; justify-content:space-between; align-items:center;">
+          <div class="st-hd-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius: 8px; border:1px solid rgba(99,102,241,0.2); display:flex; justify-content:space-between; align-items:center;">
             <div>
               <h4 style="margin:0 0 6px 0; font-size:1.05rem; font-weight:800; color:var(--text);">{{ selectedSubtask.title }}</h4>
               <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
@@ -1134,7 +1147,7 @@ import { ConfirmService } from '../../services/confirm.service';
               class="ps-step"
               [class.active]="selectedSubtask.status === 'done'"
               (click)="toggleSubtaskStatus(selectedTask, selectedSubtask)"
-              style="padding:8px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px;"
+              style="padding:8px 16px; border-radius: 8px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px;"
             >
               <i class="fa-solid" [class.fa-check-double]="selectedSubtask.status === 'done'" [class.fa-circle]="selectedSubtask.status !== 'done'"></i>
               {{ selectedSubtask.status === 'done' ? 'مكتملة' : 'قيد التنفيذ' }}
@@ -1181,7 +1194,7 @@ import { ConfirmService } from '../../services/confirm.service';
                     <i class="fa-solid fa-trash-can"></i>
                   </button>
                 </div>
-                <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
+                <div *ngIf="!isImage(att)" class="att-doc" style="position:relative; cursor:pointer;" (click)="openFileUrl(getFileUrl(att), $event)" [title]="'فتح وتحميل: ' + (att.file_name || att.name || 'مستند')">
                   <i class="fa-solid fa-file-pdf"></i>
                   <span>{{ att.file_name || att.name || 'مستند' }}</span>
                   <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق">
@@ -1287,7 +1300,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 </div>
               </div>
               <div class="st-img-preview" *ngIf="subtaskFilePreview" style="margin-top:10px; text-align:center;">
-                <img [src]="subtaskFilePreview" style="max-height:120px; border-radius:10px; border:1px solid rgba(99,102,241,0.3);" alt="Preview">
+                <img [src]="subtaskFilePreview" style="max-height:120px; border-radius: 8px; border:1px solid rgba(99,102,241,0.3);" alt="Preview">
               </div>
             </div>
 
@@ -1331,7 +1344,18 @@ import { ConfirmService } from '../../services/confirm.service';
                   <input type="text" pInputText formControlName="title" placeholder="مثال: تصميم 10 فيديو ريلز للحملة..." />
                 </div>
 
-                <div class="fg">
+                <!-- Standalone Task Option -->
+                <div class="fg full" style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.25); border-radius: 8px; padding:12px;">
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#fff; font-weight:700; margin:0;">
+                    <input type="checkbox" formControlName="is_standalone" style="accent-color:var(--violet); width:18px; height:18px;" />
+                    <span>مهمة مباشرة ومستقلة بدون صفقة (Standalone Task)</span>
+                  </label>
+                  <small style="display:block; color:var(--text-3); font-size:0.75rem; margin-top:4px;">
+                    يمكن تكليف الموظف بهذه المهمة مباشرة دون ربطها بعقد صفقة محدد.
+                  </small>
+                </div>
+
+                <div class="fg" *ngIf="!taskForm.get('is_standalone')?.value">
                   <label>الصفقة المرتبطة</label>
                   <app-prime-picker-select
                     formControlName="deal_id"
@@ -1339,6 +1363,18 @@ import { ConfirmService } from '../../services/confirm.service';
                     optionLabel="title"
                     optionValue="id"
                     placeholder="اختر الصفقة..."
+                  ></app-prime-picker-select>
+                </div>
+
+                <!-- Direct Assignee for standalone or general task -->
+                <div class="fg" *ngIf="taskForm.get('is_standalone')?.value">
+                  <label>الموظف المكلف بالمهمة مباشرة</label>
+                  <app-prime-picker-select
+                    formControlName="assigned_to"
+                    [items]="employeeUsers"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="اختر الموظف المسؤول..."
                   ></app-prime-picker-select>
                 </div>
 
@@ -1353,19 +1389,74 @@ import { ConfirmService } from '../../services/confirm.service';
                   ></app-prime-picker-select>
                 </div>
 
-                <div class="fg">
+                <div class="fg" *ngIf="!isRegularEmployee()">
                   <label>سعر العميل / قيمة المهمة (ج.م) (اختياري)</label>
                   <input type="number" pInputText formControlName="client_price" (input)="computeMargin()" placeholder="0 (اختياري)..." />
                 </div>
 
-                <div class="fg">
+                <div class="fg" *ngIf="!isRegularEmployee()">
                   <label>تكلفة الموظف (ج.م) (اختياري)</label>
                   <input type="number" pInputText formControlName="employee_price" (input)="computeMargin()" placeholder="0 (اختياري)..." />
                 </div>
 
-                <div class="fg full margin-preview" *ngIf="computedMarginVal > 0">
+                <div class="fg full margin-preview" *ngIf="!isRegularEmployee() && computedMarginVal > 0">
                   <i class="fa-solid fa-chart-line"></i>
                   هامش أرباح الشركة: <strong>+{{ computedMarginVal | number:'1.2-2' }} ج.م</strong>
+                </div>
+
+                <!-- Dynamic Department Dates -->
+                <div class="fg full" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius: 8px; padding:12px;">
+                  <div style="font-weight:700; color:var(--violet-light); font-size:0.84rem; margin-bottom:8px;">
+                    <i class="fa-solid fa-calendar-days"></i> مواعيد تنفيذ وتسليم المهمة
+                  </div>
+
+                  <!-- Photography & Editing -->
+                  <div *ngIf="isCreateTaskPhotoDept()" style="display:flex; flex-direction:column; gap:8px;">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#fff; font-size:0.82rem;">
+                      <input type="checkbox" formControlName="dates_not_specified" style="accent-color:var(--violet);" />
+                      <span>لم يتم تحديد المواعيد بعد</span>
+                    </label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;" *ngIf="!taskForm.get('dates_not_specified')?.value">
+                      <div class="form-group">
+                        <label style="font-size:0.75rem; color:var(--text-2);">تاريخ التصوير</label>
+                        <input type="date" pInputText formControlName="shooting_date" />
+                      </div>
+                      <div class="form-group">
+                        <label style="font-size:0.75rem; color:var(--text-2);">تاريخ التسليم</label>
+                        <input type="date" pInputText formControlName="delivery_date" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Social Media -->
+                  <div *ngIf="isCreateTaskSocialDept()" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div class="form-group">
+                      <label style="font-size:0.75rem; color:var(--text-2);">تاريخ بداية التنفيذ</label>
+                      <input type="date" pInputText formControlName="start_date" />
+                    </div>
+                    <div class="form-group">
+                      <label style="font-size:0.75rem; color:var(--text-2);">تاريخ النهاية</label>
+                      <input type="date" pInputText formControlName="end_date" />
+                    </div>
+                  </div>
+
+                  <!-- General / Other -->
+                  <div *ngIf="!isCreateTaskPhotoDept() && !isCreateTaskSocialDept()" class="form-group">
+                    <label style="font-size:0.75rem; color:var(--text-2);">تاريخ الاستحقاق والتسليم (Due Date)</label>
+                    <input type="date" pInputText formControlName="due_date" />
+                  </div>
+                </div>
+
+                <!-- Multi-file Attachments Upload -->
+                <div class="fg full">
+                  <label>مرفقات وصور المهمة (يمكن رفع أكثر من ملف)</label>
+                  <input type="file" multiple (change)="onCreateTaskFilesSelected($event)" style="padding:8px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--r); color:var(--text-2); font-size:0.82rem; width:100%; box-sizing:border-box;" />
+                  <div *ngIf="createTaskFiles.length > 0" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                    <span *ngFor="let f of createTaskFiles; let fIdx = index" style="background:rgba(99,102,241,0.15); color:var(--violet-light); border:1px solid rgba(99,102,241,0.3); padding:3px 8px; border-radius:6px; font-size:0.74rem; display:inline-flex; align-items:center; gap:6px;">
+                      <i class="fa-solid fa-paperclip"></i> {{ f.name }}
+                      <i class="fa-solid fa-xmark" (click)="removeCreateTaskFile(fIdx)" style="cursor:pointer; color:#f87171;"></i>
+                    </span>
+                  </div>
                 </div>
 
                 <div class="fg">
@@ -1433,7 +1524,7 @@ import { ConfirmService } from '../../services/confirm.service';
             <p style="font-size:0.88rem; color:var(--text-2); margin-bottom:14px; line-height:1.6;">يرجى كتابة التعديلات والملاحظات المطلوبة على المهمة ليقوم فريق العمل بتنفيذها فوراً:</p>
             <div class="fg full" style="margin-bottom:16px;">
               <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:6px; display:block;"><i class="fa-solid fa-pen-to-square" style="color:var(--amber)"></i> تفاصيل التعديل المطلوب <span style="color:var(--rose)">*</span></label>
-              <textarea [(ngModel)]="revisionNotes" pInputTextarea rows="4" placeholder="مثال: يرجى تعديل الألوان في التصميم وتغيير الشعار في الصورة الثانية..." style="width:100%; border-radius:12px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;"></textarea>
+              <textarea [(ngModel)]="revisionNotes" pInputTextarea rows="4" placeholder="مثال: يرجى تعديل الألوان في التصميم وتغيير الشعار في الصورة الثانية..." style="width:100%; border-radius: 8px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;"></textarea>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
               <button type="button" class="btn-cancel" (click)="showRevisionModal = false">إلغاء</button>
@@ -1447,8 +1538,8 @@ import { ConfirmService } from '../../services/confirm.service';
 
       <!-- ── LIGHTBOX ────────────────────────────────────────────── -->
       <div class="lightbox" *ngIf="expandedImageUrl" (click)="expandedImageUrl = null">
-        <img [src]="expandedImageUrl" />
-        <button class="lb-close"><i class="fa-solid fa-xmark"></i></button>
+        <img [src]="expandedImageUrl" (click)="$event.stopPropagation()" alt="معاينة المرفق" />
+        <button class="lb-close" (click)="expandedImageUrl = null"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
     </div>
@@ -1488,7 +1579,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .toolbar-search-input {
       width: 100%;
       padding: 11px 42px 11px 38px;
-      border-radius: 14px;
+      border-radius: 8px;
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--border, rgba(255,255,255,0.1));
       color: #fff;
@@ -1521,7 +1612,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .btn-trigger-filters {
       padding: 11px 22px;
-      border-radius: 14px;
+      border-radius: 8px;
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #ffffff !important;
@@ -1555,36 +1646,45 @@ import { ConfirmService } from '../../services/confirm.service';
       font-size: 0.78rem;
       font-weight: 900;
       padding: 2px 9px;
-      border-radius: 100px;
+      border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    /* SIDE FILTER MODAL DRAWER (EXACT SAME APPEARANCE AND ANIMATION AS TASK DETAIL DRAWER) */
+    /* CENTERED FILTER MODAL (نافذة الفلاتر المنبثقة المركزية) */
     .filter-drawer-overlay {
       position: fixed;
       inset: 0;
       z-index: 100000;
-      background: rgba(9, 9, 24, 0.45);
-      backdrop-filter: none !important;
+      background: rgba(9, 9, 24, 0.7);
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
       direction: rtl;
+      box-sizing: border-box;
     }
     .filter-drawer-content {
-      width: 440px;
+      width: 480px;
       max-width: 95vw;
-      height: 100vh;
+      height: auto;
+      max-height: 90vh;
+      border-radius: 8px;
       background: linear-gradient(165deg, rgba(15, 16, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
-      border-left: 1px solid rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.28);
       display: flex;
       flex-direction: column;
-      animation: drawerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.35);
+      animation: modalFadeInScale 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(99, 102, 241, 0.15);
+      overflow: hidden;
+      margin: auto;
+      position: relative;
     }
-    body.light-theme .filter-drawer-content {
+    :host-context(body.light-theme) .filter-drawer-content {
       background: #ffffff !important;
-      border-left: 1px solid rgba(99, 102, 241, 0.2) !important;
-      box-shadow: -15px 0 50px rgba(15, 23, 42, 0.15) !important;
+      border: 1px solid rgba(99, 102, 241, 0.2) !important;
+      box-shadow: 0 25px 70px rgba(15, 23, 42, 0.2) !important;
     }
     .drawer-header {
       padding: 20px 24px;
@@ -1610,7 +1710,7 @@ import { ConfirmService } from '../../services/confirm.service';
       color: var(--text-2, #94a3b8);
       width: 36px;
       height: 36px;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -1651,7 +1751,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .btn-apply-filters {
       flex: 1;
       padding: 12px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: linear-gradient(135deg, #6366f1, #4f46e5);
       color: #fff;
       font-size: 0.88rem;
@@ -1671,7 +1771,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .btn-clear-drawer {
       padding: 12px 18px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: rgba(255,255,255,0.06);
       border: 1px solid var(--border, rgba(255,255,255,0.1));
       color: var(--text-2, #cbd5e1);
@@ -1688,7 +1788,7 @@ import { ConfirmService } from '../../services/confirm.service';
       width: 100% !important;
       background: rgba(255,255,255,0.04) !important;
       border: 1px solid var(--border, rgba(255,255,255,0.1)) !important;
-      border-radius: 14px !important;
+      border-radius: 8px !important;
       transition: all 0.2s ease !important;
     }
     ::ng-deep .prime-luxury-dropdown:hover,
@@ -1712,7 +1812,7 @@ import { ConfirmService } from '../../services/confirm.service';
     ::ng-deep body > .p-dropdown-panel {
       background: #0f0f1e !important;
       border: 1px solid var(--border, rgba(255,255,255,0.12)) !important;
-      border-radius: 16px !important;
+      border-radius: 8px !important;
       box-shadow: 0 20px 60px rgba(0,0,0,0.8) !important;
       backdrop-filter: none !important;
       z-index: 999999 !important;
@@ -1733,13 +1833,13 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(255,255,255,0.06) !important;
       border: 1px solid var(--border, rgba(255,255,255,0.15)) !important;
       color: #ffffff !important;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       padding: 8px 36px 8px 14px !important;
       font-size: 0.84rem !important;
       font-family: inherit !important;
       box-shadow: none !important;
     }
-    body.light-theme ::ng-deep .p-dropdown-panel .p-dropdown-filter {
+    :host-context(body.light-theme) ::ng-deep .p-dropdown-panel .p-dropdown-filter {
       background: #f8fafc !important;
       border-color: #cbd5e1 !important;
       color: #0f172a !important;
@@ -1761,7 +1861,7 @@ import { ConfirmService } from '../../services/confirm.service';
       color: #cbd5e1 !important;
       font-size: 0.84rem !important;
       font-weight: 600 !important;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       margin: 2px 6px !important;
       transition: all 0.15s ease !important;
     }
@@ -1772,7 +1872,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .btn-reset-filters {
       padding: 9px 16px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: rgba(239,68,68,0.12);
       border: 1px solid rgba(239,68,68,0.3);
       color: #f87171;
@@ -1809,7 +1909,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .tb-header-left { display: flex; align-items: center; gap: 14px; }
     .tb-icon-badge {
-      width: 46px; height: 46px; border-radius: 13px;
+      width: 46px; height: 46px; border-radius: 8px;
       background: linear-gradient(135deg, var(--violet), var(--teal));
       display: flex; align-items: center; justify-content: center;
       font-size: 1.1rem; color: #fff;
@@ -1825,7 +1925,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .tb-stats { display: flex; gap: 8px; }
     .stat-pill {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 12px; border-radius: 100px;
+      padding: 5px 12px; border-radius: 8px;
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
       font-size: 0.76rem; font-weight: 600; color: var(--text-2);
@@ -1833,7 +1933,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .stat-pill.emerald { color: var(--emerald-light, #10b981); border-color: rgba(16,185,129,0.2); }
     .btn-new-task {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 20px; border-radius: 12px; border: none;
+      padding: 10px 20px; border-radius: 8px; border: none;
       background: linear-gradient(135deg, var(--violet), var(--violet-2));
       color: #fff; font-weight: 700; font-size: 0.86rem;
       cursor: pointer; transition: all 0.25s;
@@ -1857,7 +1957,7 @@ import { ConfirmService } from '../../services/confirm.service';
       color: var(--text-2);
       padding: 6px 14px;
       font-size: 0.8rem;
-      border-radius: 100px;
+      border-radius: 8px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -1911,7 +2011,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .client-search-input {
       width: 100%;
       padding: 10px 42px 10px 36px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       color: var(--text);
@@ -1957,7 +2057,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .client-deal-select {
       width: 100%;
       padding: 10px 42px 10px 14px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       color: var(--text);
@@ -1988,7 +2088,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .c-tab {
       padding: 8px 16px;
-      border-radius: 100px;
+      border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--bg-card);
       color: var(--text-2);
@@ -2039,7 +2139,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .client-card-item {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 8px;
       padding: 24px 24px 28px 24px;
       display: flex;
       flex-direction: column;
@@ -2057,7 +2157,7 @@ import { ConfirmService } from '../../services/confirm.service';
       top: 0; left: 0; right: 0;
       height: 4px;
       background: linear-gradient(90deg, #6366f1, #06b6d4);
-      border-radius: 20px 20px 0 0;
+      border-radius: 8px 8px 0 0;
     }
     .client-card-item.card-status-pending::before {
       background: linear-gradient(90deg, #f59e0b, #fbbf24);
@@ -2088,7 +2188,7 @@ import { ConfirmService } from '../../services/confirm.service';
       font-size: 0.76rem;
       font-weight: 800;
       padding: 5px 14px;
-      border-radius: 100px;
+      border-radius: 8px;
       line-height: 1;
     }
     .badge-pending-approval {
@@ -2141,7 +2241,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(99,102,241,0.03);
       border: 1px solid var(--border);
       border-right: 3px solid var(--violet);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 12px 14px 12px 34px;
       margin-bottom: 16px;
     }
@@ -2183,7 +2283,7 @@ import { ConfirmService } from '../../services/confirm.service';
       color: var(--violet);
       font-size: 0.7rem;
       padding: 2px 8px;
-      border-radius: 100px;
+      border-radius: 8px;
       font-weight: 800;
     }
 
@@ -2196,7 +2296,7 @@ import { ConfirmService } from '../../services/confirm.service';
       position: relative;
       width: 64px;
       height: 64px;
-      border-radius: 12px;
+      border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border);
       background: rgba(0,0,0,0.04);
@@ -2262,7 +2362,7 @@ import { ConfirmService } from '../../services/confirm.service';
       padding: 12px;
       font-size: 0.84rem;
       font-weight: 800;
-      border-radius: 12px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2285,7 +2385,7 @@ import { ConfirmService } from '../../services/confirm.service';
       padding: 12px;
       font-size: 0.84rem;
       font-weight: 800;
-      border-radius: 12px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2310,7 +2410,7 @@ import { ConfirmService } from '../../services/confirm.service';
       gap: 12px;
       background: rgba(16,185,129,0.08);
       border: 1px solid rgba(16,185,129,0.25);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 10px 14px;
     }
     .approved-status-text {
@@ -2347,7 +2447,7 @@ import { ConfirmService } from '../../services/confirm.service';
       padding: 60px 20px;
       background: var(--bg-card);
       border: 1px dashed var(--border);
-      border-radius: 20px;
+      border-radius: 8px;
       color: var(--text-2);
     }
     .empty-icon-wrap {
@@ -2395,7 +2495,7 @@ import { ConfirmService } from '../../services/confirm.service';
       flex: 0 0 280px; min-width: 280px;
       background: linear-gradient(90deg, rgba(9, 9, 24, 0.85) 0%, rgba(9, 9, 24, 0.4) 60%, rgba(9, 9, 24, 0.7) 100%);
       border: 1px solid var(--border-v);
-      border-radius: 18px;
+      border-radius: 8px;
       display: flex; flex-direction: column;
       height: 100%;
       max-height: 100%;
@@ -2414,7 +2514,7 @@ import { ConfirmService } from '../../services/confirm.service';
       display: flex; align-items: center; justify-content: space-between;
       border-bottom: 1px solid var(--border);
       background: rgba(99, 102, 241, 0.08);
-      border-radius: 18px 18px 0 0;
+      border-radius: 8px 8px 0 0;
       border-top: 3px solid var(--col-accent, var(--violet));
     }
     .col-hd-left { display: flex; align-items: center; gap: 9px; }
@@ -2422,7 +2522,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .col-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
     .col-count {
       font-size: 0.72rem; font-weight: 800;
-      padding: 3px 9px; border-radius: 100px;
+      padding: 3px 9px; border-radius: 8px;
       background: var(--violet-soft);
       border: 1px solid var(--border-v);
       color: var(--violet-light);
@@ -2440,7 +2540,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .col-body::-webkit-scrollbar { width: 5px; }
     .col-body::-webkit-scrollbar-track { background: transparent; }
-    .col-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 10px; }
+    .col-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 8px; }
     .col-body::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.6); }
 
     .col-empty {
@@ -2448,7 +2548,7 @@ import { ConfirmService } from '../../services/confirm.service';
       gap: 6px; padding: 28px 12px;
       color: var(--text-2); font-size: 0.78rem;
       border: 2px dashed var(--border-v);
-      border-radius: 12px; min-height: 80px;
+      border-radius: 8px; min-height: 80px;
       background: rgba(99, 102, 241, 0.03);
     }
     .col-empty i { font-size: 1.2rem; color: var(--violet-light); opacity: 0.85; }
@@ -2457,7 +2557,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .tk-card {
       background: linear-gradient(90deg, rgba(15, 15, 35, 0.9) 0%, rgba(12, 12, 28, 0.6) 60%, rgba(15, 15, 35, 0.8) 100%);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 14px 14px 20px 14px !important;
+      border-radius: 8px; padding: 14px 14px 20px 14px !important;
       flex-shrink: 0 !important;
       cursor: grab; transition: border-color 0.2s, box-shadow 0.2s;
       position: relative; overflow: hidden;
@@ -2501,7 +2601,7 @@ import { ConfirmService } from '../../services/confirm.service';
       font-size: 0.68rem;
       font-weight: 800;
       padding: 3px 9px;
-      border-radius: 100px;
+      border-radius: 8px;
       text-transform: capitalize;
       line-height: 1.2;
       display: inline-block;
@@ -2523,7 +2623,7 @@ import { ConfirmService } from '../../services/confirm.service';
     /* Priority ribbon */
     .priority-ribbon {
       position: absolute; top: 0; left: 0; right: 0;
-      height: 2px; border-radius: 14px 14px 0 0;
+      height: 2px; border-radius: 8px 8px 0 0;
     }
     .priority-ribbon.p-low    { background: var(--emerald); }
     .priority-ribbon.p-medium { background: var(--amber); }
@@ -2533,7 +2633,7 @@ import { ConfirmService } from '../../services/confirm.service';
     /* Tags */
     .tk-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; margin-top: 6px; }
     .tag {
-      font-size: 0.65rem; padding: 2px 7px; border-radius: 100px;
+      font-size: 0.65rem; padding: 2px 7px; border-radius: 8px;
       font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
     }
     .tag-subtask {
@@ -2541,7 +2641,7 @@ import { ConfirmService } from '../../services/confirm.service';
       color: #d8b4fe;
       border: 1px solid rgba(168, 85, 247, 0.35);
     }
-    body.light-theme .tag-subtask {
+    :host-context(body.light-theme) .tag-subtask {
       background: rgba(147, 51, 234, 0.1) !important;
       color: #7e22ce !important;
       border-color: rgba(147, 51, 234, 0.25) !important;
@@ -2562,53 +2662,53 @@ import { ConfirmService } from '../../services/confirm.service';
     }
 
     /* Light Mode Overrides for Kanban Board */
-    body.light-theme .kanban-col,
+    :host-context(body.light-theme) .kanban-col,
     :host-context(body.light-theme) .kanban-col {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
       box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.08) !important;
     }
-    body.light-theme .col-hd,
+    :host-context(body.light-theme) .col-hd,
     :host-context(body.light-theme) .col-hd {
       background: rgba(99, 102, 241, 0.05) !important;
       border-bottom-color: rgba(99, 102, 241, 0.12) !important;
     }
-    body.light-theme .col-title,
+    :host-context(body.light-theme) .col-title,
     :host-context(body.light-theme) .col-title {
       color: #0f172a !important;
     }
-    body.light-theme .col-count,
+    :host-context(body.light-theme) .col-count,
     :host-context(body.light-theme) .col-count {
       color: #4f46e5 !important;
       background: rgba(99, 102, 241, 0.1) !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
     }
-    body.light-theme .col-empty,
+    :host-context(body.light-theme) .col-empty,
     :host-context(body.light-theme) .col-empty {
       background: rgba(248, 250, 252, 0.8) !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
       color: #64748b !important;
     }
-    body.light-theme .col-empty i,
+    :host-context(body.light-theme) .col-empty i,
     :host-context(body.light-theme) .col-empty i {
       color: #4f46e5 !important;
     }
-    body.light-theme .tk-card,
+    :host-context(body.light-theme) .tk-card,
     :host-context(body.light-theme) .tk-card {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.18) !important;
       box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
     }
-    body.light-theme .tk-card:hover,
+    :host-context(body.light-theme) .tk-card:hover,
     :host-context(body.light-theme) .tk-card:hover {
       background: #f8fafc !important;
       border-color: rgba(99, 102, 241, 0.35) !important;
     }
-    body.light-theme .tk-title,
+    :host-context(body.light-theme) .tk-title,
     :host-context(body.light-theme) .tk-title {
       color: #0f172a !important;
     }
-    body.light-theme .tk-scope,
+    :host-context(body.light-theme) .tk-scope,
     :host-context(body.light-theme) .tk-scope {
       color: #475569 !important;
     }
@@ -2618,7 +2718,7 @@ import { ConfirmService } from '../../services/confirm.service';
       display: inline-flex; align-items: center; gap: 5px;
       background: rgba(16,185,129,0.08);
       border: 1px solid rgba(16,185,129,0.15);
-      padding: 3px 8px; border-radius: 100px;
+      padding: 3px 8px; border-radius: 8px;
       margin-bottom: 8px; font-size: 0.68rem;
     }
     .m-item { color: var(--teal-light); font-weight: 600; }
@@ -2629,7 +2729,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .tk-subtasks-preview {
       background: rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 8px 10px;
       margin-bottom: 8px;
       display: flex; flex-direction: column; gap: 6px;
@@ -2640,11 +2740,11 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .tsp-bar {
       height: 4px; background: rgba(255, 255, 255, 0.08);
-      border-radius: 100px; overflow: hidden;
+      border-radius: 8px; overflow: hidden;
     }
     .tsp-fill {
       height: 100%; background: linear-gradient(90deg, #06b6d4, #10b981);
-      border-radius: 100px;
+      border-radius: 8px;
     }
     .tsp-list { display: flex; flex-direction: column; gap: 4px; }
     .tsp-item {
@@ -2653,12 +2753,12 @@ import { ConfirmService } from '../../services/confirm.service';
     .tsp-item.done { color: var(--text); }
     .tsp-more { font-size: 0.65rem; color: var(--text-3); font-weight: 700; }
     
-    body.light-theme .tk-subtasks-preview {
+    :host-context(body.light-theme) .tk-subtasks-preview {
       background: #f8fafc !important;
       border-color: #cbd5e1 !important;
     }
-    body.light-theme .tsp-head { color: #0f172a !important; }
-    body.light-theme .tsp-item { color: #334155 !important; }
+    :host-context(body.light-theme) .tsp-head { color: #0f172a !important; }
+    :host-context(body.light-theme) .tsp-item { color: #334155 !important; }
 
     /* Thumbnails */
     .tk-thumbs { display: flex; gap: 4px; margin-bottom: 8px; align-items: center; }
@@ -2682,7 +2782,7 @@ import { ConfirmService } from '../../services/confirm.service';
       border: 1px solid rgba(99, 102, 241, 0.25);
       padding: 2px 7px; border-radius: 6px;
     }
-    body.light-theme .tk-subtasks-tag {
+    :host-context(body.light-theme) .tk-subtasks-tag {
       background: rgba(99, 102, 241, 0.1) !important;
       color: #4f46e5 !important;
       border-color: rgba(99, 102, 241, 0.3) !important;
@@ -2690,29 +2790,39 @@ import { ConfirmService } from '../../services/confirm.service';
 
     .drawer-backdrop {
       position: fixed; inset: 0; z-index: 1200;
-      background: rgba(9, 9, 24, 0.45);
-      backdrop-filter: none !important;
-      display: flex; justify-content: flex-start;
+      background: rgba(9, 9, 24, 0.7);
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
       direction: rtl;
+      box-sizing: border-box;
     }
     .detail-drawer {
       width: 680px; max-width: 95vw;
-      height: 100vh;
+      height: auto;
+      max-height: 90vh;
+      border-radius: 8px;
       background: linear-gradient(165deg, rgba(15, 16, 38, 0.98) 0%, rgba(8, 9, 24, 0.99) 100%);
-      border-left: 1px solid rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.28);
       display: flex; flex-direction: column;
-      animation: drawerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.35);
+      animation: modalFadeInScale 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(99, 102, 241, 0.15);
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      position: relative;
+      margin: auto;
     }
-    body.light-theme .detail-drawer {
+    :host-context(body.light-theme) .detail-drawer {
       background: #ffffff !important;
-      border-left: 1px solid rgba(99, 102, 241, 0.2) !important;
-      box-shadow: -15px 0 50px rgba(15, 23, 42, 0.15) !important;
+      border: 1px solid rgba(99, 102, 241, 0.2) !important;
+      box-shadow: 0 25px 70px rgba(15, 23, 42, 0.2) !important;
     }
     .detail-drawer.is-wide {
-      width: 90vw !important;
-      max-width: 90vw !important;
+      width: 92vw !important;
+      max-width: 1100px !important;
     }
 
     /* Drawer Header Actions */
@@ -2720,7 +2830,7 @@ import { ConfirmService } from '../../services/confirm.service';
       display: flex; align-items: center; gap: 8px;
     }
     .icon-action-btn {
-      width: 36px; height: 36px; border-radius: 10px;
+      width: 36px; height: 36px; border-radius: 8px;
       background: rgba(99, 102, 241, 0.1);
       border: 1px solid rgba(99, 102, 241, 0.25);
       color: var(--violet-light); cursor: pointer;
@@ -2751,7 +2861,7 @@ import { ConfirmService } from '../../services/confirm.service';
       position: absolute; top: -5px; right: -5px;
       background: #f43f5e; color: #ffffff;
       font-size: 0.62rem; font-weight: 800;
-      padding: 2px 5px; border-radius: 10px;
+      padding: 2px 5px; border-radius: 8px;
       line-height: 1; min-width: 16px; text-align: center;
     }
     .btn-parent-crumb {
@@ -2767,7 +2877,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: var(--violet, #6366f1);
       color: #ffffff;
     }
-    body.light-theme .btn-parent-crumb {
+    :host-context(body.light-theme) .btn-parent-crumb {
       background: rgba(99, 102, 241, 0.1) !important;
       color: #4f46e5 !important;
       border-color: rgba(99, 102, 241, 0.3) !important;
@@ -2777,11 +2887,11 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(99, 102, 241, 0.14) !important;
       transform: translateY(-2px);
     }
-    body.light-theme .parent-task-link-card {
+    :host-context(body.light-theme) .parent-task-link-card {
       background: rgba(99, 102, 241, 0.05) !important;
       border-color: rgba(99, 102, 241, 0.25) !important;
     }
-    body.light-theme .parent-task-link-card:hover {
+    :host-context(body.light-theme) .parent-task-link-card:hover {
       background: rgba(99, 102, 241, 0.12) !important;
       border-color: #6366f1 !important;
     }
@@ -2795,12 +2905,12 @@ import { ConfirmService } from '../../services/confirm.service';
       flex-shrink: 0;
       overflow-x: auto;
     }
-    body.light-theme .drawer-nav-tabs {
+    :host-context(body.light-theme) .drawer-nav-tabs {
       background: #f8fafc !important;
       border-bottom-color: rgba(99, 102, 241, 0.15) !important;
     }
     .dnav-tab {
-      padding: 8px 16px; border-radius: 10px;
+      padding: 8px 16px; border-radius: 8px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-2, #94a3b8);
@@ -2818,14 +2928,14 @@ import { ConfirmService } from '../../services/confirm.service';
       color: #ffffff !important;
       box-shadow: 0 4px 14px var(--violet-glow, rgba(99, 102, 241, 0.4));
     }
-    body.light-theme .dnav-tab.active {
+    :host-context(body.light-theme) .dnav-tab.active {
       background: #6366f1 !important;
       color: #ffffff !important;
     }
     .dnav-badge {
       background: rgba(255, 255, 255, 0.25);
       color: #ffffff; font-size: 0.65rem; font-weight: 800;
-      padding: 2px 6px; border-radius: 10px; line-height: 1;
+      padding: 2px 6px; border-radius: 8px; line-height: 1;
     }
 
     /* PrimeNG Grouped Dropdown Custom Overrides */
@@ -2836,9 +2946,9 @@ import { ConfirmService } from '../../services/confirm.service';
       width: 100% !important;
       background: rgba(99, 102, 241, 0.04) !important;
       border: 1px solid var(--border, rgba(99, 102, 241, 0.2)) !important;
-      border-radius: 12px !important;
+      border-radius: 8px !important;
     }
-    body.light-theme ::ng-deep .prime-grouped-dropdown .p-dropdown {
+    :host-context(body.light-theme) ::ng-deep .prime-grouped-dropdown .p-dropdown {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
       color: #0f172a !important;
@@ -2871,7 +2981,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .drawer-hd-left { display: flex; align-items: flex-start; gap: 14px; flex: 1; min-width: 0; }
     .drawer-task-av {
-      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+      width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0;
       background: linear-gradient(135deg, var(--violet), var(--teal));
       display: flex; align-items: center; justify-content: center;
       font-size: 1.15rem; color: #fff;
@@ -2886,7 +2996,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .drawer-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .deal-tag {
       font-size: 0.72rem; font-weight: 700;
-      padding: 3px 10px; border-radius: 100px;
+      padding: 3px 10px; border-radius: 8px;
       background: var(--violet-soft); color: var(--violet-light);
       border: 1px solid rgba(99, 102, 241, 0.25);
     }
@@ -2907,7 +3017,7 @@ import { ConfirmService } from '../../services/confirm.service';
       display: flex; gap: 6px; flex-wrap: wrap;
     }
     .ps-step {
-      padding: 6px 12px; border-radius: 100px;
+      padding: 6px 12px; border-radius: 8px;
       border: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.04);
       color: var(--text-2); font-size: 0.75rem; font-weight: 700;
@@ -2927,7 +3037,7 @@ import { ConfirmService } from '../../services/confirm.service';
       display: flex; gap: 8px; flex-wrap: wrap;
     }
     .priority-step-btn {
-      padding: 7px 14px; border-radius: 100px;
+      padding: 7px 14px; border-radius: 8px;
       border: 1px solid var(--border, rgba(255,255,255,0.12));
       background: rgba(255, 255, 255, 0.04);
       color: var(--text-2); font-size: 0.78rem; font-weight: 700;
@@ -2962,7 +3072,7 @@ import { ConfirmService } from '../../services/confirm.service';
       color: #f43f5e !important;
       box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25) !important;
     }
-    body.light-theme .priority-step-btn,
+    :host-context(body.light-theme) .priority-step-btn,
     :host-context(body.light-theme) .priority-step-btn {
       background: #f8fafc !important;
       border-color: #e2e8f0 !important;
@@ -2983,7 +3093,7 @@ import { ConfirmService } from '../../services/confirm.service';
       align-items: center;
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
       border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 16px; padding: 16px 18px; gap: 10px;
+      border-radius: 8px; padding: 16px 18px; gap: 10px;
       margin-bottom: 16px;
     }
     .ph-stat { display: flex; flex-direction: column; gap: 4px; }
@@ -2993,18 +3103,18 @@ import { ConfirmService } from '../../services/confirm.service';
     .ph-divider { width: 1px; height: 28px; background: rgba(255, 255, 255, 0.1); }
     .ph-margin {
       background: rgba(16, 185, 129, 0.1);
-      padding: 8px 12px; border-radius: 12px;
+      padding: 8px 12px; border-radius: 8px;
       border: 1px solid rgba(16, 185, 129, 0.25);
     }
 
     .subtask-item-clean {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 12px;
+      padding: 10px 14px; border-radius: 8px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
       transition: all 0.2s; margin-bottom: 8px;
     }
-    body.light-theme .subtask-item-clean {
+    :host-context(body.light-theme) .subtask-item-clean {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
     }
@@ -3021,7 +3131,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .st-title-clean:hover {
       color: var(--violet-light, #818cf8);
     }
-    body.light-theme .st-title-clean { color: #0f172a !important; }
+    :host-context(body.light-theme) .st-title-clean { color: #0f172a !important; }
     .st-open-btn {
       background: none; border: none; color: var(--text-2);
       cursor: pointer; font-size: 0.8rem; padding: 4px 6px; border-radius: 6px;
@@ -3044,7 +3154,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .subtask-item-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
-      border-radius: 12px; padding: 10px 14px;
+      border-radius: 8px; padding: 10px 14px;
       transition: all 0.2s; margin-bottom: 8px;
     }
     .st-item-main { display: flex; align-items: flex-start; gap: 10px; }
@@ -3064,38 +3174,38 @@ import { ConfirmService } from '../../services/confirm.service';
     .st-dialog-input, .st-dialog-textarea, .st-dialog-select {
       background: rgba(99, 102, 241, 0.05) !important;
       border: 1px solid var(--border, rgba(99, 102, 241, 0.2)) !important;
-      border-radius: 10px !important; padding: 10px 14px !important;
+      border-radius: 8px !important; padding: 10px 14px !important;
       color: var(--text) !important; font-size: 0.85rem !important; font-family: inherit;
     }
-    body.light-theme .st-dialog-input,
-    body.light-theme .st-dialog-textarea,
-    body.light-theme .st-dialog-select {
+    :host-context(body.light-theme) .st-dialog-input,
+    :host-context(body.light-theme) .st-dialog-textarea,
+    :host-context(body.light-theme) .st-dialog-select {
       background: #ffffff !important; border-color: rgba(99, 102, 241, 0.2) !important; color: #0f172a !important;
     }
     .subtask-progress-pill {
       font-size: 0.72rem; font-weight: 800;
       color: var(--violet-light); background: rgba(99, 102, 241, 0.1);
-      padding: 3px 10px; border-radius: 100px; border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 3px 10px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2);
     }
     .subtask-progress-bar {
-      width: 100%; height: 6px; border-radius: 10px;
+      width: 100%; height: 6px; border-radius: 8px;
       background: rgba(255, 255, 255, 0.08); overflow: hidden;
       margin-bottom: 6px;
     }
     .subtask-progress-fill {
-      height: 100%; border-radius: 10px;
+      height: 100%; border-radius: 8px;
       background: linear-gradient(90deg, var(--violet), var(--teal));
       transition: width 0.3s ease;
     }
     .subtask-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
     .subtask-item {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 12px;
+      padding: 10px 14px; border-radius: 8px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
       transition: all 0.2s;
     }
-    body.light-theme .subtask-item {
+    :host-context(body.light-theme) .subtask-item {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
     }
@@ -3117,7 +3227,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: #10b981; border-color: #10b981; color: #ffffff;
     }
     .st-title { flex: 1; font-size: 0.85rem; font-weight: 600; color: var(--text); }
-    body.light-theme .st-title { color: #0f172a !important; }
+    :host-context(body.light-theme) .st-title { color: #0f172a !important; }
     .st-del-btn {
       background: none; border: none; color: var(--text-2);
       cursor: pointer; font-size: 0.8rem; padding: 4px; transition: color 0.2s;
@@ -3125,15 +3235,15 @@ import { ConfirmService } from '../../services/confirm.service';
     .st-del-btn:hover { color: #f43f5e; }
     .add-subtask-box { display: flex; gap: 8px; }
     .st-input {
-      flex: 1; padding: 10px 14px; border-radius: 12px;
+      flex: 1; padding: 10px 14px; border-radius: 8px;
       background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border);
       color: var(--text); font-size: 0.82rem; outline: none; font-family: inherit;
     }
-    body.light-theme .st-input {
+    :host-context(body.light-theme) .st-input {
       background: #ffffff !important; border-color: rgba(99, 102, 241, 0.2) !important; color: #0f172a !important;
     }
     .btn-add-st {
-      padding: 10px 16px; border-radius: 12px; border: none;
+      padding: 10px 16px; border-radius: 8px; border: none;
       background: var(--violet); color: #ffffff; font-size: 0.82rem;
       font-weight: 700; cursor: pointer; display: inline-flex; align-items: center;
       gap: 6px; transition: all 0.2s; font-family: inherit;
@@ -3149,7 +3259,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .drawer-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      border-radius: 16px; padding: 18px 20px 24px 20px;
+      border-radius: 8px; padding: 18px 20px 24px 20px;
       display: flex; flex-direction: column; gap: 12px;
       margin-bottom: 16px;
       transition: all 0.2s;
@@ -3157,7 +3267,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .drawer-card:last-child {
       margin-bottom: 0;
     }
-    body.light-theme .drawer-card {
+    :host-context(body.light-theme) .drawer-card {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
       box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
@@ -3174,7 +3284,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .team-chip-card {
       display: flex; align-items: center; gap: 10px;
       background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2);
-      padding: 6px 12px; border-radius: 12px;
+      padding: 6px 12px; border-radius: 8px;
     }
     .tc-av {
       width: 28px; height: 28px; border-radius: 50%;
@@ -3196,11 +3306,11 @@ import { ConfirmService } from '../../services/confirm.service';
     .user-select-input {
       width: 100%; padding: 10px 14px;
       background: var(--surface-1, rgba(255, 255, 255, 0.04));
-      border: 1px solid var(--border); border-radius: 12px;
+      border: 1px solid var(--border); border-radius: 8px;
       color: var(--text); font-size: 0.82rem; outline: none;
       cursor: pointer; font-family: inherit;
     }
-    body.light-theme .user-select-input {
+    :host-context(body.light-theme) .user-select-input {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
       color: #0f172a !important;
@@ -3217,7 +3327,7 @@ import { ConfirmService } from '../../services/confirm.service';
       width: 124px;
       height: 118px;
       flex-shrink: 0;
-      border-radius: 14px;
+      border-radius: 8px;
       overflow: hidden;
       position: relative;
       border: 1px solid var(--border);
@@ -3274,7 +3384,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .att-doc {
       width: 76px;
       height: 76px;
-      border-radius: 14px;
+      border-radius: 8px;
       background: rgba(99, 102, 241, 0.06);
       border: 1px solid var(--border);
       display: flex;
@@ -3298,7 +3408,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .history-subhd {
       display: flex; justify-content: space-between; align-items: center;
       padding: 10px 14px; background: rgba(99, 102, 241, 0.06);
-      border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.18);
+      border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.18);
     }
     .hist-count-pill { font-size: 0.82rem; font-weight: 800; color: var(--violet-light); display: flex; align-items: center; gap: 6px; }
     .hist-tip { font-size: 0.72rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
@@ -3310,16 +3420,16 @@ import { ConfirmService } from '../../services/confirm.service';
       display: flex; gap: 14px; align-items: flex-start;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
-      border-radius: 14px; padding: 14px 16px;
+      border-radius: 8px; padding: 14px 16px;
       transition: all 0.2s;
     }
-    body.light-theme .act-enhanced-card {
+    :host-context(body.light-theme) .act-enhanced-card {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
       box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
     }
     .act-icon-box {
-      width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       color: #ffffff; font-size: 0.95rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -3329,17 +3439,17 @@ import { ConfirmService } from '../../services/confirm.service';
     .act-title-tag { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
     .act-time-pill { font-size: 0.7rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
     .act-enhanced-desc { font-size: 0.88rem; font-weight: 600; color: var(--text); line-height: 1.5; }
-    body.light-theme .act-enhanced-desc { color: #0f172a !important; }
+    :host-context(body.light-theme) .act-enhanced-desc { color: #0f172a !important; }
     .act-enhanced-footer { display: flex; align-items: center; }
     .act-author-chip {
       font-size: 0.72rem; font-weight: 700; color: var(--violet-light);
-      background: rgba(99, 102, 241, 0.08); padding: 3px 10px; border-radius: 100px;
+      background: rgba(99, 102, 241, 0.08); padding: 3px 10px; border-radius: 8px;
     }
 
     /* Modern Upload Zone */
     .upload-zone-modern {
       display: flex; align-items: center; gap: 14px;
-      padding: 16px; border-radius: 14px;
+      padding: 16px; border-radius: 8px;
       border: 2px dashed rgba(99, 102, 241, 0.3);
       background: rgba(99, 102, 241, 0.03);
       cursor: pointer; transition: all 0.2s;
@@ -3348,7 +3458,7 @@ import { ConfirmService } from '../../services/confirm.service';
       border-color: var(--violet); background: rgba(99, 102, 241, 0.08);
     }
     .uz-icon {
-      width: 42px; height: 42px; border-radius: 12px;
+      width: 42px; height: 42px; border-radius: 8px;
       background: var(--violet-soft); color: var(--violet-light);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.3rem; flex-shrink: 0;
@@ -3368,7 +3478,7 @@ import { ConfirmService } from '../../services/confirm.service';
     }
     .note-content {
       flex: 1; background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border); border-radius: 12px;
+      border: 1px solid var(--border); border-radius: 8px;
       padding: 10px 14px;
     }
     .note-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -3381,106 +3491,106 @@ import { ConfirmService } from '../../services/confirm.service';
     .add-note-box textarea {
       width: 100%; padding: 12px 15px;
       background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border); border-radius: 12px;
+      border: 1px solid var(--border); border-radius: 8px;
       color: var(--text); font-family: inherit; font-size: 0.85rem;
       outline: none; resize: none; transition: all 0.2s;
     }
     .add-note-box textarea:focus { border-color: var(--violet); background: rgba(99, 102, 241, 0.06); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12); }
     .btn-send-note-modern {
       align-self: flex-end; display: inline-flex; align-items: center; gap: 8px;
-      padding: 9px 20px; border-radius: 12px; border: none;
+      padding: 9px 20px; border-radius: 8px; border: none;
       background: linear-gradient(135deg, var(--violet), var(--violet-2));
       color: #fff; font-weight: 700; font-size: 0.82rem; cursor: pointer;
       box-shadow: 0 4px 16px var(--violet-glow); transition: all 0.2s;
     }
 
     /* ── LIGHT THEME OVERRIDES FOR DETAIL DRAWER ─────────────────────── */
-    body.light-theme .detail-drawer,
+    :host-context(body.light-theme) .detail-drawer,
     :host-context(body.light-theme) .detail-drawer {
       background: #ffffff !important;
-      border-left-color: rgba(99, 102, 241, 0.2) !important;
-      box-shadow: 25px 0 70px rgba(15, 23, 42, 0.18) !important;
+      border: 1px solid rgba(99, 102, 241, 0.2) !important;
+      box-shadow: 0 25px 70px rgba(15, 23, 42, 0.18) !important;
     }
-    body.light-theme .drawer-hd,
+    :host-context(body.light-theme) .drawer-hd,
     :host-context(body.light-theme) .drawer-hd {
       background: rgba(99, 102, 241, 0.05) !important;
       border-bottom-color: rgba(99, 102, 241, 0.12) !important;
     }
-    body.light-theme .drawer-title,
+    :host-context(body.light-theme) .drawer-title,
     :host-context(body.light-theme) .drawer-title {
       color: #0f172a !important;
     }
-    body.light-theme .pipeline-switcher,
+    :host-context(body.light-theme) .pipeline-switcher,
     :host-context(body.light-theme) .pipeline-switcher {
       background: rgba(248, 250, 252, 0.8) !important;
       border-bottom-color: rgba(99, 102, 241, 0.12) !important;
     }
-    body.light-theme .ps-step,
+    :host-context(body.light-theme) .ps-step,
     :host-context(body.light-theme) .ps-step {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
       color: #475569 !important;
     }
-    body.light-theme .ps-step.active,
+    :host-context(body.light-theme) .ps-step.active,
     :host-context(body.light-theme) .ps-step.active {
       background: #4f46e5 !important;
       border-color: #4f46e5 !important;
       color: #ffffff !important;
       box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3) !important;
     }
-    body.light-theme .pricing-hero-card,
+    :host-context(body.light-theme) .pricing-hero-card,
     :host-context(body.light-theme) .pricing-hero-card {
       background: rgba(99, 102, 241, 0.05) !important;
       border-color: rgba(99, 102, 241, 0.18) !important;
     }
-    body.light-theme .ph-lbl,
+    :host-context(body.light-theme) .ph-lbl,
     :host-context(body.light-theme) .ph-lbl {
       color: #64748b !important;
     }
-    body.light-theme .ph-val,
+    :host-context(body.light-theme) .ph-val,
     :host-context(body.light-theme) .ph-val {
       color: #0f172a !important;
     }
-    body.light-theme .drawer-card,
+    :host-context(body.light-theme) .drawer-card,
     :host-context(body.light-theme) .drawer-card {
       background: #f8fafc !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
     }
-    body.light-theme .dc-head,
+    :host-context(body.light-theme) .dc-head,
     :host-context(body.light-theme) .dc-head {
       color: #4f46e5 !important;
     }
-    body.light-theme .dc-body,
+    :host-context(body.light-theme) .dc-body,
     :host-context(body.light-theme) .dc-body {
       color: #0f172a !important;
     }
-    body.light-theme .tc-name,
+    :host-context(body.light-theme) .tc-name,
     :host-context(body.light-theme) .tc-name {
       color: #0f172a !important;
     }
-    body.light-theme .upload-zone-modern,
+    :host-context(body.light-theme) .upload-zone-modern,
     :host-context(body.light-theme) .upload-zone-modern {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.25) !important;
     }
-    body.light-theme .uz-text strong,
+    :host-context(body.light-theme) .uz-text strong,
     :host-context(body.light-theme) .uz-text strong {
       color: #0f172a !important;
     }
-    body.light-theme .note-content,
+    :host-context(body.light-theme) .note-content,
     :host-context(body.light-theme) .note-content {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.15) !important;
     }
-    body.light-theme .note-author,
+    :host-context(body.light-theme) .note-author,
     :host-context(body.light-theme) .note-author {
       color: #4f46e5 !important;
     }
-    body.light-theme .note-text,
+    :host-context(body.light-theme) .note-text,
     :host-context(body.light-theme) .note-text {
       color: #0f172a !important;
     }
-    body.light-theme .add-note-box textarea,
+    :host-context(body.light-theme) .add-note-box textarea,
     :host-context(body.light-theme) .add-note-box textarea {
       background: #ffffff !important;
       border-color: rgba(99, 102, 241, 0.2) !important;
@@ -3500,7 +3610,7 @@ import { ConfirmService } from '../../services/confirm.service';
       width: 100%; max-width: 640px;
       background: linear-gradient(90deg, rgba(9, 9, 24, 0.95) 0%, rgba(9, 9, 24, 0.7) 60%, rgba(9, 9, 24, 0.9) 100%);
       border: 1px solid rgba(99,102,241,0.2);
-      border-radius: 22px;
+      border-radius: 8px;
       box-shadow: 0 24px 80px rgba(0,0,0,0.7);
       animation: modalIn 0.25s cubic-bezier(0.16,1,0.3,1);
       max-height: 90vh; overflow-y: auto;
@@ -3530,7 +3640,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .fg input, .fg select, .fg textarea {
       width: 100%; padding: 10px 13px;
       background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border); border-radius: 10px;
+      border: 1px solid var(--border); border-radius: 8px;
       color: var(--text); outline: none; font-family: inherit;
       font-size: 0.86rem; transition: all 0.2s;
     }
@@ -3539,7 +3649,7 @@ import { ConfirmService } from '../../services/confirm.service';
       width: 100% !important;
       background: rgba(99, 102, 241, 0.05) !important;
       border: 1px solid var(--border, rgba(99, 102, 241, 0.2)) !important;
-      border-radius: 14px !important;
+      border-radius: 8px !important;
       padding: 4px 8px !important;
       transition: all 0.2s ease !important;
     }
@@ -3562,7 +3672,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(6,182,212,0.25)) !important;
       border: 1px solid rgba(99,102,241,0.35) !important;
       color: #ffffff !important;
-      border-radius: 100px !important;
+      border-radius: 8px !important;
       padding: 3px 10px !important;
       font-size: 0.76rem !important;
       font-weight: 700 !important;
@@ -3579,7 +3689,7 @@ import { ConfirmService } from '../../services/confirm.service';
     ::ng-deep .p-multiselect-panel {
       background: #10101e !important;
       border: 1px solid rgba(99, 102, 241, 0.3) !important;
-      border-radius: 16px !important;
+      border-radius: 8px !important;
       box-shadow: 0 20px 60px rgba(0,0,0,0.85) !important;
       backdrop-filter: blur(16px) !important;
       z-index: 99999999 !important;
@@ -3590,7 +3700,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(255,255,255,0.04) !important;
       border-bottom: 1px solid rgba(99, 102, 241, 0.2) !important;
       padding: 10px 14px !important;
-      border-radius: 16px 16px 0 0 !important;
+      border-radius: 8px 8px 0 0 !important;
       display: flex !important;
       align-items: center !important;
       gap: 8px !important;
@@ -3612,7 +3722,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(0, 0, 0, 0.3) !important;
       border: 1px solid rgba(99, 102, 241, 0.3) !important;
       color: #ffffff !important;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       padding: 8px 36px 8px 12px !important;
       font-size: 0.84rem !important;
       font-family: inherit !important;
@@ -3643,7 +3753,7 @@ import { ConfirmService } from '../../services/confirm.service';
     ::ng-deep .p-multiselect-panel .p-multiselect-item {
       padding: 8px 14px !important;
       color: var(--text, #ffffff) !important;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       margin: 2px 6px !important;
       transition: all 0.15s ease !important;
     }
@@ -3661,14 +3771,14 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(255, 255, 255, 0.05) !important;
     }
 
-    body.light-theme ::ng-deep .prime-luxury-multiselect,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect {
       background: #ffffff !important;
       border-color: #cbd5e1 !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel,
-    body.light-theme ::ng-deep body > .prime-luxury-multiselect-panel,
-    body.light-theme ::ng-deep .p-multiselect-panel,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel,
+    :host-context(body.light-theme) ::ng-deep body > .prime-luxury-multiselect-panel,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel,
     :host-context(body.light-theme) ::ng-deep body > .prime-luxury-multiselect-panel,
     :host-context(body.light-theme) ::ng-deep .p-multiselect-panel {
@@ -3676,18 +3786,18 @@ import { ConfirmService } from '../../services/confirm.service';
       border-color: #cbd5e1 !important;
       box-shadow: 0 16px 45px rgba(15, 23, 42, 0.18) !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-header,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-multiselect-header,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-header,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-header,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-header,
     :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-header {
       background: #f8fafc !important;
       border-bottom-color: #e2e8f0 !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter,
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter-input,
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-inputtext,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-multiselect-filter,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-inputtext,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter-input,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-inputtext,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-filter,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-inputtext,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-filter-input,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-inputtext,
@@ -3697,27 +3807,27 @@ import { ConfirmService } from '../../services/confirm.service';
       border-color: #cbd5e1 !important;
       color: #0f172a !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item-group,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-multiselect-item-group,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item-group,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item-group,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item-group,
     :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item-group {
       background: #f1f5f9 !important;
       color: #475569 !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-multiselect-item,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item,
     :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item {
       color: #0f172a !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item .p-item-name,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item .p-item-name,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item .p-item-name {
       color: #0f172a !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item:hover,
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item.p-highlight,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-multiselect-item:hover,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-multiselect-item.p-highlight,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item:hover,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item.p-highlight,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item:hover,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item.p-highlight,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item:hover,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-multiselect-item.p-highlight,
     :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-multiselect-item:hover,
@@ -3725,13 +3835,13 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(99, 102, 241, 0.12) !important;
       color: #4f46e5 !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect .p-multiselect-token {
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect .p-multiselect-token {
       background: rgba(99, 102, 241, 0.12) !important;
       color: #4f46e5 !important;
       border-color: rgba(99, 102, 241, 0.25) !important;
     }
-    body.light-theme ::ng-deep .prime-luxury-multiselect-panel .p-checkbox .p-checkbox-box,
-    body.light-theme ::ng-deep .p-multiselect-panel .p-checkbox .p-checkbox-box,
+    :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-checkbox .p-checkbox-box,
+    :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-checkbox .p-checkbox-box,
     :host-context(body.light-theme) ::ng-deep .prime-luxury-multiselect-panel .p-checkbox .p-checkbox-box,
     :host-context(body.light-theme) ::ng-deep .p-multiselect-panel .p-checkbox .p-checkbox-box {
       background: #f8fafc !important;
@@ -3748,7 +3858,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .margin-preview {
       display: flex; align-items: center; gap: 8px;
       background: var(--emerald-soft); border: 1px solid rgba(16,185,129,0.2);
-      padding: 10px 14px; border-radius: 10px;
+      padding: 10px 14px; border-radius: 8px;
       font-size: 0.82rem; color: var(--emerald-light); font-weight: 600;
     }
     .margin-preview strong { font-size: 1rem; }
@@ -3757,7 +3867,7 @@ import { ConfirmService } from '../../services/confirm.service';
       padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.07);
     }
     .btn-cancel {
-      padding: 9px 18px; border-radius: 10px;
+      padding: 9px 18px; border-radius: 8px;
       border: 1px solid var(--border); background: rgba(255,255,255,0.04);
       color: var(--text-2); font-size: 0.84rem; font-weight: 600;
       cursor: pointer; transition: all 0.2s; font-family: inherit;
@@ -3765,7 +3875,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .btn-cancel:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .btn-save {
       display: inline-flex; align-items: center; gap: 7px;
-      padding: 9px 20px; border-radius: 10px; border: none;
+      padding: 9px 20px; border-radius: 8px; border: none;
       background: linear-gradient(135deg, var(--violet), var(--violet-2));
       color: #fff; font-weight: 700; font-size: 0.84rem;
       cursor: pointer; transition: all 0.25s; font-family: inherit;
@@ -3776,19 +3886,19 @@ import { ConfirmService } from '../../services/confirm.service';
 
     /* ── LIGHTBOX ────────────────────────────────────────────────── */
     .lightbox {
-      position: fixed; inset: 0; z-index: 1500;
+      position: fixed; inset: 0; z-index: 9999999;
       background: rgba(0,0,0,0.92);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
     }
     .lightbox img {
       max-width: 92vw; max-height: 90vh;
-      border-radius: 14px;
+      border-radius: 8px;
       box-shadow: 0 0 80px rgba(0,0,0,0.8);
     }
     .lb-close {
       position: absolute; top: 20px; right: 20px;
-      width: 40px; height: 40px; border-radius: 10px;
+      width: 40px; height: 40px; border-radius: 8px;
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
       color: #fff; font-size: 1rem; cursor: pointer;
       display: flex; align-items: center; justify-content: center; transition: background 0.2s;
@@ -3884,16 +3994,75 @@ export class TasksBoardComponent implements OnInit {
     return ['super_admin', 'admin', 'department_manager'].includes(role);
   }
 
+  isRegularEmployee(): boolean {
+    if (!this.currentUser) return false;
+    const role = this.currentUser.role;
+    const hasElevated = ['super_admin', 'admin', 'department_manager', 'account_manager'].includes(role) ||
+      (this.currentUser.roles && this.currentUser.roles.some((r: any) => ['super_admin', 'admin', 'department_manager', 'account_manager'].includes(r.slug)));
+    return !hasElevated && (role === 'employee' || this.isEmployee());
+  }
+
+  canApproveOnBehalfOfClient(task: any): boolean {
+    if (!task) return false;
+    const role = this.currentUser?.role;
+    const isStaffApprover = ['super_admin', 'admin', 'account_manager'].includes(role) ||
+      (this.currentUser?.roles && this.currentUser.roles.some((r: any) => ['super_admin', 'admin', 'account_manager'].includes(r.slug)));
+    return isStaffApprover && task.status === 'client_review';
+  }
+
+  isCreateTaskPhotoDept(): boolean {
+    const deptId = this.taskForm?.get('department_id')?.value;
+    const dept = this.departments.find(d => d.id === deptId);
+    if (!dept) return false;
+    const n = (dept.name || '').toLowerCase();
+    return n.includes('تصوير') || n.includes('مونتاج') || n.includes('photo') || n.includes('edit');
+  }
+
+  isCreateTaskSocialDept(): boolean {
+    const deptId = this.taskForm?.get('department_id')?.value;
+    const dept = this.departments.find(d => d.id === deptId);
+    if (!dept) return false;
+    const n = (dept.name || '').toLowerCase();
+    return n.includes('سوشيال') || n.includes('social');
+  }
+
+  get employeeUsers(): any[] {
+    return (this.allUsers || []).filter((u: any) => u.role !== 'client' && !u.is_hold);
+  }
+
+  createTaskFiles: File[] = [];
+
+  onCreateTaskFilesSelected(event: any): void {
+    const files = event.target?.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        this.createTaskFiles.push(files[i]);
+      }
+    }
+  }
+
+  removeCreateTaskFile(index: number): void {
+    this.createTaskFiles.splice(index, 1);
+  }
+
   initForm(): void {
     this.taskForm = this.fb.group({
-      title:          ['', Validators.required],
-      deal_id:        [null],
-      department_id:  [null],
-      client_price:   [0],
-      employee_price: [0],
-      status:         ['new', Validators.required],
-      priority:       ['medium', Validators.required],
-      scope:          ['']
+      title:               ['', Validators.required],
+      deal_id:             [null],
+      is_standalone:       [false],
+      assigned_to:         [null],
+      department_id:       [null],
+      client_price:        [0],
+      employee_price:      [0],
+      shooting_date:       [''],
+      delivery_date:       [''],
+      dates_not_specified: [false],
+      start_date:          [''],
+      end_date:            [''],
+      due_date:            [''],
+      status:              ['new', Validators.required],
+      priority:            ['medium', Validators.required],
+      scope:               ['']
     });
   }
 
@@ -4081,7 +4250,7 @@ export class TasksBoardComponent implements OnInit {
     });
     this.apiService.getUsers().subscribe(res => {
       const arr = Array.isArray(res) ? res : (res?.data || []);
-      this.allUsers = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
+      this.allUsers = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client' && !u.is_hold);
       this.buildGroupedUsers();
     });
   }
@@ -4461,7 +4630,15 @@ export class TasksBoardComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    this.taskForm.reset({ status: 'new', priority: 'medium', client_price: 0, employee_price: 0 });
+    this.taskForm.reset({
+      status: 'new',
+      priority: 'medium',
+      client_price: 0,
+      employee_price: 0,
+      is_standalone: false,
+      dates_not_specified: false
+    });
+    this.createTaskFiles = [];
     this.computedMarginVal = 0;
     this.showCreateModal = true;
   }
@@ -4476,7 +4653,7 @@ export class TasksBoardComponent implements OnInit {
     const taskVal = { ...this.taskForm.value };
 
     // Rule 4: If task is created for a department without specifying an employee, auto-assign to Department Head!
-    if (taskVal.department_id && !taskVal.assigned_to && (!taskVal.user_ids || !taskVal.user_ids.length)) {
+    if (!taskVal.is_standalone && taskVal.department_id && !taskVal.assigned_to && (!taskVal.user_ids || !taskVal.user_ids.length)) {
       const deptHead = this.allUsers.find((u: any) =>
         u.role === 'department_manager' &&
         (u.department_id === taskVal.department_id || u.department?.id === taskVal.department_id)
@@ -4487,11 +4664,36 @@ export class TasksBoardComponent implements OnInit {
       }
     }
 
-    this.apiService.createTask(taskVal).subscribe({
+    if (taskVal.is_standalone && taskVal.assigned_to) {
+      taskVal.user_ids = [taskVal.assigned_to];
+    }
+
+    let payload: any;
+    if (this.createTaskFiles.length > 0) {
+      const formData = new FormData();
+      Object.keys(taskVal).forEach(k => {
+        if (taskVal[k] !== null && taskVal[k] !== undefined) {
+          if (Array.isArray(taskVal[k])) {
+            formData.append(k, JSON.stringify(taskVal[k]));
+          } else {
+            formData.append(k, taskVal[k]);
+          }
+        }
+      });
+      this.createTaskFiles.forEach(f => {
+        formData.append('attachments[]', f);
+      });
+      payload = formData;
+    } else {
+      payload = taskVal;
+    }
+
+    this.apiService.createTask(payload).subscribe({
       next: () => {
         this.loading = false;
         this.toastService.success('تم إنشاء المهمة الجديدة بنجاح', 'تمت العملية');
         this.showCreateModal = false;
+        this.createTaskFiles = [];
         this.loadData();
       },
       error: (err) => {
@@ -4739,17 +4941,8 @@ export class TasksBoardComponent implements OnInit {
 
   getFileUrl(att: any): string {
     if (!att) return '';
-    let url = typeof att === 'string' ? att : (att.file_url || att.url || att.file_path || att.path || '');
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-      return url;
-    }
-    const apiHost = 'http://localhost:8000';
-    url = url.replace(/^\/+/, '');
-    if (!url.startsWith('storage/')) {
-      url = 'storage/' + url;
-    }
-    return `${apiHost}/${url}`;
+    const raw = typeof att === 'string' ? att : (att.file_url || att.url || att.file_path || att.path || '');
+    return this.apiService.getStorageUrl(raw);
   }
 
   handleImageError(event: Event): void {
@@ -4765,9 +4958,13 @@ export class TasksBoardComponent implements OnInit {
     return task.attachments.filter((a: any) => this.isImage(a));
   }
 
-  expandImage(url: string, event: Event): void {
-    event.stopPropagation();
-    this.expandedImageUrl = this.getFileUrl(url);
+  expandImage(attOrUrl: any, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const raw = typeof attOrUrl === 'string' ? attOrUrl : this.getFileUrl(attOrUrl);
+    this.expandedImageUrl = (raw.startsWith('http') || raw.startsWith('data:')) ? raw : this.getFileUrl(raw);
   }
 
   newFileVisibleToClient = true;

@@ -92,9 +92,18 @@ import { ConfirmService } from '../../services/confirm.service';
                   </small>
                   <div *ngIf="!deal.sales_person" style="color:var(--text-3);">-</div>
                 </td>
-                <td style="font-weight:700; color:var(--text);">{{ (deal.calculated_total || deal.total_price) | number:'1.2-2' }} ج.م</td>
-                <td style="color:var(--emerald-light); font-weight:700;">{{ (deal.calculated_paid || deal.paid_amount) | number:'1.2-2' }} ج.م</td>
-                <td style="color:var(--rose-light); font-weight:700;">{{ deal.remaining_balance | number:'1.2-2' }} ج.م</td>
+                <td style="font-weight:700; color:var(--text);">
+                  <span *ngIf="isEmployeeRole()">—</span>
+                  <span *ngIf="!isEmployeeRole()">{{ (deal.calculated_total || deal.total_price) | number:'1.2-2' }} ج.م</span>
+                </td>
+                <td style="color:var(--emerald-light); font-weight:700;">
+                  <span *ngIf="isEmployeeRole()">—</span>
+                  <span *ngIf="!isEmployeeRole()">{{ (deal.calculated_paid || deal.paid_amount) | number:'1.2-2' }} ج.م</span>
+                </td>
+                <td style="color:var(--rose-light); font-weight:700;">
+                  <span *ngIf="isEmployeeRole()">—</span>
+                  <span *ngIf="!isEmployeeRole()">{{ deal.remaining_balance | number:'1.2-2' }} ج.م</span>
+                </td>
                 <td>
                   <span class="status-pill" [ngClass]="'status-' + (deal.status || 'pending')">
                     {{ getStatusLabel(deal.status) }}
@@ -234,6 +243,62 @@ import { ConfirmService } from '../../services/confirm.service';
             <div class="form-group full-width">
               <label>النطاق والمواصفات المتفق عليها</label>
               <textarea pTextarea formControlName="agreed_scope" rows="3" placeholder="تفاصيل العقد والمخرجات المطلوبة..."></textarea>
+            </div>
+
+            <!-- Dynamic Department Specific Dates -->
+            <div class="full-width" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius: 8px; padding:14px;">
+              <div style="font-weight:700; color:var(--violet-light); font-size:0.85rem; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-calendar-days"></i> مواعيد وتواريخ تنفيذ الصفقة حسب القسم
+              </div>
+
+              <!-- Photography & Editing -->
+              <div *ngIf="isPhotoEditingDept()" style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <input type="checkbox" id="dealDatesNotSpecified" formControlName="dates_not_specified" style="accent-color:var(--violet); width:16px; height:16px;" />
+                  <label for="dealDatesNotSpecified" style="color:#fff; font-size:0.84rem; cursor:pointer; font-weight:600;">لم يتم تحديد المواعيد بعد</label>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;" *ngIf="!dealForm.get('dates_not_specified')?.value">
+                  <div class="form-group">
+                    <label>تاريخ التصوير (Shooting Date)</label>
+                    <input type="date" pInputText formControlName="shooting_date" />
+                  </div>
+                  <div class="form-group">
+                    <label>تاريخ التسليم (Delivery Date)</label>
+                    <input type="date" pInputText formControlName="delivery_date" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Social Media Management -->
+              <div *ngIf="isSocialMediaDept()" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-group">
+                  <label>تاريخ بداية الحملة / العقد</label>
+                  <input type="date" pInputText formControlName="start_date" />
+                </div>
+                <div class="form-group">
+                  <label>تاريخ نهاية الحملة / العقد</label>
+                  <input type="date" pInputText formControlName="end_date" />
+                </div>
+              </div>
+
+              <!-- General / Other departments -->
+              <div *ngIf="!isPhotoEditingDept() && !isSocialMediaDept()" class="form-group">
+                <label>تاريخ الاستحقاق والتسليم (Due Date)</label>
+                <input type="date" pInputText formControlName="due_date" />
+              </div>
+            </div>
+
+            <!-- Attachment & Reference Link -->
+            <div class="full-width" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+              <div class="form-group">
+                <label>رابط المرجع / ملف خارجي (Reference Link)</label>
+                <input type="url" pInputText formControlName="reference_link" placeholder="https://drive.google.com/..." />
+              </div>
+              <div class="form-group">
+                <label>ملف العقد أو اللوجو (Attachment)</label>
+                <input type="file" (change)="onDealFileSelected($event)" style="padding:7px; font-size:0.82rem; color:var(--text-2); background:var(--bg-input); border:1px solid var(--border); border-radius:var(--r);" />
+                <small *ngIf="dealAttachmentFile" style="color:var(--emerald-light); font-size:0.75rem;">تم اختيار: {{ dealAttachmentFile.name }}</small>
+              </div>
             </div>
 
             <!-- Tasks Builder Section inside Deal Modal -->
@@ -393,7 +458,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .deal-title-clickable { cursor: pointer; color: var(--text); transition: color 0.2s; font-size: 0.95rem; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; }
     .deal-title-clickable:hover { color: var(--violet-light); text-decoration: underline; }
 
-    .table-card { border-radius: 18px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    .table-card { border-radius: 8px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
     .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
     .crm-table { width: 100%; min-width: 1050px; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
@@ -403,7 +468,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .crm-table tr:hover td { background: rgba(255,255,255,0.015); }
     
     .actions-group { display: flex; align-items: center; gap: 6px; }
-    .action-icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; }
+    .action-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; }
     .btn-violet { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border-color: rgba(99, 102, 241, 0.25); }
     .btn-violet:hover { background: var(--violet); color: #ffffff; }
     .btn-emerald { background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.25); }
@@ -414,7 +479,7 @@ import { ConfirmService } from '../../services/confirm.service';
     :host-context(body.light-theme) .btn-rose:hover { background: #e11d48 !important; color: #ffffff !important; }
 
     /* Status Pills */
-    .status-pill { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; }
+    .status-pill { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; }
     .status-pending { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
     .status-active { background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
     .status-completed { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -422,7 +487,7 @@ import { ConfirmService } from '../../services/confirm.service';
 
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
-    .form-group input, .form-group textarea { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: #fff; outline: none; font-family: inherit; font-size: 0.88rem; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); outline: none; font-family: inherit; font-size: 0.88rem; }
     .required { color: var(--rose-light); }
 
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -431,10 +496,10 @@ import { ConfirmService } from '../../services/confirm.service';
     /* Task Builder inside Deal Modal */
     .tasks-builder-section { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 12px; }
     .tasks-builder-head { display: flex; justify-content: space-between; align-items: center; }
-    .btn-add-task-row { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.25); padding: 6px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
+    .btn-add-task-row { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.25); padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
     .btn-add-task-row:hover { background: var(--violet); color: #fff; }
     .tasks-list-rows { display: flex; flex-direction: column; gap: 12px; }
-    .task-input-card { background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 14px; padding: 14px 16px; transition: all 0.2s ease; }
+    .task-input-card { background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 14px 16px; transition: all 0.2s ease; }
     .task-input-card:hover { background: rgba(99, 102, 241, 0.07); border-color: rgba(99, 102, 241, 0.35); }
     :host-context(body.light-theme) .task-input-card { background: #f8fafc !important; border-color: #cbd5e1 !important; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03) !important; }
     .task-card-inner { display: flex; flex-direction: column; gap: 12px; }
@@ -442,11 +507,11 @@ import { ConfirmService } from '../../services/confirm.service';
     .flex-dept { flex: 2; min-width: 0; }
     .flex-price { flex: 1; min-width: 110px; }
     .flex-del { flex-shrink: 0; }
-    .btn-remove-task-row { width: 44px; height: 44px; border-radius: 12px; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fda4af; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
+    .btn-remove-task-row { width: 44px; height: 44px; border-radius: 8px; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fda4af; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.9rem; }
     .btn-remove-task-row:hover { background: #f43f5e; color: #ffffff; border-color: #f43f5e; }
     :host-context(body.light-theme) .btn-remove-task-row { background: #fff1f2 !important; border-color: #fecdd3 !important; color: #e11d48 !important; }
     :host-context(body.light-theme) .btn-remove-task-row:hover { background: #e11d48 !important; color: #ffffff !important; }
-    .tasks-empty-hint { font-size: 0.82rem; color: var(--text-2); background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.2); padding: 12px 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px; }
+    .tasks-empty-hint { font-size: 0.82rem; color: var(--text-2); background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.2); padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px; }
 
     /* Light Theme Overrides */
     :host-context(body.light-theme) .crm-module-container { background: #f8fafc !important; }
@@ -460,6 +525,10 @@ import { ConfirmService } from '../../services/confirm.service';
     :host-context(body.light-theme) .status-active { background: #eef2ff !important; color: #4338ca !important; border-color: #c7d2fe !important; }
     :host-context(body.light-theme) .status-completed { background: #ecfdf5 !important; color: #047857 !important; border-color: #a7f3d0 !important; }
     :host-context(body.light-theme) .status-cancelled { background: #fff1f2 !important; color: #be123c !important; border-color: #fecdd3 !important; }
+    :host-context(body.light-theme) .form-group input,
+    :host-context(body.light-theme) .form-group textarea { background: #ffffff !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+    :host-context(body.light-theme) .tasks-empty-hint { color: #475569 !important; background: #f8fafc !important; }
+    :host-context(body.light-theme) .btn-add-task-row { background: rgba(99, 102, 241, 0.08) !important; color: #4338ca !important; }
   `]
 })
 export class DealsManagementComponent implements OnInit {
@@ -473,6 +542,34 @@ export class DealsManagementComponent implements OnInit {
   clients: any[] = [];
   departments: any[] = [];
   employees: any[] = [];
+  dealAttachmentFile: File | null = null;
+
+  isEmployeeRole(): boolean {
+    return this.currentUser?.role === 'employee';
+  }
+
+  isPhotoEditingDept(): boolean {
+    const deptId = this.dealForm?.get('department_id')?.value;
+    const dept = this.departments.find(d => d.id === deptId);
+    if (!dept) return false;
+    const n = (dept.name || '').toLowerCase();
+    return n.includes('تصوير') || n.includes('مونتاج') || n.includes('photo') || n.includes('edit');
+  }
+
+  isSocialMediaDept(): boolean {
+    const deptId = this.dealForm?.get('department_id')?.value;
+    const dept = this.departments.find(d => d.id === deptId);
+    if (!dept) return false;
+    const n = (dept.name || '').toLowerCase();
+    return n.includes('سوشيال') || n.includes('social');
+  }
+
+  onDealFileSelected(event: any): void {
+    const file = event.target?.files?.[0];
+    if (file) {
+      this.dealAttachmentFile = file;
+    }
+  }
 
   statusList = [
     { id: '', label: 'جميع الحالات' },
@@ -600,10 +697,25 @@ export class DealsManagementComponent implements OnInit {
     this.loading = true;
 
     const validTasks = (this.dealTasks || []).filter(t => t.title && t.title.trim());
-    const payload = {
-      ...this.dealForm.value,
-      tasks: validTasks
-    };
+    const formVal = this.dealForm.value;
+
+    let payload: any;
+    if (this.dealAttachmentFile) {
+      const formData = new FormData();
+      Object.keys(formVal).forEach(k => {
+        if (formVal[k] !== null && formVal[k] !== undefined) {
+          formData.append(k, formVal[k]);
+        }
+      });
+      formData.append('tasks', JSON.stringify(validTasks));
+      formData.append('attachment', this.dealAttachmentFile);
+      payload = formData;
+    } else {
+      payload = {
+        ...formVal,
+        tasks: validTasks
+      };
+    }
 
     this.apiService.createDeal(payload).subscribe({
       next: () => {
@@ -660,14 +772,15 @@ export class DealsManagementComponent implements OnInit {
 
   loadDropdownOptions(): void {
     this.apiService.getUsers('client').subscribe(res => {
-      this.clients = Array.isArray(res) ? res : (res?.data || []);
+      const arr = Array.isArray(res) ? res : (res?.data || []);
+      this.clients = arr.filter((c: any) => !c.is_hold);
     });
     this.apiService.getDepartments().subscribe(res => {
       this.departments = Array.isArray(res) ? res : (res?.data || []);
     });
     this.apiService.getUsers().subscribe(res => {
       const arr = Array.isArray(res) ? res : (res?.data || []);
-      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
+      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client' && !u.is_hold);
     });
   }
 
@@ -687,7 +800,14 @@ export class DealsManagementComponent implements OnInit {
       sales_commission_type: ['none'],
       sales_commission_value: [0],
       total_price: [0, [Validators.required, Validators.min(0)]],
-      agreed_scope: ['']
+      agreed_scope: [''],
+      shooting_date: [''],
+      delivery_date: [''],
+      dates_not_specified: [false],
+      start_date: [''],
+      end_date: [''],
+      due_date: [''],
+      reference_link: ['']
     });
 
     this.paymentForm = this.fb.group({
@@ -799,8 +919,9 @@ export class DealsManagementComponent implements OnInit {
   }
 
   openAddDealModal(): void {
-    this.dealForm.reset({ sales_commission_type: 'none', sales_commission_value: 0, total_price: 0 });
+    this.dealForm.reset({ sales_commission_type: 'none', sales_commission_value: 0, total_price: 0, dates_not_specified: false });
     this.dealTasks = [];
+    this.dealAttachmentFile = null;
     this.showAddModal = true;
   }
 
@@ -810,6 +931,7 @@ export class DealsManagementComponent implements OnInit {
 
   closeAddModal(): void {
     this.showAddModal = false;
+    this.dealAttachmentFile = null;
   }
 
   triggerQuickAddClient(): void {

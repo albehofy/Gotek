@@ -52,7 +52,7 @@ import { ToastService, ToastMessage } from '../../../services/toast.service';
       align-items: flex-start;
       gap: 12px;
       padding: 14px 16px;
-      border-radius: 14px;
+      border-radius: 8px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.12);

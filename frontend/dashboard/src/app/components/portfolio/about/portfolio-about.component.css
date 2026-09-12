@@ -92,7 +92,7 @@
 .accordion-item {
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border, #e5e7eb);
-  border-radius: 12px;
+  border-radius: 8px;
   margin-bottom: 16px;
   overflow: hidden;
 }
@@ -187,7 +187,7 @@ input[dir="ltr"], textarea[dir="ltr"], .ltr-col label {
   margin-top: 32px;
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border, #e5e7eb);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
 }
 

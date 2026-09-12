@@ -46,6 +46,7 @@ export class PortfolioServicesComponent implements OnInit {
   editingId: number | null = null;
   
   icons = ICON_OPTIONS;
+  iconType: 'icon' | 'image' = 'icon';
 
   formData = {
     icon: '',
@@ -62,6 +63,11 @@ export class PortfolioServicesComponent implements OnInit {
     cta_url: '',
     order: 0
   };
+
+  isImageUrl(val: string): boolean {
+    if (!val) return false;
+    return val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/') || val.startsWith('data:') || /\.(png|jpg|jpeg|svg|webp|gif)$/i.test(val);
+  }
 
   ngOnInit() {
     this.loadServices();
@@ -84,8 +90,10 @@ export class PortfolioServicesComponent implements OnInit {
     if (service) {
       this.isEditMode = true;
       this.editingId = service.id;
+      const initialIcon = service.icon || '';
+      this.iconType = this.isImageUrl(initialIcon) ? 'image' : 'icon';
       this.formData = {
-        icon: service.icon || '',
+        icon: initialIcon,
         title_ar: service.title?.ar || service.title_ar || '',
         title_en: service.title?.en || service.title_en || '',
         subtitle_ar: service.subtitle?.ar || service.subtitle_ar || '',
@@ -102,6 +110,7 @@ export class PortfolioServicesComponent implements OnInit {
     } else {
       this.isEditMode = false;
       this.editingId = null;
+      this.iconType = 'icon';
       this.formData = {
         icon: 'fa-solid fa-star',
         title_ar: '',

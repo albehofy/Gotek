@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class PageContentController extends Controller
 {
+    public function all()
+    {
+        $all = PageContent::all()->pluck('content', 'page_name');
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => $all
+        ]);
+    }
+
     public function show($pageName)
     {
         $pageContent = PageContent::where('page_name', $pageName)->first();

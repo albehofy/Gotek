@@ -115,8 +115,10 @@ class PublicApiTest extends TestCase
         $this->getJson('/api/contact-info')->assertStatus(200)
             ->assertJsonPath('whatsapp_support.phone', '123456789');
 
-        $this->getJson('/api/contact')->assertStatus(200);
+        // Contact inquiries list requires auth
+        $this->getJson('/api/contact')->assertStatus(401);
 
+        // Anyone can submit public contact message
         $postRes = $this->postJson('/api/contact', [
             'full_name' => 'John Doe',
             'email' => 'john@example.com',
@@ -129,7 +131,12 @@ class PublicApiTest extends TestCase
         $msg = ContactMessage::first();
         $this->assertNotNull($msg);
 
-        $delRes = $this->deleteJson('/api/contact/' . $msg->id);
-        $delRes->assertStatus(200);
+        // Deletion requires auth
+        $this->deleteJson('/api/contact/' . $msg->id)->assertStatus(401);
+
+        // Admin can view and delete
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'sanctum')->getJson('/api/contact')->assertStatus(200);
+        $this->actingAs($admin, 'sanctum')->deleteJson('/api/contact/' . $msg->id)->assertStatus(200);
     }
 }

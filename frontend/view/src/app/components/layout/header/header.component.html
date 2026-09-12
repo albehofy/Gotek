@@ -1,7 +1,9 @@
-<header>
+<header [class.scrolled]="isScrolled">
   <div class="nav">
     <a routerLink="/" class="logo-text">
-      {{ translationService.translate('brand') }}<span class="dot">.</span>
+      <span class="brand-name">{{ translationService.translate('brand') }}</span>
+      <span class="studio-badge">{{ getStudioBadge() }}</span>
+      <span class="dot"></span>
     </a>
 
     <nav class="nav-links">
@@ -14,16 +16,18 @@
     </nav>
 
     <div class="nav-actions">
-      <div class="lang-toggle" (click)="toggleLang()">
-        <span [class.active]="translationService.currentLang() === 'ar'">AR</span> /
+      <div class="lang-pill" (click)="toggleLang()">
+        <span [class.active]="translationService.currentLang() === 'ar'">AR</span>
+        <span class="divider">/</span>
         <span [class.active]="translationService.currentLang() === 'en'">EN</span>
       </div>
 
       <a routerLink="/contact" class="btn btn-solid desktop-cta">
         <span>{{ translationService.translate('nav.cta') }}</span>
+        <i class="fa-solid fa-arrow-left arrow-dir"></i>
       </a>
 
-      <button class="hamburger" (click)="toggleMenu()">
+      <button class="hamburger" (click)="toggleMenu()" aria-label="Toggle navigation">
         <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
       </button>
     </div>
@@ -37,6 +41,9 @@
     <a routerLink="/about" (click)="closeMenu()">{{ translationService.translate('nav.about') }}</a>
     <a routerLink="/blogs" (click)="closeMenu()">{{ translationService.translate('nav.blogs') }}</a>
     <a routerLink="/contact" (click)="closeMenu()">{{ translationService.translate('nav.contact') }}</a>
-    <a routerLink="/contact" class="btn btn-solid mt-12" (click)="closeMenu()">{{ translationService.translate('nav.cta') }}</a>
+    <a routerLink="/contact" class="btn btn-solid mt-16" (click)="closeMenu()">
+      <span>{{ translationService.translate('nav.cta') }}</span>
+      <i class="fa-solid fa-arrow-left arrow-dir"></i>
+    </a>
   </div>
 </header>

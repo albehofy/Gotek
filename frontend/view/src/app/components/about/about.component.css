@@ -4,18 +4,20 @@
 }
 
 .about-hero {
-  padding: 100px 0 60px;
+  padding: 80px 0 50px;
   background: var(--bg);
 }
 
 .about-hero h1 {
-  font-size: clamp(36px, 5.2vw, 64px);
+  font-size: clamp(38px, 5.2vw, 62px);
   margin-bottom: 20px;
-  line-height: 1.2;
+  line-height: 1.18;
+  font-weight: 800;
+  color: #FFFFFF;
 }
 
 .about-hero p.lead {
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.85;
   color: var(--ink-dim);
   max-width: 680px;
@@ -30,29 +32,33 @@
 }
 
 .pillar-card {
-  background: var(--bg);
+  background: var(--bg-card);
   border: 1px solid var(--line);
-  border-radius: 4px;
-  padding: 36px 32px;
-  transition: all .2s ease;
+  border-radius: 18px;
+  padding: 38px 32px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pillar-card:hover {
-  border-color: var(--ink);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+  border-color: var(--line-hover);
+  background: var(--bg-card-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
 }
 
 .pillar-num {
   font-family: var(--font-num);
   font-size: 16px;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 20px;
 }
 
 .pillar-card h3 {
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 12px;
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 .pillar-card p {
@@ -70,9 +76,9 @@
 
 .timeline-row {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 140px 1fr;
   gap: 40px;
-  padding: 32px 0;
+  padding: 36px 0;
   border-top: 1px solid var(--line);
   align-items: flex-start;
 }
@@ -83,14 +89,16 @@
 
 .t-year {
   font-family: var(--font-num);
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
   color: var(--accent);
 }
 
 .t-content h3 {
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 8px;
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 .t-content p {

@@ -18,7 +18,7 @@ class StoreContactInfoRequest extends FormRequest
             'whatsapp_description' => ['nullable', 'string', 'max:255'],
             'whatsapp_cta_label' => ['nullable', 'string', 'max:255'],
 
-            'official_email' => ['required', 'email', 'max:255'],
+            'official_email' => ['required', 'string', 'max:255'],
             'official_email_description' => ['nullable', 'string', 'max:255'],
 
             'sales_phone' => ['nullable', 'string', 'max:50'],
@@ -27,13 +27,13 @@ class StoreContactInfoRequest extends FormRequest
             'general_manager_phone' => ['nullable', 'string', 'max:50'],
             'general_manager_description' => ['nullable', 'string', 'max:255'],
 
-            'company_address' => ['required', 'string', 'max:255'],
-            'google_map_location' => ['required', 'string', 'max:2048'],
+            'company_address' => ['nullable', 'string', 'max:255'],
+            'google_map_location' => ['nullable', 'string', 'max:2048'],
 
-            'business_hours' => ['required', 'array'],
-            'business_hours.sunday_thursday' => ['required', 'string', 'max:255'],
-            'business_hours.saturday' => ['required', 'string', 'max:255'],
-            'business_hours.friday' => ['required', 'string', 'max:255'],
+            'business_hours' => ['nullable', 'array'],
+            'business_hours.sunday_thursday' => ['nullable', 'string', 'max:255'],
+            'business_hours.saturday' => ['nullable', 'string', 'max:255'],
+            'business_hours.friday' => ['nullable', 'string', 'max:255'],
 
             'emergency_support' => ['nullable', 'string', 'max:255'],
         ];

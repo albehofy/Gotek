@@ -13,6 +13,13 @@ class Deal extends Model
         'title',
         'description',
         'agreed_scope',
+        'attachment_path',
+        'reference_link',
+        'start_date',
+        'end_date',
+        'shooting_date',
+        'delivery_date',
+        'dates_not_specified',
         'client_id',
         'department_id',
         'sales_person_id',
@@ -24,7 +31,34 @@ class Deal extends Model
         'created_by',
     ];
 
-    protected $appends = ['calculated_total', 'calculated_paid', 'remaining_balance', 'progress', 'department_breakdown'];
+    protected $casts = [
+        'dates_not_specified' => 'boolean',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'shooting_date' => 'date',
+        'delivery_date' => 'date',
+    ];
+
+    protected $appends = ['calculated_total', 'calculated_paid', 'remaining_balance', 'progress', 'department_breakdown', 'attachment_url', 'deal_link'];
+
+    public function getDealLinkAttribute()
+    {
+        return $this->reference_link;
+    }
+
+    public function setDealLinkAttribute($value)
+    {
+        $this->attributes['reference_link'] = $value;
+    }
+
+    public function getAttachmentUrlAttribute()
+    {
+        if (!$this->attachment_path) return null;
+        if (str_starts_with($this->attachment_path, 'http://') || str_starts_with($this->attachment_path, 'https://')) {
+            return $this->attachment_path;
+        }
+        return asset('storage/' . ltrim($this->attachment_path, '/'));
+    }
 
     public function client()
     {

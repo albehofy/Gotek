@@ -1,0 +1,286 @@
+<div class="inquiries-root" dir="rtl">
+
+  <!-- Header -->
+  <div class="inquiries-header">
+    <div class="header-info">
+      <div class="badge-tag">
+        <i class="fa-solid fa-inbox"></i>
+        <span>إدارة رسائل الموقع والاتصال</span>
+      </div>
+      <h2>استفسارات العملاء وبيانات التواصل</h2>
+      <p class="subtitle">متابعة طلبات العملاء الواردة من الموقع الإلكتروني وتعديل قنوات التواصل الرسمية للوكالة.</p>
+    </div>
+
+    <div class="header-nav">
+      <button class="nav-tab-btn" [class.active]="activeTab === 'messages'" (click)="setTab('messages')">
+        <i class="fa-solid fa-envelope-open-text"></i>
+        <span>الرسائل والطلبات ({{ inquiries.length }})</span>
+      </button>
+      <button class="nav-tab-btn" [class.active]="activeTab === 'contact-info'" (click)="setTab('contact-info')">
+        <i class="fa-solid fa-headset"></i>
+        <span>بيانات قنوات الاتصال</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB 1: MESSAGES / INQUIRIES -->
+  <div class="tab-content" *ngIf="activeTab === 'messages'">
+    
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterInquiries()" placeholder="بحث بالاسم، البريد، الهاتف، الشركة، أو التفاصيل...">
+      </div>
+
+      <div class="filter-actions">
+        <select class="service-select" [(ngModel)]="serviceFilter" (ngModelChange)="filterInquiries()">
+          <option value="">جميع الخدمات</option>
+          <option value="branding">الهوية التجارية</option>
+          <option value="marketing">التسويق الرقمي</option>
+          <option value="web">المواقع والتطبيقات</option>
+          <option value="video">المحتوى المرئي والفيديو</option>
+          <option value="consulting">الاستشارات التسويقية</option>
+        </select>
+
+        <button class="btn-refresh" (click)="loadInquiries()" [disabled]="loading" title="تحديث الرسائل">
+          <i class="fa-solid fa-rotate" [class.fa-spin]="loading"></i>
+          <span>تحديث</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+      <span>جاري تحميل الرسائل والطلبات...</span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filteredInquiries.length === 0">
+      <i class="fa-regular fa-envelope-open empty-icon"></i>
+      <h3>لا توجد طلبات أو استفسارات حالياً</h3>
+      <p>لم يتم العثور على أي رسائل مطابقة لخيارات البحث أو لم تصل استفسارات جديدة بعد.</p>
+    </div>
+
+    <!-- Inquiries Table Card -->
+    <div class="table-card" *ngIf="!loading && filteredInquiries.length > 0">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>العميل</th>
+              <th>بيانات التواصل</th>
+              <th>الخدمة المطلوبة</th>
+              <th>تفاصيل الطلب</th>
+              <th>التاريخ</th>
+              <th class="text-center">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inq of filteredInquiries" (click)="openDetails(inq)" class="table-row-hover">
+              <td>
+                <div class="client-name">{{ inq.name || inq.full_name || 'زائر الموقع' }}</div>
+                <div class="client-company"><i class="fa-solid fa-building"></i> {{ inq.company || inq.company_name || 'عميل فردي' }}</div>
+              </td>
+              <td>
+                <div class="contact-line" *ngIf="inq.email" (click)="$event.stopPropagation()">
+                  <i class="fa-solid fa-envelope"></i>
+                  <a [href]="'mailto:' + inq.email" dir="ltr">{{ inq.email }}</a>
+                </div>
+                <div class="contact-line" *ngIf="inq.phone" (click)="$event.stopPropagation()">
+                  <i class="fa-solid fa-phone"></i>
+                  <a [href]="'tel:' + inq.phone" dir="ltr">{{ inq.phone }}</a>
+                </div>
+              </td>
+              <td>
+                <span class="badge-service">{{ inq.service || inq.service_needed || 'عام' }}</span>
+              </td>
+              <td>
+                <div class="message-preview" [title]="inq.details || inq.project_details">
+                  {{ inq.details || inq.project_details || 'بدون تفاصيل إضافية' }}
+                </div>
+              </td>
+              <td class="date-col">
+                {{ inq.created_at | date:'mediumDate' }}
+              </td>
+              <td class="actions-col" (click)="$event.stopPropagation()">
+                <button class="btn-action view" (click)="openDetails(inq)" title="عرض التفاصيل الكاملة">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+                <a *ngIf="inq.phone" [href]="'tel:' + inq.phone" class="btn-action call" title="اتصال">
+                  <i class="fa-solid fa-phone"></i>
+                </a>
+                <a *ngIf="inq.email" [href]="'mailto:' + inq.email" class="btn-action mail" title="إرسال إيميل">
+                  <i class="fa-solid fa-envelope"></i>
+                </a>
+                <button class="btn-action delete" (click)="deleteInquiry(inq.id, $event)" title="حذف">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 2: CONTACT INFO SETTINGS -->
+  <div class="tab-content" *ngIf="activeTab === 'contact-info'">
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="form-head-title">
+          <i class="fa-solid fa-headset text-indigo"></i>
+          <span>إعدادات قنوات التواصل الرسمية (Official Contact Channels)</span>
+        </div>
+        <p class="form-head-desc">البيانات المدخلة هنا يتم عرضها في صفحة اتصل بنا، تذييل الموقع، وحسابات الدعم والمبيعات.</p>
+      </div>
+
+      <form [formGroup]="contactForm" (ngSubmit)="saveContactInfo()" class="form-body">
+        
+        <div class="form-grid">
+          
+          <!-- WhatsApp Support -->
+          <div class="form-field">
+            <label>رقم هاتف الواتساب المعتمد *</label>
+            <input type="text" formControlName="whatsapp_phone" placeholder="مثال: +966500000000" dir="ltr">
+            <span class="hint">يظهر لزوار الموقع في زر الشات السريع والدعم.</span>
+          </div>
+
+          <div class="form-field">
+            <label>وصف قناة الواتساب</label>
+            <input type="text" formControlName="whatsapp_description" placeholder="مثال: متاح للاستفسارات السريعة وخدمة العملاء">
+          </div>
+
+          <!-- Official Email -->
+          <div class="form-field">
+            <label>البريد الإلكتروني الرسمي *</label>
+            <input type="email" formControlName="official_email" placeholder="info@mediaglow.agency" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>وصف البريد الرسمي</label>
+            <input type="text" formControlName="official_email_description" placeholder="مثال: نرد على كافة الاستفسارات خلال 24 ساعة">
+          </div>
+
+          <!-- Sales & GM -->
+          <div class="form-field">
+            <label>هاتف المبيعات والتسويق</label>
+            <input type="text" formControlName="sales_phone" placeholder="+9665XXXXXXXX" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>مسؤول المبيعات</label>
+            <input type="text" formControlName="sales_person" placeholder="اسم مسؤول المبيعات">
+          </div>
+
+          <div class="form-field">
+            <label>هاتف الإدارة العامة</label>
+            <input type="text" formControlName="general_manager_phone" placeholder="+9665XXXXXXXX" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>خدمة الطوارئ والدعم</label>
+            <input type="text" formControlName="emergency_support" placeholder="متاح 24/7 للحالات العاجلة">
+          </div>
+
+          <!-- Address & Maps -->
+          <div class="form-field full-width">
+            <label>عنوان المقر الرئيسي للشركة</label>
+            <input type="text" formControlName="company_address" placeholder="المملكة العربية السعودية، الرياض / جمهورية مصر العربية، القاهرة">
+          </div>
+
+          <div class="form-field full-width">
+            <label>رابط الموقع على خرائط جوجل (Google Maps URL)</label>
+            <input type="text" formControlName="google_map_location" placeholder="https://maps.google.com/..." dir="ltr">
+          </div>
+
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="btn-save-contact" [disabled]="savingContact">
+            <i class="fa-solid" [ngClass]="savingContact ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+            <span>{{ savingContact ? 'جاري الحفظ...' : 'حفظ بيانات التواصل' }}</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- CENTERED DETAILS MODAL -->
+  <div class="modal-backdrop" *ngIf="showDetailsModal" (click)="closeDetails()"></div>
+
+  <div class="centered-modal-box" *ngIf="showDetailsModal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-envelope-open-text text-indigo"></i>
+        <span>تفاصيل طلب الاستفسار</span>
+      </div>
+      <button class="btn-modal-close" (click)="closeDetails()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedInquiry">
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">اسم العميل</span>
+          <span class="info-value">{{ selectedInquiry.name || selectedInquiry.full_name || 'زائر الموقع' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">الشركة / المؤسسة</span>
+          <span class="info-value">{{ selectedInquiry.company || selectedInquiry.company_name || 'عميل فردي' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">الخدمة المطلوبة</span>
+          <span class="badge-service">{{ selectedInquiry.service || selectedInquiry.service_needed || 'عام' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">تاريخ الطلب</span>
+          <span class="info-value">{{ selectedInquiry.created_at | date:'medium' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">البريد الإلكتروني</span>
+          <a [href]="'mailto:' + selectedInquiry.email" class="info-link" dir="ltr">{{ selectedInquiry.email || '-' }}</a>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">رقم الهاتف</span>
+          <a [href]="'tel:' + selectedInquiry.phone" class="info-link" dir="ltr">{{ selectedInquiry.phone || '-' }}</a>
+        </div>
+      </div>
+
+      <div class="message-box">
+        <div class="message-label">نص الرسالة وتفاصيل المشروع:</div>
+        <div class="message-text">
+          {{ selectedInquiry.details || selectedInquiry.project_details || 'لا توجد تفاصيل إضافية مسجلة.' }}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer" *ngIf="selectedInquiry">
+      <div class="modal-actions-left">
+        <button class="btn-modal-danger" (click)="deleteInquiry(selectedInquiry.id)">
+          <i class="fa-solid fa-trash-can"></i> حذف هذا الطلب
+        </button>
+      </div>
+
+      <div class="modal-actions-right">
+        <a *ngIf="selectedInquiry.phone" [href]="'tel:' + selectedInquiry.phone" class="btn-modal-action call">
+          <i class="fa-solid fa-phone"></i> اتصال
+        </a>
+        <a *ngIf="selectedInquiry.email" [href]="'mailto:' + selectedInquiry.email" class="btn-modal-action email">
+          <i class="fa-solid fa-envelope"></i> إرسال إيميل
+        </a>
+        <button class="btn-modal-action close" (click)="closeDetails()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+</div>

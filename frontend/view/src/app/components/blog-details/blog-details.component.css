@@ -63,3 +63,9 @@
   .bd-actions { flex-direction: column; width: 100%; }
   .bd-actions .btn { width: 100%; justify-content: center; }
 }
+
+@media (max-width: 320px) {
+  .bd-article { padding: 18px 12px; }
+  .article-content { font-size: 0.95rem; line-height: 1.75; }
+}
+

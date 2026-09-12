@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ElementRef, HostListener } from '
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
+import { SoundService } from '../../../services/sound.service';
 
 @Component({
   selector: 'app-notification-center',
@@ -22,8 +23,8 @@ import { ApiService } from '../../../services/api.service';
             <span class="badge-count" *ngIf="unreadCount > 0">{{ unreadCount }} غير مقروء</span>
           </div>
           <div class="header-actions-right" style="display:flex; gap:6px; align-items:center;">
-            <button type="button" class="btn-test-sound" (click)="playNotificationSound()" title="تجربة صوت الإشعارات">
-              <i class="fa-solid fa-volume-high"></i> تجربة الصوت
+            <button type="button" class="btn-sound-toggle" (click)="toggleSound()" [title]="soundService.muted ? 'تفعيل صوت التنبيهات' : 'كتم صوت التنبيهات'" [class.is-muted]="soundService.muted">
+              <i class="fa-solid" [ngClass]="soundService.muted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
             </button>
             <button type="button" class="btn-read-all" *ngIf="unreadCount > 0" (click)="markAllRead()" title="تحديد الكل كمقروء">
               <i class="fa-solid fa-check-double"></i> قراءة الكل
@@ -107,7 +108,7 @@ import { ApiService } from '../../../services/api.service';
       font-size: 0.68rem;
       font-weight: 800;
       padding: 2px 6px;
-      border-radius: 100px;
+      border-radius: 8px;
       border: 2px solid var(--bg);
       min-width: 18px;
       text-align: center;
@@ -122,7 +123,7 @@ import { ApiService } from '../../../services/api.service';
       max-width: 90vw;
       background: rgba(17, 24, 39, 0.96);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
+      border-radius: 8px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(16px);
       z-index: 999999;
@@ -162,31 +163,38 @@ import { ApiService } from '../../../services/api.service';
       background: rgba(99, 102, 241, 0.2);
       color: #818cf8;
       padding: 2px 8px;
-      border-radius: 100px;
+      border-radius: 8px;
       border: 1px solid rgba(99, 102, 241, 0.3);
     }
 
-    .btn-test-sound {
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      color: #a5b4fc;
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 10px;
+    .btn-sound-toggle {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      color: var(--violet-light, #a5b4fc);
+      width: 28px;
+      height: 28px;
       border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      justify-content: center;
+      font-size: 0.8rem;
       transition: all 0.2s ease;
-      font-family: inherit;
     }
 
-    .btn-test-sound:hover {
-      background: #6366f1;
+    .btn-sound-toggle:hover {
+      background: var(--violet, #6366f1);
       color: #ffffff;
-      border-color: #6366f1;
+      border-color: var(--violet, #6366f1);
     }
+
+    .btn-sound-toggle.is-muted {
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+
 
     .btn-read-all {
       background: transparent;
@@ -244,7 +252,7 @@ import { ApiService } from '../../../services/api.service';
     .notif-icon {
       width: 34px;
       height: 34px;
-      border-radius: 10px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -326,6 +334,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
+  public soundService = inject(SoundService);
 
   notifications: any[] = [];
   unreadCount = 0;
@@ -346,7 +355,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
     this.loadNotifications();
     this.pollInterval = setInterval(() => {
       this.loadNotifications();
-    }, 10000);
+    }, 5000);
   }
 
   ngOnDestroy(): void {
@@ -356,55 +365,13 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   }
 
   playNotificationSound(): void {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+    this.soundService.playNotificationChime();
+  }
 
-      const masterGain = ctx.createGain();
-      masterGain.gain.setValueAtTime(0.9, ctx.currentTime);
-      masterGain.connect(ctx.destination);
-
-      // Tone 1 - Loud High Chime (1046.5 Hz - C6)
-      const osc1 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1046.5, ctx.currentTime);
-      gain1.gain.setValueAtTime(0.9, ctx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-      osc1.connect(gain1);
-      gain1.connect(masterGain);
-      osc1.start(ctx.currentTime);
-      osc1.stop(ctx.currentTime + 0.45);
-
-      // Tone 2 - Loud Harmonious High Chime (1567.98 Hz - G6)
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1567.98, ctx.currentTime + 0.12);
-      gain2.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain2.gain.setValueAtTime(1.0, ctx.currentTime + 0.12);
-      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.75);
-      osc2.connect(gain2);
-      gain2.connect(masterGain);
-      osc2.start(ctx.currentTime + 0.12);
-      osc2.stop(ctx.currentTime + 0.75);
-
-      // Tone 3 - Bright Resonant Bell (2093 Hz - C7)
-      const osc3 = ctx.createOscillator();
-      const gain3 = ctx.createGain();
-      osc3.type = 'triangle';
-      osc3.frequency.setValueAtTime(2093, ctx.currentTime + 0.24);
-      gain3.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain3.gain.setValueAtTime(0.85, ctx.currentTime + 0.24);
-      gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.95);
-      osc3.connect(gain3);
-      gain3.connect(masterGain);
-      osc3.start(ctx.currentTime + 0.24);
-      osc3.stop(ctx.currentTime + 0.95);
-
-    } catch (err) {
-      console.warn('Could not play notification sound:', err);
+  toggleSound(): void {
+    this.soundService.toggleMute();
+    if (!this.soundService.muted) {
+      this.soundService.playNotificationChime();
     }
   }
 
@@ -434,7 +401,6 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   }
 
   toggleDropdown(event?: Event): void {
-    if (event) event.stopPropagation();
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.loadNotifications();

@@ -20,10 +20,27 @@ class Task extends Model
         'parent_id',
         'priority',
         'status',
+        'due_date',
+        'start_date',
+        'end_date',
+        'shooting_date',
+        'delivery_date',
+        'dates_not_specified',
+        'is_standalone',
         'estimated_hours',
         'client_price',
         'employee_price',
         'company_margin',
+    ];
+
+    protected $casts = [
+        'dates_not_specified' => 'boolean',
+        'is_standalone' => 'boolean',
+        'due_date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'shooting_date' => 'date',
+        'delivery_date' => 'date',
     ];
 
     protected $appends = ['computed_margin', 'subtasks_count'];

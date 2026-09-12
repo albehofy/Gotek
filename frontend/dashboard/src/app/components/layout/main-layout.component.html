@@ -1,4 +1,18 @@
 <div class="crm-shell" [class.collapsed-sidebar]="sidebarCollapsed">
+  <!-- Global Top Progress / Loader Bar -->
+  <div class="global-progress-bar-container" [class.active]="loadingService.isLoading$ | async">
+    <div class="global-progress-bar-glow"></div>
+  </div>
+
+  <!-- Global Floating Sync Pill (Top Center, Zero Layout Shift) -->
+  <div class="global-sync-pill" [class.show]="loadingService.isLoading$ | async">
+    <div class="sync-glow-dot"></div>
+    <div class="sync-spinner-ring">
+      <i class="fa-solid fa-arrows-rotate fa-spin"></i>
+    </div>
+    <span class="sync-text">جاري مزامنة وتحديث البيانات...</span>
+  </div>
+
   <!-- Mobile sidebar overlay -->
   <div class="sb-overlay" [class.active]="sidebarOpen" (click)="toggleSidebar()"></div>
 
@@ -75,26 +89,18 @@
           <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>
         </a>
 
-        <!-- Portfolio Management (Top-Level, Admins only) -->
-        <a class="sb-item" *ngIf="isAdmin()" routerLink="/portfolio" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" data-tooltip="إدارة الموقع والمشاريع">
-          <span class="sb-icon"><i class="fa-solid fa-briefcase"></i></span>
-          <span class="sb-text">معرض الأعمال والموقع</span>
-        </a>
-
         <!-- Website Section Dropdown (Admins only) -->
         <div class="nav-dropdown" [class.open]="websiteMenuOpen" *ngIf="isAdmin()">
-          <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;" data-tooltip="الموقع الإلكتروني">
+          <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;" data-tooltip="إدارة الموقع الإلكتروني">
             <span class="sb-icon"><i class="fa-solid fa-globe"></i></span>
-            <span class="sb-text">الموقع الإلكتروني</span>
+            <span class="sb-text">إدارة الموقع الإلكتروني</span>
             <i class="fa-solid fa-chevron-down arrow-icon" [style.transform]="websiteMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></i>
           </div>
           <div class="dropdown-menu-list">
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('website-overview')" (click)="navigateToTab('website-overview')" data-tooltip="نظرة عامة على الموقع">
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/overview" routerLinkActive="active" data-tooltip="نظرة عامة على الموقع">
               <span class="sb-icon"><i class="fa-solid fa-chart-pie"></i></span>
-              <span class="sb-text">نظرة عامة على الموقع</span>
+              <span class="sb-text">نظرة عامة وإحصائيات</span>
             </a>
-
-            <!-- Portfolio Management Links → dedicated /portfolio/* routes -->
             <a class="sb-item nav-sub-item" routerLink="/portfolio/projects" routerLinkActive="active" data-tooltip="المشاريع والأعمال">
               <span class="sb-icon"><i class="fa-solid fa-diagram-project"></i></span>
               <span class="sb-text">المشاريع والأعمال</span>
@@ -119,46 +125,25 @@
               <span class="sb-icon"><i class="fa-solid fa-circle-question"></i></span>
               <span class="sb-text">الأسئلة الشائعة</span>
             </a>
-
-            <!-- Page Editors Header Divider -->
-            <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 6px 12px;"></div>
-            <div style="font-size: 0.7rem; font-weight: 800; color: var(--violet-light, #818cf8); padding: 4px 14px; text-transform: uppercase;">
-              <i class="fa-solid fa-pen-to-square"></i> محرر صفحات الموقع
-            </div>
-
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('home-page')" (click)="navigateToTab('home-page')" data-tooltip="الصفحة الرئيسية">
-              <span class="sb-icon"><i class="fa-solid fa-house"></i></span>
-              <span class="sb-text">الصفحة الرئيسية</span>
-            </a>
             <a class="sb-item nav-sub-item" routerLink="/portfolio/about" routerLinkActive="active" data-tooltip="صفحة عن الوكالة">
               <span class="sb-icon"><i class="fa-solid fa-building-user"></i></span>
               <span class="sb-text">صفحة عن الوكالة</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('services-page')" (click)="navigateToTab('services-page')" data-tooltip="صفحة الخدمات">
-              <span class="sb-icon"><i class="fa-solid fa-briefcase"></i></span>
-              <span class="sb-text">صفحة الخدمات</span>
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/pages" routerLinkActive="active" data-tooltip="محرر صفحات الموقع والفوتر">
+              <span class="sb-icon"><i class="fa-solid fa-pen-to-square"></i></span>
+              <span class="sb-text">محرر الصفحات والفوتر</span>
             </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('portfolio-page')" (click)="navigateToTab('portfolio-page')" data-tooltip="صفحة معرض الأعمال">
-              <span class="sb-icon"><i class="fa-solid fa-images"></i></span>
-              <span class="sb-text">صفحة معرض الأعمال</span>
-            </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('blogs-page')" (click)="navigateToTab('blogs-page')" data-tooltip="صفحة المدونة">
-              <span class="sb-icon"><i class="fa-solid fa-blog"></i></span>
-              <span class="sb-text">صفحة المدونة</span>
-            </a>
-            <a class="sb-item nav-sub-item" [class.active]="isDashboardTabActive('footer-section')" (click)="navigateToTab('footer-section')" data-tooltip="تذييل الموقع">
-              <span class="sb-icon"><i class="fa-solid fa-sliders"></i></span>
-              <span class="sb-text">محتوى تذييل الموقع</span>
+            <a class="sb-item nav-sub-item" routerLink="/portfolio/inquiries" routerLinkActive="active" data-tooltip="رسائل واستفسارات الموقع">
+              <span class="sb-icon"><i class="fa-solid fa-inbox"></i></span>
+              <span class="sb-text">رسائل الموقع وقنوات الاتصال</span>
             </a>
 
             <!-- Visit Main Site -->
-            <ng-container *ngIf="isAdmin()">
-              <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 6px 12px;"></div>
-              <a class="sb-item nav-sub-item" routerLink="/" data-tooltip="زيارة الموقع الرئيسي">
-                <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                <span class="sb-text">زيارة الموقع الرئيسي</span>
-              </a>
-            </ng-container>
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 6px 12px;"></div>
+            <a class="sb-item nav-sub-item" href="/" target="_blank" data-tooltip="معاينة الموقع الرئيسي">
+              <span class="sb-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+              <span class="sb-text">زيارة الموقع الرئيسي</span>
+            </a>
           </div>
         </div>
 
@@ -187,12 +172,21 @@
         </div>
       </div>
       <div class="tb-r">
-        <app-notification-center></app-notification-center>
-        <button class="tb-btn" (click)="toggleTheme()" title="تغيير الثيم">
-          <i class="fa-solid" [ngClass]="isLightMode ? 'fa-moon' : 'fa-sun'"></i>
+        <!-- Live Connection & Sync Status (Fixed width, zero layout shift) -->
+        <div class="tb-sync-status" [class.is-syncing]="loadingService.isLoading$ | async" [title]="(loadingService.isLoading$ | async) ? 'جاري الاتصال وتحديث البيانات...' : 'النظام متصل ومحدّث بنجاح'">
+          <i class="fa-solid" [ngClass]="(loadingService.isLoading$ | async) ? 'fa-arrows-rotate fa-spin' : 'fa-cloud-bolt'"></i>
+          <span class="sync-status-dot" [class.is-busy]="loadingService.isLoading$ | async"></span>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button class="tb-btn tb-theme-btn" (click)="toggleTheme()" [title]="isLightMode ? 'تفعيل الوضع الداكن (Dark Mode)' : 'تفعيل الوضع الفاتح (Light Mode)'" aria-label="تبديل مظهر النظام">
+          <i class="fa-solid" [class.fa-sun]="isLightMode" [class.fa-moon]="!isLightMode"></i>
         </button>
+
+        <app-notification-center></app-notification-center>
+
         <div class="tb-user-wrap">
-          <div class="tb-user" (click)="toggleDropdown('user')">
+          <div class="tb-user" (click)="toggleDropdown('user', $event)">
             <div class="tb-av"><i class="fa-solid" [ngClass]="isClient() ? 'fa-building' : (isEmployee() ? 'fa-laptop-code' : 'fa-user-shield')"></i></div>
             <span class="tb-uname">{{ currentUser?.name || 'مستخدم' }}</span>
             <span class="tb-caret">▾</span>

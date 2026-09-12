@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { LoadingService } from '../../services/loading.service';
 import { NotificationCenterComponent } from '../shared/notification-center/notification-center.component';
 import { filter } from 'rxjs/operators';
 
@@ -16,6 +17,7 @@ export class MainLayoutComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   apiService = inject(ApiService);
+  loadingService = inject(LoadingService);
 
   sidebarOpen = false;
   sidebarCollapsed = false;
@@ -31,6 +33,22 @@ export class MainLayoutComponent implements OnInit {
 
   currentUser: any = null;
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (this.activeDropdown) {
+      const isInsideUserBtn = !!target.closest('.tb-user');
+      const isInsideUserPanel = !!target.closest('.dd-user');
+      const isActionRow = !!target.closest('.ud-row');
+
+      if (!isInsideUserBtn && !isInsideUserPanel) {
+        this.activeDropdown = null;
+      } else if (isActionRow) {
+        this.activeDropdown = null;
+      }
+    }
+  }
+
   ngOnInit() {
     try {
       const uStr = localStorage.getItem('mediaglow_user');
@@ -42,11 +60,12 @@ export class MainLayoutComponent implements OnInit {
     }
 
     const savedTheme = localStorage.getItem('mediaglow_theme');
-    if (savedTheme === 'light') {
-      this.isLightMode = true;
+    this.isLightMode = savedTheme === 'light';
+    if (this.isLightMode) {
+      document.documentElement.classList.add('light-theme');
       document.body.classList.add('light-theme');
     } else {
-      this.isLightMode = false;
+      document.documentElement.classList.remove('light-theme');
       document.body.classList.remove('light-theme');
     }
 
@@ -89,14 +108,21 @@ export class MainLayoutComponent implements OnInit {
     this.websiteMenuOpen = !this.websiteMenuOpen;
   }
 
-  toggleDropdown(name: string) {
+  toggleDropdown(name: string, event?: Event) {
     this.activeDropdown = this.activeDropdown === name ? null : name;
   }
 
   toggleTheme() {
     this.isLightMode = !this.isLightMode;
-    document.body.classList.toggle('light-theme', this.isLightMode);
-    localStorage.setItem('mediaglow_theme', this.isLightMode ? 'light' : 'dark');
+    if (this.isLightMode) {
+      document.documentElement.classList.add('light-theme');
+      document.body.classList.add('light-theme');
+      localStorage.setItem('mediaglow_theme', 'light');
+    } else {
+      document.documentElement.classList.remove('light-theme');
+      document.body.classList.remove('light-theme');
+      localStorage.setItem('mediaglow_theme', 'dark');
+    }
   }
 
   logout() {

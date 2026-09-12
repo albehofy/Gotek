@@ -24,7 +24,8 @@
     <div class="service-card" *ngFor="let service of services">
       <div class="card-order-badge">#{{ service.order }}</div>
       <div class="card-icon">
-        <i [class]="service.icon || 'fa-solid fa-star'"></i>
+        <img *ngIf="isImageUrl(service.icon)" [src]="service.icon" class="service-custom-icon-img" alt="Icon" onerror="this.src='/assets/media-glow-icon.png'" />
+        <i *ngIf="!isImageUrl(service.icon)" [class]="service.icon || 'fa-solid fa-star'"></i>
       </div>
       <h3 class="card-title-ar">{{ getServiceTitle(service) }}</h3>
       <h4 class="card-title-en">{{ getServiceTitleEn(service) }}</h4>
@@ -55,15 +56,45 @@
       <form (ngSubmit)="saveService()" #serviceForm="ngForm">
         
         <div class="form-group">
-          <label>اختر أيقونة</label>
-          <div class="icon-picker">
-            <div class="icon-option" 
-                 *ngFor="let opt of icons"
-                 [class.selected]="formData.icon === opt.icon"
-                 (click)="selectIcon(opt.icon)">
-              <i [class]="opt.icon"></i>
-              <span>{{ opt.label }}</span>
+          <label>مظهر الأيقونة أو الصورة</label>
+          <div class="icon-image-toggle mb-12">
+            <button type="button" [class.active]="iconType === 'icon'" (click)="iconType = 'icon'">
+              <i class="fa-solid fa-icons"></i>
+              <span>أيقونة</span>
+            </button>
+            <button type="button" [class.active]="iconType === 'image'" (click)="iconType = 'image'">
+              <i class="fa-solid fa-image"></i>
+              <span>صورة مخصصة</span>
+            </button>
+          </div>
+
+          <!-- Preview -->
+          <div class="service-preview-badge mb-12">
+            <div class="preview-mini-circle">
+              <img *ngIf="iconType === 'image' || isImageUrl(formData.icon)" [src]="formData.icon" class="service-custom-icon-img" onerror="this.src='/assets/media-glow-icon.png'" />
+              <i *ngIf="iconType !== 'image' && !isImageUrl(formData.icon)" [class]="formData.icon || 'fa-solid fa-star'"></i>
             </div>
+            <span>معاينة ظهور أيقونة الخدمة</span>
+          </div>
+
+          <div *ngIf="iconType === 'icon'">
+            <label>اختر أيقونة من القائمة أو اكتب كلاس مخصص</label>
+            <input type="text" [(ngModel)]="formData.icon" name="iconInput" class="form-control mb-8" placeholder="fa-solid fa-camera" dir="ltr">
+            <div class="icon-picker">
+              <div class="icon-option" 
+                   *ngFor="let opt of icons"
+                   [class.selected]="formData.icon === opt.icon"
+                   (click)="selectIcon(opt.icon)">
+                <i [class]="opt.icon"></i>
+                <span>{{ opt.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="iconType === 'image'">
+            <label>رابط الصورة المخصصة (Image URL / Path)</label>
+            <input type="text" [(ngModel)]="formData.icon" name="imageInput" class="form-control" placeholder="https://... أو /assets/..." dir="ltr">
+            <small style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 4px; display: block;">يمكنك وضع رابط صورة أو لوجو مخصص للخدمة بدلاً من الأيقونة.</small>
           </div>
         </div>
 

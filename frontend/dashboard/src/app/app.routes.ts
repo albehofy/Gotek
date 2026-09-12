@@ -73,7 +73,11 @@ export const routes: Routes = [
         canActivate: [roleGuard(['super_admin', 'admin'])],
         loadComponent: () => import('./components/portfolio/portfolio-management.component').then(m => m.PortfolioManagementComponent),
         children: [
-          { path: '', redirectTo: 'projects', pathMatch: 'full' },
+          { path: '', redirectTo: 'overview', pathMatch: 'full' },
+          {
+            path: 'overview',
+            loadComponent: () => import('./components/portfolio/overview/portfolio-overview.component').then(m => m.PortfolioOverviewComponent)
+          },
           {
             path: 'projects',
             loadComponent: () => import('./components/portfolio/projects/portfolio-projects.component').then(m => m.PortfolioProjectsComponent)
@@ -105,6 +109,14 @@ export const routes: Routes = [
           {
             path: 'about',
             loadComponent: () => import('./components/portfolio/about/portfolio-about.component').then(m => m.PortfolioAboutComponent)
+          },
+          {
+            path: 'pages',
+            loadComponent: () => import('./components/portfolio/pages/portfolio-pages.component').then(m => m.PortfolioPagesComponent)
+          },
+          {
+            path: 'inquiries',
+            loadComponent: () => import('./components/portfolio/inquiries/portfolio-inquiries.component').then(m => m.PortfolioInquiriesComponent)
           }
         ]
       }

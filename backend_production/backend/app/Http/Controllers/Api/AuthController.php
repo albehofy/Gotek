@@ -37,6 +37,14 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if ($user->is_hold) {
+            return response()->json([
+                'success' => false,
+                'is_held' => true,
+                'message' => 'تم تعليق هذا الحساب من قبل الإدارة. يرجى مراجعة المسؤول.'
+            ], 403);
+        }
+
         // Create Sanctum Token
         $token = $user->createToken('admin-token')->plainTextToken;
 

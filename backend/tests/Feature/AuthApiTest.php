@@ -81,4 +81,21 @@ class AuthApiTest extends TestCase
             'email' => 'newuser@example.com',
         ]);
     }
+
+    public function test_suspended_user_cannot_login()
+    {
+        $user = User::factory()->create([
+            'email' => 'helduser@example.com',
+            'password' => Hash::make('secret123'),
+            'is_hold' => true,
+        ]);
+
+        $response = $this->postJson('/api/login', [
+            'email' => 'helduser@example.com',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false);
+    }
 }

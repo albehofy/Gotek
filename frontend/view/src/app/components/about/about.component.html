@@ -6,18 +6,16 @@
   <div class="wrap">
     <div class="eyebrow">
       <span class="dash"></span>
-      <span>{{ translationService.translate('nav.about') }}</span>
+      <span>{{ getHeroEyebrow() }}</span>
     </div>
 
     <h1>
-      <span>{{ translationService.currentLang() === 'ar' ? 'نبني علامات تجارية' : 'We Build Brands' }}</span>
-      <span class="accent"> {{ translationService.currentLang() === 'ar' ? 'تترك أثراً حقيقياً' : 'That Make An Impact' }}</span>
+      <span>{{ getHeroTitle1() }}</span>
+      <span class="accent"> {{ getHeroTitle2() }}</span>
     </h1>
 
     <p class="lead">
-      {{ translationService.currentLang() === 'ar'
-         ? 'ميديا جلو استوديو تسويق وتصميم رقمي في القاهرة، بنجمع بين الفكر الاستراتيجي، الهوية البصرية الجذابة، والهندسة البرمجية المتقنة.'
-         : 'Media Glow is a digital marketing and design studio based in Cairo, blending strategic thinking, brand identity, and clean web engineering.' }}
+      {{ getHeroSub() }}
     </p>
   </div>
 </section>
@@ -34,22 +32,10 @@
     </div>
 
     <div class="pillars-grid">
-      <div class="pillar-card">
-        <div class="pillar-num">01</div>
-        <h3>{{ translationService.currentLang() === 'ar' ? 'الوضوح التام' : 'Total Clarity' }}</h3>
-        <p>{{ translationService.currentLang() === 'ar' ? 'لا تعقيد ولا مصطلحات مبهمة — بنشاركك كل خطوة وخطة عمل بوضوح وشفافية.' : 'No jargon or guesswork — we share every step, milestone, and metric with complete transparency.' }}</p>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-num">02</div>
-        <h3>{{ translationService.currentLang() === 'ar' ? 'التركيز على العائد' : 'ROI Driven' }}</h3>
-        <p>{{ translationService.currentLang() === 'ar' ? 'هدفنا مش مجرد أرقام وإعجابات، هدفنا زيادة مبيعاتك ونمو علامتك في السوق.' : 'Our goal is not vanity likes, but tangible customer growth and bottom-line revenue.' }}</p>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-num">03</div>
-        <h3>{{ translationService.currentLang() === 'ar' ? 'حرفية التفاصيل' : 'Craft in Detail' }}</h3>
-        <p>{{ translationService.currentLang() === 'ar' ? 'من الخطوط والألوان حتى سرعة تحميل الكود، كل تفصيلة معمولة بعناية.' : 'From typography and palette to page speed and code architecture, everything is polished.' }}</p>
+      <div class="pillar-card" *ngFor="let p of getPrinciples()">
+        <div class="pillar-num">{{ p.num }}</div>
+        <h3>{{ getPrincipleTitle(p) }}</h3>
+        <p>{{ getPrincipleDesc(p) }}</p>
       </div>
     </div>
   </div>

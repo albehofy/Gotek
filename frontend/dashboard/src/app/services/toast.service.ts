@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { SoundService } from './sound.service';
 
 export interface ToastMessage {
   id: string;
@@ -13,6 +14,7 @@ export interface ToastMessage {
   providedIn: 'root'
 })
 export class ToastService {
+  private soundService = inject(SoundService);
   private toastsSubject = new BehaviorSubject<ToastMessage[]>([]);
   public toasts$: Observable<ToastMessage[]> = this.toastsSubject.asObservable();
 
@@ -21,6 +23,14 @@ export class ToastService {
     const toast: ToastMessage = { id, type, message, title, duration };
     const current = this.toastsSubject.getValue();
     this.toastsSubject.next([...current, toast]);
+
+    try {
+      if (type === 'success') {
+        this.soundService.playSuccessChime();
+      } else if (type === 'error' || type === 'warning') {
+        this.soundService.playNotificationChime();
+      }
+    } catch (e) {}
 
     if (duration > 0) {
       setTimeout(() => {

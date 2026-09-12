@@ -29,6 +29,7 @@ Route::get('categories', [CategoryController::class, 'index']);
 Route::get('team', [UserController::class, 'team']);
 Route::get('about', [AboutController::class, 'index']);
 Route::get('page-content/{page}', [PageContentController::class, 'show']);
+Route::get('site-content', [PageContentController::class, 'all']);
 Route::get('testimonials', [TestimonialController::class, 'index']);
 Route::get('blogs', [BlogController::class, 'index']);
 Route::get('blogs/{blog}', [BlogController::class, 'show']);
@@ -36,9 +37,7 @@ Route::get('services', [ServiceController::class, 'index']);
 Route::get('services/{service}', [ServiceController::class, 'show']);
 Route::get('/faqs', [FAQController::class, 'index']);
 Route::get('/contact-info', ContactInfoController::class);
-Route::get('/contact', [ContactMessageController::class, 'index']);
 Route::post('/contact', [ContactMessageController::class, 'store']);
-Route::delete('/contact/{id}', [ContactMessageController::class, 'destroy']);
 
 /*
 |--------------------------------------------------------------------------
@@ -115,21 +114,28 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
+        Route::get('/{id}', [UserController::class, 'show']);
         Route::put('/{id}', [UserController::class, 'update']);
         Route::patch('/{id}/assign-department', [UserController::class, 'updateDepartment']);
+        Route::patch('/{id}/toggle-hold', [UserController::class, 'toggleHold']);
+        Route::get('/{id}/client-profile', [UserController::class, 'clientProfile']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
+
+    Route::get('clients/{id}/profile', [UserController::class, 'clientProfile']);
 
     // Roles & Permissions Routes (Super Admin)
     Route::prefix('roles')->group(function () {
         Route::get('/', [RoleController::class, 'index']);
         Route::post('/', [RoleController::class, 'storeRole']);
+        Route::put('/{id}', [RoleController::class, 'updateRole']);
         Route::put('/{id}/permissions', [RoleController::class, 'updateRolePermissions']);
         Route::post('/users/{userId}/assign', [RoleController::class, 'assignUserRole']);
+        Route::delete('/{id}', [RoleController::class, 'destroyRole']);
     });
 
     // Full Accounting & Finance Routes
-    Route::prefix('finance')->group(function () {
+    Route::prefix('finance')->middleware('role:super_admin,admin,department_manager')->group(function () {
         Route::get('/summary', [FinanceController::class, 'summary']);
         Route::get('/ledger', [FinanceController::class, 'getLedger']);
         Route::post('/ledger', [FinanceController::class, 'storeLedger']);
@@ -167,6 +173,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('categories', [CategoryController::class, 'store']);
     Route::put('categories/{category}', [CategoryController::class, 'update']);
     Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
+    Route::post('contact-info', [ContactInfoAdminController::class, 'store']);
+    Route::put('contact-info', [ContactInfoAdminController::class, 'update']);
+    Route::delete('contact-info', [ContactInfoAdminController::class, 'destroy']);
+    Route::get('contact', [ContactMessageController::class, 'index']);
+    Route::delete('contact/{id}', [ContactMessageController::class, 'destroy']);
 
     Route::prefix('internal-projects')->group(function () {
         Route::get('/', [InternalProjectController::class, 'index']);

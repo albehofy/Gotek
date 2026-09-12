@@ -337,27 +337,27 @@ import { DatePickerModule } from 'primeng/datepicker';
 
     /* Top Nav Bar */
     .top-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-    .btn-glass-back { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; font-family: inherit; }
+    .btn-glass-back { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; font-family: inherit; }
     .btn-glass-back:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--violet-light); color: var(--violet-light); transform: translateX(3px); }
 
     .top-nav-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .btn-primary-gradient { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #ffffff; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35); transition: all 0.25s; font-family: inherit; }
+    .btn-primary-gradient { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; color: #ffffff; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35); transition: all 0.25s; font-family: inherit; }
     .btn-primary-gradient:hover { box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5); transform: translateY(-2px); }
 
-    .btn-glass-purple { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); color: var(--text); padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; font-family: inherit; }
+    .btn-glass-purple { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); color: var(--text); padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; font-family: inherit; }
     .btn-glass-purple:hover { background: rgba(99, 102, 241, 0.2); }
 
-    .btn-glass-danger { background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fb7185; padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; font-family: inherit; }
+    .btn-glass-danger { background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); color: #fb7185; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s; font-family: inherit; }
     .btn-glass-danger:hover { background: rgba(244, 63, 94, 0.22); color: #f43f5e; border-color: #f43f5e; }
 
     /* Header Card Banner */
-    .deal-header-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 26px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: var(--shadow-sm); }
+    .deal-header-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 26px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: var(--shadow-sm); }
     .banner-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 18px; }
     .title-with-badge { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .deal-code-badge { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); font-family: monospace; font-size: 0.82rem; font-weight: 800; padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.25); }
     .title-with-badge h2 { font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 0; }
 
-    .status-pill { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-pill { font-size: 0.74rem; font-weight: 800; padding: 4px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .status-pending { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
     .status-active { background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
     .status-completed { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -369,8 +369,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 
     /* Parties Grid */
     .parties-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .party-card { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
-    .party-icon-badge { width: 42px; height: 42px; border-radius: 12px; background: rgba(99, 102, 241, 0.12); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .party-card { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
+    .party-icon-badge { width: 42px; height: 42px; border-radius: 8px; background: rgba(99, 102, 241, 0.12); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
     .party-meta { display: flex; flex-direction: column; gap: 2px; }
     .party-lbl { font-size: 0.72rem; color: var(--text-3); font-weight: 700; text-transform: uppercase; }
     .party-val { font-size: 0.95rem; color: var(--text); font-weight: 700; }
@@ -379,10 +379,10 @@ import { DatePickerModule } from 'primeng/datepicker';
 
     /* KPIs Grid */
     .kpis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 26px; }
-    .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); transition: transform 0.2s; }
+    .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); transition: transform 0.2s; }
     .kpi-card:hover { transform: translateY(-2px); }
 
-    .kpi-icon-box { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .kpi-icon-box { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
     .total-kpi .kpi-icon-box { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); }
     .paid-kpi .kpi-icon-box { background: rgba(16, 185, 129, 0.12); color: #34d399; }
     .remaining-kpi .kpi-icon-box { background: rgba(244, 63, 94, 0.12); color: #fb7185; }
@@ -397,16 +397,16 @@ import { DatePickerModule } from 'primeng/datepicker';
 
     /* Sections Column */
     .sections-column { display: flex; flex-direction: column; gap: 24px; }
-    .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow-sm); }
+    .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow-sm); }
     .section-card-hd h3 { font-size: 1.08rem; font-weight: 800; color: var(--text); margin: 0; display: flex; align-items: center; gap: 10px; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
 
-    .written-body-box { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .written-body-box { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
     .sub-label { font-size: 0.74rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
     .written-body-box p { font-size: 0.92rem; line-height: 1.65; color: var(--text); margin: 0; }
     .empty-note { color: var(--text-3); font-style: italic; font-size: 0.85rem; }
 
-    .btn-sm-primary { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.25); padding: 6px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-sm-primary { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.25); padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
     .btn-sm-primary:hover { background: var(--violet); color: #ffffff; }
 
     .crm-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: right; direction: rtl; }
@@ -417,16 +417,16 @@ import { DatePickerModule } from 'primeng/datepicker';
 
     .dept-badge { background: rgba(99, 102, 241, 0.1); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.2); padding: 3px 9px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; }
     .users-flex { display: flex; gap: 5px; flex-wrap: wrap; }
-    .user-chip { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 3px 8px; border-radius: 100px; font-size: 0.72rem; color: var(--text-2); }
+    .user-chip { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 3px 8px; border-radius: 8px; font-size: 0.72rem; color: var(--text-2); }
     
-    .task-status-pill { font-size: 0.76rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; display: inline-flex; align-items: center; gap: 6px; }
+    .task-status-pill { font-size: 0.76rem; font-weight: 700; padding: 4px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; }
     .tstatus-completed { background: rgba(16, 185, 129, 0.12); color: #34d399; }
     .tstatus-in_progress { background: rgba(99, 102, 241, 0.12); color: #818cf8; }
     .tstatus-pending { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
 
-    .tasks-counter-badge { font-size: 0.76rem; font-weight: 700; background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); padding: 4px 12px; border-radius: 100px; }
+    .tasks-counter-badge { font-size: 0.76rem; font-weight: 700; background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); padding: 4px 12px; border-radius: 8px; }
 
-    .empty-state-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; background: rgba(0, 0, 0, 0.1); border: 1px dashed var(--border); border-radius: 14px; }
+    .empty-state-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; background: rgba(0, 0, 0, 0.1); border: 1px dashed var(--border); border-radius: 8px; }
 
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
@@ -457,6 +457,8 @@ import { DatePickerModule } from 'primeng/datepicker';
     :host-context(body.light-theme) .payment-method-badge { background: #ffffff !important; border-color: #cbd5e1 !important; color: #334155 !important; }
     :host-context(body.light-theme) .user-chip { background: #ffffff !important; border-color: #cbd5e1 !important; color: #334155 !important; }
     :host-context(body.light-theme) .empty-state-card { background: #f8fafc !important; border-color: #cbd5e1 !important; }
+    :host-context(body.light-theme) .form-group label { color: #334155 !important; }
+    :host-context(body.light-theme) .form-group input { background: #ffffff !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
   `]
 })
 export class DealDetailComponent implements OnInit {

@@ -12,12 +12,14 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
+        'client_code',
         'name',
         'email',
         'phone',
         'password',
         'role',
         'role_id',
+        'is_hold',
         'department_id',
         'payment_type',
         'base_salary',
@@ -34,9 +36,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_hold' => 'boolean',
             'base_salary' => 'decimal:2',
             'commission_rate' => 'decimal:2',
         ];
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if ($user->role === 'client' && empty($user->client_code)) {
+                $maxCode = \Illuminate\Support\Facades\DB::table('users')
+                    ->whereNotNull('client_code')
+                    ->max(\Illuminate\Support\Facades\DB::raw('CAST(client_code AS UNSIGNED)'));
+                $user->client_code = (string) max(1001, ($maxCode ? $maxCode + 1 : 1001));
+            }
+        });
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    public function scopeActiveOnly($query)
+    {
+        return $query->where('is_hold', false);
     }
 
     public function roleModel()
@@ -74,14 +99,31 @@ class User extends Authenticatable
         return $this->hasMany(CustodyAccount::class, 'employee_id');
     }
 
+    public function hasRole($roleSlug)
+    {
+        if ($this->role === $roleSlug) {
+            return true;
+        }
+        if ($this->roles && $this->roles->pluck('slug')->contains($roleSlug)) {
+            return true;
+        }
+        return false;
+    }
+
     public function hasPermission($permissionSlug)
     {
-        if ($this->role === 'super_admin' || $this->role === 'Super Admin') {
+        if ($this->role === 'super_admin' || $this->role === 'Super Admin' || $this->hasRole('super_admin')) {
             return true;
         }
 
-        if ($this->roleModel) {
-            return $this->roleModel->permissions->pluck('slug')->contains($permissionSlug);
+        if ($this->roleModel && $this->roleModel->permissions->pluck('slug')->contains($permissionSlug)) {
+            return true;
+        }
+
+        foreach ($this->roles as $r) {
+            if ($r->permissions->pluck('slug')->contains($permissionSlug)) {
+                return true;
+            }
         }
 
         return false;

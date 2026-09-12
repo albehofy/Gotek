@@ -4,18 +4,20 @@
       <!-- Brand column -->
       <div class="foot-brand">
         <div class="logo-text">
-          {{ translationService.translate('brand') }}<span class="dot">.</span>
+          <span class="brand-name">{{ translationService.translate('brand') }}</span>
+          <span class="studio-badge">STUDIO</span>
+          <span class="dot"></span>
         </div>
-        <p>{{ translationService.translate('foot.desc') }}</p>
+        <p>{{ getFooterDesc() }}</p>
         <div class="social-row">
-          <a href="https://instagram.com" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i></a>
-          <a href="https://tiktok.com" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i></a>
-          <a href="https://wa.me/201000000000" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i></a>
+          <a [href]="getSocial('instagram', 'https://instagram.com')" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a [href]="getSocial('linkedin', 'https://linkedin.com')" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a [href]="getSocial('twitter', 'https://twitter.com')" target="_blank" rel="noopener" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a [href]="getSocial('whatsapp', 'https://wa.me/201000000000')" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
       </div>
 
-      <!-- Company column -->
+      <!-- Studio column -->
       <div class="foot-col">
         <h4>{{ translationService.translate('foot.h1') }}</h4>
         <a routerLink="/about">{{ translationService.translate('foot.l1') }}</a>
@@ -34,16 +36,16 @@
       <!-- Contact column -->
       <div class="foot-col">
         <h4>{{ translationService.translate('foot.h3') }}</h4>
-        <a href="tel:+201000000000" dir="ltr" style="text-align:start"><span class="num">+20 100 000 0000</span></a>
-        <a href="mailto:hello@mediaglow.agency" dir="ltr" style="text-align:start">hello&#64;mediaglow.agency</a>
-        <span>{{ translationService.translate('foot.l7') }}</span>
+        <a [href]="'tel:' + getPhone()" dir="ltr" style="text-align:start"><span class="num">{{ getPhone() }}</span></a>
+        <a [href]="'mailto:' + getEmail()" dir="ltr" style="text-align:start">{{ getEmail() }}</a>
+        <span class="foot-loc"><i class="fa-solid fa-location-dot"></i> {{ getAddress() }}</span>
       </div>
     </div>
 
     <!-- Bottom Bar -->
     <div class="foot-bottom">
       <span>{{ translationService.translate('foot.copy') }}</span>
-      <span>{{ translationService.translate('foot.made') }}</span>
+      <span class="foot-made-tag"><i class="fa-solid fa-film"></i> {{ translationService.translate('foot.made') }}</span>
     </div>
   </div>
 </footer>

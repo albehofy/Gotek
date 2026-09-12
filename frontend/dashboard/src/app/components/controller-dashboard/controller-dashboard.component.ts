@@ -196,6 +196,13 @@ export class ControllerDashboardComponent implements OnInit {
     wonDealsCount: 0,
     inProgressDealsCount: 0
   };
+  employeeStats = {
+    tasks_count: 0,
+    completed_tasks_count: 0,
+    in_progress_tasks_count: 0,
+    completion_percentage: 0,
+    deals_count: 0
+  };
   recentProjects: any[] = [];
   recentTasks: any[] = [];
   recentDeals: any[] = [];
@@ -264,6 +271,25 @@ export class ControllerDashboardComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       const targetTab = params['tab'] || 'overview';
+      const websiteTabMap: { [key: string]: string } = {
+        'website-overview': '/portfolio/overview',
+        'projects': '/portfolio/projects',
+        'services': '/portfolio/services',
+        'blogs': '/portfolio/blogs',
+        'testimonials': '/portfolio/testimonials',
+        'faqs': '/portfolio/faqs',
+        'about-page': '/portfolio/about',
+        'home-page': '/portfolio/pages',
+        'services-page': '/portfolio/pages',
+        'portfolio-page': '/portfolio/pages',
+        'blogs-page': '/portfolio/pages',
+        'footer-section': '/portfolio/pages',
+        'contact-hub': '/portfolio/inquiries'
+      };
+      if (websiteTabMap[targetTab]) {
+        this.router.navigate([websiteTabMap[targetTab]]);
+        return;
+      }
       this.activeTab = targetTab;
       this.loadDataForTab(targetTab);
     });
@@ -514,6 +540,26 @@ export class ControllerDashboardComponent implements OnInit {
       const arr = Array.isArray(res) ? res : (res?.data || []);
       this.crmStats.departments = arr.length || 0;
     });
+
+    if (this.isEmployee()) {
+      this.apiService.getEmployeeDashboard().subscribe((res: any) => {
+        if (res) {
+          this.employeeStats = {
+            tasks_count: res.tasks_count || 0,
+            completed_tasks_count: res.completed_tasks_count || 0,
+            in_progress_tasks_count: res.in_progress_tasks_count || 0,
+            completion_percentage: res.completion_percentage || 0,
+            deals_count: res.deals_count || 0
+          };
+          if (res.recent_tasks && Array.isArray(res.recent_tasks)) {
+            this.recentTasks = res.recent_tasks;
+          }
+          if (res.active_deals && Array.isArray(res.active_deals)) {
+            this.recentDeals = res.active_deals;
+          }
+        }
+      });
+    }
   }
 
   getCollectionPercentage(): number {
@@ -1382,6 +1428,8 @@ export class ControllerDashboardComponent implements OnInit {
         !target.closest('.tb-btn') && !target.closest('.dd-notif') &&
         !target.closest('.sb-user')) {
       this.activeDropdown = null;
+    } else if (target.closest('.ud-row')) {
+      this.activeDropdown = null;
     }
   }
 
@@ -1391,12 +1439,10 @@ export class ControllerDashboardComponent implements OnInit {
   }
 
   toggleTheme() {
-    this.isLightMode = !this.isLightMode;
-    if (this.isLightMode) {
-      document.body.classList.add('light-theme');
-    } else {
-      document.body.classList.remove('light-theme');
-    }
+    this.isLightMode = false;
+    document.documentElement.classList.remove('light-theme');
+    document.body.classList.remove('light-theme');
+    localStorage.setItem('mediaglow_theme', 'dark');
   }
 }
 

@@ -52,9 +52,12 @@ class DealController extends Controller
             });
         }
 
-        $deals = $query->paginate($request->get('per_page', 15));
+        $isEmployee = $user && $user->role === 'employee' && !$user->hasRole('super_admin') && !$user->hasRole('admin') && !$user->hasRole('department_manager');
 
-        $deals->getCollection()->transform(function($deal) {
+        $perPage = $request->input('per_page', 15);
+        $deals = $query->latest()->paginate($perPage);
+
+        $deals->getCollection()->transform(function($deal) use ($isEmployee) {
             $dealTasks = $deal->tasks;
             if ($dealTasks && $dealTasks->count() > 0) {
                 $completedCount = $dealTasks->filter(function($t) {
@@ -70,6 +73,17 @@ class DealController extends Controller
                     $deal->progress = 0;
                 }
             }
+
+            if ($isEmployee) {
+                $deal->total_price = 0;
+                $deal->paid_amount = 0;
+                $deal->calculated_total = 0;
+                $deal->calculated_paid = 0;
+                $deal->remaining_balance = 0;
+                $deal->sales_commission_value = 0;
+                $deal->unsetRelation('payments');
+            }
+
             return $deal;
         });
 
@@ -82,6 +96,14 @@ class DealController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'agreed_scope' => 'nullable|string',
+            'reference_link' => 'nullable|string|max:1000',
+            'deal_link' => 'nullable|string|max:1000',
+            'attachment' => 'nullable|file|max:20480',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'shooting_date' => 'nullable|date',
+            'delivery_date' => 'nullable|date',
+            'dates_not_specified' => 'nullable|boolean',
             'client_id' => 'nullable|exists:users,id',
             'department_id' => 'nullable|exists:departments,id',
             'sales_person_id' => 'nullable|exists:users,id',
@@ -89,28 +111,46 @@ class DealController extends Controller
             'sales_commission_value' => 'nullable|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
+            'status' => 'nullable|string|in:pending,active,completed,cancelled,won,closed,in_progress',
             'tasks' => 'nullable|array',
             'tasks.*.title' => 'required|string|max:255',
             'tasks.*.department_id' => 'nullable',
             'tasks.*.client_price' => 'nullable|numeric|min:0',
             'tasks.*.employee_price' => 'nullable|numeric|min:0',
+            'tasks.*.due_date' => 'nullable|date',
+            'tasks.*.start_date' => 'nullable|date',
+            'tasks.*.end_date' => 'nullable|date',
+            'tasks.*.shooting_date' => 'nullable|date',
+            'tasks.*.delivery_date' => 'nullable|date',
+            'tasks.*.dates_not_specified' => 'nullable|boolean',
         ]);
 
         $dealData = $validated;
-        unset($dealData['tasks']);
+        unset($dealData['tasks'], $dealData['attachment']);
+        if (!empty($validated['deal_link']) && empty($dealData['reference_link'])) {
+            $dealData['reference_link'] = $validated['deal_link'];
+        }
+        unset($dealData['deal_link']);
         $dealData['created_by'] = Auth::id();
         $dealData['paid_amount'] = $dealData['paid_amount'] ?? 0;
-        $dealData['status'] = 'pending';
+        $dealData['status'] = $validated['status'] ?? 'pending';
         $dealData['sales_commission_type'] = $dealData['sales_commission_type'] ?? 'none';
         if ($dealData['sales_commission_type'] === 'none') {
             $dealData['sales_commission_value'] = 0;
         }
 
+        if ($request->hasFile('attachment')) {
+            $dealData['attachment_path'] = $request->file('attachment')->store('deal_attachments', 'public');
+        }
+
         $deal = Deal::create($dealData);
 
-        // Process associated tasks & auto-assign to Department Managers
-        if (!empty($request->tasks) && is_array($request->tasks)) {
-            foreach ($request->tasks as $tData) {
+        $tasks = $request->tasks;
+        if (is_string($tasks)) {
+            $tasks = json_decode($tasks, true);
+        }
+        if (!empty($tasks) && is_array($tasks)) {
+            foreach ($tasks as $tData) {
                 if (empty($tData['title'])) continue;
 
                 $targetDeptId = !empty($tData['department_id']) ? (int)$tData['department_id'] : $deal->department_id;
@@ -127,6 +167,12 @@ class DealController extends Controller
                     'client_price' => $clientPrice,
                     'employee_price' => $employeePrice,
                     'company_margin' => $margin,
+                    'due_date' => $tData['due_date'] ?? null,
+                    'start_date' => $tData['start_date'] ?? $deal->start_date ?? null,
+                    'end_date' => $tData['end_date'] ?? $deal->end_date ?? null,
+                    'shooting_date' => $tData['shooting_date'] ?? $deal->shooting_date ?? null,
+                    'delivery_date' => $tData['delivery_date'] ?? $deal->delivery_date ?? null,
+                    'dates_not_specified' => !empty($tData['dates_not_specified']) || (bool)$deal->dates_not_specified,
                     'status' => 'new',
                     'created_by' => Auth::id()
                 ]);
@@ -196,6 +242,17 @@ class DealController extends Controller
             return response()->json(['message' => 'غير مسموح لك بعرض هذه الصفقة'], 403);
         }
 
+        $isEmployee = $user && $user->role === 'employee' && !$user->hasRole('super_admin') && !$user->hasRole('admin') && !$user->hasRole('department_manager');
+        if ($isEmployee) {
+            $deal->total_price = 0;
+            $deal->paid_amount = 0;
+            $deal->calculated_total = 0;
+            $deal->calculated_paid = 0;
+            $deal->remaining_balance = 0;
+            $deal->sales_commission_value = 0;
+            $deal->unsetRelation('payments');
+        }
+
         return response()->json($deal);
     }
 
@@ -207,6 +264,14 @@ class DealController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'agreed_scope' => 'nullable|string',
+            'reference_link' => 'nullable|string|max:1000',
+            'deal_link' => 'nullable|string|max:1000',
+            'attachment' => 'nullable|file|max:20480',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'shooting_date' => 'nullable|date',
+            'delivery_date' => 'nullable|date',
+            'dates_not_specified' => 'nullable|boolean',
             'client_id' => 'nullable|exists:users,id',
             'department_id' => 'nullable|exists:departments,id',
             'sales_person_id' => 'nullable|exists:users,id',
@@ -214,15 +279,25 @@ class DealController extends Controller
             'sales_commission_value' => 'nullable|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
-            'status' => 'required|in:pending,active,completed,cancelled',
+            'status' => 'required|string|in:pending,active,completed,cancelled,won,closed,in_progress',
         ]);
 
         $data = $validated;
+        unset($data['attachment']);
+        if (!empty($validated['deal_link']) && empty($data['reference_link'])) {
+            $data['reference_link'] = $validated['deal_link'];
+        }
+        unset($data['deal_link']);
+
         if (array_key_exists('sales_commission_type', $data)) {
             $data['sales_commission_type'] = $data['sales_commission_type'] ?? 'none';
             if ($data['sales_commission_type'] === 'none') {
                 $data['sales_commission_value'] = 0;
             }
+        }
+
+        if ($request->hasFile('attachment')) {
+            $data['attachment_path'] = $request->file('attachment')->store('deal_attachments', 'public');
         }
 
         $deal->update($data);

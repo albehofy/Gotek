@@ -6,15 +6,15 @@
   <div class="wrap">
     <div class="eyebrow">
       <span class="dash"></span>
-      <span>{{ translationService.translate('nav.contact') }}</span>
+      <span>{{ getHeroEyebrow() }}</span>
     </div>
 
     <h1>
-      <span>{{ translationService.translate('cta.title') }}</span>
+      <span>{{ getHeroTitle() }}</span>
     </h1>
 
     <p class="lead">
-      {{ translationService.translate('cta.sub') }}
+      {{ getHeroDesc() }}
     </p>
   </div>
 </section>
@@ -25,22 +25,22 @@
     <div class="contact-info">
       <div class="info-item">
         <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</span>
-        <a href="mailto:hello@mediaglow.agency" dir="ltr" class="info-val">hello&#64;mediaglow.agency</a>
+        <a [href]="'mailto:' + getEmail()" dir="ltr" class="info-val">{{ getEmail() }}</a>
       </div>
 
       <div class="info-item">
         <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الهاتف والواتساب' : 'Phone & WhatsApp' }}</span>
-        <a href="tel:+201000000000" dir="ltr" class="info-val">+20 100 000 0000</a>
+        <a [href]="'tel:' + getPhone()" dir="ltr" class="info-val">{{ getPhone() }}</a>
       </div>
 
       <div class="info-item">
-        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الموقع' : 'Location' }}</span>
-        <span class="info-val">{{ translationService.translate('foot.l7') }}</span>
+        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الموقع والمقرات' : 'Location' }}</span>
+        <span class="info-val">{{ getLocation() }}</span>
       </div>
 
       <div class="info-item mt-24">
         <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'أوقات العمل' : 'Working Hours' }}</span>
-        <span class="info-val-sub">{{ translationService.currentLang() === 'ar' ? 'الأحد – الخميس: 9:00 ص – 6:00 م' : 'Sunday – Thursday: 9:00 AM – 6:00 PM' }}</span>
+        <span class="info-val-sub">{{ getWorkingHours() }}</span>
       </div>
     </div>
 

@@ -60,4 +60,46 @@ export class ContactComponent implements OnInit {
       }
     });
   }
+
+  getContactData(): any {
+    return this.translationService.siteContent()?.contact || {};
+  }
+
+  getHeroEyebrow(): string {
+    const d = this.getContactData();
+    const lang = this.translationService.currentLang();
+    return d?.hero?.eyebrow?.[lang] || d?.hero?.eyebrow?.ar || d?.hero?.eyebrow?.en || this.translationService.translate('nav.contact');
+  }
+
+  getHeroTitle(): string {
+    const d = this.getContactData();
+    const lang = this.translationService.currentLang();
+    return d?.hero?.title?.[lang] || d?.hero?.title?.ar || d?.hero?.title?.en || this.translationService.translate('cta.title');
+  }
+
+  getHeroDesc(): string {
+    const d = this.getContactData();
+    const lang = this.translationService.currentLang();
+    return d?.hero?.desc?.[lang] || d?.hero?.desc?.ar || d?.hero?.desc?.en || this.translationService.translate('cta.sub');
+  }
+
+  getEmail(): string {
+    return this.getContactData()?.email || 'hello@mediaglowegypt.com';
+  }
+
+  getPhone(): string {
+    return this.getContactData()?.phone || '+20 100 000 0000';
+  }
+
+  getLocation(): string {
+    const d = this.getContactData();
+    const lang = this.translationService.currentLang();
+    return d?.location?.[lang] || d?.location?.ar || d?.location?.en || this.translationService.translate('foot.l7');
+  }
+
+  getWorkingHours(): string {
+    const d = this.getContactData();
+    const lang = this.translationService.currentLang();
+    return d?.hours?.[lang] || d?.hours?.ar || d?.hours?.en || (lang === 'ar' ? 'الأحد – الخميس: 9:00 ص – 6:00 م' : 'Sunday – Thursday: 9:00 AM – 6:00 PM');
+  }
 }

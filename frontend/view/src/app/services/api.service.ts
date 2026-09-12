@@ -107,6 +107,12 @@ export class ApiService {
   }
 
   // Page Content methods
+  getSiteContent(): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/site-content`, {
+      headers: this.getHeaders()
+    }).pipe(catchError(this.handleError('getSiteContent', {})));
+  }
+
   getPageContent(page: string): Observable<any> {
     return this.http.get(`${API_BASE_URL}/page-content/${page}`, {
       headers: this.getHeaders()

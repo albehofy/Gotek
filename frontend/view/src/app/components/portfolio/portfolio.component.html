@@ -1,43 +1,43 @@
 <!-- ════════════════════════════════════════════
-     PORTFOLIO — MINIMALIST EDITORIAL SHOWCASE
+     PORTFOLIO — CINEMATIC SELECTED WORKS SHOWCASE
      ════════════════════════════════════════════ -->
 
 <section class="portfolio-hero">
   <div class="wrap">
-    <div class="eyebrow">
-      <span class="dash"></span>
-      <span>{{ translationService.currentLang() === 'ar' ? 'معرض الأعمال' : 'Portfolio Showcase' }}</span>
+    <div class="badge-award">
+      <i class="fa-solid fa-camera-movie"></i>
+      <span>{{ translationService.currentLang() === 'ar' ? 'معرض الأعمال السينمائي' : 'CINEMATIC WORK ARCHIVE' }}</span>
     </div>
 
     <h1>
-      <span>{{ translationService.currentLang() === 'ar' ? 'مشاريع بنفخر بيها' : 'Selected Work' }}</span>
+      <span>{{ translationService.currentLang() === 'ar' ? 'إنتاجات تتحدث عن نفسها' : 'Crafted for Global Impact' }}</span>
     </h1>
 
     <p class="lead">
       {{ translationService.currentLang() === 'ar' 
-         ? 'نستعرض هنا أبرز أعمالنا في بناء الهويات، المنصات، والحملات التسويقية للعلامات الطموحة.'
-         : 'A curated selection of our work in brand identity, digital marketing, and web development.' }}
+         ? 'نستعرض هنا أرشيف إنتاجاتنا في الأفلام الإعلانية، الهويات البصرية الأيقونية، والحملات الاستراتيجية للعلامات الرائدة.'
+         : 'A curated showcase of our work in commercial film production, iconic visual identity, and high-performance brand campaigns.' }}
     </p>
 
-    <!-- Filter Buttons Row -->
+    <!-- Filter Buttons Row (Pill styling) -->
     <div class="portfolio-filters">
       <button 
         type="button"
-        class="filter-btn" 
+        class="filter-pill" 
         [class.active]="selectedCategory === 'all'"
         (click)="filterCategory('all')"
       >
-        {{ translationService.currentLang() === 'ar' ? 'الكل' : 'All' }}
+        <span>{{ translationService.currentLang() === 'ar' ? 'كل الإنتاجات' : 'All Productions' }}</span>
       </button>
 
       <button 
         *ngFor="let cat of categories"
         type="button"
-        class="filter-btn" 
+        class="filter-pill" 
         [class.active]="selectedCategory === (cat.id || cat.slug || cat.name)"
         (click)="filterCategory(cat.id || cat.slug || cat.name)"
       >
-        {{ cat.name_ar || cat.name || cat }}
+        <span>{{ cat.name_ar || cat.name || cat }}</span>
       </button>
     </div>
   </div>
@@ -48,29 +48,35 @@
 
     <div *ngIf="loading" class="loading-state">
       <i class="fa-solid fa-spinner fa-spin"></i>
-      <p>{{ translationService.currentLang() === 'ar' ? 'جاري تحميل المشاريع...' : 'Loading projects...' }}</p>
+      <p>{{ translationService.currentLang() === 'ar' ? 'جاري تحميل الإنتاجات...' : 'Loading productions...' }}</p>
     </div>
 
-    <div *ngIf="!loading && filteredProjects.length" class="projects-grid">
-      <a *ngFor="let p of filteredProjects; let i = index" [routerLink]="['/project', p.id]" class="project-card">
-        <div class="project-thumb">
-          <img *ngIf="p.image || p.main_image" [src]="p.image || p.main_image" [alt]="p.title?.ar || p.title || 'Project'" class="media-img" />
-          <div *ngIf="!p.image && !p.main_image" class="media" [class]="'media-p' + (i % 3 + 1)"></div>
+    <div *ngIf="!loading && filteredProjects.length" class="cinematic-grid">
+      <a *ngFor="let p of filteredProjects; let i = index" [routerLink]="['/project', p.id]" class="cinema-card">
+        <div class="cinema-thumb">
+          <img *ngIf="p.image || p.main_image" [src]="p.image || p.main_image" [alt]="p.title?.ar || p.title || 'Production'" class="cinema-img" />
+          <div *ngIf="!p.image && !p.main_image" class="cinema-placeholder" [class]="'cinema-grad-' + (i % 3 + 1)">
+            <i class="fa-solid fa-clapperboard placeholder-icon"></i>
+          </div>
+          <div class="cinema-gradient-overlay"></div>
+          <div class="cinema-play-hover"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
         </div>
 
-        <div class="project-tag">
-          {{ p.category?.name_ar || p.category?.name || p.category || (translationService.currentLang() === 'ar' ? 'مشروع رقمي' : 'Digital Project') }}
-        </div>
+        <div class="cinema-info">
+          <div class="cinema-tag">
+            {{ p.category?.name_ar || p.category?.name || p.category || (translationService.currentLang() === 'ar' ? 'إنتاج سينمائي' : 'Film Production') }}
+          </div>
 
-        <h3>{{ p.title?.ar || p.title_ar || (typeof p.title === 'string' ? p.title : '') || 'مشروع ميديا جلو' }}</h3>
-        <div class="meta">{{ p.description?.ar || p.description_ar || (typeof p.description === 'string' ? p.description : '') || '' }}</div>
+          <h3>{{ p.title?.ar || p.title_ar || (typeof p.title === 'string' ? p.title : '') || 'مشروع ميديا جلو' }}</h3>
+          <p class="cinema-desc">{{ p.description?.ar || p.description_ar || (typeof p.description === 'string' ? p.description : '') || '' }}</p>
+        </div>
       </a>
     </div>
 
     <!-- Empty State -->
     <div *ngIf="!loading && !filteredProjects.length" class="empty-state">
       <i class="fa-regular fa-folder-open"></i>
-      <h3>{{ translationService.currentLang() === 'ar' ? 'لا توجد مشاريع في هذا التصنيف' : 'No projects in this category' }}</h3>
+      <h3>{{ translationService.currentLang() === 'ar' ? 'لا توجد إنتاجات في هذا التصنيف' : 'No productions found in this category' }}</h3>
     </div>
 
   </div>

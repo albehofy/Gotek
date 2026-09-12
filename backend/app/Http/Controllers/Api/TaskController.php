@@ -65,6 +65,17 @@ class TaskController extends Controller
         }
 
         $tasks = $query->get();
+
+        $isEmployee = $user && $user->role === 'employee' && !$user->hasRole('super_admin') && !$user->hasRole('admin') && !$user->hasRole('department_manager');
+        if ($isEmployee) {
+            $tasks->transform(function($t) {
+                $t->client_price = 0;
+                $t->employee_price = 0;
+                $t->company_margin = 0;
+                return $t;
+            });
+        }
+
         return response()->json($tasks);
     }
 
@@ -79,17 +90,33 @@ class TaskController extends Controller
             'sub_category_id' => 'nullable|exists:sub_categories,id',
             'parent_id' => 'nullable|exists:tasks,id',
             'priority' => 'required|in:low,medium,high,urgent',
-            'status' => 'required|in:new,in_progress,content_creator,in_review,client_feedback,done,cancelled',
+            'status' => 'required|in:new,todo,in_progress,content_creator,in_review,client_review,client_feedback,done,completed,approved,cancelled',
+            'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'shooting_date' => 'nullable|date',
+            'delivery_date' => 'nullable|date',
+            'dates_not_specified' => 'nullable|boolean',
+            'is_standalone' => 'nullable|boolean',
             'estimated_hours' => 'nullable|integer',
             'client_price' => 'nullable|numeric|min:0',
             'employee_price' => 'nullable|numeric|min:0',
             'user_ids' => 'nullable|array',
+            'user_ids.*' => 'integer|exists:users,id',
+            'assigned_user_ids' => 'nullable|array',
+            'assigned_user_ids.*' => 'integer|exists:users,id',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:20480',
+            'files' => 'nullable|array',
+            'files.*' => 'file|max:20480',
             'custom_fields' => 'nullable|array'
         ]);
 
         $clientPrice = (float) ($validated['client_price'] ?? 0);
         $employeePrice = (float) ($validated['employee_price'] ?? 0);
         $margin = max(0, $clientPrice - $employeePrice);
+
+        $isStandalone = $validated['is_standalone'] ?? empty($validated['deal_id']);
 
         $task = Task::create([
             'title' => $validated['title'],
@@ -101,18 +128,44 @@ class TaskController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'priority' => $validated['priority'],
             'status' => $validated['status'],
+            'due_date' => $validated['due_date'] ?? null,
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
+            'shooting_date' => $validated['shooting_date'] ?? null,
+            'delivery_date' => $validated['delivery_date'] ?? null,
+            'dates_not_specified' => !empty($validated['dates_not_specified']),
+            'is_standalone' => (bool)$isStandalone,
             'estimated_hours' => $validated['estimated_hours'] ?? 0,
             'client_price' => $clientPrice,
             'employee_price' => $employeePrice,
             'company_margin' => $margin,
         ]);
 
-        if (!empty($validated['user_ids'])) {
-            $task->users()->sync($validated['user_ids']);
+        $uploadedFiles = $request->file('attachments') ?: ($request->file('files') ?: []);
+        if (!empty($uploadedFiles)) {
+            foreach ($uploadedFiles as $file) {
+                $origName = $file->getClientOriginalName();
+                $mimeType = $file->getClientMimeType();
+                $path = $file->store('task_attachments', 'public');
+                $type = str_contains($mimeType, 'image') ? 'image' : (str_contains($mimeType, 'video') ? 'video' : 'document');
+                TaskAttachment::create([
+                    'task_id' => $task->id,
+                    'file_path' => $path,
+                    'file_type' => $type,
+                    'file_name' => $origName,
+                    'file_size' => $file->getSize(),
+                    'uploaded_by' => Auth::id()
+                ]);
+            }
+        }
+
+        $assignedIds = !empty($validated['user_ids']) ? $validated['user_ids'] : (!empty($validated['assigned_user_ids']) ? $validated['assigned_user_ids'] : []);
+        if (!empty($assignedIds)) {
+            $task->users()->sync($assignedIds);
 
             // Send notification to assigned employees (excluding current acting user)
             $currentUserId = auth()->id();
-            foreach ($validated['user_ids'] as $uid) {
+            foreach ($assignedIds as $uid) {
                 if ($currentUserId && (int)$uid === (int)$currentUserId) {
                     continue;
                 }
@@ -220,7 +273,7 @@ class TaskController extends Controller
         $oldStatus = $task->status;
 
         $request->validate([
-            'status' => 'required|in:new,in_progress,content_creator,in_review,client_feedback,done,cancelled'
+            'status' => 'required|in:new,todo,in_progress,content_creator,in_review,client_review,client_feedback,done,completed,approved,cancelled'
         ]);
 
         $newStatus = $request->status;
@@ -305,7 +358,34 @@ class TaskController extends Controller
             'user_ids.*' => 'integer|exists:users,id'
         ]);
 
+        $currentUser = Auth::user();
+        $isSuperOrAdmin = $currentUser && (in_array($currentUser->role, ['super_admin', 'admin', 'Super Admin']) || $currentUser->hasRole('super_admin') || $currentUser->hasRole('admin'));
+        $isDeptManager = $currentUser && (in_array($currentUser->role, ['department_manager', 'Department Manager']) || $currentUser->hasRole('department_manager') || ($task->department_id && $currentUser->department_id == $task->department_id));
+
+        if (!$isSuperOrAdmin && !$isDeptManager) {
+            return response()->json(['message' => 'غير مصرح للموظف بتعديل إسناد المهمة أو إزالة نفسه منها'], 403);
+        }
+
         $userIds = $request->input('user_ids', []) ?? [];
+
+        // Check if assigning any user that is on hold
+        if (!empty($userIds)) {
+            $holdUsers = User::whereIn('id', $userIds)->where('is_hold', true)->pluck('name')->toArray();
+            if (!empty($holdUsers)) {
+                return response()->json(['message' => 'لا يمكن إسناد المهمة لموظف موقوف مؤقتاً (Hold): ' . implode(', ', $holdUsers)], 422);
+            }
+        }
+
+        // If Department Manager: can only assign members from his department
+        if (!$isSuperOrAdmin && $isDeptManager && $currentUser->department_id) {
+            $deptUserIds = User::where('department_id', $currentUser->department_id)->pluck('id')->toArray();
+            foreach ($userIds as $uid) {
+                if (!in_array($uid, $deptUserIds)) {
+                    return response()->json(['message' => 'يمكن لمدير القسم إسناد المهمة فقط لأعضاء فريقه بالقسم'], 403);
+                }
+            }
+        }
+
         $task->users()->sync($userIds);
 
         $currentUserId = auth()->id();

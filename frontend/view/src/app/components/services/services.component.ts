@@ -80,4 +80,9 @@ export class ServicesComponent implements OnInit {
       }
     });
   }
+
+  isImageUrl(val: string): boolean {
+    if (!val) return false;
+    return val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/') || val.startsWith('data:') || /\.(png|jpg|jpeg|svg|webp|gif)$/i.test(val);
+  }
 }

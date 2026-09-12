@@ -18,20 +18,20 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       <div class="picker-trigger" (click)="toggleDropdown($event)">
         <span class="selected-label" *ngIf="selectedItem">{{ getItemLabel(selectedItem) }}</span>
         <span class="placeholder-text" *ngIf="!selectedItem">{{ placeholder }}</span>
-        <i class="pi pi-chevron-down toggle-icon"></i>
+        <i class="fa-solid fa-chevron-down toggle-icon"></i>
       </div>
 
       <div class="picker-dropdown-panel" *ngIf="isOpen" [ngStyle]="panelStyle" (click)="$event.stopPropagation()">
         <!-- Search Input Header -->
         <div class="picker-search-box">
-          <i class="pi pi-search search-icon"></i>
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
           <input 
             type="text" 
             [(ngModel)]="searchQuery" 
             [placeholder]="searchPlaceholder"
             (click)="$event.stopPropagation()"
           />
-          <i class="pi pi-times clear-icon" *ngIf="searchQuery" (click)="searchQuery = ''"></i>
+          <i class="fa-solid fa-xmark clear-icon" *ngIf="searchQuery" (click)="searchQuery = ''"></i>
         </div>
 
         <!-- Options List -->
@@ -52,7 +52,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         <!-- Inline "+ Add New" Shortcut Button (Shown only when listener attached) -->
         <div class="picker-footer-action" *ngIf="addNew.observed">
           <button type="button" class="btn-inline-add" (click)="triggerAddNew($event)">
-            <i class="pi pi-plus"></i> {{ addNewLabel }}
+            <i class="fa-solid fa-plus"></i> {{ addNewLabel }}
           </button>
         </div>
       </div>
@@ -71,7 +71,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       padding: 10px 16px;
       background: rgba(99, 102, 241, 0.04);
       border: 1px solid var(--border, rgba(99, 102, 241, 0.2));
-      border-radius: 12px;
+      border-radius: 8px;
       color: var(--text, #ffffff);
       font-size: 0.9rem;
       cursor: pointer;
@@ -116,7 +116,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       z-index: 99999999 !important;
       background: #111228;
       border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 14px;
+      border-radius: 8px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
       overflow: hidden;
       display: flex;
@@ -132,10 +132,10 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     .picker-search-box {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       padding: 10px 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.25);
     }
     :host-context(body.light-theme) .picker-search-box {
       background: #f8fafc !important;
@@ -143,6 +143,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     }
     .picker-search-box input {
       flex: 1;
+      min-width: 0;
       background: transparent;
       border: none;
       outline: none;
@@ -150,16 +151,42 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       font-size: 0.88rem;
       font-family: inherit;
     }
+    .picker-search-box input::placeholder {
+      color: #94a3b8;
+    }
     :host-context(body.light-theme) .picker-search-box input {
       color: #0f172a !important;
     }
-    .search-icon, .clear-icon {
-      color: var(--text-2, #94a3b8);
-      font-size: 0.85rem;
+    :host-context(body.light-theme) .picker-search-box input::placeholder {
+      color: #64748b !important;
     }
-    :host-context(body.light-theme) .search-icon,
+    .search-icon {
+      color: #818cf8 !important;
+      font-size: 0.95rem;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    :host-context(body.light-theme) .search-icon {
+      color: #4f46e5 !important;
+    }
+    .clear-icon {
+      color: #94a3b8;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .clear-icon:hover {
+      color: #f43f5e;
+    }
     :host-context(body.light-theme) .clear-icon {
       color: #64748b !important;
+    }
+    :host-context(body.light-theme) .clear-icon:hover {
+      color: #e11d48 !important;
     }
     .picker-options-list {
       list-style: none;
@@ -223,7 +250,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       padding: 8px 12px;
       background: rgba(99, 102, 241, 0.12);
       border: 1px dashed rgba(99, 102, 241, 0.4);
-      border-radius: 10px;
+      border-radius: 8px;
       color: var(--violet-light, #818cf8);
       font-weight: 700;
       font-size: 0.84rem;

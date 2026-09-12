@@ -17,11 +17,53 @@
       </div>
     </div>
 
-    <!-- ── 6-METRICS ULTRA-MODERN KPI GRID (3x2) ── -->
-    <div class="dash-kpi-grid">
+    <!-- ── EMPLOYEE DEDICATED KPI CARDS (للموظف فقط) ── -->
+    <div class="dash-kpi-grid" *ngIf="isEmployee()">
+      <!-- 1. My Assigned Tasks -->
+      <div class="kpi-card card-indigo" routerLink="/tasks">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge indigo"><i class="fa-solid fa-list-check"></i></div>
+          <span class="kpi-pill indigo"><i class="fa-solid fa-bars-progress"></i> قيد المتابعة</span>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value indigo">{{ employeeStats.tasks_count }} <span class="kpi-currency">مهمة</span></div>
+          <div class="kpi-title">مهامي المكلف بها</div>
+          <div class="kpi-subtitle">إجمالي المهام المسندة إليك شخصياً للتنفيذ</div>
+        </div>
+      </div>
+
+      <!-- 2. Completion Percentage -->
+      <div class="kpi-card card-emerald" routerLink="/tasks">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge emerald"><i class="fa-solid fa-circle-check"></i></div>
+          <span class="kpi-pill emerald"><i class="fa-solid fa-check"></i> {{ employeeStats.completed_tasks_count }} مكتملة</span>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value emerald">{{ employeeStats.completion_percentage }}%</div>
+          <div class="kpi-title">نسبة إنجاز المهام</div>
+          <div class="kpi-subtitle">معدل اكتمال المهام المكلف بها بنجاح</div>
+        </div>
+      </div>
+
+      <!-- 3. Active Deals / Projects -->
+      <div class="kpi-card card-blue" routerLink="/deals">
+        <div class="kpi-card-head">
+          <div class="kpi-icon-badge blue"><i class="fa-solid fa-handshake"></i></div>
+          <span class="kpi-pill blue"><i class="fa-solid fa-layer-group"></i> مشاريع جارية</span>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value blue">{{ employeeStats.deals_count }} <span class="kpi-currency">صفقات</span></div>
+          <div class="kpi-title">الصفقات التي أعمل عليها</div>
+          <div class="kpi-subtitle">عدد العقود والصفقات المشارك في تنفيذ مهامها</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 6-METRICS ULTRA-MODERN KPI GRID (للإدارة والأدمن) ── -->
+    <div class="dash-kpi-grid" *ngIf="!isEmployee()">
       
       <!-- 1. Total Revenue / Contracts -->
-      <div class="kpi-card card-blue" routerLink="/deals">
+      <div class="kpi-card card-blue" routerLink="/deals" *ngIf="isAdmin()">
         <div class="kpi-card-head">
           <div class="kpi-icon-badge blue"><i class="fa-solid fa-file-invoice-dollar"></i></div>
           <span class="kpi-pill blue"><i class="fa-solid fa-coins"></i> {{ crmStats.deals }} عقود وصفقات</span>
@@ -174,7 +216,7 @@
                 <div class="dash-row-meta"><i class="fa-solid fa-building"></i> {{ getClientName(d) }}</div>
               </div>
               <div class="dash-row-end">
-                <div class="dash-amount">{{ (d.calculated_total || d.value || d.amount || 0) | number }} <span>ج.م</span></div>
+                <div class="dash-amount" *ngIf="!isEmployee()">{{ (d.calculated_total || d.value || d.amount || 0) | number }} <span>ج.م</span></div>
                 <div class="dash-status-badge">{{ d.stage || d.status || 'نشطة' }}</div>
               </div>
             </div>
@@ -1201,7 +1243,7 @@
           <button class="save-btn font-small" (click)="addTimeline()"><i class="fa-solid fa-plus"></i> إضافة حدث تاريخي</button>
         </div>
         <div class="cb" style="padding:24px;">
-          <div *ngFor="let item of aboutData.timeline; let i = index" style="background:rgba(255,255,255,0.01); padding:20px; border-radius:12px; margin-bottom:16px; border:1px solid var(--admin-border); position:relative">
+          <div *ngFor="let item of aboutData.timeline; let i = index" style="background:rgba(255,255,255,0.01); padding:20px; border-radius: 8px; margin-bottom:16px; border:1px solid var(--admin-border); position:relative">
             <button (click)="removeTimeline(i)" style="position:absolute; top:15px; left:15px; background:#ef4444; color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-trash-can"></i> حذف</button>
             <div style="margin-bottom:16px">
               <label class="s-label">السنة / العام</label>

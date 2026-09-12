@@ -29,8 +29,12 @@ class ContactInfoAdminController extends Controller
     // PUT /api/contact-info  (updates the single row)
     public function update(StoreContactInfoRequest $request): JsonResponse
     {
-        $info = ContactInfo::query()->firstOrFail();
-        $info->update($request->validated());
+        $info = ContactInfo::query()->first();
+        if (!$info) {
+            $info = ContactInfo::create($request->validated());
+        } else {
+            $info->update($request->validated());
+        }
 
         return response()->json([
             'message' => 'Contact info updated successfully.',

@@ -33,7 +33,7 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 36px 8px 12px;
   outline: none;
   transition: all var(--ease) 0.3s;
@@ -56,7 +56,7 @@
   gap: 0.5rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 12px;
 }
 
@@ -75,7 +75,7 @@
   background: var(--violet);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 16px;
   cursor: pointer;
   display: flex;
@@ -97,7 +97,7 @@
   justify-content: center;
   padding: 4rem 2rem;
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px dashed var(--border);
   text-align: center;
 }
@@ -124,7 +124,7 @@
 .project-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 8px;
   overflow: hidden;
   transition: transform var(--ease) 0.3s, box-shadow var(--ease) 0.3s;
 }
@@ -197,7 +197,7 @@
 .category-badge {
   font-size: 0.72rem;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: rgba(99, 102, 241, 0.15);
   color: var(--violet-light);
   font-weight: 600;
@@ -241,7 +241,7 @@
 .skeleton-card {
   height: 280px;
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   animation: shimmer 1.5s infinite linear;
   background: linear-gradient(90deg, var(--bg-card) 25%, var(--border) 50%, var(--bg-card) 75%);
@@ -257,29 +257,37 @@
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 499;
-  backdrop-filter: blur(4px);
+  background: rgba(5, 5, 16, 0.75);
+  z-index: 10000;
+  backdrop-filter: blur(8px);
 }
 
 .side-drawer {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 520px;
-  height: 100vh;
-  max-width: 100%;
-  background: var(--bg-sidebar);
-  border-left: 1px solid var(--border);
-  z-index: 500;
-  transform: translateX(100%);
-  transition: transform var(--ease) 0.3s;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: 92vw;
+  max-width: 680px;
+  height: auto;
+  max-height: 90vh;
+  background: var(--bg-card, #1e293b);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 10005;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 
 .side-drawer.open {
-  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .drawer-header {
@@ -328,7 +336,7 @@
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 16px;
   cursor: pointer;
   font-family: 'Cairo', sans-serif;
@@ -338,7 +346,7 @@
   background: var(--violet);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 24px;
   cursor: pointer;
   font-family: 'Cairo', sans-serif;
@@ -415,7 +423,7 @@
 
 .image-drop-zone {
   border: 2px dashed var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 32px;
   text-align: center;
   cursor: pointer;
@@ -435,7 +443,7 @@
 
 .image-preview-wrapper {
   margin-top: 1rem;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border);
 }

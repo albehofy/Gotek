@@ -57,7 +57,7 @@ import { ConfirmService } from '../../../services/confirm.service';
       max-width: 440px;
       background: #111228;
       border: 1px solid rgba(99, 102, 241, 0.25);
-      border-radius: 20px;
+      border-radius: 8px;
       padding: 28px 24px;
       display: flex;
       flex-direction: column;
@@ -132,7 +132,7 @@ import { ConfirmService } from '../../../services/confirm.service';
     .btn-confirm-cancel {
       flex: 1;
       padding: 12px 18px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #cbd5e1;
@@ -151,7 +151,7 @@ import { ConfirmService } from '../../../services/confirm.service';
     .btn-confirm-accept {
       flex: 1.2;
       padding: 12px 18px;
-      border-radius: 12px;
+      border-radius: 8px;
       border: none;
       color: #ffffff;
       font-weight: 800;

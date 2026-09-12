@@ -1,0 +1,981 @@
+<div class="pages-editor-root" dir="rtl">
+  
+  <!-- Header -->
+  <div class="editor-header">
+    <div class="header-info">
+      <div class="badge-tag">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <span>التحكم الشامل في محتوى الموقع العام | View CMS</span>
+      </div>
+      <h2>إدارة محتوى ونصوص وترويسات الموقع (100% Dynamic)</h2>
+      <p class="subtitle">كل حرف وعنصر بالموقع العام يمكنك تعديله هنا باللغتين العربية والإنجليزية، مع إمكانية تحويل أي أيقونة إلى صورة أو العكس.</p>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-save" (click)="savePageData(activeSection)" [disabled]="saving || loading">
+        <i class="fa-solid" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+        <span>{{ saving ? 'جاري الحفظ...' : 'حفظ تغييرات ' + getSectionLabel(activeSection) }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sub Navigation Tabs -->
+  <div class="sub-nav-tabs">
+    <button *ngFor="let sec of sections" 
+            class="sub-tab-btn" 
+            [class.active]="activeSection === sec.id"
+            (click)="setSection(sec.id)">
+      <i [class]="sec.icon"></i>
+      <span class="tab-ar">{{ sec.labelAr }}</span>
+      <span class="tab-en">{{ sec.labelEn }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-box" *ngIf="loading">
+    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+    <span>جاري تحميل بيانات القسم من السيرفر...</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 1: HOME PAGE
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'home'">
+    
+    <!-- Hero Text & Award Badge Card -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-crown text-amber"></i>
+          <span>1. البانر الرئيسي والشوريل السينمائي (Hero Headlines & Reel)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          
+          <div class="form-field">
+            <label>شارة التكريم والجوائز (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.award_badge.ar" placeholder="مثال: ★ استوديو إنتاج إعلامي وسينمائي متكامل" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Award / Honor Badge (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.award_badge.en" placeholder="e.g. ★ PREMIER CINEMATIC STUDIO 2026" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>العنوان الرئيسي - السطر الأول (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.title1.ar" placeholder="مثال: نصنع أفلاماً وتجارب بصرية" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Main Headline - Line 1 (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.title1.en" placeholder="e.g. We Craft Cinematic" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>العنوان الرئيسي - السطر الثاني الملون (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.title2.ar" placeholder="مثال: تُخلّد مكانة علامتك التجارية" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Main Headline - Line 2 Accent (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.title2.en" placeholder="e.g. Visuals That Resonate" dir="ltr">
+          </div>
+
+          <div class="form-field full-width">
+            <label>الوصف والفقرة التوضيحية (بالعربي)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['home'].hero.subtitle.ar" placeholder="اكتب نبذة ترويجية تظهر تحت العنوان الرئيسي في البانر..." dir="rtl"></textarea>
+          </div>
+
+          <div class="form-field full-width">
+            <label>Hero Description / Subtitle (English)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['home'].hero.subtitle.en" placeholder="Write a short description to appear under the hero title..." dir="ltr"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label>نص زر الدعوة للعمل الرئيسي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.btn1.ar" placeholder="ابدأ مشروعك الآن" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Main CTA Button (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.btn1.en" placeholder="Start Your Project Now" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>نص زر تشغيل الشوريل (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.reel_btn.ar" placeholder="مشاهدة الشوريل" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Showreel Button Text (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.reel_btn.en" placeholder="Watch Showreel" dir="ltr">
+          </div>
+
+          <div class="form-field full-width">
+            <label>رابط ملف الفيديو الترويجي (Direct MP4 / Video Stream URL)</label>
+            <input type="url" [(ngModel)]="pagesData['home'].hero.showreel_url" placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" dir="ltr">
+            <small class="field-hint">رابط مباشر لملف فيديو MP4 بجودة عالية يعمل فوراً داخل المشغل التفاعلي.</small>
+          </div>
+
+          <div class="form-field full-width">
+            <label>رابط صورة غلاف الشوريل (Showreel Poster Image URL)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].hero.showreel_poster" placeholder="/assets/hero-visual-premium.png" dir="ltr">
+            <small class="field-hint">صورة المعاينة المعروضة في إطار الشوريل العريض بالصفحة الرئيسية قبل النقر للتشغيل.</small>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Production Statistics Ticker Card -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-chart-line text-cyan"></i>
+          <span>2. شريط إحصائيات استوديو الإنتاج (Production Statistics Ticker)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="stats-grid-dashboard">
+          
+          <!-- Stat 1 -->
+          <div class="stat-item-card">
+            <div class="stat-item-header">
+              <i class="fa-solid fa-clapperboard"></i>
+              <span>الإحصائية الأولى (#1)</span>
+            </div>
+            <div class="form-field">
+              <label>الرقم / القيمة</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat1_num" placeholder="350+" dir="ltr">
+            </div>
+            <div class="form-field">
+              <label>النص بالعربي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat1_label.ar" placeholder="مشروع تم إنجازه" dir="rtl">
+            </div>
+            <div class="form-field">
+              <label>النص بالإنجليزي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat1_label.en" placeholder="Completed Projects" dir="ltr">
+            </div>
+          </div>
+
+          <!-- Stat 2 -->
+          <div class="stat-item-card">
+            <div class="stat-item-header">
+              <i class="fa-solid fa-video"></i>
+              <span>الإحصائية الثانية (#2)</span>
+            </div>
+            <div class="form-field">
+              <label>الرقم / القيمة</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat2_num" placeholder="120+" dir="ltr">
+            </div>
+            <div class="form-field">
+              <label>النص بالعربي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat2_label.ar" placeholder="فيلم إعلاني وتلفزيوني" dir="rtl">
+            </div>
+            <div class="form-field">
+              <label>النص بالإنجليزي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat2_label.en" placeholder="Commercials" dir="ltr">
+            </div>
+          </div>
+
+          <!-- Stat 3 -->
+          <div class="stat-item-card">
+            <div class="stat-item-header">
+              <i class="fa-solid fa-trophy"></i>
+              <span>الإحصائية الثالثة (#3)</span>
+            </div>
+            <div class="form-field">
+              <label>الرقم / القيمة</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat3_num" placeholder="15+" dir="ltr">
+            </div>
+            <div class="form-field">
+              <label>النص بالعربي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat3_label.ar" placeholder="جائزة وتكريم إبداعي" dir="rtl">
+            </div>
+            <div class="form-field">
+              <label>النص بالإنجليزي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat3_label.en" placeholder="Industry Awards" dir="ltr">
+            </div>
+          </div>
+
+          <!-- Stat 4 -->
+          <div class="stat-item-card">
+            <div class="stat-item-header">
+              <i class="fa-solid fa-star"></i>
+              <span>الإحصائية الرابعة (#4)</span>
+            </div>
+            <div class="form-field">
+              <label>الرقم / القيمة</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat4_num" placeholder="99%" dir="ltr">
+            </div>
+            <div class="form-field">
+              <label>النص بالعربي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat4_label.ar" placeholder="نسبة رضا وثقة العملاء" dir="rtl">
+            </div>
+            <div class="form-field">
+              <label>النص بالإنجليزي</label>
+              <input type="text" [(ngModel)]="pagesData['home'].stats.stat4_label.en" placeholder="Client Satisfaction" dir="ltr">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         4 CORE PILLARS WITH ICON OR IMAGE SWITCHER
+         ══════════════════════════════════════════════════════════════════ -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-layer-group text-purple"></i>
+          <span>3. ركائز الإنتاج الإبداعي الأربعة (4 Core Pillars) — مع خيار (أيقونة أو صورة مخصصة)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <p class="section-lead-note">
+          <i class="fa-solid fa-circle-info"></i>
+          يمكنك تحديد مظهر كل ركيزة في الصفحة الرئيسية: إما باستخدام <strong>أيقونة فونت</strong> أو <strong>صورة مخصصة / لوجو (URL أو مسار)</strong> مع معاينة فورية لشكلها داخل الدائرة المضيئة!
+        </p>
+
+        <div class="pillars-editor-grid">
+          <div class="pillar-edit-card" *ngFor="let p of pagesData['home'].pillars; let i = index">
+            
+            <div class="pillar-card-head">
+              <span class="pillar-badge">الركيزة 0{{ i + 1 }}</span>
+              
+              <!-- Switcher: Icon vs Image -->
+              <div class="icon-image-toggle">
+                <button type="button" 
+                        [class.active]="p.icon_type !== 'image'" 
+                        (click)="setPillarIconType(p, 'icon')">
+                  <i class="fa-solid fa-icons"></i>
+                  <span>أيقونة</span>
+                </button>
+                <button type="button" 
+                        [class.active]="p.icon_type === 'image'" 
+                        (click)="setPillarIconType(p, 'image')">
+                  <i class="fa-solid fa-image"></i>
+                  <span>صورة مخصصة</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview Box -->
+            <div class="pillar-visual-preview">
+              <div class="preview-circle">
+                <img *ngIf="p.icon_type === 'image' || isImageUrl(p.icon)" 
+                     [src]="p.icon" 
+                     alt="Preview" 
+                     class="preview-custom-img" 
+                     onerror="this.src='/assets/media-glow-icon.png'" />
+                <i *ngIf="p.icon_type !== 'image' && !isImageUrl(p.icon)" [class]="p.icon || 'fa-solid fa-film'"></i>
+              </div>
+              <span class="preview-lbl">معاينة الظهور في الموقع</span>
+            </div>
+
+            <!-- Input Fields for Icon or Image -->
+            <div class="form-field" *ngIf="p.icon_type !== 'image'">
+              <label>كلاس الأيقونة (FontAwesome / Flaticon)</label>
+              <input type="text" [(ngModel)]="p.icon" placeholder="fa-solid fa-film" dir="ltr">
+              <div class="icon-presets-row">
+                <span *ngFor="let ic of presetIcons" (click)="p.icon = ic" [title]="ic" class="preset-chip" [class.active]="p.icon === ic">
+                  <i [class]="ic"></i>
+                </span>
+              </div>
+            </div>
+
+            <div class="form-field" *ngIf="p.icon_type === 'image'">
+              <label>رابط الصورة المخصصة (Image URL / Path / Upload)</label>
+              <input type="text" [(ngModel)]="p.icon" placeholder="https://... أو /assets/..." dir="ltr">
+              <small class="field-hint">ضع رابط صورة PNG شفافة أو SVG أو WebP لتظهر كأيقونة فخمة متوهجة للركيزة.</small>
+            </div>
+
+            <div class="form-field">
+              <label>عنوان الركيزة (بالعربي)</label>
+              <input type="text" [(ngModel)]="p.title.ar" placeholder="عنوان الخدمة" dir="rtl">
+            </div>
+
+            <div class="form-field">
+              <label>Pillar Title (English)</label>
+              <input type="text" [(ngModel)]="p.title.en" placeholder="Pillar Title" dir="ltr">
+            </div>
+
+            <div class="form-field">
+              <label>الوصف (بالعربي)</label>
+              <textarea rows="2" [(ngModel)]="p.desc.ar" placeholder="شرح موجز للخدمة..." dir="rtl"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label>Description (English)</label>
+              <textarea rows="2" [(ngModel)]="p.desc.en" placeholder="Brief description..." dir="ltr"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label>نص زر الركيزة (بالعربي)</label>
+              <input type="text" [(ngModel)]="p.btn_text.ar" placeholder="استكشف الخدمة" dir="rtl">
+            </div>
+
+            <div class="form-field">
+              <label>Button Text (English)</label>
+              <input type="text" [(ngModel)]="p.btn_text.en" placeholder="Explore Service" dir="ltr">
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partners & Trust Runway -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-handshake-simple text-emerald"></i>
+          <span>4. شركاء النجاح والعلامات التجارية (Brand Trust Runway)</span>
+        </div>
+        <button type="button" class="btn-sm-action" (click)="addBrandPartner()">
+          <i class="fa-solid fa-plus"></i>
+          <span>إضافة علامة تجارية</span>
+        </button>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>النص التمهيدي للشريط (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].partners.caption.ar" placeholder="شركاء النجاح والعلامات التي وضعت ثقتها فينا" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Caption Text (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].partners.caption.en" placeholder="Trusted by visionary brands across the Middle East" dir="ltr">
+          </div>
+        </div>
+
+        <div class="partners-list-edit">
+          <div class="partner-row-item" *ngFor="let b of pagesData['home'].partners?.brands; let idx = index">
+            <span class="p-idx">#{{ idx + 1 }}</span>
+            <input type="text" [(ngModel)]="b.name" placeholder="اسم العلامة التجارية (e.g. QIRMIZ)" class="brand-input">
+            <input type="text" [(ngModel)]="b.logo" placeholder="رابط اللوجو اختياري (Image URL)" class="logo-input" dir="ltr">
+            <button type="button" (click)="removeBrandPartner(idx)" class="btn-del-brand" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Production Process Steps -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-route text-rose"></i>
+          <span>5. منهجية ومراحل العمل (4 Production Process Steps)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>العنوان الفرعي للقسم (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].process.eyebrow.ar" placeholder="منهجية الإنتاج" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Section Eyebrow (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].process.eyebrow.en" placeholder="Our Methodology" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>العنوان الرئيسي للقسم (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].process.title.ar" placeholder="من الفكرة الأولى حتى الشاشة الكبرى" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Section Title (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].process.title.en" placeholder="From Concept to the Big Screen" dir="ltr">
+          </div>
+        </div>
+
+        <div class="stats-grid-dashboard mt-16">
+          <div class="stat-item-card" *ngFor="let st of pagesData['home'].process.steps; let sIdx = index">
+            <div class="stat-item-header">
+              <span class="step-num-badge">المرحلة {{ st.num }}</span>
+            </div>
+            <div class="form-field">
+              <label>عنوان الخطوة (بالعربي)</label>
+              <input type="text" [(ngModel)]="st.title.ar" dir="rtl">
+            </div>
+            <div class="form-field">
+              <label>Step Title (English)</label>
+              <input type="text" [(ngModel)]="st.title.en" dir="ltr">
+            </div>
+            <div class="form-field">
+              <label>الوصف (بالعربي)</label>
+              <textarea rows="2" [(ngModel)]="st.desc.ar" dir="rtl"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Description (English)</label>
+              <textarea rows="2" [(ngModel)]="st.desc.en" dir="ltr"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Luxury Quote & Testimonial -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-quote-left text-amber"></i>
+          <span>6. اقتباس العميل الفاخر في الرئيسية (Luxury Quote Showcase)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field full-width">
+            <label>نص الرأي والاقتباس (بالعربي)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['home'].testi.quote.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>Quote Text (English)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['home'].testi.quote.en" dir="ltr"></textarea>
+          </div>
+          <div class="form-field">
+            <label>اسم صاحب الرأي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].testi.name.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Author Name (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].testi.name.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>الصفة / المنصب والشركة (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].testi.role.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Role / Company (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].testi.role.en" dir="ltr">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cinematic CTA Banner -->
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-bullhorn text-indigo"></i>
+          <span>7. بانر الدعوة لاتخاذ إجراء (Cinematic CTA Banner)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>الشعار التمهيدي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].cta.eyebrow.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>CTA Eyebrow (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].cta.eyebrow.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>العنوان الرئيسي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].cta.title.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>CTA Headline (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].cta.title.en" dir="ltr">
+          </div>
+          <div class="form-field full-width">
+            <label>الوصف التفصيلي (بالعربي)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['home'].cta.sub.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>CTA Subtitle (English)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['home'].cta.sub.en" dir="ltr"></textarea>
+          </div>
+          <div class="form-field">
+            <label>نص زر الحجز والتواصل (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].cta.btn.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>CTA Button Text (English)</label>
+            <input type="text" [(ngModel)]="pagesData['home'].cta.btn.en" dir="ltr">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 2: NAVIGATION & HEADER
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'navigation'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-compass text-indigo"></i>
+          <span>الترويسة العلوية وقوائم التنقل (Header & Navigation)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          
+          <div class="form-field">
+            <label>اسم البراند بالهيدر (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].brand_name.ar" placeholder="ميديا جلو" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Brand Name in Header (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].brand_name.en" placeholder="Media Glow" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>شارة الاستوديو بجانب الشعار</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].studio_badge" placeholder="STUDIO" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>زر اتخاذ الإجراء بالهيدر (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].cta_btn.ar" placeholder="ابدأ مشروعك" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Header Action Button (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].cta_btn.en" placeholder="Start Project" dir="ltr">
+          </div>
+
+        </div>
+
+        <h4 class="mt-24 mb-12 text-zinc-300 font-bold">نصوص روابط القائمة الرئيسية:</h4>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>رابط الرئيسية (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.home.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Home Link (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.home.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>رابط الخدمات (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.services.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Services Link (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.services.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>رابط معرض الأعمال (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.work.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Work Link (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.work.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>رابط عن الاستوديو (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.about.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>About Link (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.about.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>رابط المقالات والمدونة (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.blogs.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Blogs Link (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.blogs.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>رابط تواصل معنا (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.contact.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Contact Link (English)</label>
+            <input type="text" [(ngModel)]="pagesData['navigation'].links.contact.en" dir="ltr">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 3: ABOUT PAGE
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'about'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-building-user text-purple"></i>
+          <span>عن الاستوديو ورؤية الوكالة (About Page Story & Values)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>الشعار التمهيدي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['about'].hero.eyebrow.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Eyebrow (English)</label>
+            <input type="text" [(ngModel)]="pagesData['about'].hero.eyebrow.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>العنوان الأول (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['about'].hero.title1.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Title Line 1 (English)</label>
+            <input type="text" [(ngModel)]="pagesData['about'].hero.title1.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>العنوان الثاني الملون (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['about'].hero.title2.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Title Line 2 Accent (English)</label>
+            <input type="text" [(ngModel)]="pagesData['about'].hero.title2.en" dir="ltr">
+          </div>
+          <div class="form-field full-width">
+            <label>فقرة القصة والنبذة (بالعربي)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['about'].hero.sub.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>Story & Bio (English)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['about'].hero.sub.en" dir="ltr"></textarea>
+          </div>
+        </div>
+
+        <h4 class="mt-24 mb-12 text-zinc-300 font-bold">مبادئ وقيم العمل (Our Values):</h4>
+        <div class="stats-grid-dashboard">
+          <div class="stat-item-card" *ngFor="let pr of pagesData['about'].principles; let pIdx = index">
+            <div class="stat-item-header">
+              <span>المبدأ {{ pr.num }}</span>
+            </div>
+            <div class="form-field">
+              <label>عنوان المبدأ (بالعربي)</label>
+              <input type="text" [(ngModel)]="pr.title.ar" dir="rtl">
+            </div>
+            <div class="form-field">
+              <label>Principle Title (English)</label>
+              <input type="text" [(ngModel)]="pr.title.en" dir="ltr">
+            </div>
+            <div class="form-field">
+              <label>الشرح (بالعربي)</label>
+              <textarea rows="2" [(ngModel)]="pr.desc.ar" dir="rtl"></textarea>
+            </div>
+            <div class="form-field">
+              <label>Description (English)</label>
+              <textarea rows="2" [(ngModel)]="pr.desc.en" dir="ltr"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 4: SERVICES PAGE
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'services'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-toolbox text-cyan"></i>
+          <span>ترويسة وبانر صفحة الخدمات (Services Page Banner)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>الشعار التمهيدي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['services'].hero.eyebrow.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Eyebrow (English)</label>
+            <input type="text" [(ngModel)]="pagesData['services'].hero.eyebrow.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>عنوان صفحة الخدمات (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['services'].hero.title.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Page Title (English)</label>
+            <input type="text" [(ngModel)]="pagesData['services'].hero.title.en" dir="ltr">
+          </div>
+          <div class="form-field full-width">
+            <label>الوصف والتمهيد (بالعربي)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['services'].hero.desc.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>Description (English)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['services'].hero.desc.en" dir="ltr"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 5: PORTFOLIO PAGE
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'portfolio'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-diagram-project text-purple"></i>
+          <span>ترويسة وبانر صفحة معرض الأعمال (Portfolio Page Banner)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>الشعار التمهيدي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['portfolio'].hero.eyebrow.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Eyebrow (English)</label>
+            <input type="text" [(ngModel)]="pagesData['portfolio'].hero.eyebrow.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>عنوان معرض الأعمال (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Page Title (English)</label>
+            <input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.en" dir="ltr">
+          </div>
+          <div class="form-field full-width">
+            <label>الوصف (بالعربي)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['portfolio'].hero.desc.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>Description (English)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['portfolio'].hero.desc.en" dir="ltr"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 6: BLOGS PAGE
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'blogs'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-newspaper text-rose"></i>
+          <span>ترويسة وبانر صفحة المقالات والمدونة (Blogs Banner)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>الشعار التمهيدي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Tagline (English)</label>
+            <input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>عنوان صفحة المدونة (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['blogs'].hero.title.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Page Title (English)</label>
+            <input type="text" [(ngModel)]="pagesData['blogs'].hero.title.en" dir="ltr">
+          </div>
+          <div class="form-field full-width">
+            <label>الوصف (بالعربي)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['blogs'].hero.desc.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>Description (English)</label>
+            <textarea rows="3" [(ngModel)]="pagesData['blogs'].hero.desc.en" dir="ltr"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 7: CONTACT PAGE
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'contact'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-headset text-emerald"></i>
+          <span>بيانات وترويسة صفحة التواصل (Contact Info & Banner)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>الشعار التمهيدي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].hero.eyebrow.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Eyebrow (English)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].hero.eyebrow.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>العنوان الرئيسي (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].hero.title.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Page Title (English)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].hero.title.en" dir="ltr">
+          </div>
+          <div class="form-field full-width">
+            <label>الوصف (بالعربي)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['contact'].hero.desc.ar" dir="rtl"></textarea>
+          </div>
+          <div class="form-field full-width">
+            <label>Description (English)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['contact'].hero.desc.en" dir="ltr"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label>البريد الإلكتروني الرسمي</label>
+            <input type="email" [(ngModel)]="pagesData['contact'].email" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>رقم الهاتف والواتساب</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].phone" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>المواقع والمقرات (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].location.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Locations (English)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].location.en" dir="ltr">
+          </div>
+          <div class="form-field">
+            <label>ساعات العمل (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].hours.ar" dir="rtl">
+          </div>
+          <div class="form-field">
+            <label>Working Hours (English)</label>
+            <input type="text" [(ngModel)]="pagesData['contact'].hours.en" dir="ltr">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SECTION 8: FOOTER SECTION
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="editor-body" *ngIf="!loading && activeSection === 'footer'">
+    <div class="form-card">
+      <div class="card-head">
+        <div class="card-head-title">
+          <i class="fa-solid fa-sliders text-amber"></i>
+          <span>محتوى تذييل الموقع وحسابات التواصل (Footer & Social Links)</span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="form-grid">
+          
+          <div class="form-field full-width">
+            <label>نبذة الوكالة في الفوتر (بالعربي)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['footer'].desc.ar" placeholder="نبذة مختصرة عن نشاط وهوية الوكالة تظهر أسفل شعار الفوتر..." dir="rtl"></textarea>
+          </div>
+
+          <div class="form-field full-width">
+            <label>Agency Bio in Footer (English)</label>
+            <textarea rows="2" [(ngModel)]="pagesData['footer'].desc.en" placeholder="Short description of the agency appearing in the footer..." dir="ltr"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label>البريد الإلكتروني للفوتر</label>
+            <input type="email" [(ngModel)]="pagesData['footer'].email" placeholder="hello@mediaglowegypt.com" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>رقم الهاتف للفوتر</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].phone" placeholder="+20 100 000 0000" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>مقرات الاستوديو والعنوان (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].address.ar" placeholder="مثال: القاهرة • الرياض • دبي" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Studio Locations & Address (English)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].address.en" placeholder="e.g. Cairo • Riyadh • Dubai" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>حقوق الملكية (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].copy.ar" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Copyright (English)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].copy.en" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>وسام التميز أسفل الفوتر (بالعربي)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].made.ar" placeholder="إنتاج سينمائي بمعايير عالمية" dir="rtl">
+          </div>
+
+          <div class="form-field">
+            <label>Bottom Tag (English)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].made.en" placeholder="Cinematic Production" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>رابط واتساب مباشر (wa.me)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].socials.whatsapp" placeholder="https://wa.me/201000000000" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>رابط حساب لينكد إن (LinkedIn)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].socials.linkedin" placeholder="https://linkedin.com/company/mediaglow" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>رابط حساب إنستجرام (Instagram)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].socials.instagram" placeholder="https://instagram.com/mediaglow" dir="ltr">
+          </div>
+
+          <div class="form-field">
+            <label>رابط حساب تويتر / إكس (Twitter/X)</label>
+            <input type="text" [(ngModel)]="pagesData['footer'].socials.twitter" placeholder="https://twitter.com/mediaglow" dir="ltr">
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Save Bar -->
+  <div class="bottom-bar">
+    <button class="btn-save" (click)="savePageData(activeSection)" [disabled]="saving || loading">
+      <i class="fa-solid" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+      <span>{{ saving ? 'جاري الحفظ...' : 'حفظ تغييرات ' + getSectionLabel(activeSection) }}</span>
+    </button>
+  </div>
+
+</div>

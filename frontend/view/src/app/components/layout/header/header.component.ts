@@ -38,4 +38,8 @@ export class HeaderComponent {
   toggleLang() {
     this.translationService.toggleLanguage();
   }
+
+  getStudioBadge(): string {
+    return this.translationService.siteContent()?.navigation?.studio_badge || 'STUDIO';
+  }
 }

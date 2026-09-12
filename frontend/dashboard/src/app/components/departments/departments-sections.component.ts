@@ -186,7 +186,7 @@ import { ConfirmService } from '../../services/confirm.service';
               </label>
             </div>
 
-            <div *ngIf="deptForm.value.has_partner" class="partner-fields-box" style="background:rgba(217,119,6,0.06); padding:16px; border-radius:14px; border:1px dashed rgba(217,119,6,0.35); display:flex; flex-direction:column; gap:12px;">
+            <div *ngIf="deptForm.value.has_partner" class="partner-fields-box" style="background:rgba(217,119,6,0.06); padding:16px; border-radius: 8px; border:1px dashed rgba(217,119,6,0.35); display:flex; flex-direction:column; gap:12px;">
               <div class="form-group">
                 <label>اسم الشريك الخارجي</label>
                 <input type="text" pInputText formControlName="partner_name" placeholder="مثال: شركة بروتيك للإنتاج" />
@@ -333,22 +333,22 @@ import { ConfirmService } from '../../services/confirm.service';
     /* Header */
     .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
     .header-title-wrapper { display: flex; align-items: center; gap: 14px; }
-    .header-icon-box { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); flex-shrink: 0; }
+    .header-icon-box { width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); flex-shrink: 0; }
     .module-header h2 { font-size: 1.45rem; font-weight: 800; color: var(--text); margin: 0; letter-spacing: -0.3px; }
     .subtitle { color: var(--text-2); font-size: 0.86rem; margin-top: 3px; }
     .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .btn-glass-purple { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); color: var(--text); padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s ease; font-family: inherit; }
+    .btn-glass-purple { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); color: var(--text); padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s ease; font-family: inherit; }
     .btn-glass-purple:hover { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.4); transform: translateY(-1px); }
 
-    .btn-primary-gradient { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; color: #ffffff; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35); transition: all 0.25s ease; font-family: inherit; }
+    .btn-primary-gradient { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; color: #ffffff; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35); transition: all 0.25s ease; font-family: inherit; }
     .btn-primary-gradient:hover { box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5); transform: translateY(-2px); }
 
     /* Grid */
     .depts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
 
     /* Card */
-    .dept-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .dept-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .dept-card:hover { border-color: var(--border-v); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
 
     .card-accent-bar { height: 4px; width: 100%; }
@@ -362,17 +362,17 @@ import { ConfirmService } from '../../services/confirm.service';
     /* Header Row */
     .dept-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
     .dept-title-box { display: flex; align-items: center; gap: 10px; }
-    .dept-icon-badge { width: 36px; height: 36px; border-radius: 10px; background: rgba(99, 102, 241, 0.1); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .dept-icon-badge { width: 36px; height: 36px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
     .dept-header-row h3 { color: var(--text); font-size: 1.15rem; font-weight: 800; margin: 0; line-height: 1.3; }
-    .partner-pill { font-size: 0.7rem; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 100px; font-weight: 700; white-space: nowrap; }
+    .partner-pill { font-size: 0.7rem; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 8px; font-weight: 700; white-space: nowrap; }
 
     .dept-desc { color: var(--text-2); font-size: 0.85rem; line-height: 1.55; margin: 0; }
 
     /* Manager Widget */
-    .manager-widget { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 10px 14px; border-radius: 12px; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
+    .manager-widget { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
     .manager-widget.assigned { background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.18); }
 
-    .mgr-avatar { width: 34px; height: 34px; border-radius: 10px; background: rgba(99, 102, 241, 0.12); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+    .mgr-avatar { width: 34px; height: 34px; border-radius: 8px; background: rgba(99, 102, 241, 0.12); color: var(--violet-light); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
     .mgr-details { display: flex; flex-direction: column; flex: 1; }
     .mgr-label { font-size: 0.7rem; color: var(--text-3); font-weight: 600; }
     .mgr-name { font-size: 0.88rem; font-weight: 800; color: var(--text); }
@@ -383,7 +383,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .btn-mgr-edit:hover { color: var(--violet-light); background: rgba(99, 102, 241, 0.1); }
 
     /* Section Box */
-    .section-box { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .section-box { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
     .section-box-header { display: flex; justify-content: space-between; align-items: center; }
     .section-title { font-size: 0.78rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
 
@@ -391,7 +391,7 @@ import { ConfirmService } from '../../services/confirm.service';
     .btn-box-action:hover { background: rgba(99, 102, 241, 0.2); color: #ffffff; }
 
     .chips-flex { display: flex; gap: 6px; flex-wrap: wrap; }
-    .emp-chip { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); padding: 4px 10px; border-radius: 100px; display: flex; align-items: center; gap: 6px; }
+    .emp-chip { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); padding: 4px 10px; border-radius: 8px; display: flex; align-items: center; gap: 6px; }
     .emp-initial { width: 18px; height: 18px; border-radius: 50%; background: var(--violet); color: #ffffff; font-size: 0.65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
     .emp-name { font-size: 0.76rem; font-weight: 600; color: var(--text); }
 
@@ -400,7 +400,7 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(99, 102, 241, 0.08); 
       border: 1px solid rgba(99, 102, 241, 0.2); 
       padding: 5px 12px; 
-      border-radius: 100px; 
+      border-radius: 8px; 
       font-size: 0.78rem; 
       color: var(--text); 
       font-weight: 700; 
@@ -448,7 +448,7 @@ import { ConfirmService } from '../../services/confirm.service';
 
     /* Footer Actions */
     .card-footer-actions { display: flex; gap: 10px; margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--border); }
-    .btn-action { padding: 9px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
+    .btn-action { padding: 9px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-family: inherit; }
     .btn-action.edit { flex: 1; background: rgba(99, 102, 241, 0.1); color: var(--violet-light); border-color: rgba(99, 102, 241, 0.25); }
     .btn-action.edit:hover { background: var(--violet); color: #ffffff; border-color: var(--violet); }
     .btn-action.delete { background: rgba(244, 63, 94, 0.1); color: #fda4af; border-color: rgba(244, 63, 94, 0.25); padding: 9px 12px; }
@@ -456,14 +456,14 @@ import { ConfirmService } from '../../services/confirm.service';
 
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
-    .form-group input, .form-group textarea, .custom-select-input { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: #fff; outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
-    .custom-select-input option { background: #121224; color: #fff; }
+    .form-group input, .form-group textarea, .custom-select-input { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; }
+    .custom-select-input option { background: #121224; color: var(--text); }
     .required { color: var(--rose-light); }
 
     .partner-toggle-card {
       background: rgba(99, 102, 241, 0.04);
       border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 14px;
+      border-radius: 8px;
       padding: 12px 16px;
       display: flex;
       align-items: center;
@@ -526,7 +526,7 @@ import { ConfirmService } from '../../services/confirm.service';
       top: 0; left: 0; right: 0; bottom: 0;
       background-color: rgba(255, 255, 255, 0.15);
       transition: .3s;
-      border-radius: 24px;
+      border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .switch-slider:before {
@@ -566,14 +566,29 @@ import { ConfirmService } from '../../services/confirm.service';
       background-color: #cbd5e1;
       border-color: #94a3b8;
     }
+    :host-context(body.light-theme) .form-group input,
+    :host-context(body.light-theme) .form-group textarea,
+    :host-context(body.light-theme) .custom-select-input {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    :host-context(body.light-theme) .section-box {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    :host-context(body.light-theme) .manager-widget {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
 
     .form-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     /* Dialog Footer Actions */
     .dialog-footer-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .btn-dialog-cancel { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-2); padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn-dialog-cancel { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-2); padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer; transition: all 0.2s; font-family: inherit; }
     .btn-dialog-cancel:hover { background: rgba(255, 255, 255, 0.1); color: var(--text); }
-    .btn-dialog-submit { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; color: #ffffff; padding: 9px 22px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; cursor: pointer; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); transition: all 0.2s; font-family: inherit; }
+    .btn-dialog-submit { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; color: #ffffff; padding: 9px 22px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35); transition: all 0.2s; font-family: inherit; }
     .btn-dialog-submit:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5); transform: translateY(-1px); }
     .btn-dialog-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
@@ -738,8 +753,8 @@ export class DepartmentsSectionsComponent implements OnInit {
   loadData(): void {
     this.apiService.getDepartments().subscribe(res => this.departments = res || []);
     this.apiService.getUsers().subscribe(res => {
-      const arr = res.data || [];
-      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client');
+      const arr = Array.isArray(res) ? res : (res.data || []);
+      this.employees = arr.filter((u: any) => u.role !== 'client' && u.role !== 'Client' && !u.is_hold);
     });
   }
 

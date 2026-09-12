@@ -43,7 +43,7 @@
   font-size: 2rem;
   color: var(--violet);
   background: rgba(99, 102, 241, 0.12);
-  border-radius: 14px;
+  border-radius: 8px;
   width: 60px;
   height: 60px;
   display: flex;
@@ -150,7 +150,7 @@
     width: 48px;
     height: 48px;
     font-size: 1.4rem;
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .portfolio-tabs {

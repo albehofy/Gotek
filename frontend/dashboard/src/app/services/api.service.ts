@@ -35,6 +35,19 @@ export class ApiService {
     };
   }
 
+  getStorageUrl(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+      return path;
+    }
+    const baseHost = isLocal ? 'http://localhost:8000' : 'https://api.mediaglowegypt.com';
+    const cleanPath = path.replace(/^\/+/, '');
+    if (cleanPath.startsWith('storage/')) {
+      return `${baseHost}/${cleanPath}`;
+    }
+    return `${baseHost}/storage/${cleanPath}`;
+  }
+
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>(`${API_BASE_URL}/login`, { email, password }, { headers: this.getHeaders() });
   }
@@ -42,11 +55,17 @@ export class ApiService {
 
   // Notifications
   getNotifications(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/notifications`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getNotifications', { unread_count: 0, data: [] })));
+    const headers = this.getHeaders().set('X-Silent-Request', 'true');
+    return this.http.get<any>(`${API_BASE_URL}/notifications`, { headers }).pipe(
+      catchError(this.handleError('getNotifications', { unread_count: 0, data: [] }))
+    );
   }
 
   getUnreadNotifications(): Observable<any> {
-    return this.http.get<any>(`${API_BASE_URL}/notifications/unread`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getUnreadNotifications', { unread_count: 0, data: [] })));
+    const headers = this.getHeaders().set('X-Silent-Request', 'true');
+    return this.http.get<any>(`${API_BASE_URL}/notifications/unread`, { headers }).pipe(
+      catchError(this.handleError('getUnreadNotifications', { unread_count: 0, data: [] }))
+    );
   }
 
   markNotificationAsRead(id: number): Observable<any> {
@@ -276,6 +295,26 @@ export class ApiService {
 
   deleteUser(id: string | number): Observable<any> {
     return this.http.delete<any>(`${API_BASE_URL}/users/${id}`, { headers: this.getHeaders() });
+  }
+
+  toggleUserHold(userId: string | number): Observable<any> {
+    return this.http.patch<any>(`${API_BASE_URL}/users/${userId}/toggle-hold`, {}, { headers: this.getHeaders() });
+  }
+
+  getClientProfile(clientId: string | number): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/clients/${clientId}/profile`, { headers: this.getHeaders() });
+  }
+
+  getEmployeeDashboard(): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/employee-dashboard`, { headers: this.getHeaders() });
+  }
+
+  updateRole(roleId: string | number, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/roles/${roleId}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteRole(roleId: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/roles/${roleId}`, { headers: this.getHeaders() });
   }
 
   getRoles(): Observable<any> {

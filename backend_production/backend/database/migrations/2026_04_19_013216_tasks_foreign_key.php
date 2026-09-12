@@ -13,8 +13,8 @@ return new class extends Migration
     {
  Schema::table('tasks', function (Blueprint $table) {
  
-// بدل project_id القديم
-$table->foreignId('internal_project_id')->constrained('internal_projects')->onDelete('cascade');        $table->foreignId('department_id')->constrained();
+        $table->foreignId('internal_project_id')->nullable()->constrained('internal_projects')->onDelete('cascade');
+        $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('set null');
  
     });
     }

@@ -84,6 +84,13 @@ class ClientPortalController extends Controller
             return response()->json(['message' => 'غير مسموح لك بالملاحظات على هذه المهمة'], 403);
         }
 
+        if ($user->role === 'client') {
+            $allowedReviewStatuses = ['client_review', 'in_review', 'review', 'content_creator', 'changes_requested', 'client_feedback'];
+            if (!in_array(strtolower($task->status), $allowedReviewStatuses)) {
+                return response()->json(['message' => 'لا يمكنك طلب تعديلات إلا عندما تكون المهمة في مرحلة مراجعة العميل'], 422);
+            }
+        }
+
         $validated = $request->validate([
             'note' => 'required|string'
         ]);
@@ -94,7 +101,7 @@ class ClientPortalController extends Controller
             'note' => $validated['note']
         ]);
 
-        // Update task status to client_feedback if client leaves note
+        // Update task status to changes_requested if client leaves note
         $task->update(['status' => 'changes_requested']);
 
         // Send notification to department manager & assigned staff (excluding the acting client)
@@ -111,8 +118,8 @@ class ClientPortalController extends Controller
             NotificationModel::create([
                 'user_id' => $uid,
                 'type' => 'client_note',
-                'title' => 'ملاحظة جديدة من العميل',
-                'message' => 'أضاف العميل ' . $user->name . ' ملاحظة على المهمة: ' . $task->title,
+                'title' => 'ملاحظة وتعديلات جديدة من العميل',
+                'message' => 'أضاف العميل ' . $user->name . ' طلب تعديل على المهمة: ' . $task->title,
                 'notifiable_type' => Task::class,
                 'notifiable_id' => $task->id
             ]);
@@ -126,12 +133,29 @@ class ClientPortalController extends Controller
         $user = Auth::user();
         $task = Task::findOrFail($taskId);
 
-        $deal = Deal::where('id', $task->deal_id)->where('client_id', $user->id)->first();
-        if (!$deal && $user->role === 'client') {
-            return response()->json(['message' => 'غير مسموح لك بالموافقة على هذه المهمة'], 403);
+        $isStaffApprover = in_array($user->role, ['account_manager', 'Account Manager', 'super_admin', 'admin', 'Super Admin'])
+            || $user->hasRole('account_manager')
+            || $user->hasRole('super_admin')
+            || $user->hasRole('admin');
+
+        if ($user->role === 'client') {
+            $deal = Deal::where('id', $task->deal_id)->where('client_id', $user->id)->first();
+            if (!$deal) {
+                return response()->json(['message' => 'غير مسموح لك بالموافقة على هذه المهمة'], 403);
+            }
+
+            // Must be in client review stage
+            $allowedReviewStatuses = ['client_review', 'in_review', 'review', 'content_creator', 'changes_requested', 'client_feedback'];
+            if (!in_array(strtolower($task->status), $allowedReviewStatuses)) {
+                return response()->json(['message' => 'لا يمكنك اعتماد المهمة إلا عندما تكون في مرحلة مراجعة العميل'], 422);
+            }
+        } elseif (!$isStaffApprover) {
+            return response()->json(['message' => 'غير مصرح لك باعتماد المهمة نيابة عن العميل'], 403);
         }
 
         $task->update(['status' => 'approved']);
+
+        $actorName = ($user->role === 'client') ? 'العميل ' . $user->name : ($user->name . ' (نيابة عن العميل)');
 
         // Notify assigned staff & dept manager (excluding acting client)
         $recipients = $task->users->pluck('id')->toArray();
@@ -147,13 +171,13 @@ class ClientPortalController extends Controller
             NotificationModel::create([
                 'user_id' => $uid,
                 'type' => 'status_change',
-                'title' => 'تمت الموافقة على المهمة',
-                'message' => 'وافق العميل ' . $user->name . ' على المهمة: ' . $task->title,
+                'title' => 'تم اعتماد المهمة بنجاح',
+                'message' => 'قام ' . $actorName . ' باعتماد المهمة: ' . $task->title,
                 'notifiable_type' => Task::class,
                 'notifiable_id' => $task->id
             ]);
         }
 
-        return response()->json(['status' => 'success', 'message' => 'تمت الموافقة على المهمة بنجاح', 'data' => $task]);
+        return response()->json(['status' => 'success', 'message' => 'تمت الموافقة والاعتماد بنجاح', 'data' => $task]);
     }
 }

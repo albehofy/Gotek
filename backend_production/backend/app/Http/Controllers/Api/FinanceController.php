@@ -216,14 +216,24 @@ class FinanceController extends Controller
             return response()->json(['message' => 'غير مسموح للعملاء بفتح كشف أرصدة العملاء'], 403);
         }
 
-        $query = User::where('role', 'client');
+        $query = User::where(function($q) {
+            $q->where('role', 'client')
+              ->orWhere('role', 'Client')
+              ->orWhereHas('roles', function($rq) {
+                  $rq->where('slug', 'client');
+              })
+              ->orWhereHas('roleModel', function($rq) {
+                  $rq->where('slug', 'client');
+              });
+        });
 
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('client_code', 'like', "%{$search}%");
             });
         }
 
@@ -236,26 +246,28 @@ class FinanceController extends Controller
             $totalPaid = 0;
 
             foreach ($deals as $deal) {
-                $totalBilled += $deal->calculated_total;
-                $totalPaid += $deal->calculated_paid;
+                $totalBilled += (float) $deal->calculated_total;
+                $totalPaid += (float) $deal->calculated_paid;
             }
 
             $report[] = [
                 'id' => $client->id,
                 'client_id' => $client->id,
+                'client_code' => $client->client_code,
+                'is_hold' => (bool) $client->is_hold,
                 'client_name' => $client->name,
                 'name' => $client->name,
                 'client_email' => $client->email,
                 'email' => $client->email,
                 'phone' => $client->phone,
                 'deals_count' => $deals->count(),
-                'total_billed' => $totalBilled,
-                'total_paid' => $totalPaid,
-                'outstanding_balance' => max(0, $totalBilled - $totalPaid)
+                'total_billed' => (float) $totalBilled,
+                'total_paid' => (float) $totalPaid,
+                'outstanding_balance' => (float) max(0, $totalBilled - $totalPaid)
             ];
         }
 
-        return response()->json(['status' => 'success', 'data' => $report]);
+        return response()->json(['status' => 'success', 'data' => array_values($report)]);
     }
 
     public function storeClientPayment(Request $request)

@@ -161,4 +161,22 @@ class CmsAdminApiTest extends TestCase
             'content_ar' => 'سياسة الخصوصية'
         ])->assertStatus(200);
     }
+
+    public function test_contact_info_admin_crud()
+    {
+        $res = $this->actingAs($this->admin)->postJson('/api/contact-info', [
+            'whatsapp_phone' => '+966500000000',
+            'official_email' => 'admin@mediaglow.com',
+            'company_address' => 'Riyadh, KSA'
+        ]);
+        $res->assertStatus(201);
+
+        $updateRes = $this->actingAs($this->admin)->putJson('/api/contact-info', [
+            'whatsapp_phone' => '+966511111111',
+            'official_email' => 'contact@mediaglow.com',
+            'company_address' => 'Cairo, Egypt'
+        ]);
+        $updateRes->assertStatus(200);
+        $updateRes->assertJsonFragment(['whatsapp_phone' => '+966511111111']);
+    }
 }
