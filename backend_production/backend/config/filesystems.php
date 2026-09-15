@@ -40,8 +40,17 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => env('UPLOADS_PATH') ?: (is_dir(base_path('../uploads')) ? base_path('../uploads') : storage_path('app/public')),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'root' => env('UPLOADS_PATH') ?: (is_dir(base_path('../uploads')) ? base_path('../uploads') : (is_dir(public_path('uploads')) ? public_path('uploads') : base_path('../uploads'))),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'uploads' => [
+            'driver' => 'local',
+            'root' => env('UPLOADS_PATH') ?: (is_dir(base_path('../uploads')) ? base_path('../uploads') : (is_dir(public_path('uploads')) ? public_path('uploads') : base_path('../uploads'))),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

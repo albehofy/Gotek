@@ -202,10 +202,10 @@ class UserController extends Controller
             'phone' => $validated['phone'] ?? $user->phone,
             'role' => $validated['role'],
             'role_id' => $roleModel ? $roleModel->id : $user->role_id,
-            'department_id' => $validated['department_id'] ?? $user->department_id,
-            'payment_type' => $validated['payment_type'] ?? $user->payment_type,
-            'base_salary' => $validated['base_salary'] ?? $user->base_salary,
-            'commission_rate' => $validated['commission_rate'] ?? $user->commission_rate,
+            'department_id' => array_key_exists('department_id', $validated) ? $validated['department_id'] : $user->department_id,
+            'payment_type' => array_key_exists('payment_type', $validated) ? ($validated['payment_type'] ?? 'salary_based') : $user->payment_type,
+            'base_salary' => array_key_exists('base_salary', $validated) ? ($validated['base_salary'] ?? 0) : $user->base_salary,
+            'commission_rate' => array_key_exists('commission_rate', $validated) ? ($validated['commission_rate'] ?? 0) : $user->commission_rate,
         ];
 
         if (array_key_exists('is_hold', $validated)) {

@@ -34,7 +34,9 @@ class Project extends Model
         if (filter_var($this->main_image, FILTER_VALIDATE_URL)) {
             return $this->main_image;
         }
-        return asset('storage/' . $this->main_image);
+        $clean = ltrim($this->main_image, '/');
+        $clean = preg_replace('#^(uploads/|storage/)#', '', $clean);
+        return asset('uploads/' . $clean);
     }
 
     public function getGalleryAttribute()
@@ -45,7 +47,9 @@ class Project extends Model
             if (filter_var($img->image_path, FILTER_VALIDATE_URL)) {
                 return $img->image_path;
             }
-            return asset('storage/' . $img->image_path);
+            $clean = ltrim($img->image_path, '/');
+            $clean = preg_replace('#^(uploads/|storage/)#', '', $clean);
+            return asset('uploads/' . $clean);
         })->toArray();
     }
 

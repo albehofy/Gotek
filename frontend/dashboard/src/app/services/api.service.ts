@@ -37,15 +37,18 @@ export class ApiService {
 
   getStorageUrl(path: string): string {
     if (!path) return '';
-    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
       return path;
     }
     const baseHost = isLocal ? 'http://localhost:8000' : 'https://api.mediaglowegypt.com';
     const cleanPath = path.replace(/^\/+/, '');
-    if (cleanPath.startsWith('storage/')) {
+    if (cleanPath.startsWith('uploads/')) {
       return `${baseHost}/${cleanPath}`;
     }
-    return `${baseHost}/storage/${cleanPath}`;
+    if (cleanPath.startsWith('storage/')) {
+      return `${baseHost}/uploads/${cleanPath.replace(/^storage\//, '')}`;
+    }
+    return `${baseHost}/uploads/${cleanPath}`;
   }
 
   login(email: string, password: string): Observable<any> {

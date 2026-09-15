@@ -92,6 +92,18 @@ class DealController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->has('tasks') && is_string($request->input('tasks'))) {
+            $decoded = json_decode($request->input('tasks'), true);
+            $request->merge(['tasks' => is_array($decoded) ? $decoded : []]);
+        }
+
+        if ($request->has('dates_not_specified')) {
+            $val = $request->input('dates_not_specified');
+            $request->merge([
+                'dates_not_specified' => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -140,7 +152,7 @@ class DealController extends Controller
         }
 
         if ($request->hasFile('attachment')) {
-            $dealData['attachment_path'] = $request->file('attachment')->store('deal_attachments', 'public');
+            $dealData['attachment_path'] = $request->file('attachment')->store('deals', 'public');
         }
 
         $deal = Deal::create($dealData);
@@ -260,6 +272,13 @@ class DealController extends Controller
     {
         $deal = Deal::findOrFail($id);
 
+        if ($request->has('dates_not_specified')) {
+            $val = $request->input('dates_not_specified');
+            $request->merge([
+                'dates_not_specified' => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -297,7 +316,7 @@ class DealController extends Controller
         }
 
         if ($request->hasFile('attachment')) {
-            $data['attachment_path'] = $request->file('attachment')->store('deal_attachments', 'public');
+            $data['attachment_path'] = $request->file('attachment')->store('deals', 'public');
         }
 
         $deal->update($data);

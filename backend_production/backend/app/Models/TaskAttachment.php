@@ -26,7 +26,9 @@ class TaskAttachment extends Model
         if (str_starts_with($this->file_path, 'http://') || str_starts_with($this->file_path, 'https://')) {
             return $this->file_path;
         }
-        return asset('storage/' . ltrim($this->file_path, '/'));
+        $clean = ltrim($this->file_path, '/');
+        $clean = preg_replace('#^(uploads/|storage/)#', '', $clean);
+        return asset('uploads/' . $clean);
     }
 
     public function getIsImageAttribute()

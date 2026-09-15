@@ -305,7 +305,7 @@ import { ConfirmService } from '../../services/confirm.service';
             <div class="full-width tasks-builder-section">
               <div class="tasks-builder-head">
                 <label style="font-weight:800; color:var(--violet-light); font-size:0.88rem; margin:0;">
-                  <i class="fa-solid fa-list-check" style="margin-left:6px;"></i> المهام والمخرجات التنفيذية للصفقة (تُسند تلقائياً لمدير القسم)
+                  <i class="fa-solid fa-list-check" style="margin-left:6px;"></i> المهام والمخرجات التنفيذية للصفقة <span style="font-size:0.75rem; color:var(--text-3); font-weight:normal;">(اختياري - يمكن إضافتها لاحقاً من لوحة المهام)</span>
                 </label>
                 <button type="button" class="btn-add-task-row" (click)="addTaskRow()">
                   <i class="fa-solid fa-plus"></i> إضافة مهمة تنفيذية
@@ -354,7 +354,7 @@ import { ConfirmService } from '../../services/confirm.service';
               </div>
 
               <div *ngIf="dealTasks.length === 0" class="tasks-empty-hint">
-                <i class="fa-solid fa-info-circle"></i> يمكنك إضافة المهام التنفيذية المطلوبة هنا لتوزيعها تلقائياً على مديري الأقسام عند الحفظ.
+                <i class="fa-solid fa-circle-info"></i> إضافة المهام هنا <strong>اختياري تماماً</strong>؛ يمكنك حفظ الصفقة الآن بدون أي مهام، وإنشاؤها في أي وقت لاحقاً من <strong>لوحة المهام (Tasks)</strong> وربطها بهذه الصفقة.
               </div>
             </div>
           </div>
@@ -704,10 +704,16 @@ export class DealsManagementComponent implements OnInit {
       const formData = new FormData();
       Object.keys(formVal).forEach(k => {
         if (formVal[k] !== null && formVal[k] !== undefined) {
-          formData.append(k, formVal[k]);
+          if (k === 'dates_not_specified') {
+            formData.append(k, formVal[k] ? '1' : '0');
+          } else {
+            formData.append(k, formVal[k]);
+          }
         }
       });
-      formData.append('tasks', JSON.stringify(validTasks));
+      if (validTasks.length > 0) {
+        formData.append('tasks', JSON.stringify(validTasks));
+      }
       formData.append('attachment', this.dealAttachmentFile);
       payload = formData;
     } else {

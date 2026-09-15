@@ -4672,8 +4672,10 @@ export class TasksBoardComponent implements OnInit {
     if (this.createTaskFiles.length > 0) {
       const formData = new FormData();
       Object.keys(taskVal).forEach(k => {
-        if (taskVal[k] !== null && taskVal[k] !== undefined) {
-          if (Array.isArray(taskVal[k])) {
+        if (taskVal[k] !== null && taskVal[k] !== undefined && taskVal[k] !== '') {
+          if (typeof taskVal[k] === 'boolean') {
+            formData.append(k, taskVal[k] ? '1' : '0');
+          } else if (Array.isArray(taskVal[k])) {
             formData.append(k, JSON.stringify(taskVal[k]));
           } else {
             formData.append(k, taskVal[k]);

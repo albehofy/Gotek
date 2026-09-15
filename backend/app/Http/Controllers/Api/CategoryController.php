@@ -15,7 +15,9 @@ class CategoryController extends Controller
         // Map images to absolute url if not starting with http
         $categories->map(function($category) {
             if ($category->image && !filter_var($category->image, FILTER_VALIDATE_URL)) {
-                $category->image_url = asset('storage/' . $category->image);
+                $clean = ltrim($category->image, '/');
+                $clean = preg_replace('#^(uploads/|storage/)#', '', $clean);
+                $category->image_url = asset('uploads/' . $clean);
             } else {
                 $category->image_url = $category->image;
             }

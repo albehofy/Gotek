@@ -168,4 +168,23 @@ class TasksApiTest extends TestCase
         $cfGet = $this->actingAs($this->admin)->getJson('/api/tasks/custom-fields');
         $cfGet->assertStatus(200);
     }
+
+    public function test_create_task_with_form_data_types()
+    {
+        // Test with string booleans ("false", "true") and JSON string array ("[1]") as sent in FormData
+        $response = $this->actingAs($this->admin)->post('/api/tasks', [
+            'title' => 'Form Data Task',
+            'priority' => 'medium',
+            'status' => 'new',
+            'dates_not_specified' => 'false',
+            'is_standalone' => 'false',
+            'user_ids' => json_encode([$this->employee->id]),
+            'department_id' => (string)$this->department->id,
+            'deal_id' => 'null'
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.title', 'Form Data Task');
+    }
 }

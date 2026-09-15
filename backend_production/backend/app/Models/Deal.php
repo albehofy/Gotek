@@ -57,7 +57,9 @@ class Deal extends Model
         if (str_starts_with($this->attachment_path, 'http://') || str_starts_with($this->attachment_path, 'https://')) {
             return $this->attachment_path;
         }
-        return asset('storage/' . ltrim($this->attachment_path, '/'));
+        $clean = ltrim($this->attachment_path, '/');
+        $clean = preg_replace('#^(uploads/|storage/)#', '', $clean);
+        return asset('uploads/' . $clean);
     }
 
     public function client()

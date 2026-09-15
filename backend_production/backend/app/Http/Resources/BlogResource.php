@@ -9,7 +9,13 @@ class BlogResource extends JsonResource
     {
         $mediaUrl = null;
         if ($this->media_path) {
-            $mediaUrl = filter_var($this->media_path, FILTER_VALIDATE_URL) ? $this->media_path : asset('storage/' . $this->media_path);
+            if (filter_var($this->media_path, FILTER_VALIDATE_URL)) {
+                $mediaUrl = $this->media_path;
+            } else {
+                $clean = ltrim($this->media_path, '/');
+                $clean = preg_replace('#^(uploads/|storage/)#', '', $clean);
+                $mediaUrl = asset('uploads/' . $clean);
+            }
         }
 
         // Generate excerpt from translatable description

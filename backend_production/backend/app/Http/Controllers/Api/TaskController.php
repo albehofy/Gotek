@@ -81,6 +81,41 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->has('dates_not_specified')) {
+            $val = $request->input('dates_not_specified');
+            $request->merge([
+                'dates_not_specified' => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);
+        }
+
+        if ($request->has('is_standalone')) {
+            $val = $request->input('is_standalone');
+            $request->merge([
+                'is_standalone' => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);
+        }
+
+        if ($request->has('user_ids') && is_string($request->input('user_ids'))) {
+            $decoded = json_decode($request->input('user_ids'), true);
+            $request->merge(['user_ids' => is_array($decoded) ? $decoded : []]);
+        }
+
+        if ($request->has('assigned_user_ids') && is_string($request->input('assigned_user_ids'))) {
+            $decoded = json_decode($request->input('assigned_user_ids'), true);
+            $request->merge(['assigned_user_ids' => is_array($decoded) ? $decoded : []]);
+        }
+
+        if ($request->has('custom_fields') && is_string($request->input('custom_fields'))) {
+            $decoded = json_decode($request->input('custom_fields'), true);
+            $request->merge(['custom_fields' => is_array($decoded) ? $decoded : []]);
+        }
+
+        foreach (['deal_id', 'department_id', 'sub_category_id', 'parent_id'] as $nullableId) {
+            if ($request->has($nullableId) && ($request->input($nullableId) === 'null' || $request->input($nullableId) === '')) {
+                $request->merge([$nullableId => null]);
+            }
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -146,7 +181,7 @@ class TaskController extends Controller
             foreach ($uploadedFiles as $file) {
                 $origName = $file->getClientOriginalName();
                 $mimeType = $file->getClientMimeType();
-                $path = $file->store('task_attachments', 'public');
+                $path = $file->store('tasks', 'public');
                 $type = str_contains($mimeType, 'image') ? 'image' : (str_contains($mimeType, 'video') ? 'video' : 'document');
                 TaskAttachment::create([
                     'task_id' => $task->id,
@@ -210,6 +245,22 @@ class TaskController extends Controller
     {
         $task = Task::findOrFail($id);
         $oldStatus = $task->status;
+
+        if ($request->has('user_ids') && is_string($request->input('user_ids'))) {
+            $decoded = json_decode($request->input('user_ids'), true);
+            $request->merge(['user_ids' => is_array($decoded) ? $decoded : []]);
+        }
+
+        if ($request->has('custom_fields') && is_string($request->input('custom_fields'))) {
+            $decoded = json_decode($request->input('custom_fields'), true);
+            $request->merge(['custom_fields' => is_array($decoded) ? $decoded : []]);
+        }
+
+        foreach (['deal_id', 'department_id', 'sub_category_id'] as $nullableId) {
+            if ($request->has($nullableId) && ($request->input($nullableId) === 'null' || $request->input($nullableId) === '')) {
+                $request->merge([$nullableId => null]);
+            }
+        }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -353,6 +404,12 @@ class TaskController extends Controller
     public function assignMembers(Request $request, $id)
     {
         $task = Task::findOrFail($id);
+
+        if ($request->has('user_ids') && is_string($request->input('user_ids'))) {
+            $decoded = json_decode($request->input('user_ids'), true);
+            $request->merge(['user_ids' => is_array($decoded) ? $decoded : []]);
+        }
+
         $request->validate([
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'integer|exists:users,id'
@@ -459,7 +516,7 @@ class TaskController extends Controller
         $mimeType = $file->getClientMimeType();
         $size = $file->getSize();
 
-        $path = $file->store('task_attachments', 'public');
+        $path = $file->store('tasks', 'public');
 
         $type = str_contains($mimeType, 'image') ? 'image' : (str_contains($mimeType, 'video') ? 'video' : 'document');
 
@@ -667,7 +724,7 @@ class TaskController extends Controller
             $originalName = $file->getClientOriginalName();
             $mimeType = $file->getClientMimeType();
             $size = $file->getSize();
-            $path = $file->store('task_attachments', 'public');
+            $path = $file->store('tasks', 'public');
             $type = str_contains($mimeType, 'image') ? 'image' : (str_contains($mimeType, 'video') ? 'video' : 'document');
 
             TaskAttachment::create([

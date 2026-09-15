@@ -88,6 +88,7 @@ import { InputTextModule } from 'primeng/inputtext';
                 <th>البريد الإلكتروني</th>
                 <th>الصلاحيات / الأدوار</th>
                 <th *ngIf="activeTab === 'staff'">القسم التابع له</th>
+                <th *ngIf="activeTab === 'staff'">الراتب ونظام الدفع</th>
                 <th>الحالة (Hold)</th>
                 <th style="text-align:center;">إجراءات سريعة</th>
               </tr>
@@ -123,6 +124,16 @@ import { InputTextModule } from 'primeng/inputtext';
                   <span *ngIf="u.department" class="dept-badge"><i class="fa-solid fa-layer-group"></i> {{ u.department.name }}</span>
                   <span *ngIf="!u.department" style="color:var(--text-3); font-size:0.8rem;">إدارة عامة</span>
                 </td>
+                <td *ngIf="activeTab === 'staff'">
+                  <div style="display:flex; flex-direction:column; gap:2px;">
+                    <span style="font-weight:700; color:var(--teal-light, #2dd4bf); font-size:0.88rem;">
+                      {{ (u.base_salary || 0) | number:'1.2-2' }} ج.م
+                    </span>
+                    <span class="badge badge-subrole" style="font-size:0.7rem; width:fit-content;">
+                      {{ getPaymentTypeLabel(u.payment_type) }}
+                    </span>
+                  </div>
+                </td>
                 <td>
                   <span *ngIf="u.is_hold" class="status-badge status-hold">
                     <i class="fa-solid fa-circle-pause"></i> معلّق مؤقتاً (Hold)
@@ -157,7 +168,7 @@ import { InputTextModule } from 'primeng/inputtext';
                 </td>
               </tr>
               <tr *ngIf="users.length === 0">
-                <td [attr.colspan]="activeTab === 'clients' ? 6 : 6">
+                <td [attr.colspan]="activeTab === 'clients' ? 6 : 7">
                   <div class="empty-state">
                     <div class="empty-state-icon"><i class="fa-solid fa-user-slash"></i></div>
                     <div class="empty-state-title">لا توجد سجلات مطابقة للبحث</div>
@@ -272,6 +283,29 @@ import { InputTextModule } from 'primeng/inputtext';
                 <option [ngValue]="null">بدون قسم / إدارة عامة</option>
                 <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
               </select>
+            </div>
+
+            <div class="form-row-2" *ngIf="activeTab === 'staff'">
+              <div class="form-group">
+                <label>نظام الراتب / الاستحقاق</label>
+                <select formControlName="payment_type" class="custom-select-input">
+                  <option value="salary_based">راتب شهري أساسي</option>
+                  <option value="task_based">حسب المهام المنجزة</option>
+                  <option value="percentage_based">عمولة / نسبة مئوية</option>
+                  <option value="hybrid">نظام مختلط (راتب أساسي + مهام/عمولة)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>الراتب الأساسي (ج.م)</label>
+                <input type="number" pInputText formControlName="base_salary" placeholder="0" min="0" />
+              </div>
+            </div>
+
+            <div class="form-row-2" *ngIf="activeTab === 'staff' && (userForm.get('payment_type')?.value === 'percentage_based' || userForm.get('payment_type')?.value === 'hybrid')">
+              <div class="form-group">
+                <label>نسبة العمولة الافتراضية (%)</label>
+                <input type="number" pInputText formControlName="commission_rate" placeholder="0" min="0" max="100" />
+              </div>
             </div>
 
             <!-- Multi-Role Selection Checkboxes -->
@@ -649,6 +683,9 @@ export class RolesManagementComponent implements OnInit {
       password: [''],
       phone: [''],
       department_id: [null],
+      payment_type: ['salary_based'],
+      base_salary: [0, [Validators.min(0)]],
+      commission_rate: [0, [Validators.min(0)]],
       is_hold: [false]
     });
 
@@ -768,6 +805,16 @@ export class RolesManagementComponent implements OnInit {
     }
   }
 
+  getPaymentTypeLabel(type: string): string {
+    switch (type) {
+      case 'salary_based': return 'راتب شهري ثابت';
+      case 'task_based': return 'حسب المهام';
+      case 'percentage_based': return 'نسبة / عمولة';
+      case 'hybrid': return 'نظام مختلط';
+      default: return 'راتب شهري ثابت';
+    }
+  }
+
   // --- HOLD / UNHOLD TOGGLE ---
   toggleHold(user: any): void {
     const actionName = user.is_hold ? 'إلغاء التعليق وتفعيل' : 'تعليق (Hold)';
@@ -815,6 +862,9 @@ export class RolesManagementComponent implements OnInit {
       password: 'password123',
       phone: '',
       department_id: null,
+      payment_type: 'salary_based',
+      base_salary: 0,
+      commission_rate: 0,
       is_hold: false
     });
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
@@ -841,6 +891,9 @@ export class RolesManagementComponent implements OnInit {
       password: '',
       phone: user.phone || '',
       department_id: user.department_id || null,
+      payment_type: user.payment_type || 'salary_based',
+      base_salary: user.base_salary !== undefined && user.base_salary !== null ? parseFloat(user.base_salary) : 0,
+      commission_rate: user.commission_rate !== undefined && user.commission_rate !== null ? parseFloat(user.commission_rate) : 0,
       is_hold: !!user.is_hold
     });
 
@@ -884,6 +937,9 @@ export class RolesManagementComponent implements OnInit {
       phone: formVal.phone,
       department_id: formVal.department_id,
       is_hold: formVal.is_hold,
+      payment_type: formVal.payment_type || 'salary_based',
+      base_salary: formVal.base_salary !== null && formVal.base_salary !== undefined ? Number(formVal.base_salary) : 0,
+      commission_rate: formVal.commission_rate !== null && formVal.commission_rate !== undefined ? Number(formVal.commission_rate) : 0,
       role_ids: this.selectedRoleIds
     };
 
