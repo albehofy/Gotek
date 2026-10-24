@@ -23,18 +23,42 @@ function serveAppMediaFile($path) {
     $cleanPath = ltrim($path, '/');
     $fileName = basename($cleanPath);
 
+    $uploadsBase = config('filesystems.disks.public.root') ?: base_path('../uploads');
+
     $candidates = [
+        $uploadsBase . '/' . $cleanPath,
+        $uploadsBase . '/' . $fileName,
         base_path('../uploads/' . $cleanPath),
         base_path('../uploads/' . $fileName),
+        base_path('../../uploads/' . $cleanPath),
+        base_path('../../uploads/' . $fileName),
         public_path('uploads/' . $cleanPath),
         public_path('uploads/' . $fileName),
+        public_path('storage/' . $cleanPath),
+        public_path('storage/' . $fileName),
         storage_path('app/public/' . $cleanPath),
         storage_path('app/public/' . $fileName),
         storage_path('app/' . $cleanPath),
+        $uploadsBase . '/client_plans/' . $fileName,
+        $uploadsBase . '/tasks/' . $fileName,
+        $uploadsBase . '/task_attachments/' . $fileName,
+        $uploadsBase . '/deals/' . $fileName,
+        $uploadsBase . '/deals/attachments/' . $fileName,
+        $uploadsBase . '/users/' . $fileName,
+        $uploadsBase . '/blogs/' . $fileName,
+        $uploadsBase . '/projects/' . $fileName,
+        $uploadsBase . '/services/' . $fileName,
+        $uploadsBase . '/categories/' . $fileName,
+        base_path('../uploads/client_plans/' . $fileName),
         base_path('../uploads/tasks/' . $fileName),
         base_path('../uploads/task_attachments/' . $fileName),
         base_path('../uploads/deals/' . $fileName),
+        base_path('../uploads/deals/attachments/' . $fileName),
         base_path('../uploads/users/' . $fileName),
+        base_path('../uploads/blogs/' . $fileName),
+        base_path('../uploads/projects/' . $fileName),
+        base_path('../uploads/services/' . $fileName),
+        base_path('../uploads/categories/' . $fileName),
         storage_path('app/public/tasks/' . $fileName),
         storage_path('app/public/deals/' . $fileName)
     ];

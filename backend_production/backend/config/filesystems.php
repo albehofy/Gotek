@@ -40,7 +40,22 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => env('UPLOADS_PATH') ?: (is_dir(base_path('../uploads')) ? base_path('../uploads') : (is_dir(public_path('uploads')) ? public_path('uploads') : base_path('../uploads'))),
+            'root' => (function() {
+                $customPath = env('UPLOADS_PATH');
+                if (!empty($customPath)) {
+                    if (str_starts_with($customPath, '/') || preg_match('/^[A-Za-z]:[\\\\\/]/', $customPath)) {
+                        return $customPath;
+                    }
+                    return base_path($customPath);
+                }
+                if (is_dir(base_path('../uploads'))) {
+                    return base_path('../uploads');
+                }
+                if (is_dir(public_path('uploads'))) {
+                    return public_path('uploads');
+                }
+                return base_path('../uploads');
+            })(),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
@@ -49,7 +64,22 @@ return [
 
         'uploads' => [
             'driver' => 'local',
-            'root' => env('UPLOADS_PATH') ?: (is_dir(base_path('../uploads')) ? base_path('../uploads') : (is_dir(public_path('uploads')) ? public_path('uploads') : base_path('../uploads'))),
+            'root' => (function() {
+                $customPath = env('UPLOADS_PATH');
+                if (!empty($customPath)) {
+                    if (str_starts_with($customPath, '/') || preg_match('/^[A-Za-z]:[\\\\\/]/', $customPath)) {
+                        return $customPath;
+                    }
+                    return base_path($customPath);
+                }
+                if (is_dir(base_path('../uploads'))) {
+                    return base_path('../uploads');
+                }
+                if (is_dir(public_path('uploads'))) {
+                    return public_path('uploads');
+                }
+                return base_path('../uploads');
+            })(),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
