@@ -9,7 +9,8 @@ use App\Http\Controllers\Api\{
     HomePageController, TaskController, EmployeeDashboardController,
     InternalProjectController, ChecklistController, DepartmentController, UserController,
     NotificationController, ActivityController, ExtraController, AboutController,
-    PageContentController, DealController, RoleController, FinanceController, ClientPortalController
+    PageContentController, DealController, RoleController, FinanceController, ClientPortalController,
+    ClientPlanController
 };
 
 /*
@@ -66,8 +67,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('deals')->group(function () {
         Route::get('/', [DealController::class, 'index']);
         Route::get('/{id}', [DealController::class, 'show']);
+        Route::get('/{id}/history', [DealController::class, 'history']);
+        Route::get('/{id}/attachments', [DealController::class, 'getAttachments']);
+        Route::post('/{id}/attachments', [DealController::class, 'addAttachment']);
+        Route::delete('/{id}/attachments/{attachmentId}', [DealController::class, 'deleteAttachment']);
         Route::post('/', [DealController::class, 'store']);
-        Route::put('/{id}', [DealController::class, 'update']);
+        Route::match(['put', 'post'], '/{id}', [DealController::class, 'update']);
         Route::delete('/{id}', [DealController::class, 'destroy']);
     });
 
@@ -118,6 +123,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [UserController::class, 'update']);
         Route::patch('/{id}/assign-department', [UserController::class, 'updateDepartment']);
         Route::patch('/{id}/toggle-hold', [UserController::class, 'toggleHold']);
+        Route::patch('/{id}/toggle-vip', [UserController::class, 'toggleVip']);
+        Route::patch('/{id}/classification', [UserController::class, 'updateClassification']);
         Route::get('/{id}/client-profile', [UserController::class, 'clientProfile']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
@@ -135,7 +142,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Full Accounting & Finance Routes
-    Route::prefix('finance')->middleware('role:super_admin,admin,department_manager')->group(function () {
+    Route::prefix('finance')->middleware('role:super_admin,admin')->group(function () {
         Route::get('/summary', [FinanceController::class, 'summary']);
         Route::get('/ledger', [FinanceController::class, 'getLedger']);
         Route::post('/ledger', [FinanceController::class, 'storeLedger']);
@@ -199,4 +206,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('tasks/{taskId}/checklist', [ChecklistController::class, 'index']);
     Route::put('/checklist/{checkListId}/toggle', [ChecklistController::class, 'toggle']);
     Route::get('/employee/dashboard', [EmployeeDashboardController::class, 'index']);
+    // برامج خطط وبريفات العميل (PDF)
+    Route::get('/clients/{clientId}/plans', [ClientPlanController::class, 'index']);
+    Route::post('/clients/{clientId}/plans', [ClientPlanController::class, 'store']);
+    Route::delete('/client-plans/{planId}', [ClientPlanController::class, 'destroy']);
 });

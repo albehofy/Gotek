@@ -263,6 +263,14 @@ class ProjectController extends Controller
 
     // 5. حذف مشروع وصوره نهائياً
     public function destroy(Project $project) {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف المشاريع. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         if ($project->main_image && !filter_var($project->main_image, FILTER_VALIDATE_URL)) {
             Storage::disk('public')->delete($project->main_image);
         }

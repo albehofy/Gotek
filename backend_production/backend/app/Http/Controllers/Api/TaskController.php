@@ -10,7 +10,11 @@ use App\Models\TaskCustomField;
 use App\Models\TaskCustomFieldValue;
 use App\Models\NotificationModel;
 use App\Models\User;
+use App\Models\Department;
+use App\Models\Deal;
+use App\Services\EmailNotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +25,7 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Task::with(['deal', 'department', 'subCategory', 'users', 'subtasks.users', 'subtasks.attachments', 'attachments', 'customFieldValues.field', 'notes.user', 'parent'])->latest();
+        $query = Task::with(['deal.attachments.uploader', 'department', 'subCategory', 'users', 'subtasks.users', 'subtasks.attachments', 'attachments', 'customFieldValues.field', 'notes.user', 'parent'])->latest();
 
         // Scope filtering based on role
         if ($user->role === 'employee') {
@@ -61,26 +65,65 @@ class TaskController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by task type: main (parents only), partials (subtasks only), or all
-        if ($request->filled('task_type')) {
-            $tType = strtolower($request->get('task_type'));
-            if ($tType === 'main') {
-                $query->whereNull('parent_id');
-            } elseif ($tType === 'partials' || $tType === 'partial' || $tType === 'subtasks') {
-                $query->whereNotNull('parent_id');
-            }
-        } elseif ($request->has('parents_only') && ($request->get('parents_only') === 'true' || $request->get('parents_only') === true)) {
+        // By default, only retrieve top-level/main tasks so subtasks do not clutter the board
+        if ($request->filled('task_type') && in_array(strtolower($request->get('task_type')), ['partials', 'partial', 'subtasks'])) {
+            $query->whereNotNull('parent_id');
+        } else {
+            // Strictly main tasks only! Subtasks are eagerly loaded inside their parent task's subtasks relation
             $query->whereNull('parent_id');
         }
 
         $tasks = $query->get();
 
-        $isEmployee = $user && $user->role === 'employee' && !$user->hasRole('super_admin') && !$user->hasRole('admin') && !$user->hasRole('department_manager');
-        if ($isEmployee) {
+        $isRestricted = $user && in_array(strtolower($user->role), ['employee', 'department_manager', 'department manager']) && !$user->hasRole('super_admin') && !$user->hasRole('admin');
+        if ($isRestricted) {
             $tasks->transform(function($t) {
                 $t->client_price = 0;
                 $t->employee_price = 0;
                 $t->company_margin = 0;
+                if ($t->deal) {
+                    $t->deal->total_price = 0;
+                    $t->deal->paid_amount = 0;
+                    $t->deal->calculated_total = 0;
+                    $t->deal->calculated_paid = 0;
+                    $t->deal->remaining_balance = 0;
+                    $t->deal->discount_value = 0;
+                    $t->deal->sales_commission_value = 0;
+                    $t->deal->unsetRelation('payments');
+                }
+                return $t;
+            });
+        }
+
+        $isClient = $user && $user->role === 'client';
+        if ($isClient) {
+            $tasks->transform(function($t) {
+                $t->employee_price = 0;
+                $t->company_margin = 0;
+                if ($t->users) {
+                    foreach ($t->users as $u) {
+                        $u->name = 'مسؤول في النظام';
+                        $u->email = '';
+                    }
+                }
+                if ($t->subtasks) {
+                    foreach ($t->subtasks as $st) {
+                        if ($st->users) {
+                            foreach ($st->users as $su) {
+                                $su->name = 'مسؤول في النظام';
+                                $su->email = '';
+                            }
+                        }
+                    }
+                }
+                if ($t->notes) {
+                    foreach ($t->notes as $n) {
+                        if ($n->user) {
+                            $n->user->name = ($n->user->role === 'client') ? 'العميل' : 'مسؤول';
+                            $n->user->email = '';
+                        }
+                    }
+                }
                 return $t;
             });
         }
@@ -119,7 +162,7 @@ class TaskController extends Controller
             $request->merge(['custom_fields' => is_array($decoded) ? $decoded : []]);
         }
 
-        foreach (['deal_id', 'department_id', 'sub_category_id', 'parent_id'] as $nullableId) {
+        foreach (['deal_id', 'department_id', 'sub_category_id', 'parent_id', 'client_id'] as $nullableId) {
             if ($request->has($nullableId) && ($request->input($nullableId) === 'null' || $request->input($nullableId) === '')) {
                 $request->merge([$nullableId => null]);
             }
@@ -130,6 +173,7 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'scope' => 'nullable|string',
             'deal_id' => 'nullable|exists:deals,id',
+            'client_id' => 'nullable|exists:users,id',
             'department_id' => 'nullable|exists:departments,id',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
             'parent_id' => 'nullable|exists:tasks,id',
@@ -162,11 +206,17 @@ class TaskController extends Controller
 
         $isStandalone = $validated['is_standalone'] ?? empty($validated['deal_id']);
 
+        $clientId = $validated['client_id'] ?? null;
+        if (!empty($validated['deal_id']) && empty($clientId)) {
+            $clientId = Deal::where('id', $validated['deal_id'])->value('client_id');
+        }
+
         $task = Task::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? '',
             'scope' => $validated['scope'] ?? null,
             'deal_id' => $validated['deal_id'] ?? null,
+            'client_id' => $clientId,
             'department_id' => $validated['department_id'] ?? null,
             'sub_category_id' => $validated['sub_category_id'] ?? null,
             'parent_id' => $validated['parent_id'] ?? null,
@@ -241,12 +291,64 @@ class TaskController extends Controller
             }
         }
 
+        // Sync financial totals with parent deal if task is attached to a deal
+        if ($task->deal_id) {
+            $task->deal?->syncFinancialTotals();
+        }
+
         return response()->json(['status' => 'success', 'data' => $task->load(['users', 'subCategory', 'attachments', 'customFieldValues.field'])], 201);
     }
 
     public function show($id)
     {
-        $task = Task::with(['deal', 'department', 'subCategory', 'parent', 'subtasks.users', 'users', 'attachments', 'notes.user', 'customFieldValues.field'])->findOrFail($id);
+        $task = Task::with(['deal.attachments.uploader', 'department', 'subCategory', 'parent', 'subtasks.users', 'users', 'attachments', 'notes.user', 'customFieldValues.field'])->findOrFail($id);
+        $user = Auth::user();
+        $isRestricted = $user && in_array(strtolower($user->role), ['employee', 'department_manager', 'department manager']) && !$user->hasRole('super_admin') && !$user->hasRole('admin');
+        if ($isRestricted) {
+            $task->client_price = 0;
+            $task->employee_price = 0;
+            $task->company_margin = 0;
+            if ($task->deal) {
+                $task->deal->total_price = 0;
+                $task->deal->paid_amount = 0;
+                $task->deal->calculated_total = 0;
+                $task->deal->calculated_paid = 0;
+                $task->deal->remaining_balance = 0;
+                $task->deal->discount_value = 0;
+                $task->deal->sales_commission_value = 0;
+                $task->deal->unsetRelation('payments');
+            }
+        }
+        $isClient = $user && $user->role === 'client';
+        if ($isClient) {
+            $task->employee_price = 0;
+            $task->company_margin = 0;
+            if ($task->users) {
+                foreach ($task->users as $u) {
+                    $u->name = 'مسؤول في النظام';
+                    $u->email = '';
+                }
+            }
+            if ($task->subtasks) {
+                foreach ($task->subtasks as $st) {
+                    if ($st->users) {
+                        foreach ($st->users as $su) {
+                            $su->name = 'مسؤول في النظام';
+                            $su->email = '';
+                        }
+                    }
+                }
+            }
+            if ($task->notes) {
+                foreach ($task->notes as $n) {
+                    if ($n->user) {
+                        $n->user->name = ($n->user->role === 'client') ? 'العميل' : 'مسؤول';
+                        $n->user->email = '';
+                    }
+                }
+            }
+        }
+
         return response()->json($task);
     }
 
@@ -265,7 +367,26 @@ class TaskController extends Controller
             $request->merge(['custom_fields' => is_array($decoded) ? $decoded : []]);
         }
 
-        foreach (['deal_id', 'department_id', 'sub_category_id'] as $nullableId) {
+        if ($request->has('assigned_user_ids') && is_string($request->input('assigned_user_ids'))) {
+            $decoded = json_decode($request->input('assigned_user_ids'), true);
+            $request->merge(['assigned_user_ids' => is_array($decoded) ? $decoded : []]);
+        }
+
+        if ($request->has('dates_not_specified')) {
+            $val = $request->input('dates_not_specified');
+            $request->merge([
+                'dates_not_specified' => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);
+        }
+
+        if ($request->has('is_standalone')) {
+            $val = $request->input('is_standalone');
+            $request->merge([
+                'is_standalone' => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);
+        }
+
+        foreach (['deal_id', 'department_id', 'sub_category_id', 'client_id'] as $nullableId) {
             if ($request->has($nullableId) && ($request->input($nullableId) === 'null' || $request->input($nullableId) === '')) {
                 $request->merge([$nullableId => null]);
             }
@@ -276,39 +397,106 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'scope' => 'nullable|string',
             'deal_id' => 'nullable|exists:deals,id',
+            'client_id' => 'nullable|exists:users,id',
             'department_id' => 'nullable|exists:departments,id',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
             'priority' => 'required|in:low,medium,high,urgent',
-            'status' => 'required|in:new,in_progress,content_creator,in_review,client_feedback,done,cancelled',
+            'status' => 'nullable|in:new,todo,in_progress,content_creator,in_review,client_review,client_feedback,done,completed,approved,cancelled',
+            'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'shooting_date' => 'nullable|date',
+            'delivery_date' => 'nullable|date',
+            'dates_not_specified' => 'nullable|boolean',
+            'is_standalone' => 'nullable|boolean',
             'estimated_hours' => 'nullable|integer',
             'client_price' => 'nullable|numeric|min:0',
             'employee_price' => 'nullable|numeric|min:0',
             'user_ids' => 'nullable|array',
+            'user_ids.*' => 'integer|exists:users,id',
+            'assigned_user_ids' => 'nullable|array',
+            'assigned_user_ids.*' => 'integer|exists:users,id',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:20480',
+            'files' => 'nullable|array',
+            'files.*' => 'file|max:20480',
             'custom_fields' => 'nullable|array'
         ]);
 
         $clientPrice = (float) ($validated['client_price'] ?? $task->client_price);
         $employeePrice = (float) ($validated['employee_price'] ?? $task->employee_price);
         $margin = max(0, $clientPrice - $employeePrice);
-        $newStatus = $validated['status'];
+        $newStatus = $validated['status'] ?? $task->status;
+
+        $user = Auth::user();
+        $isManagerOrAdmin = $this->canReopenCompletedTask($user);
+
+        // Employee cannot alter task priority
+        $priority = $validated['priority'];
+        if (!$isManagerOrAdmin && $task->priority !== $priority) {
+            $priority = $task->priority; // Keep existing priority
+        }
+
+        // Only Manager, Admin, Super Admin, or Department Manager can reopen or move completed tasks back
+        $completedStatuses = ['done', 'completed', 'approved'];
+        if (in_array($oldStatus, $completedStatuses) && !in_array($newStatus, $completedStatuses) && !$this->canReopenCompletedTask($user)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'المهمة مكتملة، ولا يمكن إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.'
+            ], 403);
+        }
+
+        $clientId = $validated['client_id'] ?? $task->client_id;
+        $oldDealId = $task->deal_id;
+        $targetDealId = array_key_exists('deal_id', $validated) ? $validated['deal_id'] : $task->deal_id;
+        if ($targetDealId && empty($clientId)) {
+            $clientId = Deal::where('id', $targetDealId)->value('client_id');
+        }
 
         $task->update([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? $task->description,
             'scope' => $validated['scope'] ?? $task->scope,
-            'deal_id' => $validated['deal_id'] ?? $task->deal_id,
-            'department_id' => $validated['department_id'] ?? $task->department_id,
-            'sub_category_id' => $validated['sub_category_id'] ?? $task->sub_category_id,
-            'priority' => $validated['priority'],
+            'deal_id' => $targetDealId,
+            'client_id' => $clientId,
+            'department_id' => array_key_exists('department_id', $validated) ? $validated['department_id'] : $task->department_id,
+            'sub_category_id' => array_key_exists('sub_category_id', $validated) ? $validated['sub_category_id'] : $task->sub_category_id,
+            'priority' => $priority,
             'status' => $newStatus,
+            'due_date' => array_key_exists('due_date', $validated) ? $validated['due_date'] : $task->due_date,
+            'start_date' => array_key_exists('start_date', $validated) ? $validated['start_date'] : $task->start_date,
+            'end_date' => array_key_exists('end_date', $validated) ? $validated['end_date'] : $task->end_date,
+            'shooting_date' => array_key_exists('shooting_date', $validated) ? $validated['shooting_date'] : $task->shooting_date,
+            'delivery_date' => array_key_exists('delivery_date', $validated) ? $validated['delivery_date'] : $task->delivery_date,
+            'dates_not_specified' => array_key_exists('dates_not_specified', $validated) ? (bool)$validated['dates_not_specified'] : $task->dates_not_specified,
+            'is_standalone' => array_key_exists('is_standalone', $validated) ? (bool)$validated['is_standalone'] : $task->is_standalone,
             'estimated_hours' => $validated['estimated_hours'] ?? $task->estimated_hours,
             'client_price' => $clientPrice,
             'employee_price' => $employeePrice,
             'company_margin' => $margin,
         ]);
 
-        if (isset($validated['user_ids'])) {
-            $task->users()->sync($validated['user_ids']);
+        $assignedIds = !empty($validated['user_ids']) ? $validated['user_ids'] : (!empty($validated['assigned_user_ids']) ? $validated['assigned_user_ids'] : null);
+        if ($assignedIds !== null) {
+            $task->users()->sync($assignedIds);
+        }
+
+        $uploadedFiles = $request->file('attachments') ?: ($request->file('files') ?: []);
+        if (!empty($uploadedFiles)) {
+            foreach ($uploadedFiles as $file) {
+                $origName = $file->getClientOriginalName();
+                $mimeType = $file->getClientMimeType();
+                $path = $file->store('tasks', 'public');
+                $type = str_contains($mimeType, 'image') ? 'image' : (str_contains($mimeType, 'video') ? 'video' : 'document');
+                TaskAttachment::create([
+                    'task_id' => $task->id,
+                    'file_path' => $path,
+                    'file_type' => $type,
+                    'file_name' => $origName,
+                    'file_size' => $file->getSize(),
+                    'uploaded_by' => Auth::id()
+                ]);
+            }
         }
 
         if ($oldStatus !== $newStatus) {
@@ -324,6 +512,14 @@ class TaskController extends Controller
             }
         }
 
+        // Sync financial totals with deal if task belongs to a deal or changed deals
+        if ($oldDealId && (int)$oldDealId !== (int)$task->deal_id) {
+            Deal::find($oldDealId)?->syncFinancialTotals();
+        }
+        if ($task->deal_id) {
+            $task->deal?->syncFinancialTotals();
+        }
+
         return response()->json(['status' => 'success', 'data' => $task->load(['users', 'subCategory', 'attachments', 'customFieldValues.field'])]);
     }
 
@@ -337,6 +533,19 @@ class TaskController extends Controller
         ]);
 
         $newStatus = $request->status;
+
+        // Restriction: Once completed, only Manager, Admin, Super Admin, or Department Manager can move it back
+        $completedStatuses = ['done', 'completed', 'approved'];
+        if (in_array($oldStatus, $completedStatuses) && !in_array($newStatus, $completedStatuses)) {
+            $user = Auth::user();
+            if (!$this->canReopenCompletedTask($user)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'المهمة مكتملة، ولا يمكن إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.'
+                ], 403);
+            }
+        }
+
         $task->update(['status' => $newStatus]);
 
         if ($oldStatus !== $newStatus) {
@@ -349,6 +558,15 @@ class TaskController extends Controller
     public function updatePriority(Request $request, $id)
     {
         $task = Task::findOrFail($id);
+
+        $user = Auth::user();
+        if (!$this->canReopenCompletedTask($user)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح بتعديل أولوية المهمة، تقتصر الصلاحية على مدير القسم والإدارة.'
+            ], 403);
+        }
+
         $request->validate([
             'priority' => 'required|in:low,medium,high,urgent'
         ]);
@@ -356,6 +574,43 @@ class TaskController extends Controller
         $task->update(['priority' => $request->priority]);
 
         return response()->json(['status' => 'success', 'data' => $task]);
+    }
+
+    /**
+     * Check if the authenticated user has permission to reopen or move completed tasks back to prior statuses.
+     * Allowed: super_admin, admin, manager, department_manager
+     */
+    protected function canReopenCompletedTask($user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        $allowedRoles = [
+            'super_admin',
+            'admin',
+            'manager',
+            'department_manager'
+        ];
+
+        $role = strtolower(trim(str_replace(' ', '_', $user->role ?? '')));
+        if (in_array($role, $allowedRoles)) {
+            return true;
+        }
+
+        foreach ($allowedRoles as $roleSlug) {
+            if ($user->hasRole($roleSlug)) {
+                return true;
+            }
+        }
+
+        try {
+            if (\App\Models\Department::where('manager_id', $user->id)->exists()) {
+                return true;
+            }
+        } catch (\Throwable $e) {}
+
+        return false;
     }
 
     private function notifyTaskStatusChange(Task $task, $oldStatus, $newStatus)
@@ -479,37 +734,122 @@ class TaskController extends Controller
     // --- Task Notes & @Mentions ---
     public function addNote(Request $request, $id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with(['users', 'department', 'deal'])->findOrFail($id);
         $request->validate([
             'note' => 'required|string'
         ]);
 
+        $sender = Auth::user();
+        $senderId = $sender ? $sender->id : auth()->id();
+
         $note = TaskNote::create([
             'task_id' => $task->id,
-            'user_id' => Auth::id(),
+            'user_id' => $senderId,
             'note' => $request->note
         ]);
 
-        // Extract @mentions (e.g., @name or @id)
+        // Collect all stakeholders to notify (triggering realtime sound chime & notification):
+        // 1. Assigned staff members
+        $recipientIds = $task->users->pluck('id')->toArray();
+
+        // 2. Deal creator & Sales person (if task is attached to a deal)
+        if ($task->deal) {
+            if ($task->deal->created_by) {
+                $recipientIds[] = $task->deal->created_by;
+            }
+            if ($task->deal->sales_person_id) {
+                $recipientIds[] = $task->deal->sales_person_id;
+            }
+        }
+
+        // 3. Department manager(s)
+        $deptId = $task->department_id ?? $task->deal?->department_id;
+        $deptManagersFound = false;
+        if ($deptId) {
+            $deptMgrId = Department::where('id', $deptId)->value('manager_id');
+            if ($deptMgrId) {
+                $recipientIds[] = $deptMgrId;
+                $deptManagersFound = true;
+            }
+            $deptMgrUsers = User::where('department_id', $deptId)
+                ->whereIn('role', ['department_manager', 'Department Manager'])
+                ->pluck('id')
+                ->toArray();
+            if (!empty($deptMgrUsers)) {
+                $recipientIds = array_merge($recipientIds, $deptMgrUsers);
+                $deptManagersFound = true;
+            }
+        }
+
+        // If no department manager exists for this task, notify Super Admins as fallback management
+        if (!$deptManagersFound) {
+            $superAdminIds = User::where('role', 'super_admin')->pluck('id')->toArray();
+            $recipientIds = array_merge($recipientIds, $superAdminIds);
+        }
+
+        // 4. If this is a subtask, notify parent task assignees
+        if ($task->parent_id) {
+            $parent = Task::with('users')->find($task->parent_id);
+            if ($parent) {
+                $recipientIds = array_merge($recipientIds, $parent->users->pluck('id')->toArray());
+            }
+        }
+
+        // 5. Previous commenters on this task (thread participants)
+        $prevCommenters = TaskNote::where('task_id', $task->id)->pluck('user_id')->toArray();
+        $recipientIds = array_merge($recipientIds, $prevCommenters);
+
+        // 6. Extract @mentions (e.g., @name or @id)
         preg_match_all('/@([a-zA-Z0-9_\-\.\s]+)/', $request->note, $matches);
         if (!empty($matches[1])) {
-            $currentUserId = auth()->id();
             foreach ($matches[1] as $mentionedName) {
-                $user = User::where('name', 'like', '%' . trim($mentionedName) . '%')->first();
-                if ($user && (int)$user->id !== (int)$currentUserId) {
-                    NotificationModel::create([
-                        'user_id' => $user->id,
-                        'type' => 'mention',
-                        'title' => 'تمت إشارتك في تعليق',
-                        'message' => Auth::user()->name . ' أشار إليك في المهمة: ' . $task->title,
-                        'notifiable_type' => Task::class,
-                        'notifiable_id' => $task->id
-                    ]);
+                $mUser = User::where('name', 'like', '%' . trim($mentionedName) . '%')->first();
+                if ($mUser) {
+                    $recipientIds[] = $mUser->id;
                 }
             }
         }
 
-        return response()->json(['status' => 'success', 'data' => $note->load('user')], 201);
+        // Exclude the sender themselves
+        $recipientIds = array_values(array_diff(array_unique(array_filter($recipientIds)), [(int)$senderId]));
+
+        foreach ($recipientIds as $uid) {
+            $targetUser = User::find($uid);
+            if (!$targetUser) continue;
+
+            $notifTitle = 'تعليق جديد على المهمة: ' . $task->title;
+            $notifMessage = ($sender ? $sender->name : 'مستخدم') . ': ' . Str::limit($request->note, 120);
+
+            NotificationModel::create([
+                'user_id' => $uid,
+                'type' => 'comment',
+                'title' => $notifTitle,
+                'message' => $notifMessage,
+                'notifiable_type' => Task::class,
+                'notifiable_id' => $task->id
+            ]);
+
+            try {
+                EmailNotificationService::sendNotificationEmail(
+                    $targetUser,
+                    'تعليق جديد على المهمة (' . $task->title . ')',
+                    'أضاف ' . ($sender ? $sender->name : 'زميلك') . ' تعليقاً جديداً على المهمة',
+                    "المهمة: {$task->title}\nالكاتب: " . ($sender ? $sender->name : '') . "\nالتعليق:\n\"{$request->note}\""
+                );
+            } catch (\Throwable $e) {
+                // Ignore email network failures so the in-app notification & sound play instantly
+            }
+        }
+
+        $note->load('user');
+        if ($sender && $sender->role === 'client') {
+            if ($note->user) {
+                $note->user->name = 'العميل';
+                $note->user->email = '';
+            }
+        }
+
+        return response()->json(['status' => 'success', 'data' => $note], 201);
     }
 
     // --- Task Attachments & Inline Image Upload ---
@@ -571,6 +911,7 @@ class TaskController extends Controller
         }
 
         $items = collect([]);
+        $isClient = Auth::user() && Auth::user()->role === 'client';
 
         // 1. Task Creation Event
         $items->push([
@@ -627,8 +968,8 @@ class TaskController extends Controller
                     'action_title' => 'تحديث نشاط',
                     'icon' => $icon,
                     'color' => $color,
-                    'description' => $desc,
-                    'user_name' => $entry->user_name ?? 'مستخدم',
+                    'description' => $isClient ? 'تم تحديث النشاط' : $desc,
+                    'user_name' => $isClient ? 'مسؤول في النظام' : ($entry->user_name ?? 'مستخدم'),
                     'created_at' => $entry->created_at ?? now()->toDateTimeString()
                 ]);
             }
@@ -636,7 +977,7 @@ class TaskController extends Controller
 
         // 3. Notes / Comments
         foreach ($task->notes as $note) {
-            $author = $note->user ? $note->user->name : 'مستخدم';
+            $author = $isClient ? (($note->user && $note->user->role === 'client') ? 'العميل' : 'مسؤول') : ($note->user ? $note->user->name : 'مستخدم');
             $items->push([
                 'id' => 'note_' . $note->id,
                 'type' => 'note',
@@ -651,7 +992,7 @@ class TaskController extends Controller
 
         // 4. Attachments
         foreach ($task->attachments as $att) {
-            $uploader = $att->uploader ? $att->uploader->name : 'مستخدم';
+            $uploader = $isClient ? 'مسؤول في النظام' : ($att->uploader ? $att->uploader->name : 'مستخدم');
             $fileName = $att->file_name ?? 'مستند';
             $items->push([
                 'id' => 'att_' . $att->id,
@@ -769,6 +1110,14 @@ class TaskController extends Controller
 
     public function deleteSubtask($id)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف المهام الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         $subtask = Task::findOrFail($id);
         $parentId = $subtask->parent_id;
         $title = $subtask->title;
@@ -804,6 +1153,14 @@ class TaskController extends Controller
 
     public function destroy($id)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف المهام. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         $task = Task::find($id);
         if (!$task) {
             return response()->json(['message' => 'المهمة غير موجودة'], 404);
@@ -829,8 +1186,13 @@ class TaskController extends Controller
                 $subtask->delete();
             }
 
+            $dealId = $task->deal_id;
             $task->delete();
             DB::commit();
+
+            if ($dealId) {
+                Deal::find($dealId)?->syncFinancialTotals();
+            }
 
             return response()->json([
                 'status' => 'success',

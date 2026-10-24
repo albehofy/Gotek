@@ -119,6 +119,14 @@ class DepartmentController extends Controller
 
     public function deleteSubCategory($subId)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف التصنيفات الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         $sub = SubCategory::findOrFail($subId);
         $sub->delete();
         return response()->json(['status' => 'success', 'message' => 'تم حذف التصنيف الفرعي بنجاح']);
@@ -126,6 +134,14 @@ class DepartmentController extends Controller
 
     public function destroy($id)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف الأقسام. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         $department = Department::findOrFail($id);
 
         DB::beginTransaction();

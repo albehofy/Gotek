@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.4.11, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.4.10, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: media_glow_crm
 -- ------------------------------------------------------
--- Server version	8.4.11-0ubuntu0.26.04.1
+-- Server version	8.4.10-0ubuntu0.26.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -97,7 +97,7 @@ CREATE TABLE `activity_log` (
   KEY `subject` (`subject_type`,`subject_id`),
   KEY `causer` (`causer_type`,`causer_id`),
   KEY `activity_log_log_name_index` (`log_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -241,7 +241,7 @@ CREATE TABLE `categories` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `categories_slug_unique` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -262,8 +262,8 @@ DROP TABLE IF EXISTS `client_payments`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `client_payments` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `deal_id` bigint unsigned DEFAULT NULL,
-  `client_id` bigint unsigned DEFAULT NULL,
+  `deal_id` bigint unsigned NOT NULL,
+  `client_id` bigint unsigned NOT NULL,
   `amount` decimal(12,2) NOT NULL,
   `payment_date` date NOT NULL,
   `payment_method` enum('cash','cash_hand','instapay','bank_transfer') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cash',
@@ -273,13 +273,13 @@ CREATE TABLE `client_payments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `client_payments_created_by_foreign` (`created_by`),
   KEY `client_payments_deal_id_foreign` (`deal_id`),
   KEY `client_payments_client_id_foreign` (`client_id`),
-  CONSTRAINT `client_payments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  KEY `client_payments_created_by_foreign` (`created_by`),
+  CONSTRAINT `client_payments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `client_payments_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `client_payments_deal_id_foreign` FOREIGN KEY (`deal_id`) REFERENCES `deals` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `client_payments_deal_id_foreign` FOREIGN KEY (`deal_id`) REFERENCES `deals` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -368,8 +368,8 @@ DROP TABLE IF EXISTS `contracts`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contracts` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `client_id` bigint unsigned DEFAULT NULL,
-  `admin_id` bigint unsigned DEFAULT NULL,
+  `client_id` bigint unsigned NOT NULL,
+  `admin_id` bigint unsigned NOT NULL,
   `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `signed_at` timestamp NULL DEFAULT NULL,
@@ -379,11 +379,11 @@ CREATE TABLE `contracts` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `internal_project_id` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `contracts_internal_project_id_foreign` (`internal_project_id`),
-  KEY `contracts_admin_id_foreign` (`admin_id`),
   KEY `contracts_client_id_foreign` (`client_id`),
-  CONSTRAINT `contracts_admin_id_foreign` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `contracts_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  KEY `contracts_admin_id_foreign` (`admin_id`),
+  KEY `contracts_internal_project_id_foreign` (`internal_project_id`),
+  CONSTRAINT `contracts_admin_id_foreign` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `contracts_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`),
   CONSTRAINT `contracts_internal_project_id_foreign` FOREIGN KEY (`internal_project_id`) REFERENCES `internal_projects` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -443,17 +443,10 @@ CREATE TABLE `deals` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` longtext COLLATE utf8mb4_unicode_ci,
-  `attachment_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `reference_link` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
-  `shooting_date` date DEFAULT NULL,
-  `delivery_date` date DEFAULT NULL,
-  `dates_not_specified` tinyint(1) NOT NULL DEFAULT '0',
   `client_id` bigint unsigned DEFAULT NULL,
   `total_price` decimal(10,2) NOT NULL DEFAULT '0.00',
   `paid_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','active','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `created_by` bigint unsigned NOT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -472,7 +465,7 @@ CREATE TABLE `deals` (
   CONSTRAINT `deals_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `deals_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `deals_sales_person_id_foreign` FOREIGN KEY (`sales_person_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -481,7 +474,7 @@ CREATE TABLE `deals` (
 
 LOCK TABLES `deals` WRITE;
 /*!40000 ALTER TABLE `deals` DISABLE KEYS */;
-INSERT INTO `deals` VALUES (2,'تجريبي',NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,4,12000.00,0.00,'pending',1,NULL,'2026-08-24 06:30:32','2026-08-24 06:30:32',1,NULL,'none',0.00,'تجريبي');
+INSERT INTO `deals` VALUES (2,'تجريبي',NULL,4,12000.00,0.00,'pending',1,NULL,'2026-08-24 06:30:32','2026-08-24 06:30:32',1,NULL,'none',0.00,'تجريبي');
 /*!40000 ALTER TABLE `deals` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -504,7 +497,7 @@ CREATE TABLE `departments` (
   `partner_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `partner_percentage` decimal(5,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -532,7 +525,7 @@ CREATE TABLE `extras` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -794,7 +787,7 @@ CREATE TABLE `ledger_entries` (
   CONSTRAINT `ledger_entries_deal_id_foreign` FOREIGN KEY (`deal_id`) REFERENCES `deals` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ledger_entries_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ledger_entries_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -818,7 +811,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -827,7 +820,7 @@ CREATE TABLE `migrations` (
 
 LOCK TABLES `migrations` WRITE;
 /*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
-INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2026_02_23_231135_create_personal_access_tokens_table',1),(5,'2026_02_23_231621_create_projects_table',1),(6,'2026_02_23_235300_create_categories_table',1),(7,'2026_02_23_235329_add_category_id_to_projects_table',1),(8,'2026_03_16_013519_remove_category_from_projects_table',1),(9,'2026_03_16_013700_create_project_images_table',1),(10,'2026_03_16_015706_create_contact_messages_table',1),(11,'2026_03_16_031500_create_contact_infos_table',1),(12,'2026_03_16_055614_faq',1),(13,'2026_03_26_003807_change_columns_to_json_in_projects_table',1),(14,'2026_03_26_060305_create_services_table',1),(15,'2026_04_01_150711_blog',1),(16,'2026_04_09_173612_images_alt',1),(17,'2026_04_10_123843_create_testimonials_table',1),(18,'2026_04_18_145847_create_departments_table',1),(19,'2026_04_18_145850_modify_users_table',1),(20,'2026_04_18_150215_create_tasks_table',1),(21,'2026_04_18_150251_create_task_details_tables',1),(22,'2026_04_18_150428_create_contracts_table',1),(23,'2026_04_18_190219_create_internal_projects_table',1),(24,'2026_04_18_190749_contract_link_project',1),(25,'2026_04_19_001656_create_notifications_table',1),(26,'2026_04_19_013216_tasks_foreign_key',1),(27,'2026_04_19_190120_create_task_user_table',1),(28,'2026_04_21_003220_create_task_attachments_table',1),(29,'2026_04_23_010928_create_activity_log_table',1),(30,'2026_04_23_010929_add_event_column_to_activity_log_table',1),(31,'2026_04_23_010930_add_batch_uuid_column_to_activity_log_table',1),(32,'2026_05_08_191253_add_description_to_categories_table',1),(33,'2026_05_17_143610_add_view_in_home_to_projects_table',1),(34,'2026_05_17_145333_create_extras_table',1),(35,'2026_05_18_185359_make_job_title_nullable_in_testimonials_table',1),(36,'2026_05_18_185820_make_feedback_nullable_in_testimonials_table',1),(37,'2026_06_05_212943_add_detail_columns_to_projects_table',1),(38,'2026_06_06_092353_create_about_pages_table',1),(39,'2026_06_06_092422_create_about_timelines_table',1),(40,'2026_06_06_092917_create_page_contents_table',1),(41,'2026_06_06_123205_create_deals_table',1),(42,'2026_06_06_123219_add_deal_columns_to_tasks_table',1),(43,'2026_06_06_123224_create_task_notes_table',1),(44,'2026_06_06_123314_make_internal_project_id_nullable_on_tasks_table',1),(45,'2026_08_12_000001_create_roles_and_permissions_tables',1),(46,'2026_08_12_000002_create_notifications_table',1),(47,'2026_08_12_000003_create_task_attachments_table',1),(48,'2026_08_12_000004_create_finance_and_ledger_tables',1),(49,'2026_08_12_000005_extend_departments_and_sections_table',1),(50,'2026_08_12_000006_extend_deals_contracts_and_tasks_tables',1),(51,'2026_08_12_000007_extend_users_compensation_table',1),(52,'2026_08_15_000010_add_phone_to_users_table',1),(53,'2026_08_22_221000_alter_role_column_in_users_table',2),(54,'2026_08_24_115000_alter_sales_commission_type_in_deals_table',3),(55,'2026_08_24_123500_alter_status_column_in_tasks_table',4),(56,'2026_09_06_120001_add_hold_and_client_code_and_user_roles_table',5),(57,'2026_09_06_120002_add_dates_and_attachments_to_deals_and_tasks',5),(58,'2026_09_09_120003_alter_status_column_in_deals_table',5),(59,'2026_09_23_201500_fix_foreign_key_constraints_for_deletion',6);
+INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2026_02_23_231135_create_personal_access_tokens_table',1),(5,'2026_02_23_231621_create_projects_table',1),(6,'2026_02_23_235300_create_categories_table',1),(7,'2026_02_23_235329_add_category_id_to_projects_table',1),(8,'2026_03_16_013519_remove_category_from_projects_table',1),(9,'2026_03_16_013700_create_project_images_table',1),(10,'2026_03_16_015706_create_contact_messages_table',1),(11,'2026_03_16_031500_create_contact_infos_table',1),(12,'2026_03_16_055614_faq',1),(13,'2026_03_26_003807_change_columns_to_json_in_projects_table',1),(14,'2026_03_26_060305_create_services_table',1),(15,'2026_04_01_150711_blog',1),(16,'2026_04_09_173612_images_alt',1),(17,'2026_04_10_123843_create_testimonials_table',1),(18,'2026_04_18_145847_create_departments_table',1),(19,'2026_04_18_145850_modify_users_table',1),(20,'2026_04_18_150215_create_tasks_table',1),(21,'2026_04_18_150251_create_task_details_tables',1),(22,'2026_04_18_150428_create_contracts_table',1),(23,'2026_04_18_190219_create_internal_projects_table',1),(24,'2026_04_18_190749_contract_link_project',1),(25,'2026_04_19_001656_create_notifications_table',1),(26,'2026_04_19_013216_tasks_foreign_key',1),(27,'2026_04_19_190120_create_task_user_table',1),(28,'2026_04_21_003220_create_task_attachments_table',1),(29,'2026_04_23_010928_create_activity_log_table',1),(30,'2026_04_23_010929_add_event_column_to_activity_log_table',1),(31,'2026_04_23_010930_add_batch_uuid_column_to_activity_log_table',1),(32,'2026_05_08_191253_add_description_to_categories_table',1),(33,'2026_05_17_143610_add_view_in_home_to_projects_table',1),(34,'2026_05_17_145333_create_extras_table',1),(35,'2026_05_18_185359_make_job_title_nullable_in_testimonials_table',1),(36,'2026_05_18_185820_make_feedback_nullable_in_testimonials_table',1),(37,'2026_06_05_212943_add_detail_columns_to_projects_table',1),(38,'2026_06_06_092353_create_about_pages_table',1),(39,'2026_06_06_092422_create_about_timelines_table',1),(40,'2026_06_06_092917_create_page_contents_table',1),(41,'2026_06_06_123205_create_deals_table',1),(42,'2026_06_06_123219_add_deal_columns_to_tasks_table',1),(43,'2026_06_06_123224_create_task_notes_table',1),(44,'2026_06_06_123314_make_internal_project_id_nullable_on_tasks_table',1),(45,'2026_08_12_000001_create_roles_and_permissions_tables',1),(46,'2026_08_12_000002_create_notifications_table',1),(47,'2026_08_12_000003_create_task_attachments_table',1),(48,'2026_08_12_000004_create_finance_and_ledger_tables',1),(49,'2026_08_12_000005_extend_departments_and_sections_table',1),(50,'2026_08_12_000006_extend_deals_contracts_and_tasks_tables',1),(51,'2026_08_12_000007_extend_users_compensation_table',1),(52,'2026_08_15_000010_add_phone_to_users_table',1),(53,'2026_08_22_221000_alter_role_column_in_users_table',2),(54,'2026_08_24_115000_alter_sales_commission_type_in_deals_table',3),(55,'2026_08_24_123500_alter_status_column_in_tasks_table',4);
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -853,7 +846,7 @@ CREATE TABLE `notifications` (
   PRIMARY KEY (`id`),
   KEY `notifications_user_id_foreign` (`user_id`),
   CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1033,7 +1026,7 @@ CREATE TABLE `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `personal_access_tokens_expires_at_index` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1042,7 +1035,7 @@ CREATE TABLE `personal_access_tokens` (
 
 LOCK TABLES `personal_access_tokens` WRITE;
 /*!40000 ALTER TABLE `personal_access_tokens` DISABLE KEYS */;
-INSERT INTO `personal_access_tokens` VALUES (1,'App\\Models\\User',1,'admin-token','367b10f4fffcead2b7b884c8a51d3ffdf08519f4fa530aba12579e1bee48f485','[\"*\"]','2026-08-22 16:12:32',NULL,'2026-08-22 16:10:02','2026-08-22 16:12:32'),(2,'App\\Models\\User',1,'admin-token','5a7a0cbe4c2069279cf457578e97e0f01d7533fe377c516158bd240982160f60','[\"*\"]','2026-08-22 16:13:59',NULL,'2026-08-22 16:12:49','2026-08-22 16:13:59'),(3,'App\\Models\\User',1,'admin-token','48dea56885bcc9f1c564b640cd23635da0103645626eeedbd235311d00ab87b7','[\"*\"]','2026-08-22 16:16:01',NULL,'2026-08-22 16:14:40','2026-08-22 16:16:01'),(4,'App\\Models\\User',3,'admin-token','71bdcbe40fd40591f106b4961480b92e44f868a9a4fbc7d57b138cfc0879bb8f','[\"*\"]','2026-08-22 16:16:19',NULL,'2026-08-22 16:16:13','2026-08-22 16:16:19'),(5,'App\\Models\\User',1,'admin-token','6eb1f5c037994353832a1e3f5606d4b12576e5d63e156e4b0c0655a3f6733d7b','[\"*\"]','2026-08-24 06:48:11',NULL,'2026-08-24 05:43:15','2026-08-24 06:48:11'),(6,'App\\Models\\User',4,'admin-token','b2a9adaef317422e7dbc367a64cce65e2ded5e8f836d034d9ffdb4777ada26b9','[\"*\"]','2026-08-24 06:49:03',NULL,'2026-08-24 06:48:23','2026-08-24 06:49:03'),(7,'App\\Models\\User',1,'admin-token','466a20303659a28858f871ff8882ef1a962d1e3fc5d3b756f57ba4a6a987cf11','[\"*\"]','2026-08-24 06:49:37',NULL,'2026-08-24 06:49:27','2026-08-24 06:49:37'),(8,'App\\Models\\User',5,'admin-token','82329d86f6215d75894c678228197be713b68da8dcca131223ff016f3df475b2','[\"*\"]','2026-08-24 06:50:05',NULL,'2026-08-24 06:49:50','2026-08-24 06:50:05'),(9,'App\\Models\\User',1,'admin-token','5dd5cb6f8951215b425e0480837894ab3429acfa43249a62ed5048520b10efbc','[\"*\"]','2026-08-24 11:23:34',NULL,'2026-08-24 06:50:16','2026-08-24 11:23:34'),(11,'App\\Models\\User',1,'test','6668e40694a95369ccf2dc75b390c57f27e4225b084c302a6f0553221d9a0759','[\"*\"]','2026-09-23 13:38:56',NULL,'2026-09-23 13:38:56','2026-09-23 13:38:56'),(12,'App\\Models\\User',1,'test','10a21cf01977f8fe74c1822e80c674ea88c188ae47388da96f95b9f934868bdd','[\"*\"]',NULL,NULL,'2026-09-23 13:39:10','2026-09-23 13:39:10'),(13,'App\\Models\\User',1,'test','a28c14b117557662c4be2d273424032664772da3d21ccc0b5529410b387a8672','[\"*\"]',NULL,NULL,'2026-09-23 13:39:35','2026-09-23 13:39:35'),(14,'App\\Models\\User',1,'test','9730b30c178ffb9c138a9e7fc1c466b2db5174fac928392cbef920b93d98f1ae','[\"*\"]',NULL,NULL,'2026-09-23 13:39:48','2026-09-23 13:39:48'),(15,'App\\Models\\User',1,'test','323fadc430ef7b8deab7c2d3371cf35be7a89d76325408860cb7be5f23912517','[\"*\"]',NULL,NULL,'2026-09-23 13:40:09','2026-09-23 13:40:09'),(16,'App\\Models\\User',1,'test','18339cee86aaa3753977e13ec5e75fa2924626b0653c00cc84c7593d8eb4c914','[\"*\"]',NULL,NULL,'2026-09-23 13:40:23','2026-09-23 13:40:23'),(17,'App\\Models\\User',1,'test','d88cf6cc6de14af0e62d778ed26d67916ce537f0cb0a4a56e725d638a10142c5','[\"*\"]',NULL,NULL,'2026-09-23 13:40:35','2026-09-23 13:40:35'),(18,'App\\Models\\User',1,'test','d6dc478536d715e443576244fe2386b8019791a64ceff4844151cc4c369279e2','[\"*\"]',NULL,NULL,'2026-09-23 13:41:02','2026-09-23 13:41:02');
+INSERT INTO `personal_access_tokens` VALUES (1,'App\\Models\\User',1,'admin-token','367b10f4fffcead2b7b884c8a51d3ffdf08519f4fa530aba12579e1bee48f485','[\"*\"]','2026-08-22 16:12:32',NULL,'2026-08-22 16:10:02','2026-08-22 16:12:32'),(2,'App\\Models\\User',1,'admin-token','5a7a0cbe4c2069279cf457578e97e0f01d7533fe377c516158bd240982160f60','[\"*\"]','2026-08-22 16:13:59',NULL,'2026-08-22 16:12:49','2026-08-22 16:13:59'),(3,'App\\Models\\User',1,'admin-token','48dea56885bcc9f1c564b640cd23635da0103645626eeedbd235311d00ab87b7','[\"*\"]','2026-08-22 16:16:01',NULL,'2026-08-22 16:14:40','2026-08-22 16:16:01'),(4,'App\\Models\\User',3,'admin-token','71bdcbe40fd40591f106b4961480b92e44f868a9a4fbc7d57b138cfc0879bb8f','[\"*\"]','2026-08-22 16:16:19',NULL,'2026-08-22 16:16:13','2026-08-22 16:16:19'),(5,'App\\Models\\User',1,'admin-token','6eb1f5c037994353832a1e3f5606d4b12576e5d63e156e4b0c0655a3f6733d7b','[\"*\"]','2026-08-24 06:48:11',NULL,'2026-08-24 05:43:15','2026-08-24 06:48:11'),(6,'App\\Models\\User',4,'admin-token','b2a9adaef317422e7dbc367a64cce65e2ded5e8f836d034d9ffdb4777ada26b9','[\"*\"]','2026-08-24 06:49:03',NULL,'2026-08-24 06:48:23','2026-08-24 06:49:03'),(7,'App\\Models\\User',1,'admin-token','466a20303659a28858f871ff8882ef1a962d1e3fc5d3b756f57ba4a6a987cf11','[\"*\"]','2026-08-24 06:49:37',NULL,'2026-08-24 06:49:27','2026-08-24 06:49:37'),(8,'App\\Models\\User',5,'admin-token','82329d86f6215d75894c678228197be713b68da8dcca131223ff016f3df475b2','[\"*\"]','2026-08-24 06:50:05',NULL,'2026-08-24 06:49:50','2026-08-24 06:50:05'),(9,'App\\Models\\User',1,'admin-token','5dd5cb6f8951215b425e0480837894ab3429acfa43249a62ed5048520b10efbc','[\"*\"]','2026-08-24 07:42:12',NULL,'2026-08-24 06:50:16','2026-08-24 07:42:12');
 /*!40000 ALTER TABLE `personal_access_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1104,7 +1097,7 @@ CREATE TABLE `projects` (
   PRIMARY KEY (`id`),
   KEY `projects_category_id_foreign` (`category_id`),
   CONSTRAINT `projects_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1114,37 +1107,6 @@ CREATE TABLE `projects` (
 LOCK TABLES `projects` WRITE;
 /*!40000 ALTER TABLE `projects` DISABLE KEYS */;
 /*!40000 ALTER TABLE `projects` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `role_user`
---
-
-DROP TABLE IF EXISTS `role_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `role_user` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` bigint unsigned NOT NULL,
-  `role_id` bigint unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `role_user_user_id_role_id_unique` (`user_id`,`role_id`),
-  KEY `role_user_role_id_foreign` (`role_id`),
-  CONSTRAINT `role_user_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `role_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `role_user`
---
-
-LOCK TABLES `role_user` WRITE;
-/*!40000 ALTER TABLE `role_user` DISABLE KEYS */;
-INSERT INTO `role_user` VALUES (1,1,1,'2026-09-23 13:35:21','2026-09-23 13:35:21');
-/*!40000 ALTER TABLE `role_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1163,7 +1125,7 @@ CREATE TABLE `roles` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `roles_slug_unique` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1198,7 +1160,7 @@ CREATE TABLE `services` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1257,7 +1219,7 @@ CREATE TABLE `sub_categories` (
   PRIMARY KEY (`id`),
   KEY `sub_categories_department_id_foreign` (`department_id`),
   CONSTRAINT `sub_categories_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1322,9 +1284,9 @@ CREATE TABLE `task_checklists` (
   PRIMARY KEY (`id`),
   KEY `task_checklists_task_id_foreign` (`task_id`),
   KEY `task_checklists_completed_by_foreign` (`completed_by`),
-  CONSTRAINT `task_checklists_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `task_checklists_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`),
   CONSTRAINT `task_checklists_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1438,15 +1400,15 @@ CREATE TABLE `task_status_histories` (
   `task_id` bigint unsigned NOT NULL,
   `from_status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `to_status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `changed_by` bigint unsigned DEFAULT NULL,
+  `changed_by` bigint unsigned NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `task_status_histories_task_id_foreign` (`task_id`),
   KEY `task_status_histories_changed_by_foreign` (`changed_by`),
-  CONSTRAINT `task_status_histories_changed_by_foreign` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `task_status_histories_changed_by_foreign` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`),
   CONSTRAINT `task_status_histories_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1476,7 +1438,7 @@ CREATE TABLE `task_user` (
   KEY `task_user_user_id_foreign` (`user_id`),
   CONSTRAINT `task_user_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
   CONSTRAINT `task_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1502,19 +1464,12 @@ CREATE TABLE `tasks` (
   `description` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `priority` enum('low','medium','high','urgent') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'medium',
   `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'new',
-  `due_date` date DEFAULT NULL,
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
-  `shooting_date` date DEFAULT NULL,
-  `delivery_date` date DEFAULT NULL,
-  `dates_not_specified` tinyint(1) NOT NULL DEFAULT '0',
-  `is_standalone` tinyint(1) NOT NULL DEFAULT '0',
   `estimated_hours` int NOT NULL DEFAULT '0',
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `internal_project_id` bigint unsigned DEFAULT NULL,
-  `department_id` bigint unsigned DEFAULT NULL,
+  `department_id` bigint unsigned NOT NULL,
   `deal_id` bigint unsigned DEFAULT NULL,
   `client_price` decimal(10,2) DEFAULT '0.00',
   `employee_price` decimal(10,2) DEFAULT '0.00',
@@ -1524,16 +1479,16 @@ CREATE TABLE `tasks` (
   `company_margin` decimal(10,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
   KEY `tasks_internal_project_id_foreign` (`internal_project_id`),
+  KEY `tasks_department_id_foreign` (`department_id`),
   KEY `tasks_deal_id_foreign` (`deal_id`),
   KEY `tasks_sub_category_id_foreign` (`sub_category_id`),
   KEY `tasks_parent_id_foreign` (`parent_id`),
-  KEY `tasks_department_id_foreign` (`department_id`),
   CONSTRAINT `tasks_deal_id_foreign` FOREIGN KEY (`deal_id`) REFERENCES `deals` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tasks_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tasks_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`),
   CONSTRAINT `tasks_internal_project_id_foreign` FOREIGN KEY (`internal_project_id`) REFERENCES `internal_projects` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tasks_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tasks_sub_category_id_foreign` FOREIGN KEY (`sub_category_id`) REFERENCES `sub_categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1542,7 +1497,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'تجريبي صفقة','تجريبي صفقة','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,0,'2026-09-23 13:38:56','2026-08-24 06:30:32','2026-09-23 13:38:56',NULL,1,2,1200.00,1000.00,NULL,NULL,NULL,200.00),(2,'تجريبي 2','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,0,NULL,'2026-08-24 06:44:26','2026-08-24 07:18:24',NULL,1,2,120.00,100.00,NULL,NULL,'وصف  تفصيلي',20.00);
+INSERT INTO `tasks` VALUES (1,'تجريبي صفقة','تجريبي صفقة','medium','new',0,NULL,'2026-08-24 06:30:32','2026-08-24 06:36:31',NULL,1,2,1200.00,1000.00,NULL,NULL,NULL,200.00),(2,'تجريبي 2','','medium','new',0,NULL,'2026-08-24 06:44:26','2026-08-24 07:18:24',NULL,1,2,120.00,100.00,NULL,NULL,'وصف  تفصيلي',20.00);
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1585,7 +1540,6 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `client_code` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1598,18 +1552,16 @@ CREATE TABLE `users` (
   `department_id` bigint unsigned DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `role_id` bigint unsigned DEFAULT NULL,
-  `is_hold` tinyint(1) NOT NULL DEFAULT '0',
   `payment_type` enum('task_based','salary_based','percentage_based','hybrid') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'salary_based',
   `base_salary` decimal(10,2) NOT NULL DEFAULT '0.00',
   `commission_rate` decimal(5,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`),
-  UNIQUE KEY `users_client_code_unique` (`client_code`),
   KEY `users_department_id_foreign` (`department_id`),
   KEY `users_role_id_foreign` (`role_id`),
   CONSTRAINT `users_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `users_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1618,9 +1570,13 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,NULL,'Media Glow Super Admin','admin@mediaglowegypt.com',NULL,NULL,'$2y$12$OlZzn8RYa7TmteQCvTuAT.OeK1F1Pp3uk5tf2p7dKPqlJxmQWw3Uy',NULL,'2026-08-22 16:09:37','2026-08-22 16:09:37','super_admin',NULL,NULL,1,0,'salary_based',25000.00,0.00),(2,'1001','test','m@mail.com','01000000000',NULL,'$2y$12$nf1q9RioIkW/5sdjI4TL6O4itDTfMvaNyImJvwpOhT7HGWCxPgEju',NULL,'2026-08-22 16:11:48','2026-08-22 16:11:48','client',NULL,NULL,NULL,0,'salary_based',0.00,0.00),(3,'1002','mohamed','mohamed@gmail.com','admin@mediaglowegypt.com',NULL,'$2y$12$vcvWJuyu2ziePPigF.x77e6VF3gfGGDTDVWDWNQBBivvvhMT1Ny4e',NULL,'2026-08-22 16:16:01','2026-08-22 16:16:01','client',NULL,NULL,NULL,0,'salary_based',0.00,0.00),(4,'1003','محمد رضا','mohamedreda@gmail.com','01099999999',NULL,'$2y$12$se1meurMUbZg0AkpF9sTOeNtmLEedX77xhguGHs.7iu0VI1VgIR5K',NULL,'2026-08-24 05:44:08','2026-08-24 05:44:08','client',NULL,NULL,NULL,0,'salary_based',0.00,0.00),(5,NULL,'موظف 1','emp1@mediaglowegypt.com',NULL,NULL,'$2y$12$Uv00iLjo6pQI31LE35kOWOIBCBKsPXBFi7ZhQZP2oW.7WwKtDIV4S',NULL,'2026-08-24 05:45:28','2026-08-24 05:45:28','department_manager',NULL,NULL,NULL,0,'salary_based',0.00,0.00);
+INSERT INTO `users` VALUES (1,'Media Glow Super Admin','admin@mediaglowegypt.com',NULL,NULL,'$2y$12$OlZzn8RYa7TmteQCvTuAT.OeK1F1Pp3uk5tf2p7dKPqlJxmQWw3Uy',NULL,'2026-08-22 16:09:37','2026-08-22 16:09:37','super_admin',NULL,NULL,1,'salary_based',25000.00,0.00),(2,'test','m@mail.com','01000000000',NULL,'$2y$12$nf1q9RioIkW/5sdjI4TL6O4itDTfMvaNyImJvwpOhT7HGWCxPgEju',NULL,'2026-08-22 16:11:48','2026-08-22 16:11:48','client',NULL,NULL,NULL,'salary_based',0.00,0.00),(3,'mohamed','mohamed@gmail.com','admin@mediaglowegypt.com',NULL,'$2y$12$vcvWJuyu2ziePPigF.x77e6VF3gfGGDTDVWDWNQBBivvvhMT1Ny4e',NULL,'2026-08-22 16:16:01','2026-08-22 16:16:01','client',NULL,NULL,NULL,'salary_based',0.00,0.00),(4,'محمد رضا','mohamedreda@gmail.com','01099999999',NULL,'$2y$12$se1meurMUbZg0AkpF9sTOeNtmLEedX77xhguGHs.7iu0VI1VgIR5K',NULL,'2026-08-24 05:44:08','2026-08-24 05:44:08','client',NULL,NULL,NULL,'salary_based',0.00,0.00),(5,'موظف 1','emp1@mediaglowegypt.com',NULL,NULL,'$2y$12$Uv00iLjo6pQI31LE35kOWOIBCBKsPXBFi7ZhQZP2oW.7WwKtDIV4S',NULL,'2026-08-24 05:45:28','2026-08-24 05:45:28','department_manager',NULL,NULL,NULL,'salary_based',0.00,0.00);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'media_glow_crm'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -1631,4 +1587,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-23 20:12:42
+-- Dump completed on 2026-08-24 13:42:13

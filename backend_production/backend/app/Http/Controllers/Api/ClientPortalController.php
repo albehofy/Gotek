@@ -22,11 +22,12 @@ class ClientPortalController extends Controller
         $contracts = Contract::where('client_id', $user->id)->latest()->get();
 
         // 2. Deals & Account Balance
-        $deals = Deal::where('client_id', $user->id)->with(['payments', 'tasks'])->latest()->get();
+        $deals = Deal::where('client_id', $user->id)->with(['payments', 'tasks', 'attachments.uploader'])->latest()->get();
         $totalBilled = 0;
         $totalPaid = 0;
 
         foreach ($deals as $deal) {
+            $deal->syncFinancialTotals();
             $totalBilled += $deal->calculated_total;
             $totalPaid += $deal->calculated_paid;
 
@@ -46,21 +47,66 @@ class ClientPortalController extends Controller
                 }
             }
         }
+        // Standalone client tasks
+        $standaloneBilled = (float) Task::where('client_id', $user->id)
+            ->whereNull('deal_id')
+            ->whereNull('parent_id')
+            ->where('status', '!=', 'cancelled')
+            ->sum('client_price');
+        $totalBilled += $standaloneBilled;
         $remainingBalance = max(0, $totalBilled - $totalPaid);
 
-        // 3. Client Main Tasks (only top-level tasks where parent_id is null, with subtasks eagerly loaded)
+        // 3. Client Main Tasks (deals tasks + standalone client tasks)
         $dealIds = $deals->pluck('id');
-        $tasks = Task::whereIn('deal_id', $dealIds)
+        $tasks = Task::where(function($q) use ($dealIds, $user) {
+                if ($dealIds->isNotEmpty()) {
+                    $q->whereIn('deal_id', $dealIds);
+                }
+                $q->orWhere('client_id', $user->id);
+            })
             ->whereNull('parent_id')
-            ->with(['attachments', 'notes.user', 'subCategory', 'subtasks.users', 'subtasks.attachments', 'subtasks.notes.user', 'users'])
+            ->with(['attachments', 'notes.user', 'subCategory', 'subtasks.users', 'subtasks.attachments', 'subtasks.notes.user', 'users', 'deal.attachments.uploader'])
             ->latest()
             ->get();
+
+        // Privacy masking for client: mask employee names as 'مسؤول في النظام' and comments as 'مسؤول' / 'العميل'
+        foreach ($tasks as $task) {
+            $task->employee_price = 0;
+            $task->company_margin = 0;
+            if ($task->users) {
+                foreach ($task->users as $u) {
+                    $u->name = 'مسؤول في النظام';
+                    $u->email = '';
+                }
+            }
+            if ($task->subtasks) {
+                foreach ($task->subtasks as $st) {
+                    if ($st->users) {
+                        foreach ($st->users as $su) {
+                            $su->name = 'مسؤول في النظام';
+                            $su->email = '';
+                        }
+                    }
+                }
+            }
+            if ($task->notes) {
+                foreach ($task->notes as $n) {
+                    if ($n->user) {
+                        $n->user->name = ($n->user->role === 'client') ? 'العميل' : 'مسؤول';
+                        $n->user->email = '';
+                    }
+                }
+            }
+        }
 
         return response()->json([
             'status' => 'success',
             'data' => [
                 'client_name' => $user->name,
                 'client_email' => $user->email,
+                'is_vip' => (bool) $user->is_vip,
+                'client_category' => $user->client_category ?? ($user->is_vip ? 'vip' : 'normal'),
+                'client_category_label' => $user->client_category_label,
                 'contracts' => $contracts,
                 'deals' => $deals,
                 'financial_summary' => [
@@ -104,17 +150,31 @@ class ClientPortalController extends Controller
         // Update task status to changes_requested if client leaves note
         $task->update(['status' => 'changes_requested']);
 
-        // Send notification to department manager & assigned staff (excluding the acting client)
+        // Send notification to department manager, assigned staff & task creator (excluding the acting client)
         $recipients = $task->users->pluck('id')->toArray();
-        if ($task->department && $task->department->manager_id) {
-            $recipients[] = $task->department->manager_id;
+        if ($task->created_by) {
+            $recipients[] = $task->created_by;
         }
-        $recipients = array_unique(array_filter($recipients));
+
+        $deptId = $task->department_id ?? $task->deal?->department_id;
+        if ($deptId) {
+            $deptMgrId = \App\Models\Department::where('id', $deptId)->value('manager_id');
+            if ($deptMgrId) {
+                $recipients[] = $deptMgrId;
+            }
+            $deptMgrUsers = \App\Models\User::where('department_id', $deptId)
+                ->whereIn('role', ['department_manager', 'Department Manager'])
+                ->pluck('id')
+                ->toArray();
+            $recipients = array_merge($recipients, $deptMgrUsers);
+        }
+
+        $recipients = array_values(array_diff(array_unique(array_filter($recipients)), [(int)$user->id]));
 
         foreach ($recipients as $uid) {
-            if ((int)$uid === (int)$user->id) {
-                continue; // Skip self-notification
-            }
+            $targetUser = \App\Models\User::find($uid);
+            if (!$targetUser) continue;
+
             NotificationModel::create([
                 'user_id' => $uid,
                 'type' => 'client_note',
@@ -123,9 +183,24 @@ class ClientPortalController extends Controller
                 'notifiable_type' => Task::class,
                 'notifiable_id' => $task->id
             ]);
+
+            try {
+                \App\Services\EmailNotificationService::sendNotificationEmail(
+                    $targetUser,
+                    'ملاحظات ومراجعة جديدة من العميل (' . $task->title . ')',
+                    'أضاف العميل ' . $user->name . ' ملاحظات وطلب تعديلات على المخرج',
+                    "المهمة: {$task->title}\nالعميل: {$user->name}\nالملاحظة:\n\"{$validated['note']}\""
+                );
+            } catch (\Throwable $e) {}
         }
 
-        return response()->json(['status' => 'success', 'data' => $note->load('user')], 201);
+        $note->load('user');
+        if ($note->user) {
+            $note->user->name = 'العميل';
+            $note->user->email = '';
+        }
+
+        return response()->json(['status' => 'success', 'data' => $note], 201);
     }
 
     public function approveTask(Request $request, $taskId)
@@ -168,6 +243,9 @@ class ClientPortalController extends Controller
             if ((int)$uid === (int)$user->id) {
                 continue; // Skip self-notification
             }
+            $targetUser = \App\Models\User::find($uid);
+            if (!$targetUser) continue;
+
             NotificationModel::create([
                 'user_id' => $uid,
                 'type' => 'status_change',
@@ -176,6 +254,13 @@ class ClientPortalController extends Controller
                 'notifiable_type' => Task::class,
                 'notifiable_id' => $task->id
             ]);
+
+            \App\Services\EmailNotificationService::sendNotificationEmail(
+                $targetUser,
+                'تم اعتماد واستلام المخرج (' . $task->title . ')',
+                'قام ' . $actorName . ' باعتماد المهمة والمخرج رسمياً',
+                "المهمة: {$task->title}\nتم الاعتماد بنجاح وجاري استكمال باقي بنود المشروع."
+            );
         }
 
         return response()->json(['status' => 'success', 'message' => 'تمت الموافقة والاعتماد بنجاح', 'data' => $task]);

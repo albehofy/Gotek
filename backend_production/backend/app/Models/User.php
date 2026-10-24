@@ -20,6 +20,8 @@ class User extends Authenticatable
         'role',
         'role_id',
         'is_hold',
+        'is_vip',
+        'client_category',
         'department_id',
         'payment_type',
         'base_salary',
@@ -37,6 +39,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_hold' => 'boolean',
+            'is_vip' => 'boolean',
             'base_salary' => 'decimal:2',
             'commission_rate' => 'decimal:2',
         ];
@@ -97,6 +100,26 @@ class User extends Authenticatable
     public function custodyAccounts()
     {
         return $this->hasMany(CustodyAccount::class, 'employee_id');
+    }
+
+    protected $appends = ['client_category_label'];
+
+    public function getClientCategoryLabelAttribute(): string
+    {
+        $cat = strtolower($this->client_category ?? ($this->is_vip ? 'vip' : 'normal'));
+        return match ($cat) {
+            'vip' => 'عميل VIP',
+            'gold' => 'عميل ذهبي (Gold)',
+            'silver' => 'عميل فضي (Silver)',
+            'platinum' => 'عميل بلاتيني (Platinum)',
+            'new' => 'عميل جديد (New)',
+            default => 'عميل عادي',
+        };
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return strtolower($this->role ?? '') === 'super_admin' || $this->hasRole('super_admin');
     }
 
     public function hasRole($roleSlug)

@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.4.11, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: media_glow_crm
+-- Host: localhost    Database: media_glow_crm
 -- ------------------------------------------------------
 -- Server version	8.4.11-0ubuntu0.26.04.1
 
@@ -97,7 +97,7 @@ CREATE TABLE `activity_log` (
   KEY `subject` (`subject_type`,`subject_id`),
   KEY `causer` (`causer_type`,`causer_id`),
   KEY `activity_log_log_name_index` (`log_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,6 +106,7 @@ CREATE TABLE `activity_log` (
 
 LOCK TABLES `activity_log` WRITE;
 /*!40000 ALTER TABLE `activity_log` DISABLE KEYS */;
+INSERT INTO `activity_log` VALUES (15,'deal','تمت إضافة مهمة جديدة للصفقة: \"Task 1\" بسعر عميل 2,000.00 ج.م ومستحقات موظف 0.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"icon\": \"fa-plus-circle\", \"color\": \"#10b981\", \"field\": \"task_created\", \"title\": \"إضافة مهمة جديدة للصفقة\", \"task_id\": 42, \"causer_id\": 1, \"task_title\": \"Task 1\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"client_price\": 2000, \"employee_price\": 0, \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:10','2026-10-23 12:41:10'),(16,'deal','تمت إضافة مهمة جديدة للصفقة: \"Task 2\" بسعر عميل 3,000.00 ج.م ومستحقات موظف 0.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"icon\": \"fa-plus-circle\", \"color\": \"#10b981\", \"field\": \"task_created\", \"title\": \"إضافة مهمة جديدة للصفقة\", \"task_id\": 43, \"causer_id\": 1, \"task_title\": \"Task 2\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"client_price\": 3000, \"employee_price\": 0, \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:10','2026-10-23 12:41:10'),(17,'deal','تم تعديل السعر الإجمالي للصفقة من 5,000.00 ج.م إلى 7,500.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": 7500, \"old\": 5000, \"icon\": \"fa-money-bill-wave\", \"color\": \"#10b981\", \"field\": \"price_change\", \"title\": \"تعديل السعر الإجمالي للصفقة\", \"causer_id\": 1, \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:10','2026-10-23 12:41:10'),(18,'deal','تم تعديل عنوان الصفقة من \"Test Deal Verification\" إلى \"Updated Deal Title Verification\" بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": \"Updated Deal Title Verification\", \"old\": \"Test Deal Verification\", \"icon\": \"fa-pen-to-square\", \"color\": \"#6366f1\", \"field\": \"title_change\", \"title\": \"تعديل عنوان الصفقة\", \"causer_id\": 1, \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:10','2026-10-23 12:41:10'),(19,'deal','تم تغيير حالة الصفقة من \"قيد الانتظار\" إلى \"نشطة / سارية\" بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": \"نشطة / سارية\", \"old\": \"قيد الانتظار\", \"icon\": \"fa-arrows-rotate\", \"color\": \"#f59e0b\", \"field\": \"status_change\", \"title\": \"تغيير حالة الصفقة\", \"causer_id\": 1, \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:10','2026-10-23 12:41:10'),(20,'deal','تم تعديل سعر المهمة \"Task 1 Updated\" من 2,000.00 ج.م إلى 3,500.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": 3500, \"old\": 2000, \"icon\": \"fa-money-bill-wave\", \"color\": \"#10b981\", \"field\": \"task_price_change\", \"title\": \"تعديل سعر المهمة\", \"task_id\": 42, \"causer_id\": 1, \"task_title\": \"Task 1 Updated\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(21,'deal','تم تعديل مستحقات الموظف للمهمة \"Task 1 Updated\" من 0.00 ج.م إلى 0.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": 0, \"old\": 0, \"icon\": \"fa-hand-holding-dollar\", \"color\": \"#f59e0b\", \"field\": \"task_employee_price_change\", \"title\": \"تعديل مستحق الموظف\", \"task_id\": 42, \"causer_id\": 1, \"task_title\": \"Task 1 Updated\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(22,'deal','تم تعديل عنوان المهمة من \"Task 1\" إلى \"Task 1 Updated\" بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": \"Task 1 Updated\", \"old\": \"Task 1\", \"icon\": \"fa-pen-to-square\", \"color\": \"#6366f1\", \"field\": \"task_title_change\", \"title\": \"تعديل عنوان مهمة\", \"task_id\": 42, \"causer_id\": 1, \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(23,'deal','تم تعديل سعر بند المهمة \"Task 1 Updated\" من 2,000.00 ج.م إلى 3,500.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"new\": 3500, \"old\": 2000, \"icon\": \"fa-file-invoice-dollar\", \"color\": \"#10b981\", \"field\": \"task_price_change\", \"title\": \"تعديل سعر بند تنفيذي\", \"causer_id\": 1, \"task_title\": \"Task 1 Updated\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(24,'deal','تمت إضافة مهمة جديدة للصفقة: \"Task 3 Newly Added\" بسعر عميل 4,000.00 ج.م ومستحقات موظف 0.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"icon\": \"fa-plus-circle\", \"color\": \"#10b981\", \"field\": \"task_created\", \"title\": \"إضافة مهمة جديدة للصفقة\", \"task_id\": 44, \"causer_id\": 1, \"task_title\": \"Task 3 Newly Added\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"client_price\": 4000, \"employee_price\": 0, \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(25,'deal','تمت إضافة بند/مهمة تنفيذية جديدة: \"Task 3 Newly Added\" بسعر عميل 4,000.00 ج.م بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"icon\": \"fa-plus-circle\", \"color\": \"#6366f1\", \"field\": \"task_added\", \"title\": \"إضافة بند تنفيذي جديد\", \"causer_id\": 1, \"task_title\": \"Task 3 Newly Added\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"client_price\": 4000, \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(26,'deal','تم حذف البند/المهمة التنفيذية \"Task 2\" من الصفقة بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"icon\": \"fa-trash-can\", \"color\": \"#f43f5e\", \"field\": \"task_removed\", \"title\": \"حذف بند تنفيذي\", \"causer_id\": 1, \"task_title\": \"Task 2\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11'),(27,'deal','تم حذف المهمة \"Task 2\" من الصفقة بواسطة Media Glow Super Admin','App\\Models\\Deal',NULL,26,'App\\Models\\User',1,'{\"icon\": \"fa-trash-can\", \"color\": \"#f43f5e\", \"field\": \"task_deleted\", \"title\": \"حذف مهمة من الصفقة\", \"task_id\": 43, \"causer_id\": 1, \"task_title\": \"Task 2\", \"causer_name\": \"Media Glow Super Admin\", \"causer_role\": \"super_admin\", \"causer_email\": \"admin@mediaglowegypt.com\", \"created_at_human\": \"23 أكتوبر 2026 - 03:41 م\"}',NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11');
 /*!40000 ALTER TABLE `activity_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,6 +125,8 @@ CREATE TABLE `attachments` (
   `file_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_size` bigint unsigned NOT NULL,
+  `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'document',
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `thumbnail` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `uploaded_by` bigint unsigned NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -254,6 +257,43 @@ LOCK TABLES `categories` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `client_monthly_plans`
+--
+
+DROP TABLE IF EXISTS `client_monthly_plans`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `client_monthly_plans` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `client_id` bigint unsigned NOT NULL,
+  `month_year` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `brief_pdf_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `brief_pdf_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plan_pdf_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `plan_pdf_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `client_monthly_plans_client_id_foreign` (`client_id`),
+  KEY `client_monthly_plans_created_by_foreign` (`created_by`),
+  CONSTRAINT `client_monthly_plans_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `client_monthly_plans_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `client_monthly_plans`
+--
+
+LOCK TABLES `client_monthly_plans` WRITE;
+/*!40000 ALTER TABLE `client_monthly_plans` DISABLE KEYS */;
+/*!40000 ALTER TABLE `client_monthly_plans` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `client_payments`
 --
 
@@ -289,6 +329,42 @@ CREATE TABLE `client_payments` (
 LOCK TABLES `client_payments` WRITE;
 /*!40000 ALTER TABLE `client_payments` DISABLE KEYS */;
 /*!40000 ALTER TABLE `client_payments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `client_plans`
+--
+
+DROP TABLE IF EXISTS `client_plans`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `client_plans` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `client_id` bigint unsigned NOT NULL,
+  `deal_id` bigint unsigned DEFAULT NULL,
+  `plan_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'monthly_brief',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `uploaded_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `client_plans_client_id_foreign` (`client_id`),
+  KEY `client_plans_uploaded_by_foreign` (`uploaded_by`),
+  CONSTRAINT `client_plans_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `client_plans_uploaded_by_foreign` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `client_plans`
+--
+
+LOCK TABLES `client_plans` WRITE;
+/*!40000 ALTER TABLE `client_plans` DISABLE KEYS */;
+/*!40000 ALTER TABLE `client_plans` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -452,6 +528,8 @@ CREATE TABLE `deals` (
   `dates_not_specified` tinyint(1) NOT NULL DEFAULT '0',
   `client_id` bigint unsigned DEFAULT NULL,
   `total_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none',
+  `discount_value` decimal(12,2) NOT NULL DEFAULT '0.00',
   `paid_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `created_by` bigint unsigned NOT NULL,
@@ -472,7 +550,7 @@ CREATE TABLE `deals` (
   CONSTRAINT `deals_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `deals_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `deals_sales_person_id_foreign` FOREIGN KEY (`sales_person_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -481,7 +559,7 @@ CREATE TABLE `deals` (
 
 LOCK TABLES `deals` WRITE;
 /*!40000 ALTER TABLE `deals` DISABLE KEYS */;
-INSERT INTO `deals` VALUES (2,'تجريبي',NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,4,12000.00,0.00,'pending',1,NULL,'2026-08-24 06:30:32','2026-08-24 06:30:32',1,NULL,'none',0.00,'تجريبي');
+INSERT INTO `deals` VALUES (2,'تجريبي',NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,4,120.00,'none',0.00,0.00,'pending',1,NULL,'2026-08-24 06:30:32','2026-10-23 14:55:59',1,NULL,'none',0.00,'تجريبي'),(26,'Updated Deal Title Verification',NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,7500.00,'none',0.00,0.00,'active',1,NULL,'2026-10-23 12:41:10','2026-10-23 12:41:11',1,NULL,'none',0.00,NULL);
 /*!40000 ALTER TABLE `deals` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -504,7 +582,7 @@ CREATE TABLE `departments` (
   `partner_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `partner_percentage` decimal(5,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -513,7 +591,7 @@ CREATE TABLE `departments` (
 
 LOCK TABLES `departments` WRITE;
 /*!40000 ALTER TABLE `departments` DISABLE KEYS */;
-INSERT INTO `departments` VALUES (1,'فسم 1','قسم اساسي 1',5,NULL,'2026-08-24 05:45:58','2026-08-24 05:45:58',0,NULL,50.00);
+INSERT INTO `departments` VALUES (1,'قسم 1','قسم اساسي 1',5,NULL,'2026-08-24 05:45:58','2026-10-23 15:00:44',0,NULL,50.00),(14,'قسم 2','test',28,NULL,'2026-10-23 15:01:07','2026-10-23 15:01:07',0,NULL,50.00);
 /*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -818,7 +896,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -827,7 +905,7 @@ CREATE TABLE `migrations` (
 
 LOCK TABLES `migrations` WRITE;
 /*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
-INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2026_02_23_231135_create_personal_access_tokens_table',1),(5,'2026_02_23_231621_create_projects_table',1),(6,'2026_02_23_235300_create_categories_table',1),(7,'2026_02_23_235329_add_category_id_to_projects_table',1),(8,'2026_03_16_013519_remove_category_from_projects_table',1),(9,'2026_03_16_013700_create_project_images_table',1),(10,'2026_03_16_015706_create_contact_messages_table',1),(11,'2026_03_16_031500_create_contact_infos_table',1),(12,'2026_03_16_055614_faq',1),(13,'2026_03_26_003807_change_columns_to_json_in_projects_table',1),(14,'2026_03_26_060305_create_services_table',1),(15,'2026_04_01_150711_blog',1),(16,'2026_04_09_173612_images_alt',1),(17,'2026_04_10_123843_create_testimonials_table',1),(18,'2026_04_18_145847_create_departments_table',1),(19,'2026_04_18_145850_modify_users_table',1),(20,'2026_04_18_150215_create_tasks_table',1),(21,'2026_04_18_150251_create_task_details_tables',1),(22,'2026_04_18_150428_create_contracts_table',1),(23,'2026_04_18_190219_create_internal_projects_table',1),(24,'2026_04_18_190749_contract_link_project',1),(25,'2026_04_19_001656_create_notifications_table',1),(26,'2026_04_19_013216_tasks_foreign_key',1),(27,'2026_04_19_190120_create_task_user_table',1),(28,'2026_04_21_003220_create_task_attachments_table',1),(29,'2026_04_23_010928_create_activity_log_table',1),(30,'2026_04_23_010929_add_event_column_to_activity_log_table',1),(31,'2026_04_23_010930_add_batch_uuid_column_to_activity_log_table',1),(32,'2026_05_08_191253_add_description_to_categories_table',1),(33,'2026_05_17_143610_add_view_in_home_to_projects_table',1),(34,'2026_05_17_145333_create_extras_table',1),(35,'2026_05_18_185359_make_job_title_nullable_in_testimonials_table',1),(36,'2026_05_18_185820_make_feedback_nullable_in_testimonials_table',1),(37,'2026_06_05_212943_add_detail_columns_to_projects_table',1),(38,'2026_06_06_092353_create_about_pages_table',1),(39,'2026_06_06_092422_create_about_timelines_table',1),(40,'2026_06_06_092917_create_page_contents_table',1),(41,'2026_06_06_123205_create_deals_table',1),(42,'2026_06_06_123219_add_deal_columns_to_tasks_table',1),(43,'2026_06_06_123224_create_task_notes_table',1),(44,'2026_06_06_123314_make_internal_project_id_nullable_on_tasks_table',1),(45,'2026_08_12_000001_create_roles_and_permissions_tables',1),(46,'2026_08_12_000002_create_notifications_table',1),(47,'2026_08_12_000003_create_task_attachments_table',1),(48,'2026_08_12_000004_create_finance_and_ledger_tables',1),(49,'2026_08_12_000005_extend_departments_and_sections_table',1),(50,'2026_08_12_000006_extend_deals_contracts_and_tasks_tables',1),(51,'2026_08_12_000007_extend_users_compensation_table',1),(52,'2026_08_15_000010_add_phone_to_users_table',1),(53,'2026_08_22_221000_alter_role_column_in_users_table',2),(54,'2026_08_24_115000_alter_sales_commission_type_in_deals_table',3),(55,'2026_08_24_123500_alter_status_column_in_tasks_table',4),(56,'2026_09_06_120001_add_hold_and_client_code_and_user_roles_table',5),(57,'2026_09_06_120002_add_dates_and_attachments_to_deals_and_tasks',5),(58,'2026_09_09_120003_alter_status_column_in_deals_table',5),(59,'2026_09_23_201500_fix_foreign_key_constraints_for_deletion',6);
+INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2026_02_23_231135_create_personal_access_tokens_table',1),(5,'2026_02_23_231621_create_projects_table',1),(6,'2026_02_23_235300_create_categories_table',1),(7,'2026_02_23_235329_add_category_id_to_projects_table',1),(8,'2026_03_16_013519_remove_category_from_projects_table',1),(9,'2026_03_16_013700_create_project_images_table',1),(10,'2026_03_16_015706_create_contact_messages_table',1),(11,'2026_03_16_031500_create_contact_infos_table',1),(12,'2026_03_16_055614_faq',1),(13,'2026_03_26_003807_change_columns_to_json_in_projects_table',1),(14,'2026_03_26_060305_create_services_table',1),(15,'2026_04_01_150711_blog',1),(16,'2026_04_09_173612_images_alt',1),(17,'2026_04_10_123843_create_testimonials_table',1),(18,'2026_04_18_145847_create_departments_table',1),(19,'2026_04_18_145850_modify_users_table',1),(20,'2026_04_18_150215_create_tasks_table',1),(21,'2026_04_18_150251_create_task_details_tables',1),(22,'2026_04_18_150428_create_contracts_table',1),(23,'2026_04_18_190219_create_internal_projects_table',1),(24,'2026_04_18_190749_contract_link_project',1),(25,'2026_04_19_001656_create_notifications_table',1),(26,'2026_04_19_013216_tasks_foreign_key',1),(27,'2026_04_19_190120_create_task_user_table',1),(28,'2026_04_21_003220_create_task_attachments_table',1),(29,'2026_04_23_010928_create_activity_log_table',1),(30,'2026_04_23_010929_add_event_column_to_activity_log_table',1),(31,'2026_04_23_010930_add_batch_uuid_column_to_activity_log_table',1),(32,'2026_05_08_191253_add_description_to_categories_table',1),(33,'2026_05_17_143610_add_view_in_home_to_projects_table',1),(34,'2026_05_17_145333_create_extras_table',1),(35,'2026_05_18_185359_make_job_title_nullable_in_testimonials_table',1),(36,'2026_05_18_185820_make_feedback_nullable_in_testimonials_table',1),(37,'2026_06_05_212943_add_detail_columns_to_projects_table',1),(38,'2026_06_06_092353_create_about_pages_table',1),(39,'2026_06_06_092422_create_about_timelines_table',1),(40,'2026_06_06_092917_create_page_contents_table',1),(41,'2026_06_06_123205_create_deals_table',1),(42,'2026_06_06_123219_add_deal_columns_to_tasks_table',1),(43,'2026_06_06_123224_create_task_notes_table',1),(44,'2026_06_06_123314_make_internal_project_id_nullable_on_tasks_table',1),(45,'2026_08_12_000001_create_roles_and_permissions_tables',1),(46,'2026_08_12_000002_create_notifications_table',1),(47,'2026_08_12_000003_create_task_attachments_table',1),(48,'2026_08_12_000004_create_finance_and_ledger_tables',1),(49,'2026_08_12_000005_extend_departments_and_sections_table',1),(50,'2026_08_12_000006_extend_deals_contracts_and_tasks_tables',1),(51,'2026_08_12_000007_extend_users_compensation_table',1),(52,'2026_08_15_000010_add_phone_to_users_table',1),(53,'2026_08_22_221000_alter_role_column_in_users_table',2),(54,'2026_08_24_115000_alter_sales_commission_type_in_deals_table',3),(55,'2026_08_24_123500_alter_status_column_in_tasks_table',4),(56,'2026_09_06_120001_add_hold_and_client_code_and_user_roles_table',5),(57,'2026_09_06_120002_add_dates_and_attachments_to_deals_and_tasks',5),(58,'2026_09_09_120003_alter_status_column_in_deals_table',5),(59,'2026_09_23_201500_fix_foreign_key_constraints_for_deletion',6),(60,'2026_09_23_210000_update_crm_features_and_fixes',7),(61,'2026_10_23_180000_add_client_id_to_tasks_table',8),(62,'2026_10_23_190000_add_category_and_description_to_attachments_table',9),(63,'2026_10_23_000001_add_client_category_and_vip_to_users_table',10);
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -853,7 +931,7 @@ CREATE TABLE `notifications` (
   PRIMARY KEY (`id`),
   KEY `notifications_user_id_foreign` (`user_id`),
   CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -979,6 +1057,7 @@ CREATE TABLE `permission_role` (
 
 LOCK TABLES `permission_role` WRITE;
 /*!40000 ALTER TABLE `permission_role` DISABLE KEYS */;
+INSERT INTO `permission_role` VALUES (1,1),(7,1),(8,1),(9,1),(1,2),(7,2),(9,2),(1,3),(7,3),(9,3),(1,4),(7,4),(1,5),(7,5),(9,5),(1,6),(7,6),(9,6),(1,7),(7,7),(8,7),(1,8),(7,8),(10,8),(1,9),(7,9),(8,9),(9,9),(1,10),(7,10),(8,10),(9,10),(10,10),(1,11),(7,11),(1,12),(7,12),(8,12),(1,13),(7,13),(9,13),(1,14),(7,14),(9,14),(1,15),(7,15),(9,15),(1,16),(7,16),(9,16),(1,17),(7,17),(1,18),(7,18),(1,19),(7,19),(9,19),(1,20),(7,20),(1,21),(7,21),(1,22),(7,22),(1,23),(7,23),(1,24),(7,24),(1,25),(7,25),(1,26),(1,27),(7,27),(1,28),(7,28),(1,29),(7,29),(1,30),(7,30),(8,30),(1,31),(7,31),(1,32),(1,33),(7,33),(1,34),(7,34),(8,34),(1,35),(7,35),(1,36),(7,36),(1,37),(7,37),(1,38),(7,38),(1,39),(7,39),(9,39),(1,40),(1,41),(7,41),(1,42),(7,42),(1,43),(7,43),(1,44),(7,44),(1,45),(7,45),(1,46),(7,46),(1,47),(7,47),(1,48),(7,48),(1,49),(7,49),(1,50),(7,50),(1,51),(7,51),(11,51);
 /*!40000 ALTER TABLE `permission_role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -999,7 +1078,7 @@ CREATE TABLE `permissions` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `permissions_slug_unique` (`slug`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1008,6 +1087,7 @@ CREATE TABLE `permissions` (
 
 LOCK TABLES `permissions` WRITE;
 /*!40000 ALTER TABLE `permissions` DISABLE KEYS */;
+INSERT INTO `permissions` VALUES (1,'عرض الصفقات والعقود','view_deals','deals','الاطلاع على قائمة الصفقات والعقود في النظام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(2,'إنشاء صفقات جديدة','create_deals','deals','إمكانية إضافة صفقات جديدة وتحديد الخدمات','2026-10-23 14:56:25','2026-10-23 14:56:25'),(3,'تعديل الصفقات','edit_deals','deals','تعديل بيانات وتفاصيل الصفقات القائمة ومراحلها','2026-10-23 14:56:25','2026-10-23 14:56:25'),(4,'حذف الصفقات','delete_deals','deals','حذف الصفقات من النظام نهائياً','2026-10-23 14:56:25','2026-10-23 14:56:25'),(5,'الاطلاع على القيمة المالية للصفقات','view_deal_finances','deals','رؤية أسعار الصفقات والمبالغ والعمولات','2026-10-23 14:56:25','2026-10-23 14:56:25'),(6,'عرض كافة مهام النظام','view_all_tasks','tasks','الاطلاع على كافة المهام لجميع الأقسام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(7,'عرض مهام القسم فقط','view_dept_tasks','tasks','الاطلاع على مهام القسم التابع له فقط','2026-10-23 14:56:25','2026-10-23 14:56:25'),(8,'عرض المهام المسندة للشخص','view_own_tasks','tasks','الاطلاع على المهام المسندة للموظف شخصياً فقط','2026-10-23 14:56:25','2026-10-23 14:56:25'),(9,'إنشاء وتكليف مهام','create_tasks','tasks','إضافة مهام جديدة وتعيين الموظفين','2026-10-23 14:56:25','2026-10-23 14:56:25'),(10,'تعديل وحالات المهام','edit_tasks','tasks','تعديل تفاصيل المهمة وتغيير حالتها ومرفقاتها','2026-10-23 14:56:25','2026-10-23 14:56:25'),(11,'حذف المهام','delete_tasks','tasks','حذف المهام من النظام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(12,'إسناد وتغيير أعضاء المهمة','assign_task_members','tasks','إسناد أعضاء الفريق أو إزالتهم من المهام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(13,'الاعتماد نيابة عن العميل','approve_client_tasks','tasks','اعتماد وموافقة على المهام بالنيابة عن العميل','2026-10-23 14:56:25','2026-10-23 14:56:25'),(14,'عرض قائمة العملاء','view_clients','clients','الاطلاع على قائمة وسجلات العملاء وأكوادهم','2026-10-23 14:56:25','2026-10-23 14:56:25'),(15,'إضافة عميل جديد','create_clients','clients','إنشاء وتسجيل حساب عميل جديد','2026-10-23 14:56:25','2026-10-23 14:56:25'),(16,'تعديل بيانات العملاء','edit_clients','clients','تعديل بيانات العملاء وكلمات المرور والاتصال','2026-10-23 14:56:25','2026-10-23 14:56:25'),(17,'حذف العملاء','delete_clients','clients','حذف سجلات العملاء من النظام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(18,'تجميد حساب العميل (Hold)','hold_clients','clients','إيقاف وتعليق حساب العميل مؤقتاً','2026-10-23 14:56:25','2026-10-23 14:56:25'),(19,'عرض البروفايل الشامل للعميل (360°)','view_client_profile','clients','الاطلاع على الأقسام الثلاثة والمالية الشاملة للعميل','2026-10-23 14:56:25','2026-10-23 14:56:25'),(20,'عرض فريق العمل والموظفين','view_staff','staff','الاطلاع على قائمة موظفي الشركة','2026-10-23 14:56:25','2026-10-23 14:56:25'),(21,'إضافة موظف جديد','create_staff','staff','إنشاء حساب موظف جديد وتحديد قسمه','2026-10-23 14:56:25','2026-10-23 14:56:25'),(22,'تعديل بيانات ورواتب الموظفين','edit_staff','staff','تعديل حسابات ورواتب وكلمات مرور الموظفين','2026-10-23 14:56:25','2026-10-23 14:56:25'),(23,'حذف الموظفين','delete_staff','staff','حذف حسابات الموظفين من النظام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(24,'تجميد حساب الموظف (Hold)','hold_staff','staff','تعليق وإيقاف حساب الموظف واستبعاده من المهام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(25,'إسناد الأدوار والصلاحيات للمستخدمين','assign_user_roles','staff','تحديد المستويات والأدوار المتعددة للمستخدمين','2026-10-23 14:56:25','2026-10-23 14:56:25'),(26,'إدارة مصفوفة الأدوار والصلاحيات','manage_roles','roles','الوصول إلى مصفوفة الصلاحيات والتعديل عليها','2026-10-23 14:56:25','2026-10-23 14:56:25'),(27,'إنشاء أدوار وظيفية جديدة','create_roles','roles','إضافة دور جديد وتحديد صلاحياته','2026-10-23 14:56:25','2026-10-23 14:56:25'),(28,'تعديل الأدوار والصلاحيات','edit_roles','roles','تعديل مسميات الأدوار والصلاحيات المسندة لها','2026-10-23 14:56:25','2026-10-23 14:56:25'),(29,'حذف الأدوار المخصصة','delete_roles','roles','حذف الأدوار غير الأساسية من النظام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(30,'إدارة الأقسام والخدمات','manage_departments','departments','إضافة وتعديل وحذف الأقسام وتعيين المدراء','2026-10-23 14:56:25','2026-10-23 14:56:25'),(31,'إدارة الخدمات الفرعية للأقسام','manage_subcategories','departments','إدارة الفئات الفرعية التابعة للأقسام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(32,'عرض رأس المال والسيولة','view_capital','finance','الاطلاع على رأس المال وصافي الأرباح والسيولة العامة','2026-10-23 14:56:25','2026-10-23 14:56:25'),(33,'الإدارة المالية الكاملة','manage_finance','finance','الوصول الكامل إلى لوحة الحسابات والمالية','2026-10-23 14:56:25','2026-10-23 14:56:25'),(34,'عرض مالية وأرباح القسم','view_dept_finance','finance','الاطلاع على الإيرادات والمصروفات الخاصة بالقسم','2026-10-23 14:56:25','2026-10-23 14:56:25'),(35,'إدارة القيود اليومية والدفتر العام','manage_ledger','finance','إضافة وتعديل قيود اليومية المحاسبية','2026-10-23 14:56:25','2026-10-23 14:56:25'),(36,'إدارة العُهد المالية للموظفين','manage_custody','finance','صرف وتسوية واسترداد العُهد المالية للموظفين','2026-10-23 14:56:25','2026-10-23 14:56:25'),(37,'إدارة الأصول الثابتة','manage_fixed_assets','finance','تسجيل الأصول وحساب الإهلاك ومتابعتها','2026-10-23 14:56:25','2026-10-23 14:56:25'),(38,'إدارة الرواتب ومسيرات القبض','manage_payroll','finance','اعتماد مسيرات الرواتب والمكافآت والخصومات','2026-10-23 14:56:25','2026-10-23 14:56:25'),(39,'إدارة دفعات وسندات قبض العملاء','manage_client_payments','finance','تسجيل دفعات العملاء وسندات القبض البنكية والنقدية','2026-10-23 14:56:25','2026-10-23 14:56:25'),(40,'إدارة توزيعات ونسب الشركاء','manage_partner_splits','finance','حساب وتوزيع الأرباح على الشركاء','2026-10-23 14:56:25','2026-10-23 14:56:25'),(41,'إدارة تصنيفات وبنود المالية','manage_finance_categories','finance','إدارة شجرة بنود الإيرادات والمصروفات','2026-10-23 14:56:25','2026-10-23 14:56:25'),(42,'إدارة المشاريع الداخلية والتطوير','manage_internal_projects','internal_projects','إدارة مشاريع الوكالة الداخلية وتطوير العمل','2026-10-23 14:56:25','2026-10-23 14:56:25'),(43,'إدارة سابقة الأعمال والمشاريع','manage_portfolio','cms','إضافة وتعديل الأعمال المنشورة على موقع الوكالة','2026-10-23 14:56:25','2026-10-23 14:56:25'),(44,'إدارة الباقات والخدمات المعروضة','manage_services','cms','إدارة الخدمات والباقات على الموقع','2026-10-23 14:56:25','2026-10-23 14:56:25'),(45,'إدارة مقالات المدونة','manage_blogs','cms','نشر وتعديل المقالات والمحتوى الترويجي','2026-10-23 14:56:25','2026-10-23 14:56:25'),(46,'إدارة آراء العملاء والشهادات','manage_testimonials','cms','إدارة تقييمات وشهادات العملاء المعروضة','2026-10-23 14:56:25','2026-10-23 14:56:25'),(47,'إدارة الأسئلة الشائعة','manage_faqs','cms','إضافة وتعديل الأسئلة والأجوبة الشائعة','2026-10-23 14:56:25','2026-10-23 14:56:25'),(48,'إدارة محتوى الصفحات وبيانات التواصل','manage_cms_content','cms','تعديل نصوص صفحات الموقع وبيانات الاتصال ورسائل الزوار','2026-10-23 14:56:25','2026-10-23 14:56:25'),(49,'استعراض سجل العمليات والرقابة','view_activity_logs','system','مراقبة سجل النشاطات والعمليات الرقابية في النظام','2026-10-23 14:56:25','2026-10-23 14:56:25'),(50,'إرسال وإدارة الإشعارات العامة','manage_notifications','system','إرسال تنبيهات وإشعارات للمستخدمين والموظفين','2026-10-23 14:56:25','2026-10-23 14:56:25'),(51,'الدخول لبوابة العميل','access_client_portal','system','صلاحية تسجيل الدخول واستخدام بوابة العميل الخاصة','2026-10-23 14:56:25','2026-10-23 14:56:25');
 /*!40000 ALTER TABLE `permissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1033,7 +1113,7 @@ CREATE TABLE `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `personal_access_tokens_expires_at_index` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1042,7 +1122,7 @@ CREATE TABLE `personal_access_tokens` (
 
 LOCK TABLES `personal_access_tokens` WRITE;
 /*!40000 ALTER TABLE `personal_access_tokens` DISABLE KEYS */;
-INSERT INTO `personal_access_tokens` VALUES (1,'App\\Models\\User',1,'admin-token','367b10f4fffcead2b7b884c8a51d3ffdf08519f4fa530aba12579e1bee48f485','[\"*\"]','2026-08-22 16:12:32',NULL,'2026-08-22 16:10:02','2026-08-22 16:12:32'),(2,'App\\Models\\User',1,'admin-token','5a7a0cbe4c2069279cf457578e97e0f01d7533fe377c516158bd240982160f60','[\"*\"]','2026-08-22 16:13:59',NULL,'2026-08-22 16:12:49','2026-08-22 16:13:59'),(3,'App\\Models\\User',1,'admin-token','48dea56885bcc9f1c564b640cd23635da0103645626eeedbd235311d00ab87b7','[\"*\"]','2026-08-22 16:16:01',NULL,'2026-08-22 16:14:40','2026-08-22 16:16:01'),(4,'App\\Models\\User',3,'admin-token','71bdcbe40fd40591f106b4961480b92e44f868a9a4fbc7d57b138cfc0879bb8f','[\"*\"]','2026-08-22 16:16:19',NULL,'2026-08-22 16:16:13','2026-08-22 16:16:19'),(5,'App\\Models\\User',1,'admin-token','6eb1f5c037994353832a1e3f5606d4b12576e5d63e156e4b0c0655a3f6733d7b','[\"*\"]','2026-08-24 06:48:11',NULL,'2026-08-24 05:43:15','2026-08-24 06:48:11'),(6,'App\\Models\\User',4,'admin-token','b2a9adaef317422e7dbc367a64cce65e2ded5e8f836d034d9ffdb4777ada26b9','[\"*\"]','2026-08-24 06:49:03',NULL,'2026-08-24 06:48:23','2026-08-24 06:49:03'),(7,'App\\Models\\User',1,'admin-token','466a20303659a28858f871ff8882ef1a962d1e3fc5d3b756f57ba4a6a987cf11','[\"*\"]','2026-08-24 06:49:37',NULL,'2026-08-24 06:49:27','2026-08-24 06:49:37'),(8,'App\\Models\\User',5,'admin-token','82329d86f6215d75894c678228197be713b68da8dcca131223ff016f3df475b2','[\"*\"]','2026-08-24 06:50:05',NULL,'2026-08-24 06:49:50','2026-08-24 06:50:05'),(9,'App\\Models\\User',1,'admin-token','5dd5cb6f8951215b425e0480837894ab3429acfa43249a62ed5048520b10efbc','[\"*\"]','2026-08-24 11:23:34',NULL,'2026-08-24 06:50:16','2026-08-24 11:23:34'),(11,'App\\Models\\User',1,'test','6668e40694a95369ccf2dc75b390c57f27e4225b084c302a6f0553221d9a0759','[\"*\"]','2026-09-23 13:38:56',NULL,'2026-09-23 13:38:56','2026-09-23 13:38:56'),(12,'App\\Models\\User',1,'test','10a21cf01977f8fe74c1822e80c674ea88c188ae47388da96f95b9f934868bdd','[\"*\"]',NULL,NULL,'2026-09-23 13:39:10','2026-09-23 13:39:10'),(13,'App\\Models\\User',1,'test','a28c14b117557662c4be2d273424032664772da3d21ccc0b5529410b387a8672','[\"*\"]',NULL,NULL,'2026-09-23 13:39:35','2026-09-23 13:39:35'),(14,'App\\Models\\User',1,'test','9730b30c178ffb9c138a9e7fc1c466b2db5174fac928392cbef920b93d98f1ae','[\"*\"]',NULL,NULL,'2026-09-23 13:39:48','2026-09-23 13:39:48'),(15,'App\\Models\\User',1,'test','323fadc430ef7b8deab7c2d3371cf35be7a89d76325408860cb7be5f23912517','[\"*\"]',NULL,NULL,'2026-09-23 13:40:09','2026-09-23 13:40:09'),(16,'App\\Models\\User',1,'test','18339cee86aaa3753977e13ec5e75fa2924626b0653c00cc84c7593d8eb4c914','[\"*\"]',NULL,NULL,'2026-09-23 13:40:23','2026-09-23 13:40:23'),(17,'App\\Models\\User',1,'test','d88cf6cc6de14af0e62d778ed26d67916ce537f0cb0a4a56e725d638a10142c5','[\"*\"]',NULL,NULL,'2026-09-23 13:40:35','2026-09-23 13:40:35'),(18,'App\\Models\\User',1,'test','d6dc478536d715e443576244fe2386b8019791a64ceff4844151cc4c369279e2','[\"*\"]',NULL,NULL,'2026-09-23 13:41:02','2026-09-23 13:41:02');
+INSERT INTO `personal_access_tokens` VALUES (1,'App\\Models\\User',1,'admin-token','367b10f4fffcead2b7b884c8a51d3ffdf08519f4fa530aba12579e1bee48f485','[\"*\"]','2026-08-22 16:12:32',NULL,'2026-08-22 16:10:02','2026-08-22 16:12:32'),(2,'App\\Models\\User',1,'admin-token','5a7a0cbe4c2069279cf457578e97e0f01d7533fe377c516158bd240982160f60','[\"*\"]','2026-08-22 16:13:59',NULL,'2026-08-22 16:12:49','2026-08-22 16:13:59'),(3,'App\\Models\\User',1,'admin-token','48dea56885bcc9f1c564b640cd23635da0103645626eeedbd235311d00ab87b7','[\"*\"]','2026-08-22 16:16:01',NULL,'2026-08-22 16:14:40','2026-08-22 16:16:01'),(4,'App\\Models\\User',3,'admin-token','71bdcbe40fd40591f106b4961480b92e44f868a9a4fbc7d57b138cfc0879bb8f','[\"*\"]','2026-08-22 16:16:19',NULL,'2026-08-22 16:16:13','2026-08-22 16:16:19'),(5,'App\\Models\\User',1,'admin-token','6eb1f5c037994353832a1e3f5606d4b12576e5d63e156e4b0c0655a3f6733d7b','[\"*\"]','2026-08-24 06:48:11',NULL,'2026-08-24 05:43:15','2026-08-24 06:48:11'),(6,'App\\Models\\User',4,'admin-token','b2a9adaef317422e7dbc367a64cce65e2ded5e8f836d034d9ffdb4777ada26b9','[\"*\"]','2026-08-24 06:49:03',NULL,'2026-08-24 06:48:23','2026-08-24 06:49:03'),(7,'App\\Models\\User',1,'admin-token','466a20303659a28858f871ff8882ef1a962d1e3fc5d3b756f57ba4a6a987cf11','[\"*\"]','2026-08-24 06:49:37',NULL,'2026-08-24 06:49:27','2026-08-24 06:49:37'),(8,'App\\Models\\User',5,'admin-token','82329d86f6215d75894c678228197be713b68da8dcca131223ff016f3df475b2','[\"*\"]','2026-08-24 06:50:05',NULL,'2026-08-24 06:49:50','2026-08-24 06:50:05'),(9,'App\\Models\\User',1,'admin-token','5dd5cb6f8951215b425e0480837894ab3429acfa43249a62ed5048520b10efbc','[\"*\"]','2026-08-24 11:23:34',NULL,'2026-08-24 06:50:16','2026-08-24 11:23:34'),(11,'App\\Models\\User',1,'test','6668e40694a95369ccf2dc75b390c57f27e4225b084c302a6f0553221d9a0759','[\"*\"]','2026-09-23 13:38:56',NULL,'2026-09-23 13:38:56','2026-09-23 13:38:56'),(12,'App\\Models\\User',1,'test','10a21cf01977f8fe74c1822e80c674ea88c188ae47388da96f95b9f934868bdd','[\"*\"]',NULL,NULL,'2026-09-23 13:39:10','2026-09-23 13:39:10'),(13,'App\\Models\\User',1,'test','a28c14b117557662c4be2d273424032664772da3d21ccc0b5529410b387a8672','[\"*\"]',NULL,NULL,'2026-09-23 13:39:35','2026-09-23 13:39:35'),(14,'App\\Models\\User',1,'test','9730b30c178ffb9c138a9e7fc1c466b2db5174fac928392cbef920b93d98f1ae','[\"*\"]',NULL,NULL,'2026-09-23 13:39:48','2026-09-23 13:39:48'),(15,'App\\Models\\User',1,'test','323fadc430ef7b8deab7c2d3371cf35be7a89d76325408860cb7be5f23912517','[\"*\"]',NULL,NULL,'2026-09-23 13:40:09','2026-09-23 13:40:09'),(16,'App\\Models\\User',1,'test','18339cee86aaa3753977e13ec5e75fa2924626b0653c00cc84c7593d8eb4c914','[\"*\"]',NULL,NULL,'2026-09-23 13:40:23','2026-09-23 13:40:23'),(17,'App\\Models\\User',1,'test','d88cf6cc6de14af0e62d778ed26d67916ce537f0cb0a4a56e725d638a10142c5','[\"*\"]',NULL,NULL,'2026-09-23 13:40:35','2026-09-23 13:40:35'),(18,'App\\Models\\User',1,'test','d6dc478536d715e443576244fe2386b8019791a64ceff4844151cc4c369279e2','[\"*\"]',NULL,NULL,'2026-09-23 13:41:02','2026-09-23 13:41:02'),(20,'App\\Models\\User',1,'admin-token','5a0cbaa57d657dbd852b09ab656385aab84618693461f84dd41b012ac7f69428','[\"*\"]',NULL,NULL,'2026-10-23 14:54:06','2026-10-23 14:54:06'),(21,'App\\Models\\User',28,'admin-token','8c72b21d0829c0d5141a5eaa3f5d5434b0cc024c8b5aa1343e2be1fbec167437','[\"*\"]',NULL,NULL,'2026-10-23 14:54:06','2026-10-23 14:54:06'),(22,'App\\Models\\User',1,'admin-token','b307c2aa0a03443b6bad7c95eebaadb542d7a850835330c8a056a4762dfd7e84','[\"*\"]','2026-10-23 18:06:59',NULL,'2026-10-23 14:54:39','2026-10-23 18:06:59');
 /*!40000 ALTER TABLE `personal_access_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1163,7 +1243,7 @@ CREATE TABLE `roles` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `roles_slug_unique` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1172,7 +1252,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'Super Admin','super_admin','System-wide full administrative access','2026-08-22 16:07:37','2026-08-22 16:07:37');
+INSERT INTO `roles` VALUES (1,'مدير النظام العام (Super Admin)','super_admin','كامل الصلاحيات والتحكم الإداري والمالي والتقني الشامل لكافة مفاصل المنظومة','2026-08-22 16:07:37','2026-10-23 14:56:24'),(7,'مدير النظام (Admin)','admin','إدارة العمليات التشغيلية، فريق العمل، الصفقات، المشاريع، والمحتوى','2026-10-23 14:56:24','2026-10-23 14:56:24'),(8,'مدير قسم (Department Manager)','department_manager','إدارة مهام القسم، متابعة الصفقات الخاصة به، وإسناد المهام لأعضاء فريقه','2026-10-23 14:56:24','2026-10-23 14:56:24'),(9,'مدير حسابات (Account Manager)','account_manager','متابعة العملاء، إدارة الصفقات والعقود، والاعتماد بالوكالة والتنسيق المالي','2026-10-23 14:56:24','2026-10-23 14:56:24'),(10,'موظف (Employee)','employee','تنفيذ المهام المسندة، تحديث الحالات، ورفع المخرجات والمرفقات','2026-10-23 14:56:24','2026-10-23 14:56:24'),(11,'عميل (Client)','client','الدخول لبوابة العميل، مراجعة واعتماد المهام، وتقديم الملاحظات','2026-10-23 14:56:24','2026-10-23 14:56:24');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1414,7 +1494,7 @@ CREATE TABLE `task_notes` (
   KEY `task_notes_user_id_foreign` (`user_id`),
   CONSTRAINT `task_notes_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
   CONSTRAINT `task_notes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1476,7 +1556,7 @@ CREATE TABLE `task_user` (
   KEY `task_user_user_id_foreign` (`user_id`),
   CONSTRAINT `task_user_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
   CONSTRAINT `task_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1508,6 +1588,8 @@ CREATE TABLE `tasks` (
   `shooting_date` date DEFAULT NULL,
   `delivery_date` date DEFAULT NULL,
   `dates_not_specified` tinyint(1) NOT NULL DEFAULT '0',
+  `is_monthly_plan` tinyint(1) NOT NULL DEFAULT '0',
+  `plan_duration_months` int NOT NULL DEFAULT '1',
   `is_standalone` tinyint(1) NOT NULL DEFAULT '0',
   `estimated_hours` int NOT NULL DEFAULT '0',
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -1516,6 +1598,7 @@ CREATE TABLE `tasks` (
   `internal_project_id` bigint unsigned DEFAULT NULL,
   `department_id` bigint unsigned DEFAULT NULL,
   `deal_id` bigint unsigned DEFAULT NULL,
+  `client_id` bigint unsigned DEFAULT NULL,
   `client_price` decimal(10,2) DEFAULT '0.00',
   `employee_price` decimal(10,2) DEFAULT '0.00',
   `sub_category_id` bigint unsigned DEFAULT NULL,
@@ -1528,12 +1611,14 @@ CREATE TABLE `tasks` (
   KEY `tasks_sub_category_id_foreign` (`sub_category_id`),
   KEY `tasks_parent_id_foreign` (`parent_id`),
   KEY `tasks_department_id_foreign` (`department_id`),
+  KEY `tasks_client_id_index` (`client_id`),
+  CONSTRAINT `tasks_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tasks_deal_id_foreign` FOREIGN KEY (`deal_id`) REFERENCES `deals` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tasks_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tasks_internal_project_id_foreign` FOREIGN KEY (`internal_project_id`) REFERENCES `internal_projects` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tasks_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE,
   CONSTRAINT `tasks_sub_category_id_foreign` FOREIGN KEY (`sub_category_id`) REFERENCES `sub_categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1542,7 +1627,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'تجريبي صفقة','تجريبي صفقة','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,0,'2026-09-23 13:38:56','2026-08-24 06:30:32','2026-09-23 13:38:56',NULL,1,2,1200.00,1000.00,NULL,NULL,NULL,200.00),(2,'تجريبي 2','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,0,NULL,'2026-08-24 06:44:26','2026-08-24 07:18:24',NULL,1,2,120.00,100.00,NULL,NULL,'وصف  تفصيلي',20.00);
+INSERT INTO `tasks` VALUES (1,'تجريبي صفقة','تجريبي صفقة','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,'2026-09-23 13:38:56','2026-08-24 06:30:32','2026-09-23 13:38:56',NULL,1,2,4,1200.00,1000.00,NULL,NULL,NULL,200.00),(2,'تجريبي 2','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,NULL,'2026-08-24 06:44:26','2026-08-24 07:18:24',NULL,1,2,4,120.00,100.00,NULL,NULL,'وصف  تفصيلي',20.00),(42,'Task 1 Updated','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,NULL,'2026-10-23 12:41:10','2026-10-23 12:41:10',NULL,1,26,2,3500.00,0.00,NULL,NULL,NULL,3500.00),(43,'Task 2','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,'2026-10-23 12:41:11','2026-10-23 12:41:10','2026-10-23 12:41:11',NULL,1,26,2,3000.00,0.00,NULL,NULL,NULL,3000.00),(44,'Task 3 Newly Added','Task 3 Newly Added','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,NULL,'2026-10-23 12:41:11','2026-10-23 12:41:11',NULL,1,26,2,4000.00,0.00,NULL,NULL,NULL,4000.00),(45,'مهمة اختبار التعليقات الصوتية والتنبيهات','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,NULL,'2026-10-23 12:49:03','2026-10-23 12:49:03',NULL,1,NULL,NULL,0.00,0.00,NULL,NULL,NULL,0.00),(46,'مهمة اختبار التعليقات الصوتية والتنبيهات','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,NULL,'2026-10-23 12:49:46','2026-10-23 12:49:46',NULL,1,NULL,NULL,0.00,0.00,NULL,NULL,NULL,0.00),(47,'مهمة اختبار التعليقات الصوتية والتنبيهات','','medium','new',NULL,NULL,NULL,NULL,NULL,0,0,1,0,0,'2026-10-23 12:50:28','2026-10-23 12:50:24','2026-10-23 12:50:28',NULL,1,NULL,NULL,0.00,0.00,NULL,NULL,NULL,0.00);
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1599,6 +1684,8 @@ CREATE TABLE `users` (
   `deleted_at` timestamp NULL DEFAULT NULL,
   `role_id` bigint unsigned DEFAULT NULL,
   `is_hold` tinyint(1) NOT NULL DEFAULT '0',
+  `client_category` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
+  `is_vip` tinyint(1) NOT NULL DEFAULT '0',
   `payment_type` enum('task_based','salary_based','percentage_based','hybrid') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'salary_based',
   `base_salary` decimal(10,2) NOT NULL DEFAULT '0.00',
   `commission_rate` decimal(5,2) NOT NULL DEFAULT '0.00',
@@ -1609,7 +1696,7 @@ CREATE TABLE `users` (
   KEY `users_role_id_foreign` (`role_id`),
   CONSTRAINT `users_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `users_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1618,7 +1705,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,NULL,'Media Glow Super Admin','admin@mediaglowegypt.com',NULL,NULL,'$2y$12$OlZzn8RYa7TmteQCvTuAT.OeK1F1Pp3uk5tf2p7dKPqlJxmQWw3Uy',NULL,'2026-08-22 16:09:37','2026-08-22 16:09:37','super_admin',NULL,NULL,1,0,'salary_based',25000.00,0.00),(2,'1001','test','m@mail.com','01000000000',NULL,'$2y$12$nf1q9RioIkW/5sdjI4TL6O4itDTfMvaNyImJvwpOhT7HGWCxPgEju',NULL,'2026-08-22 16:11:48','2026-08-22 16:11:48','client',NULL,NULL,NULL,0,'salary_based',0.00,0.00),(3,'1002','mohamed','mohamed@gmail.com','admin@mediaglowegypt.com',NULL,'$2y$12$vcvWJuyu2ziePPigF.x77e6VF3gfGGDTDVWDWNQBBivvvhMT1Ny4e',NULL,'2026-08-22 16:16:01','2026-08-22 16:16:01','client',NULL,NULL,NULL,0,'salary_based',0.00,0.00),(4,'1003','محمد رضا','mohamedreda@gmail.com','01099999999',NULL,'$2y$12$se1meurMUbZg0AkpF9sTOeNtmLEedX77xhguGHs.7iu0VI1VgIR5K',NULL,'2026-08-24 05:44:08','2026-08-24 05:44:08','client',NULL,NULL,NULL,0,'salary_based',0.00,0.00),(5,NULL,'موظف 1','emp1@mediaglowegypt.com',NULL,NULL,'$2y$12$Uv00iLjo6pQI31LE35kOWOIBCBKsPXBFi7ZhQZP2oW.7WwKtDIV4S',NULL,'2026-08-24 05:45:28','2026-08-24 05:45:28','department_manager',NULL,NULL,NULL,0,'salary_based',0.00,0.00);
+INSERT INTO `users` VALUES (1,NULL,'Media Glow Super Admin','admin@mediaglowegypt.com',NULL,NULL,'$2y$12$ZOv8zHuiXdBXawSJ9eT.WekTpaeQKm7ZOztF/qb3FyPqCpR5SXPPy',NULL,'2026-08-22 16:09:37','2026-10-23 14:53:54','super_admin',NULL,NULL,1,0,'normal',0,'salary_based',25000.00,0.00),(2,'1001','test','m@mail.com','01000000000',NULL,'$2y$12$nf1q9RioIkW/5sdjI4TL6O4itDTfMvaNyImJvwpOhT7HGWCxPgEju',NULL,'2026-08-22 16:11:48','2026-08-22 16:11:48','client',NULL,NULL,NULL,0,'normal',0,'salary_based',0.00,0.00),(3,'1002','mohamed','mohamed@gmail.com','admin@mediaglowegypt.com',NULL,'$2y$12$vcvWJuyu2ziePPigF.x77e6VF3gfGGDTDVWDWNQBBivvvhMT1Ny4e',NULL,'2026-08-22 16:16:01','2026-08-22 16:16:01','client',NULL,NULL,NULL,0,'normal',0,'salary_based',0.00,0.00),(4,'1003','محمد رضا','mohamedreda@gmail.com','01099999999',NULL,'$2y$12$se1meurMUbZg0AkpF9sTOeNtmLEedX77xhguGHs.7iu0VI1VgIR5K',NULL,'2026-08-24 05:44:08','2026-10-23 14:55:09','client',NULL,NULL,NULL,0,'vip',1,'salary_based',0.00,0.00),(5,NULL,'موظف 1','emp1@mediaglowegypt.com',NULL,NULL,'$2y$12$Uv00iLjo6pQI31LE35kOWOIBCBKsPXBFi7ZhQZP2oW.7WwKtDIV4S',NULL,'2026-08-24 05:45:28','2026-08-24 05:45:28','department_manager',NULL,NULL,NULL,0,'normal',0,'salary_based',0.00,0.00),(23,NULL,'Admin Test','admin_test@test.com',NULL,NULL,'$2y$12$9ZBp3H31TATZv7R8YqTNCeKaDWD.oHRUAH7m7FgB2gd5liNwjC3Wy',NULL,'2026-10-23 12:07:15','2026-10-23 12:07:15','admin',NULL,NULL,NULL,0,'normal',0,'salary_based',0.00,0.00),(28,NULL,'Operations Admin','admin@mediaglow.com',NULL,NULL,'$2y$12$/jwBXgKcNmYivLqoIrsiL.pbPLq2DNtpHfpGE3qOk7k6qvRh28Paq',NULL,'2026-10-23 14:53:55','2026-10-23 14:53:55','admin',NULL,NULL,NULL,0,'normal',0,'salary_based',0.00,0.00);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -1631,4 +1718,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-23 20:12:42
+-- Dump completed on 2026-10-24 13:34:16

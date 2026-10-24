@@ -28,7 +28,20 @@ class UserController extends Controller
             return response()->json(['message' => 'غير مسموح للعملاء بالوصول لقائمة العملاء والمستخدمين'], 403);
         }
 
+        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager'])) {
+            if ($request->input('type') === 'client' || $request->input('role') === 'client') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'غير مصرح لمدير القسم بالاطلاع على قائمة العملاء أو حساباتهم.'
+                ], 403);
+            }
+        }
+
         $query = User::with(['department', 'roleModel', 'roles']);
+
+        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager'])) {
+            $query->whereNotIn('role', ['client', 'Client']);
+        }
 
         // Type filter: employee / staff vs client
         if ($request->filled('type')) {
@@ -72,6 +85,14 @@ class UserController extends Controller
             $query->where('is_hold', $request->boolean('is_hold'));
         }
 
+        if ($request->filled('client_category')) {
+            $query->where('client_category', $request->client_category);
+        }
+
+        if ($request->filled('is_vip')) {
+            $query->where('is_vip', $request->boolean('is_vip'));
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -102,7 +123,13 @@ class UserController extends Controller
 
     public function show($id)
     {
+        $currentUser = Auth::user();
         $user = User::with(['department', 'roleModel', 'roles'])->findOrFail($id);
+
+        if ($currentUser && in_array($currentUser->role, ['department_manager', 'Department Manager']) && in_array(strtolower($user->role), ['client'])) {
+            return response()->json(['message' => 'غير مصرح لمدير القسم بالاطلاع على تفاصيل أو حساب العميل'], 403);
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => $user
@@ -123,6 +150,19 @@ class UserController extends Controller
         ]);
     }
 
+    private function getRoleRank(?string $role): int
+    {
+        return match (strtolower(trim($role ?? ''))) {
+            'super_admin' => 100,
+            'admin' => 80,
+            'department_manager' => 60,
+            'account_manager' => 50,
+            'employee' => 30,
+            'client' => 10,
+            default => 20,
+        };
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -135,6 +175,8 @@ class UserController extends Controller
             'role_ids.*' => 'integer|exists:roles,id',
             'client_code' => 'nullable|string|max:30|unique:users,client_code',
             'is_hold' => 'nullable|boolean',
+            'is_vip' => 'nullable|boolean',
+            'client_category' => 'nullable|string|max:50',
             'department_id' => 'nullable|exists:departments,id',
             'payment_type' => 'nullable|in:task_based,salary_based,percentage_based,hybrid',
             'base_salary' => 'nullable|numeric|min:0',
@@ -143,12 +185,45 @@ class UserController extends Controller
 
         $roleModel = Role::where('slug', $validated['role'])->first();
 
+        $authUser = Auth::user();
+        $authRank = $this->getRoleRank($authUser?->role);
+        $newRank = $this->getRoleRank($validated['role']);
+
+        if (!empty($validated['role_ids'])) {
+            $roleSlugs = Role::whereIn('id', $validated['role_ids'])->pluck('slug')->toArray();
+            foreach ($roleSlugs as $slug) {
+                $rRank = $this->getRoleRank($slug);
+                if ($rRank > $newRank) {
+                    $newRank = $rRank;
+                }
+            }
+        }
+
+        // Only super_admin can create super_admin
+        if ($newRank >= 100 && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بإنشاء حساب سوبر أدمن (Super Admin). إنشاء حسابات السوبر أدمن مقتصر حصرياً على السوبر أدمن فقط.'
+            ], 403);
+        }
+
+        // No user can create an account with higher permissions than themselves
+        if ($newRank > $authRank && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بإضافة أو إنشاء حساب بصلاحيات أعلى من رتبتك الحالية.'
+            ], 403);
+        }
+
         // Calculate client_code if client and empty
         $clientCode = $validated['client_code'] ?? null;
         if ($validated['role'] === 'client' && empty($clientCode)) {
             $maxCode = DB::table('users')->whereNotNull('client_code')->max(DB::raw('CAST(client_code AS UNSIGNED)'));
             $clientCode = (string) max(1001, ($maxCode ? $maxCode + 1 : 1001));
         }
+
+        $clientCategory = $validated['client_category'] ?? ($request->boolean('is_vip') ? 'vip' : 'normal');
+        $isVip = $request->boolean('is_vip') || strtolower((string)$clientCategory) === 'vip';
 
         $user = User::create([
             'client_code' => $clientCode,
@@ -159,6 +234,8 @@ class UserController extends Controller
             'role' => $validated['role'],
             'role_id' => $roleModel ? $roleModel->id : null,
             'is_hold' => $validated['is_hold'] ?? false,
+            'is_vip' => $isVip,
+            'client_category' => $clientCategory,
             'department_id' => $validated['department_id'] ?? null,
             'payment_type' => $validated['payment_type'] ?? 'salary_based',
             'base_salary' => $validated['base_salary'] ?? 0,
@@ -178,6 +255,25 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $authUser = Auth::user();
+        $authRank = $this->getRoleRank($authUser?->role);
+        $targetCurrentRank = $this->getRoleRank($user->role);
+
+        // Non-super-admin cannot edit or modify a super-admin account
+        if ($user->isSuperAdmin() && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بتعديل بيانات أو صلاحيات حساب السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
+        // Cannot edit an account with higher permissions
+        if ($targetCurrentRank > $authRank && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بتعديل بيانات حساب يمتلك رتبة أو صلاحيات أعلى من صلاحياتك.'
+            ], 403);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -189,11 +285,40 @@ class UserController extends Controller
             'role_ids.*' => 'integer|exists:roles,id',
             'client_code' => 'nullable|string|max:30|unique:users,client_code,' . $id,
             'is_hold' => 'nullable|boolean',
+            'is_vip' => 'nullable|boolean',
+            'client_category' => 'nullable|string|max:50',
             'department_id' => 'nullable|exists:departments,id',
             'payment_type' => 'nullable|in:task_based,salary_based,percentage_based,hybrid',
             'base_salary' => 'nullable|numeric|min:0',
             'commission_rate' => 'nullable|numeric|min:0',
         ]);
+
+        $newRank = $this->getRoleRank($validated['role']);
+        if (!empty($validated['role_ids'])) {
+            $roleSlugs = Role::whereIn('id', $validated['role_ids'])->pluck('slug')->toArray();
+            foreach ($roleSlugs as $slug) {
+                $rRank = $this->getRoleRank($slug);
+                if ($rRank > $newRank) {
+                    $newRank = $rRank;
+                }
+            }
+        }
+
+        // Non-super-admin cannot escalate or assign super_admin role
+        if ($newRank >= 100 && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بتعيين رتبة سوبر أدمن (Super Admin). هذا الإجراء مقتصر حصرياً على السوبر أدمن فقط.'
+            ], 403);
+        }
+
+        // Cannot escalate anyone to a higher rank than the authenticated user
+        if ($newRank > $authRank && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بترقية مستخدم إلى صلاحيات تفوق صلاحياتك الحالية.'
+            ], 403);
+        }
 
         $roleModel = Role::where('slug', $validated['role'])->first();
 
@@ -211,6 +336,25 @@ class UserController extends Controller
 
         if (array_key_exists('is_hold', $validated)) {
             $data['is_hold'] = (bool) $validated['is_hold'];
+        }
+
+        if (array_key_exists('client_category', $validated) || $request->has('client_category')) {
+            $cat = $request->input('client_category');
+            if ($cat !== null) {
+                $data['client_category'] = $cat;
+                if (strtolower($cat) === 'vip') {
+                    $data['is_vip'] = true;
+                } elseif (strtolower($cat) === 'normal') {
+                    $data['is_vip'] = false;
+                }
+            }
+        }
+
+        if (array_key_exists('is_vip', $validated) || $request->has('is_vip')) {
+            $data['is_vip'] = (bool) $request->input('is_vip');
+            if ($data['is_vip'] && (empty($data['client_category']) || $data['client_category'] === 'normal')) {
+                $data['client_category'] = 'vip';
+            }
         }
 
         if (array_key_exists('client_code', $validated) && !empty($validated['client_code'])) {
@@ -236,6 +380,12 @@ class UserController extends Controller
     public function toggleHold($id)
     {
         $user = User::findOrFail($id);
+        $authUser = Auth::user();
+
+        if ($user->isSuperAdmin() && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعليق حساب السوبر أدمن (Super Admin)'], 403);
+        }
+
         if (auth()->id() == $id) {
             return response()->json(['message' => 'لا يمكنك تعليق حسابك الشخصي'], 403);
         }
@@ -256,8 +406,75 @@ class UserController extends Controller
         ]);
     }
 
+    public function toggleVip(Request $request, $id)
+    {
+        $authUser = Auth::user();
+        if (!in_array(strtolower($authUser?->role ?? ''), ['super_admin', 'admin', 'manager'])) {
+            return response()->json(['message' => 'غير مصرح — تعديل تصنيف العميل مقتصر على مدير النظام'], 403);
+        }
+
+        $client = User::findOrFail($id);
+
+        if ($request->filled('client_category')) {
+            $cat = $request->input('client_category');
+            $client->client_category = $cat;
+            $client->is_vip = (strtolower($cat) === 'vip');
+        } else {
+            $client->is_vip = !$client->is_vip;
+            $client->client_category = $client->is_vip ? 'vip' : 'normal';
+        }
+
+        $client->save();
+
+        $statusText = $client->is_vip ? 'تم تفعيل تصنيف VIP للعميل بنجاح' : 'تم تحديث تصنيف العميل إلى ' . $client->client_category_label;
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => $statusText,
+            'is_vip'  => (bool) $client->is_vip,
+            'client_category' => $client->client_category,
+            'client_category_label' => $client->client_category_label,
+            'data' => $client
+        ]);
+    }
+
+    public function updateClassification(Request $request, $id)
+    {
+        $authUser = Auth::user();
+        if (!in_array(strtolower($authUser?->role ?? ''), ['super_admin', 'admin', 'manager'])) {
+            return response()->json(['message' => 'غير مصرح — تحديد وتعديل تصنيف العميل مقتصر على مدير النظام والإدارة'], 403);
+        }
+
+        $request->validate([
+            'client_category' => 'required|string|max:50'
+        ]);
+
+        $client = User::findOrFail($id);
+        $cat = $request->client_category;
+        $client->client_category = $cat;
+        $client->is_vip = (strtolower($cat) === 'vip');
+        $client->save();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'تم تحديث تصنيف العميل بنجاح إلى: ' . $client->client_category_label,
+            'is_vip'  => (bool) $client->is_vip,
+            'client_category' => $client->client_category,
+            'client_category_label' => $client->client_category_label,
+            'data' => $client
+        ]);
+    }
+
     public function clientProfile($id)
     {
+        $currentUser = Auth::user();
+        if ($currentUser && in_array(strtolower($currentUser->role), ['department_manager', 'department manager', 'employee'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لمدير القسم بالاطلاع على تفاصيل أو حساب العميل والصفقات المالية.'
+            ], 403);
+        }
+
         $client = User::with(['roleModel', 'roles'])->findOrFail($id);
 
         // Ensure client code exists
@@ -267,9 +484,9 @@ class UserController extends Controller
             $client->save();
         }
 
-        // Fetch all deals with their tasks and payments
+        // Fetch all deals with their tasks, payments, and attachments (plans/briefs)
         $deals = Deal::where('client_id', $client->id)
-            ->with(['department', 'tasks.users', 'payments'])
+            ->with(['department', 'tasks.users', 'payments', 'attachments.uploader'])
             ->latest()
             ->get();
 
@@ -278,6 +495,7 @@ class UserController extends Controller
         $allPayments = [];
 
         foreach ($deals as $deal) {
+            $deal->syncFinancialTotals();
             $totalBilled += (float) $deal->calculated_total;
             $totalPaid += (float) $deal->calculated_paid;
 
@@ -299,6 +517,14 @@ class UserController extends Controller
             $totalPaid += (float) $dp->amount;
         }
 
+        // Add standalone tasks billed amounts for this client
+        $standaloneTasksBilled = (float) Task::where('client_id', $client->id)
+            ->whereNull('deal_id')
+            ->whereNull('parent_id')
+            ->where('status', '!=', 'cancelled')
+            ->sum('client_price');
+        $totalBilled += $standaloneTasksBilled;
+
         $remainingBalance = max(0, $totalBilled - $totalPaid);
 
         // Categorize deals by execution phase
@@ -314,10 +540,16 @@ class UserController extends Controller
             return in_array($d->status, ['completed', 'approved', 'closed']);
         })->values();
 
-        // Tasks associated with this client's deals
+        // Tasks associated with this client (both from deals and direct standalone tasks)
         $dealIds = $deals->pluck('id');
-        $tasks = Task::whereIn('deal_id', $dealIds)
-            ->with(['attachments', 'users', 'department'])
+        $tasks = Task::where(function($q) use ($dealIds, $client) {
+                if ($dealIds->isNotEmpty()) {
+                    $q->whereIn('deal_id', $dealIds);
+                }
+                $q->orWhere('client_id', $client->id);
+            })
+            ->whereNull('parent_id')
+            ->with(['attachments', 'users', 'department', 'deal', 'subtasks.users', 'subtasks.attachments'])
             ->latest()
             ->get();
 
@@ -352,6 +584,12 @@ class UserController extends Controller
         ]);
 
         $user = User::findOrFail($id);
+        $authUser = Auth::user();
+
+        if ($user->isSuperAdmin() && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل قسم السوبر أدمن (Super Admin)'], 403);
+        }
+
         $user->department_id = $request->department_id;
         $user->save();
 
@@ -364,6 +602,7 @@ class UserController extends Controller
 
     public function destroy($id)
     {
+        $authUser = Auth::user();
         $user = User::find($id);
 
         if (!$user) {
@@ -371,7 +610,41 @@ class UserController extends Controller
         }
 
         if (auth()->id() == $id) {
-            return response()->json(['message' => 'لا يمكنك حذف حسابك الشخصي من هنا'], 403);
+            return response()->json(['message' => 'لا يمكنك حذف حسابك الشخصي الحالي من هنا'], 403);
+        }
+
+        // If target is Super Admin: ONLY a Super Admin can delete him
+        if ($user->isSuperAdmin()) {
+            if (!$authUser || !$authUser->isSuperAdmin()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'غير مصرح لك بحذف حساب السوبر أدمن (Super Admin). حذف السوبر أدمن مقتصر حصرياً على السوبر أدمن فقط ولا يحق لأي رتبة أقل حذفه.'
+                ], 403);
+            }
+
+            // Ensure we do not delete the last remaining Super Admin in the system
+            $otherSuperAdminsCount = User::where('id', '!=', $user->id)
+                ->where(function($q) {
+                    $q->where('role', 'super_admin')
+                      ->orWhere('role', 'Super Admin')
+                      ->orWhereHas('roles', fn($rq) => $rq->where('slug', 'super_admin'));
+                })
+                ->count();
+
+            if ($otherSuperAdminsCount < 1) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'لا يمكن حذف حساب السوبر أدمن الأخير المتبقي في النظام لضمان وجود مدير عام للمنظومة.'
+                ], 422);
+            }
+        } else {
+            // All deletions inside the system must be by Super Admin only
+            if (!$authUser || !$authUser->isSuperAdmin()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'غير مصرح لك بحذف الحسابات أو العملاء. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                ], 403);
+            }
         }
 
         $fallbackAdminId = auth()->id() ?: User::where('role', 'super_admin')->where('id', '!=', $user->id)->value('id') ?: 1;
