@@ -26,7 +26,7 @@ import { catchError } from 'rxjs/operators';
         </button>
       </div>
 
-      <!-- Search -->
+      <!-- Search & Classification Filter -->
       <div class="filters-bar glass-panel">
         <div class="search-field">
           <i class="fa-solid fa-magnifying-glass"></i>
@@ -36,6 +36,19 @@ import { catchError } from 'rxjs/operators';
             (input)="onSearchChange()"
             placeholder="البحث بالاسم، كود العميل (مثال: 1001)، الهاتف، أو البريد..."
           />
+        </div>
+
+        <div class="category-filter-group">
+          <span class="filter-lbl"><i class="fa-solid fa-tags"></i> تصنيف العميل:</span>
+          <select [(ngModel)]="selectedCategoryFilter" (change)="onCategoryFilterChange()" class="filter-select">
+            <option value="all">كل التصنيفات</option>
+            <option value="vip">عملاء VIP ⭐</option>
+            <option value="normal">عملاء عاديين</option>
+            <option value="gold">عملاء ذهبيين (Gold)</option>
+            <option value="silver">عملاء فضيين (Silver)</option>
+            <option value="platinum">عملاء بلاتينيين (Platinum)</option>
+            <option value="new">عملاء جدد</option>
+          </select>
         </div>
       </div>
 
@@ -47,6 +60,7 @@ import { catchError } from 'rxjs/operators';
               <tr>
                 <th>كود العميل</th>
                 <th>اسم العميل</th>
+                <th>تصنيف العميل</th>
                 <th>البريد الإلكتروني</th>
                 <th>رقم الموبايل</th>
                 <th>عدد الصفقات</th>
@@ -73,6 +87,12 @@ import { catchError } from 'rxjs/operators';
                       </a>
                     </div>
                   </div>
+                </td>
+                <td>
+                  <span class="client-cat-badge" [ngClass]="getClientCategoryClass(client)" [title]="'تصنيف العميل: ' + getClientCategoryLabel(client)">
+                    <i [class]="getClientCategoryIcon(client)"></i>
+                    {{ getClientCategoryLabel(client) }}
+                  </span>
                 </td>
                 <td style="color:var(--text-2); font-family:monospace; font-size:0.84rem;">{{ client.client_email || client.email || '—' }}</td>
                 <td style="color:var(--text-2); font-weight:600; direction:ltr; text-align:right;">{{ client.phone || client.client_phone || '—' }}</td>
@@ -103,28 +123,28 @@ import { catchError } from 'rxjs/operators';
                       <i [class]="client.is_hold ? 'fa-solid fa-play' : 'fa-solid fa-pause'"></i>
                     </button>
                     <!-- Edit Client -->
-                    <button class="action-icon-btn btn-blue" (click)="openEditModal(client)" title="تعديل بيانات العميل أو كلمة المرور">
+                    <button class="action-icon-btn btn-blue" (click)="openEditModal(client)" title="تعديل بيانات وتصنيف العميل">
                       <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <!-- Delete Client -->
-                    <button class="action-icon-btn btn-rose" (click)="confirmDeleteClient(client)" title="حذف العميل نهائياً">
+                    <!-- Delete Client (Strictly Super Admin only) -->
+                    <button *ngIf="isSuperAdmin()" class="action-icon-btn btn-rose" (click)="confirmDeleteClient(client)" title="حذف العميل نهائياً">
                       <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </div>
                 </td>
               </tr>
               <tr *ngIf="tableLoading">
-                <td colspan="9" style="text-align:center; padding: 40px 16px;">
+                <td colspan="10" style="text-align:center; padding: 40px 16px;">
                   <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--violet-light); font-size:1.8rem;"></i>
                   <div style="margin-top:10px; color:var(--text-2); font-weight:600; font-size:0.9rem;">جاري تحميل بيانات العملاء...</div>
                 </td>
               </tr>
               <tr *ngIf="!tableLoading && clients.length === 0">
-                <td colspan="9">
+                <td colspan="10">
                   <div class="empty-state">
                     <div class="empty-state-icon"><i class="fa-solid fa-users-slash"></i></div>
                     <div class="empty-state-title">لا يوجد عملاء</div>
-                    <div class="empty-state-desc">لم يتم العثور على عملاء يطابقون كلمة البحث.</div>
+                    <div class="empty-state-desc">لم يتم العثور على عملاء يطابقون كلمة البحث والتصنيف المحدد.</div>
                   </div>
                 </td>
               </tr>
@@ -185,6 +205,20 @@ import { catchError } from 'rxjs/operators';
             <div class="form-group">
               <label>رقم الموبايل / الهاتف</label>
               <input type="text" pInputText formControlName="phone" placeholder="مثال: 01012345678" />
+            </div>
+
+            <!-- Client Classification (تصنيف العميل) -->
+            <div class="form-group">
+              <label>تصنيف العميل (Classification) <span class="required">*</span></label>
+              <select formControlName="client_category" class="custom-cat-select">
+                <option value="normal">عميل عادي (Standard / Normal)</option>
+                <option value="vip">عميل VIP (VIP Member ⭐)</option>
+                <option value="gold">عميل ذهبي (Gold Tier)</option>
+                <option value="silver">عميل فضي (Silver Tier)</option>
+                <option value="platinum">عميل بلاتيني (Platinum Tier)</option>
+                <option value="new">عميل جديد (New Client)</option>
+              </select>
+              <span class="field-hint-text">يحدد مدير النظام تصنيف العميل ومستوى الأولوية في الخدمة والمتابعة.</span>
             </div>
 
             <div class="form-group">
@@ -263,6 +297,22 @@ import { catchError } from 'rxjs/operators';
     .action-icon-btn.btn-emerald:hover { background: #10b981; color: #fff; }
     .action-icon-btn.btn-rose:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
 
+    .category-filter-group { display: flex; align-items: center; gap: 8px; }
+    .filter-lbl { color: var(--text-2); font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+    .filter-select, .custom-cat-select { background: var(--bg-input); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: var(--r); font-family: inherit; font-size: 0.86rem; outline: none; cursor: pointer; transition: border-color 0.2s; }
+    .filter-select:focus, .custom-cat-select:focus { border-color: var(--violet); }
+    .custom-cat-select { width: 100%; box-sizing: border-box; }
+    .field-hint-text { color: var(--text-3); font-size: 0.74rem; margin-top: 3px; }
+
+    .client-cat-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px; font-size: 0.76rem; font-weight: 800; white-space: nowrap; letter-spacing: 0.2px; transition: all 0.2s ease; }
+    .client-cat-badge i { font-size: 0.78rem; }
+    .cat-vip { background: linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.15) 100%); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45); box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2); }
+    .cat-gold { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.35); }
+    .cat-platinum { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.38); }
+    .cat-silver { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .cat-new { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .cat-normal { background: rgba(255, 255, 255, 0.05); color: var(--text-2, #94a3b8); border: 1px solid rgba(255, 255, 255, 0.1); }
+
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; }
     .form-group input { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); outline: none; font-family: inherit; font-size: 0.88rem; transition: all 0.2s; box-sizing: border-box; }
@@ -325,13 +375,15 @@ export class ClientsListComponent implements OnInit {
   currentPage = 1;
   pageSize = 10;
   totalRecords = 0;
+  currentUser: any = null;
+  selectedCategoryFilter: string = 'all';
 
   ngOnInit(): void {
     const userStr = localStorage.getItem('mediaglow_user');
     if (userStr) {
       try {
-        const u = JSON.parse(userStr);
-        if (u.role === 'client') {
+        this.currentUser = JSON.parse(userStr);
+        if (this.currentUser.role === 'client') {
           this.router.navigate(['/client-portal']);
           return;
         }
@@ -341,12 +393,18 @@ export class ClientsListComponent implements OnInit {
     this.loadClients();
   }
 
+  isSuperAdmin(): boolean {
+    const role = (this.currentUser?.role || '').toLowerCase();
+    return role === 'super_admin';
+  }
+
   initForm(): void {
     this.clientForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: [''],
       password: [''],
+      client_category: ['normal'],
       is_hold: [false]
     });
   }
@@ -464,6 +522,12 @@ export class ClientsListComponent implements OnInit {
           );
         }
 
+        // Apply classification category filter
+        if (this.selectedCategoryFilter && this.selectedCategoryFilter !== 'all') {
+          const targetCat = this.selectedCategoryFilter.toLowerCase();
+          all = all.filter((c: any) => this.getClientCategory(c) === targetCat);
+        }
+
         // Sort: latest / highest id first
         all.sort((a, b) => (b.id || 0) - (a.id || 0));
 
@@ -514,6 +578,46 @@ export class ClientsListComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  onCategoryFilterChange(): void {
+    this.currentPage = 1;
+    this.loadClients();
+  }
+
+  getClientCategory(client: any): string {
+    if (!client) return 'normal';
+    if (client.client_category) return client.client_category.toLowerCase();
+    if (client.is_vip) return 'vip';
+    return 'normal';
+  }
+
+  getClientCategoryLabel(client: any): string {
+    const cat = this.getClientCategory(client);
+    switch (cat) {
+      case 'vip': return 'عميل VIP ⭐';
+      case 'gold': return 'عميل ذهبي';
+      case 'silver': return 'عميل فضي';
+      case 'platinum': return 'عميل بلاتيني';
+      case 'new': return 'عميل جديد';
+      default: return 'عميل عادي';
+    }
+  }
+
+  getClientCategoryIcon(client: any): string {
+    const cat = this.getClientCategory(client);
+    switch (cat) {
+      case 'vip': return 'fa-solid fa-crown';
+      case 'gold': return 'fa-solid fa-star';
+      case 'silver': return 'fa-solid fa-medal';
+      case 'platinum': return 'fa-solid fa-gem';
+      case 'new': return 'fa-solid fa-sparkles';
+      default: return 'fa-regular fa-user';
+    }
+  }
+
+  getClientCategoryClass(client: any): string {
+    return 'cat-' + this.getClientCategory(client);
+  }
+
   openAddModal(): void {
     this.isEditMode = false;
     this.editingClientId = null;
@@ -523,6 +627,7 @@ export class ClientsListComponent implements OnInit {
       email: '',
       phone: '',
       password: 'password123',
+      client_category: 'normal',
       is_hold: false
     });
     this.clientForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
@@ -534,11 +639,13 @@ export class ClientsListComponent implements OnInit {
     this.isEditMode = true;
     this.editingClientId = client.id || client.client_id;
     this.showPassword = false;
+    const cat = this.getClientCategory(client);
     this.clientForm.patchValue({
       name: client.name || client.client_name,
       email: client.email || client.client_email,
       phone: client.phone || client.client_phone || '',
       password: '',
+      client_category: cat,
       is_hold: !!client.is_hold
     });
     this.clientForm.get('password')?.clearValidators();
@@ -554,12 +661,15 @@ export class ClientsListComponent implements OnInit {
     }
     this.loading = true;
     const formVal = this.clientForm.value;
+    const cat = formVal.client_category || 'normal';
 
     const payload: any = {
       name: formVal.name,
       email: formVal.email,
       phone: formVal.phone,
       role: 'client',
+      client_category: cat,
+      is_vip: cat === 'vip',
       is_hold: formVal.is_hold
     };
 
@@ -571,7 +681,7 @@ export class ClientsListComponent implements OnInit {
       this.apiService.updateUser(this.editingClientId, payload).subscribe({
         next: () => {
           this.loading = false;
-          this.toastService.success('تم تحديث بيانات العميل بنجاح');
+          this.toastService.success('تم تحديث بيانات وتصنيف العميل بنجاح');
           this.showModal = false;
           this.loadClients();
         },
@@ -584,7 +694,7 @@ export class ClientsListComponent implements OnInit {
       this.apiService.createUser(payload).subscribe({
         next: () => {
           this.loading = false;
-          this.toastService.success('تم إضافة العميل الجديد بنجاح');
+          this.toastService.success('تم إضافة العميل الجديد وتحديد تصنيفه بنجاح');
           this.showModal = false;
           this.loadClients();
         },
@@ -639,6 +749,11 @@ export class ClientsListComponent implements OnInit {
   }
 
   confirmDeleteClient(client: any): void {
+    if (!this.isSuperAdmin()) {
+      this.toastService.error('غير مصرح لك بحذف العملاء. حذف العملاء مقتصر حصرياً على السوبر أدمن');
+      return;
+    }
+
     const clientId = client.id || client.client_id;
     const clientName = client.name || client.client_name || 'العميل';
     this.confirmService.confirm({

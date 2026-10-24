@@ -23,13 +23,10 @@ import { InputTextModule } from 'primeng/inputtext';
     <div class="crm-module-container">
       <div class="module-header">
         <div>
-          <h2><i class="fa-solid fa-shield-halved" style="color:var(--violet-light);"></i> إدارة المستخدمين والأدوار والصلاحيات</h2>
-          <p class="subtitle">فصل كامل للموظفين والعملاء، إدارة الإيقاف المؤقت (Hold)، التحكم بكلمات المرور، وتخصيص مستويات الصلاحيات المتعددة</p>
+          <h2><i class="fa-solid fa-shield-halved" style="color:var(--violet-light);"></i> إدارة المستخدمين والأدوار الوظيفية</h2>
+          <p class="subtitle">فصل كامل للموظفين والعملاء، إدارة الإيقاف المؤقت (Hold)، التحكم بكلمات المرور، واستعراض الأدوار الوظيفية المعتمدة</p>
         </div>
         <div class="header-actions">
-          <button *ngIf="activeTab === 'roles'" class="btn btn-secondary" (click)="openAddRoleModal()">
-            <i class="fa-solid fa-plus"></i> إضافة دور جديد
-          </button>
           <button class="btn btn-primary" (click)="openAddUserModal()">
             <i class="fa-solid fa-user-plus"></i> إضافة {{ activeTab === 'clients' ? 'عميل جديد' : 'مستخدم / موظف جديد' }}
           </button>
@@ -47,7 +44,7 @@ import { InputTextModule } from 'primeng/inputtext';
           <span class="tab-badge" *ngIf="activeTab === 'clients'">{{ totalRecords }}</span>
         </button>
         <button class="tab-btn" [class.active]="activeTab === 'roles'" (click)="setTab('roles')">
-          <i class="fa-solid fa-shield-cat"></i> الأدوار ومصفوفة الصلاحيات ({{ roles.length }})
+          <i class="fa-solid fa-shield-cat"></i> الأدوار الوظيفية ({{ roles.length }})
         </button>
       </div>
 
@@ -86,7 +83,7 @@ import { InputTextModule } from 'primeng/inputtext';
                 <th *ngIf="activeTab === 'clients'">كود العميل</th>
                 <th>الاسم الكامل</th>
                 <th>البريد الإلكتروني</th>
-                <th>الصلاحيات / الأدوار</th>
+                <th>الأدوار الوظيفية</th>
                 <th *ngIf="activeTab === 'staff'">القسم التابع له</th>
                 <th *ngIf="activeTab === 'staff'">الراتب ونظام الدفع</th>
                 <th>الحالة (Hold)</th>
@@ -146,6 +143,7 @@ import { InputTextModule } from 'primeng/inputtext';
                   <div class="action-buttons-group">
                     <!-- Hold / Unhold Toggle Button -->
                     <button
+                      *ngIf="canManageUser(u)"
                       class="btn-icon-action"
                       [class.btn-hold-active]="u.is_hold"
                       [class.btn-hold-inactive]="!u.is_hold"
@@ -156,12 +154,12 @@ import { InputTextModule } from 'primeng/inputtext';
                     </button>
 
                     <!-- Edit User Button -->
-                    <button class="btn-icon-action btn-edit" (click)="openEditUserModal(u)" title="تعديل بيانات الحساب والصلاحيات وكلمة السر">
+                    <button *ngIf="canManageUser(u)" class="btn-icon-action btn-edit" (click)="openEditUserModal(u)" title="تعديل بيانات الحساب والأدوار وكلمة السر">
                       <i class="fa-solid fa-pen-to-square"></i>
                     </button>
 
-                    <!-- Delete User Button -->
-                    <button class="btn-icon-action btn-delete" (click)="confirmDeleteUser(u)" title="حذف المستخدم نهائياً">
+                    <!-- Delete User Button: strictly Super Admin only -->
+                    <button *ngIf="canDeleteUser(u)" class="btn-icon-action btn-delete" (click)="confirmDeleteUser(u)" title="حذف المستخدم نهائياً">
                       <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </div>
@@ -216,39 +214,33 @@ import { InputTextModule } from 'primeng/inputtext';
         </div>
       </div>
 
-      <!-- TAB 3: ROLES & PERMISSIONS MATRIX -->
+      <!-- TAB 3: ROLES DISPLAY (READ-ONLY) -->
       <div *ngIf="activeTab === 'roles'" class="roles-section">
         <div class="roles-grid margin-top">
+          <div class="pmatrix-heading" style="margin-bottom: 20px;">
+            <i class="fa-solid fa-shield-cat" style="color:var(--violet-light);"></i>
+            <div>
+              <h3>الأدوار الوظيفية المعتمدة في النظام</h3>
+              <p>استعراض وتوصيف الأدوار الوظيفية المعتمدة في النظام (للاطلاع فقط - إعدادات نظامية ثابتة)</p>
+            </div>
+          </div>
           <div class="role-card glass-panel" *ngFor="let role of roles">
             <div class="card-header">
               <h3><i class="fa-solid fa-shield-halved" style="color:var(--violet-light); font-size:0.95rem;"></i> {{ role.name }}</h3>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span class="slug-badge">{{ role.slug }}</span>
-                <button *ngIf="isSuperAdmin()" class="btn-role-mini" (click)="openEditRoleModal(role)" title="تعديل الدور والصلاحيات">
-                  <i class="fa-solid fa-pen"></i>
-                </button>
-                <button *ngIf="isSuperAdmin() && !isSystemRole(role.slug)" class="btn-role-mini danger" (click)="confirmDeleteRole(role)" title="حذف الدور">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </div>
-            <p class="desc">{{ role.description || 'لا يوجد وصف متاح لهذا الدور' }}</p>
-
-            <div class="permissions-list">
-              <h4>الصلاحيات الممنوحة ({{ role.permissions ? role.permissions.length : 0 }}):</h4>
-              <div class="perm-chips">
-                <span *ngFor="let perm of role.permissions" class="perm-chip">
-                  {{ perm.name }}
+                <span class="badge" style="background:rgba(99,102,241,0.12); color:#a5b4fc; border:1px solid rgba(99,102,241,0.25); font-size:0.72rem; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                  <i class="fa-solid fa-lock"></i> دور معتمد
                 </span>
-                <span *ngIf="!role.permissions || role.permissions.length === 0" style="color:var(--text-3); font-size:0.75rem;">لا توجد صلاحيات مسندة</span>
               </div>
             </div>
+            <p class="desc" style="color:var(--text-2); font-size:0.85rem; line-height:1.6; margin:8px 0 0;">{{ role.description || 'دور وظيفي قياسي معتمد في النظام' }}</p>
           </div>
         </div>
       </div>
 
       <!-- PrimeNG Dialog: Add / Edit User Modal -->
-      <p-dialog [(visible)]="showUserModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="isEditMode ? 'تعديل بيانات الحساب والصلاحيات' : (activeTab === 'clients' ? 'إضافة عميل جديد' : 'إضافة موظف / مستخدم جديد')" [style]="{ width: '92vw', maxWidth: '620px' }">
+      <p-dialog [(visible)]="showUserModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="isEditMode ? 'تعديل بيانات الحساب والأدوار' : (activeTab === 'clients' ? 'إضافة عميل جديد' : 'إضافة موظف / مستخدم جديد')" [style]="{ width: '92vw', maxWidth: '620px' }">
         <form [formGroup]="userForm" (ngSubmit)="saveUser()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-row-2">
@@ -311,8 +303,8 @@ import { InputTextModule } from 'primeng/inputtext';
             <!-- Multi-Role Selection Checkboxes -->
             <div class="form-group">
               <label style="display:flex; justify-content:space-between; align-items:center;">
-                <span>مستويات الصلاحيات والأدوار الممنوحة <span class="required">*</span></span>
-                <small style="color:var(--violet-light); font-weight:normal;">(يمكنك اختيار أكثر من مستوى للمستخدم)</small>
+                <span>الأدوار الوظيفية للمستخدم <span class="required">*</span></span>
+                <small style="color:var(--violet-light); font-weight:normal;">(يمكنك اختيار دور وظيفي أو أكثر للمستخدم)</small>
               </label>
 
               <div class="roles-checklist-container">
@@ -359,113 +351,6 @@ import { InputTextModule } from 'primeng/inputtext';
           </div>
         </form>
       </p-dialog>
-
-      <!-- PrimeNG Dialog: Add / Edit Role Modal -->
-      <p-dialog [(visible)]="showRoleModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="isEditRoleMode ? 'تعديل الدور والصلاحيات' : 'إضافة دور وصلاحيات جديدة'" [style]="{ width: '92vw', maxWidth: '580px' }">
-        <form [formGroup]="roleForm" (ngSubmit)="saveRole()">
-          <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
-            <div class="form-group">
-              <label>اسم الدور باللغة العربية <span class="required">*</span></label>
-              <input type="text" pInputText formControlName="name" placeholder="مثال: مدير مشتريات" />
-            </div>
-
-            <div class="form-group" *ngIf="!isEditRoleMode">
-              <label>الرمز المعرف (Slug) <span class="required">*</span></label>
-              <input type="text" pInputText formControlName="slug" placeholder="مثال: procurement_manager" />
-            </div>
-
-            <div class="form-group">
-              <label>الوصف</label>
-              <input type="text" pInputText formControlName="description" placeholder="وصف مختصر لمسؤوليات هذا الدور" />
-            </div>
-
-            <!-- Enhanced Modular Permissions Matrix -->
-            <div class="form-group" style="margin-top:4px;">
-              <div class="perm-section-header">
-                <div>
-                  <label style="margin:0; font-size:0.86rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
-                    <i class="fa-solid fa-list-check" style="color:var(--violet-light);"></i>
-                    مصفوفة صلاحيات النظام التفصيلية
-                    <span class="perm-counter-badge">{{ selectedPermissionIds.length }} مختارة من أصل {{ permissions.length }}</span>
-                  </label>
-                  <p style="color:var(--text-3); font-size:0.75rem; margin:2px 0 0 0;">
-                    حدد الصلاحيات والأذونات الممنوحة لهذا الدور بدقة عبر الأقسام والموديولات المختلفة:
-                  </p>
-                </div>
-                <div class="perm-global-actions">
-                  <button type="button" class="btn-perm-action" (click)="selectAllPermissions()">
-                    <i class="fa-solid fa-check-double"></i> تحديد الكل
-                  </button>
-                  <button type="button" class="btn-perm-action secondary" (click)="deselectAllPermissions()">
-                    <i class="fa-solid fa-xmark"></i> إلغاء الكل
-                  </button>
-                </div>
-              </div>
-
-              <!-- Filter Permissions Input -->
-              <div class="perm-search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input
-                  type="text"
-                  [(ngModel)]="permSearchQuery"
-                  [ngModelOptions]="{standalone: true}"
-                  placeholder="ابحث في الصلاحيات بالاسم أو الوصف أو القسم..."
-                />
-              </div>
-
-              <div class="permissions-modules-container">
-                <div *ngFor="let grp of filteredPermissionGroups" class="perm-module-block">
-                  <div class="perm-module-header">
-                    <div class="module-title">
-                      <i [class]="grp.icon"></i>
-                      <span>{{ grp.label }}</span>
-                      <span class="module-count">{{ getSelectedCountInGroup(grp) }} / {{ grp.permissions.length }}</span>
-                    </div>
-                    <button type="button" class="btn-toggle-group" (click)="toggleGroupPermissions(grp)">
-                      <i [class]="isGroupAllSelected(grp) ? 'fa-solid fa-square-minus' : 'fa-solid fa-square-check'"></i>
-                      {{ isGroupAllSelected(grp) ? 'إلغاء تحديد القسم' : 'تحديد كل القسم' }}
-                    </button>
-                  </div>
-                  <div class="permissions-grid">
-                    <div
-                      *ngFor="let p of grp.permissions"
-                      class="perm-checkbox-item"
-                      [class.checked]="isPermSelected(p.id)"
-                      (click)="togglePermSelection(p.id)"
-                    >
-                      <input
-                        type="checkbox"
-                        [checked]="isPermSelected(p.id)"
-                        (click)="$event.stopPropagation()"
-                        (change)="togglePermSelection(p.id)"
-                      />
-                      <div class="perm-details">
-                        <div class="perm-name-row">
-                          <span class="perm-name">{{ p.name }}</span>
-                          <span class="perm-slug">{{ p.slug }}</span>
-                        </div>
-                        <span class="perm-desc" *ngIf="p.description">{{ p.description }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div *ngIf="filteredPermissionGroups.length === 0" class="empty-perms-alert">
-                  <i class="fa-solid fa-filter-circle-xmark"></i>
-                  <span>لا توجد صلاحيات مطابقة لكلمة البحث الحالية.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showRoleModal = false">إلغاء</button>
-            <button type="submit" class="btn-dialog-submit" [disabled]="roleForm.invalid || loading">
-              {{ loading ? 'جاري الحفظ...' : (isEditRoleMode ? 'تحديث الدور والصلاحيات' : 'إنشاء الدور') }}
-            </button>
-          </div>
-        </form>
-      </p-dialog>
     </div>
   `,
   styles: [`
@@ -496,6 +381,35 @@ import { InputTextModule } from 'primeng/inputtext';
     .permissions-list h4 { font-size: 0.68rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .perm-chips { display: flex; gap: 5px; flex-wrap: wrap; }
     .perm-chip { background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(124,58,237,0.2); padding: 3px 9px; border-radius: 8px; font-size: 0.68rem; font-weight: 600; }
+
+    /* Permissions Matrix */
+    .pmatrix-wrapper { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
+    .pmatrix-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 1.2rem; color: var(--violet-light); }
+    .pmatrix-heading div h3 { font-size: 1rem; font-weight: 800; color: #fff; margin: 0; }
+    .pmatrix-heading div p { font-size: 0.78rem; color: var(--text-2); margin: 2px 0 0; }
+    .pmatrix-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .pmatrix-grid { grid-template-columns: 1fr; } }
+    .pmatrix-col { border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+    .pmatrix-col-header { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 14px; text-align: center; font-weight: 800; font-size: 0.95rem; color: #fff; }
+    .pmatrix-col-header i { font-size: 1.6rem; margin-bottom: 4px; }
+    .admin-col .pmatrix-col-header { background: linear-gradient(135deg, rgba(99,102,241,0.25) 0%, rgba(124,58,237,0.15) 100%); border-bottom: 2px solid rgba(99,102,241,0.4); }
+    .dept-col .pmatrix-col-header { background: linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(217,119,6,0.1) 100%); border-bottom: 2px solid rgba(245,158,11,0.4); }
+    .emp-col .pmatrix-col-header { background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.1) 100%); border-bottom: 2px solid rgba(16,185,129,0.4); }
+    .admin-col .pmatrix-col-header i { color: #a5b4fc; }
+    .dept-col .pmatrix-col-header i { color: #fbbf24; }
+    .emp-col .pmatrix-col-header i { color: #34d399; }
+    .pmatrix-role-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 10px; border-radius: 8px; font-family: monospace; }
+    .pmatrix-role-badge.admin { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+    .pmatrix-role-badge.dept { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .pmatrix-role-badge.emp { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .pmatrix-items { padding: 10px 0; }
+    .pmatrix-category { padding: 10px 14px 5px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-2); border-top: 1px solid rgba(255,255,255,0.05); margin-top: 6px; }
+    .pmatrix-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font-size: 0.8rem; font-weight: 600; }
+    .pmatrix-item.yes { color: #d1fae5; }
+    .pmatrix-item.yes i { color: #34d399; font-size: 0.75rem; }
+    .pmatrix-item.no { color: rgba(255,255,255,0.3); }
+    .pmatrix-item.no i { color: rgba(239,68,68,0.5); font-size: 0.75rem; }
+    .pmatrix-item:nth-child(even) { background: rgba(255,255,255,0.02); }
 
     /* Tables */
     .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
@@ -718,8 +632,13 @@ export class RolesManagementComponent implements OnInit {
   loadRolesData(): void {
     this.apiService.getRoles().subscribe(res => {
       let rList = res.roles || [];
+      const userRank = this.getUserRank(this.currentUser?.role);
+      // Filter out roles with higher rank than the current user (e.g. non-super-admins cannot see or select super_admin)
       if (!this.isSuperAdmin()) {
-        rList = rList.filter((r: any) => r.slug !== 'super_admin' && r.name !== 'super_admin');
+        rList = rList.filter((r: any) => {
+          const rRank = this.getUserRank(r.slug);
+          return rRank <= userRank && r.slug !== 'super_admin' && r.name !== 'super_admin';
+        });
       }
       this.roles = rList;
       this.permissions = res.permissions || [];
@@ -785,8 +704,49 @@ export class RolesManagementComponent implements OnInit {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
+  getUserRank(role: string): number {
+    switch ((role || '').toLowerCase()) {
+      case 'super_admin': return 100;
+      case 'admin': return 80;
+      case 'department_manager': return 60;
+      case 'account_manager': return 50;
+      case 'employee': return 30;
+      case 'client': return 10;
+      default: return 20;
+    }
+  }
+
   isSuperAdmin(): boolean {
-    return this.currentUser?.role === 'super_admin';
+    const role = (this.currentUser?.role || '').toLowerCase();
+    return role === 'super_admin';
+  }
+
+  isTargetSuperAdmin(user: any): boolean {
+    if (!user) return false;
+    const role = (user.role || '').toLowerCase();
+    if (role === 'super_admin') return true;
+    if (user.roles && Array.isArray(user.roles)) {
+      return user.roles.some((r: any) => (r.slug || '').toLowerCase() === 'super_admin' || (r.name || '').toLowerCase() === 'super_admin');
+    }
+    return false;
+  }
+
+  canManageUser(user: any): boolean {
+    if (!user) return false;
+    if (this.isTargetSuperAdmin(user)) {
+      return this.isSuperAdmin();
+    }
+    return true;
+  }
+
+  canDeleteUser(user: any): boolean {
+    if (!user) return false;
+    // Strictly super admin only
+    if (!this.isSuperAdmin()) return false;
+    // Cannot delete own current account
+    if (user.id === this.currentUser?.id) return false;
+    // Super admin can delete other users and other super admins
+    return true;
   }
 
   isSystemRole(slug: string): boolean {
@@ -817,6 +777,11 @@ export class RolesManagementComponent implements OnInit {
 
   // --- HOLD / UNHOLD TOGGLE ---
   toggleHold(user: any): void {
+    if (!this.canManageUser(user)) {
+      this.toastService.error('غير مصرح لك بتعليق حساب السوبر أدمن');
+      return;
+    }
+
     const actionName = user.is_hold ? 'إلغاء التعليق وتفعيل' : 'تعليق (Hold)';
     this.confirmService.confirm({
       title: `${actionName} حساب: ${user.name}`,
@@ -873,6 +838,11 @@ export class RolesManagementComponent implements OnInit {
   }
 
   openEditUserModal(user: any): void {
+    if (!this.canManageUser(user)) {
+      this.toastService.error('غير مصرح لك بتعديل بيانات حساب السوبر أدمن');
+      return;
+    }
+
     this.isEditMode = true;
     this.editingUserId = user.id;
 
@@ -924,7 +894,7 @@ export class RolesManagementComponent implements OnInit {
     }
 
     if (this.selectedRoleIds.length === 0) {
-      this.toastService.warning('يرجى تحديد مستوى صلاحية واحد على الأقل للمستخدم');
+      this.toastService.warning('يرجى تحديد دور وظيفي واحد على الأقل للمستخدم');
       return;
     }
 
@@ -957,7 +927,7 @@ export class RolesManagementComponent implements OnInit {
       this.apiService.updateUser(this.editingUserId, payload).subscribe({
         next: () => {
           this.loading = false;
-          this.toastService.success('تم تحديث بيانات المستخدم وصلاحياته بنجاح');
+          this.toastService.success('تم تحديث بيانات المستخدم وأدواره بنجاح');
           this.showUserModal = false;
           this.loadUsers();
         },
@@ -983,13 +953,24 @@ export class RolesManagementComponent implements OnInit {
   }
 
   confirmDeleteUser(user: any): void {
+    if (!this.isSuperAdmin()) {
+      this.toastService.error('غير مصرح لك بحذف المستخدمين. حذف المستخدمين والسوبر أدمن مقتصر حصرياً على السوبر أدمن');
+      return;
+    }
     if (user.id === this.currentUser?.id) {
       this.toastService.error('لا يمكنك حذف حسابك الشخصي الحالي');
       return;
     }
+
+    const isTargetSA = this.isTargetSuperAdmin(user);
+    const titleText = isTargetSA ? 'تأكيد حذف حساب سوبر أدمن' : 'حذف حساب مستخدم نهائياً';
+    const msgText = isTargetSA
+      ? `تحذير هام: هل أنت متأكد من رغبتك في حذف حساب السوبر أدمن "${user.name}"؟`
+      : `هل أنت متأكد من رغبتك في حذف حساب "${user.name}" نهائياً من النظام؟`;
+
     this.confirmService.confirm({
-      title: 'حذف حساب مستخدم نهائياً',
-      message: `هل أنت متأكد من رغبتك في حذف حساب "${user.name}" نهائياً من النظام؟`,
+      title: titleText,
+      message: msgText,
       confirmText: 'نعم، حذف نهائي',
       cancelText: 'إلغاء وتراجع',
       type: 'danger',

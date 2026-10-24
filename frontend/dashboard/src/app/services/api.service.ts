@@ -105,12 +105,33 @@ export class ApiService {
   }
 
   updateDeal(id: string | number, data: any): Observable<any> {
+    if (data instanceof FormData) {
+      return this.http.post<any>(`${API_BASE_URL}/deals/${id}`, data, { headers: this.getHeaders() });
+    }
     return this.http.put<any>(`${API_BASE_URL}/deals/${id}`, data, { headers: this.getHeaders() });
   }
 
   deleteDeal(id: string | number, deleteFinancials: boolean = false): Observable<any> {
     const params = new HttpParams().set('delete_financials', deleteFinancials ? '1' : '0');
     return this.http.delete<any>(`${API_BASE_URL}/deals/${id}`, { headers: this.getHeaders(), params });
+  }
+
+  getDealHistory(id: string | number): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/deals/${id}/history`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError('getDealHistory', { status: 'error', data: [] })));
+  }
+
+  getDealAttachments(dealId: string | number): Observable<any> {
+    return this.http.get<any>(`${API_BASE_URL}/deals/${dealId}/attachments`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError('getDealAttachments', { status: 'error', data: [] })));
+  }
+
+  uploadDealAttachment(dealId: string | number, formData: FormData): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/deals/${dealId}/attachments`, formData, { headers: this.getHeaders() });
+  }
+
+  deleteDealAttachment(dealId: string | number, attachmentId: string | number): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/deals/${dealId}/attachments/${attachmentId}`, { headers: this.getHeaders() });
   }
 
   // Tasks
@@ -302,6 +323,14 @@ export class ApiService {
 
   toggleUserHold(userId: string | number): Observable<any> {
     return this.http.patch<any>(`${API_BASE_URL}/users/${userId}/toggle-hold`, {}, { headers: this.getHeaders() });
+  }
+
+  toggleClientVip(clientId: string | number): Observable<any> {
+    return this.http.patch<any>(`${API_BASE_URL}/users/${clientId}/toggle-vip`, {}, { headers: this.getHeaders() });
+  }
+
+  updateClientClassification(clientId: string | number, category: string): Observable<any> {
+    return this.http.patch<any>(`${API_BASE_URL}/users/${clientId}/classification`, { client_category: category }, { headers: this.getHeaders() });
   }
 
   getClientProfile(clientId: string | number): Observable<any> {
@@ -578,5 +607,22 @@ export class ApiService {
 
   getTeam(): Observable<any> {
     return this.http.get(`${API_BASE_URL}/team`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getTeam', [])));
+  }
+
+  // ── Client Monthly Plans (PDFs) ────────────────────────────────
+  getClientPlans(clientId: number): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/clients/${clientId}/plans`, { headers: this.getHeaders() }).pipe(catchError(this.handleError('getClientPlans', [])));
+  }
+
+  uploadClientPlan(clientId: number, formData: FormData): Observable<any> {
+    const token = localStorage.getItem('mediaglow_client_token') || localStorage.getItem('mediaglow_token') || sessionStorage.getItem('mediaglow_token');
+    const headers = new HttpHeaders({
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
+    return this.http.post(`${API_BASE_URL}/clients/${clientId}/plans`, formData, { headers });
+  }
+
+  deleteClientPlan(planId: number): Observable<any> {
+    return this.http.delete(`${API_BASE_URL}/client-plans/${planId}`, { headers: this.getHeaders() });
   }
 }

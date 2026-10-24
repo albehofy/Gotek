@@ -59,6 +59,12 @@ class RoleController extends Controller
     public function updateRole(Request $request, $id)
     {
         $role = Role::findOrFail($id);
+        $authUser = Auth::user();
+
+        if (strtolower($role->slug) === 'super_admin' && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل دور السوبر أدمن (Super Admin)'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'sometimes|nullable|string|max:255|unique:roles,slug,' . $id,
@@ -87,6 +93,11 @@ class RoleController extends Controller
 
     public function destroyRole($id)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json(['message' => 'غير مصرح لك بحذف الأدوار. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin)'], 403);
+        }
+
         $role = Role::findOrFail($id);
         $protectedSlugs = ['super_admin', 'admin', 'client', 'employee'];
 
@@ -112,6 +123,12 @@ class RoleController extends Controller
     public function updateRolePermissions(Request $request, $id)
     {
         $role = Role::findOrFail($id);
+        $authUser = Auth::user();
+
+        if (strtolower($role->slug) === 'super_admin' && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل صلاحيات دور السوبر أدمن (Super Admin)'], 403);
+        }
+
         $validated = $request->validate([
             'permission_ids' => 'present|array'
         ]);
@@ -121,9 +138,34 @@ class RoleController extends Controller
         return response()->json(['status' => 'success', 'message' => 'تم تحديث صلاحيات الدور بنجاح', 'data' => $role->load('permissions')]);
     }
 
+    private function getRoleRank(?string $role): int
+    {
+        return match (strtolower(trim($role ?? ''))) {
+            'super_admin' => 100,
+            'admin' => 80,
+            'department_manager' => 60,
+            'account_manager' => 50,
+            'employee' => 30,
+            'client' => 10,
+            default => 20,
+        };
+    }
+
     public function assignUserRole(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
+        $authUser = Auth::user();
+        $authRank = $this->getRoleRank($authUser?->role);
+        $targetRank = $this->getRoleRank($user->role);
+
+        if ($user->isSuperAdmin() && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل دور أو صلاحيات حساب السوبر أدمن (Super Admin)'], 403);
+        }
+
+        if ($targetRank > $authRank && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل دور أو صلاحيات حساب يمتلك رتبة أعلى منك'], 403);
+        }
+
         $validated = $request->validate([
             'role' => 'required|string',
             'role_id' => 'nullable|exists:roles,id',
@@ -135,6 +177,28 @@ class RoleController extends Controller
             $roleModel = Role::find($validated['role_id']);
         } else {
             $roleModel = Role::where('slug', $validated['role'])->first();
+        }
+
+        $newRank = $this->getRoleRank($validated['role']);
+        if ($roleModel) {
+            $mRank = $this->getRoleRank($roleModel->slug);
+            if ($mRank > $newRank) $newRank = $mRank;
+        }
+
+        if (!empty($validated['role_ids'])) {
+            $roleSlugs = Role::whereIn('id', $validated['role_ids'])->pluck('slug')->toArray();
+            foreach ($roleSlugs as $slug) {
+                $rRank = $this->getRoleRank($slug);
+                if ($rRank > $newRank) $newRank = $rRank;
+            }
+        }
+
+        if ($newRank >= 100 && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بتعيين رتبة سوبر أدمن (Super Admin)'], 403);
+        }
+
+        if ($newRank > $authRank && (!$authUser || !$authUser->isSuperAdmin())) {
+            return response()->json(['message' => 'غير مصرح لك بإسناد دور بصلاحيات تفوق صلاحياتك الحالية'], 403);
         }
 
         $user->update([

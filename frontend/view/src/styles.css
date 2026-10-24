@@ -376,22 +376,39 @@ body.lang-en .link-arrow:hover i {
   background: var(--bg-card-hover);
 }
 
-/* Scrollbar */
+/* ── GLOBAL BEAUTIFIED & VISIBLE SCROLLBAR (HORIZONTAL & VERTICAL) ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.75) rgba(15, 16, 38, 0.6);
+  -ms-overflow-style: auto;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 9px;
+  height: 9px;
+  display: block;
 }
 
 ::-webkit-scrollbar-track {
-  background: #070709;
+  background: rgba(10, 11, 28, 0.6);
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #23232C;
-  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.75) 0%, rgba(79, 70, 229, 0.9) 50%, rgba(6, 182, 212, 0.8) 100%);
+  border-radius: 8px;
+  border: 2px solid rgba(10, 11, 28, 0.5);
+  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #343440;
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #22d3ee 100%);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.4);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(10, 11, 28, 0.7);
 }
 
 ::selection {

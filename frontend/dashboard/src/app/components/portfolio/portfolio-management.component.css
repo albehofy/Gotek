@@ -75,12 +75,7 @@
   border-bottom: 1px solid var(--border);
   background: var(--bg-sidebar);
   overflow-x: auto;
-  scrollbar-width: none;
   gap: 4px;
-}
-
-.portfolio-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .tab-link {

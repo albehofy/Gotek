@@ -115,7 +115,7 @@
       </div>
 
       <!-- 5. Clients Count -->
-      <div class="kpi-card card-cyan" routerLink="/clients">
+      <div class="kpi-card card-cyan" routerLink="/clients" *ngIf="isAdmin()">
         <div class="kpi-card-head">
           <div class="kpi-icon-badge cyan"><i class="fa-solid fa-users"></i></div>
           <span class="kpi-pill cyan"><i class="fa-solid fa-shield-halved"></i> عملاء نشطون</span>
@@ -200,7 +200,7 @@
     <div class="dash-grid">
 
       <!-- Recent Deals Panel -->
-      <div class="dash-panel glass-panel">
+      <div class="dash-panel glass-panel" *ngIf="isAdmin()">
         <div class="dash-panel-head">
           <div class="dash-panel-title"><i class="fa-solid fa-handshake text-blue"></i> أحدث الصفقات والعقود المبرمة</div>
           <a class="dash-panel-link" routerLink="/deals">عرض الكل <i class="fa-solid fa-angle-left"></i></a>
@@ -262,8 +262,8 @@
 
     <!-- ── AGENCY SHORTCUTS HUB ── -->
     <div class="dash-shortcuts">
-      <a class="dash-shortcut" routerLink="/clients"><i class="fa-solid fa-users text-purple"></i><span>دليل العملاء</span></a>
-      <a class="dash-shortcut" routerLink="/deals"><i class="fa-solid fa-handshake text-blue"></i><span>الصفقات والعقود</span></a>
+      <a class="dash-shortcut" routerLink="/clients" *ngIf="isAdmin()"><i class="fa-solid fa-users text-purple"></i><span>دليل العملاء</span></a>
+      <a class="dash-shortcut" routerLink="/deals" *ngIf="isAdmin()"><i class="fa-solid fa-handshake text-blue"></i><span>الصفقات والعقود</span></a>
       <a class="dash-shortcut" routerLink="/tasks"><i class="fa-solid fa-list-check text-amber"></i><span>لوحة المهام</span></a>
       <a class="dash-shortcut" routerLink="/finance" *ngIf="isAdmin()"><i class="fa-solid fa-coins text-emerald"></i><span>المالية والخزينة</span></a>
       <a class="dash-shortcut" routerLink="/departments"><i class="fa-solid fa-sitemap text-cyan"></i><span>الأقسام والمراكز</span></a>

@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
-use App\Models\SubCategory;
+use App\Models\{Department, SubCategory, Task, Deal, User, FixedAsset, LedgerEntry, InternalProject};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, DB, Schema, Log};
 
 class DepartmentController extends Controller
 {
@@ -120,6 +119,14 @@ class DepartmentController extends Controller
 
     public function deleteSubCategory($subId)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف التصنيفات الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         $sub = SubCategory::findOrFail($subId);
         $sub->delete();
         return response()->json(['status' => 'success', 'message' => 'تم حذف التصنيف الفرعي بنجاح']);
@@ -127,8 +134,55 @@ class DepartmentController extends Controller
 
     public function destroy($id)
     {
+        $authUser = Auth::user();
+        if (!$authUser || !$authUser->isSuperAdmin()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بحذف الأقسام. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            ], 403);
+        }
+
         $department = Department::findOrFail($id);
-        $department->delete();
-        return response()->json(['message' => 'تم حذف القسم بنجاح']);
+
+        DB::beginTransaction();
+        try {
+            // Unlink tasks and subcategories safely
+            if (Schema::hasColumn('tasks', 'department_id')) {
+                Task::where('department_id', $department->id)->update(['department_id' => null, 'sub_category_id' => null]);
+            }
+            if (Schema::hasColumn('deals', 'department_id')) {
+                Deal::where('department_id', $department->id)->update(['department_id' => null]);
+            }
+            if (Schema::hasColumn('users', 'department_id')) {
+                User::where('department_id', $department->id)->update(['department_id' => null]);
+            }
+            if (Schema::hasColumn('fixed_assets', 'department_id')) {
+                FixedAsset::where('department_id', $department->id)->update(['department_id' => null]);
+            }
+            if (Schema::hasColumn('ledger_entries', 'department_id')) {
+                LedgerEntry::where('department_id', $department->id)->update(['department_id' => null]);
+            }
+            if (Schema::hasTable('sub_categories')) {
+                SubCategory::where('department_id', $department->id)->delete();
+            }
+            if (Schema::hasTable('internal_projects')) {
+                InternalProject::where('department_id', $department->id)->delete();
+            }
+
+            $department->delete();
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم حذف القسم وفك ارتباط السجلات التابعة له بنجاح'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Department destroy failed: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'تعذر حذف القسم: ' . $e->getMessage()
+            ], 422);
+        }
     }
 }

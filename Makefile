@@ -10,10 +10,10 @@ backend:
 	cd backend && php artisan serve
 
 dashboard:
-	cd fontend/dashboard && npm start
+	cd frontend/dashboard && npm start
 
 website:
-	cd fontend/view && npm start
+	cd frontend/view && npm start
 
 test:
 	cd backend && php artisan test

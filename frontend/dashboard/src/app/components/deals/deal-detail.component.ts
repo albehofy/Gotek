@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -165,6 +165,103 @@ import { DatePickerModule } from 'primeng/datepicker';
               </div>
               <div *ngIf="!deal.agreed_scope && !deal.description" class="empty-note">
                 لم يتم إضافة تفاصيل أو مواصفات مكتوبة للنطاق في العقد أثناء إنشاء الصفقة.
+              </div>
+            </div>
+          </div>
+
+          <!-- 1.5 Deal Documents, Plan & Brief Section (وثائق وملفات التعاقد وخطة الشهر والبريف) -->
+          <div class="section-card glass-panel">
+            <div class="section-card-hd flex-between">
+              <div>
+                <h3>
+                  <i class="fa-solid fa-folder-open" style="color:var(--violet-light);"></i>
+                  وثائق وملفات التعاقد وخطة الشهر والبريف (Deal Documents, Plan & Brief)
+                </h3>
+                <p style="font-size:0.82rem; color:var(--text-2); margin:4px 0 0;">
+                  الملفات المعتمدة للتعاقد: خطة الشهر PDF، بريف العمل الشهري (Word / PDF)، والمستندات الإضافية المتاحة للعميل وفريق العمل
+                </p>
+              </div>
+
+              <!-- Quick Upload Action Buttons for Admin/Manager -->
+              <div class="doc-actions-group" *ngIf="canUploadDealFiles()">
+                <button type="button" class="btn-doc-action plan-btn" (click)="triggerFileInput('plan')" [disabled]="uploadingFile" title="رفع خطة الشهر المعتمدة بصيغة PDF ليطلع عليها العميل وكافة الموظفين">
+                  <i class="fa-solid fa-file-pdf"></i> + رفع خطة الشهر (PDF)
+                </button>
+                <button type="button" class="btn-doc-action brief-btn" (click)="triggerFileInput('brief')" [disabled]="uploadingFile" title="رفع ملف بريف العمل الشهري (Word / PDF / Excel)">
+                  <i class="fa-solid fa-file-word"></i> + رفع بريف العمل
+                </button>
+                <button type="button" class="btn-doc-action doc-btn" (click)="triggerFileInput('document')" [disabled]="uploadingFile" title="إضافة ملفات ومستندات أخرى للتعاقد (PDF, Excel, Word)">
+                  <i class="fa-solid fa-file-arrow-up"></i> + إضافة مستند / إكسيل
+                </button>
+              </div>
+            </div>
+
+            <!-- Hidden File Input for uploading -->
+            <input #dealFileInput type="file" style="display:none;" (change)="onFileSelected($event)" />
+
+            <!-- Uploading banner -->
+            <div class="uploading-banner" *ngIf="uploadingFile">
+              <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <span>جاري رفع وتأمين الملف وإتاحته بالصفقة...</span>
+            </div>
+
+            <!-- Files Grid -->
+            <div class="deal-files-grid" *ngIf="deal.attachments && deal.attachments.length > 0">
+              <div class="deal-file-card" *ngFor="let att of deal.attachments" [ngClass]="'card-cat-' + (att.category || 'document')">
+                <div class="dfc-main">
+                  <div class="dfc-icon-box" [ngClass]="getFileTypeClass(att)">
+                    <i class="fa-solid" [ngClass]="getFileIcon(att)"></i>
+                  </div>
+                  <div class="dfc-info">
+                    <div class="dfc-top-line">
+                      <span class="dfc-badge" [ngClass]="'cat-badge-' + (att.category || 'document')">
+                        <i class="fa-solid" [ngClass]="getCategoryIcon(att.category)"></i>
+                        {{ getCategoryLabel(att.category) }}
+                      </span>
+                      <span class="dfc-date">{{ (att.created_at | date:'yyyy/MM/dd - hh:mm a') || '-' }}</span>
+                    </div>
+                    <h4 class="dfc-name" [title]="att.file_name || att.name || 'ملف'">
+                      {{ att.file_name || att.name || 'ملف مرفق' }}
+                    </h4>
+                    <p class="dfc-desc" *ngIf="att.description">{{ att.description }}</p>
+                    <div class="dfc-meta">
+                      <span class="dfc-size"><i class="fa-solid fa-hard-drive"></i> {{ att.human_file_size || formatFileSize(att.file_size) }}</span>
+                      <span class="dfc-uploader" *ngIf="att.uploader"><i class="fa-solid fa-user-circle"></i> {{ att.uploader.name }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dfc-actions">
+                  <a [href]="getFileUrl(att)" target="_blank" class="dfc-btn view-btn" title="معاينة وفتح في نافذة جديدة">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> معاينة / فتح
+                  </a>
+                  <a [href]="getDownloadUrl(att)" download class="dfc-btn dl-btn" title="تحميل مباشر إلى جهازك">
+                    <i class="fa-solid fa-download"></i> تحميل
+                  </a>
+                  <button type="button" class="dfc-btn del-btn" *ngIf="canDeleteAttachment()" (click)="confirmDeleteAttachment(att)" title="حذف الملف من الصفقة">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty Files State -->
+            <div *ngIf="!deal.attachments || deal.attachments.length === 0" class="empty-state-card">
+              <i class="fa-solid fa-folder-open" style="font-size:2rem; color:var(--text-3); margin-bottom:8px;"></i>
+              <div style="font-weight:700; color:var(--text);">لا توجد ملفات أو خطط مرفقة بالصفقة حتى الآن</div>
+              <p style="color:var(--text-2); font-size:0.85rem; margin-top:4px;">
+                يمكن رفع ملف بريف العمل الشهري (Word / PDF) وخطة الشهر المعتمدة (PDF) ليتمكن العميل وفريق العمل بجميع المستويات من الاطلاع عليها.
+              </p>
+              <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;" *ngIf="canUploadDealFiles()">
+                <button type="button" class="btn-sm-primary" (click)="triggerFileInput('plan')">
+                  <i class="fa-solid fa-file-pdf"></i> رفع خطة الشهر PDF
+                </button>
+                <button type="button" class="btn-sm-primary" (click)="triggerFileInput('brief')">
+                  <i class="fa-solid fa-file-word"></i> رفع بريف العمل
+                </button>
+                <button type="button" class="btn-sm-primary" (click)="triggerFileInput('document')">
+                  <i class="fa-solid fa-file-arrow-up"></i> رفع مستندات أخرى
+                </button>
               </div>
             </div>
           </div>
@@ -433,6 +530,55 @@ import { DatePickerModule } from 'primeng/datepicker';
     .form-group input { width: 100%; padding: 10px 13px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r); color: #fff; outline: none; font-family: inherit; font-size: 0.88rem; }
     .required { color: var(--rose-light); }
 
+    /* Deal Files & Attachments Styles */
+    .doc-actions-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn-doc-action { padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-family: inherit; border: 1px solid transparent; }
+    .plan-btn { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+    .plan-btn:hover { background: #ef4444; color: #fff; }
+    .brief-btn { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+    .brief-btn:hover { background: #3b82f6; color: #fff; }
+    .doc-btn { background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
+    .doc-btn:hover { background: #a855f7; color: #fff; }
+
+    .uploading-banner { display: flex; align-items: center; gap: 10px; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 8px; color: var(--violet-light); font-size: 0.88rem; font-weight: 700; margin-bottom: 12px; }
+
+    .deal-files-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .deal-file-card { background: rgba(0, 0, 0, 0.15); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; transition: transform 0.2s, border-color 0.2s; }
+    .deal-file-card:hover { transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.35); }
+    .card-cat-plan { border-right: 4px solid #ef4444 !important; }
+    .card-cat-brief { border-right: 4px solid #3b82f6 !important; }
+
+    .dfc-main { display: flex; gap: 14px; align-items: flex-start; }
+    .dfc-icon-box { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .type-pdf { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .type-word { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .type-excel { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .type-image { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+    .type-default { background: rgba(255, 255, 255, 0.08); color: var(--text-2); }
+
+    .dfc-info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+    .dfc-top-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .dfc-badge { font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+    .cat-badge-plan { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
+    .cat-badge-brief { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
+    .cat-badge-document { background: rgba(255, 255, 255, 0.06); color: var(--text-2); border: 1px solid var(--border); }
+    .cat-badge-contract { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .dfc-date { font-size: 0.72rem; color: var(--text-3); }
+
+    .dfc-name { font-size: 0.92rem; font-weight: 700; color: var(--text); margin: 0; word-break: break-all; }
+    .dfc-desc { font-size: 0.78rem; color: var(--text-2); margin: 0; }
+    .dfc-meta { display: flex; gap: 12px; font-size: 0.74rem; color: var(--text-3); margin-top: 4px; flex-wrap: wrap; }
+    .dfc-meta i { margin-left: 4px; color: var(--violet-light); }
+
+    .dfc-actions { display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; }
+    .dfc-btn { padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .view-btn { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border: 1px solid rgba(99, 102, 241, 0.25); }
+    .view-btn:hover { background: var(--violet); color: #fff; }
+    .dl-btn { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .dl-btn:hover { background: #10b981; color: #fff; }
+    .del-btn { background: rgba(244, 63, 94, 0.1); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.2); margin-right: auto; }
+    .del-btn:hover { background: #f43f5e; color: #fff; }
+
     /* Light Theme Overrides */
     :host-context(body.light-theme) .crm-module-container { background: #f8fafc !important; }
     :host-context(body.light-theme) .btn-glass-back { background: #ffffff !important; border-color: #cbd5e1 !important; color: #1e293b !important; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05); }
@@ -477,6 +623,10 @@ export class DealDetailComponent implements OnInit {
 
   showPaymentModal = false;
   paymentForm!: FormGroup;
+
+  @ViewChild('dealFileInput') dealFileInput!: ElementRef<HTMLInputElement>;
+  uploadingFile = false;
+  activeUploadCategory: string = 'document';
 
   ngOnInit(): void {
     this.initPaymentForm();
@@ -642,6 +792,147 @@ export class DealDetailComponent implements OnInit {
     } catch {
       return true;
     }
+  }
+
+  canUploadDealFiles(): boolean {
+    const userStr = localStorage.getItem('mediaglow_user') || localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const u = JSON.parse(userStr);
+      return ['super_admin', 'Super Admin', 'admin', 'Admin', 'manager', 'Manager', 'department_manager'].includes(u.role);
+    } catch {
+      return false;
+    }
+  }
+
+  canDeleteAttachment(): boolean {
+    const userStr = localStorage.getItem('mediaglow_user') || localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const u = JSON.parse(userStr);
+      return ['super_admin', 'Super Admin', 'admin', 'Admin'].includes(u.role);
+    } catch {
+      return false;
+    }
+  }
+
+  triggerFileInput(category: string): void {
+    this.activeUploadCategory = category;
+    if (this.dealFileInput && this.dealFileInput.nativeElement) {
+      this.dealFileInput.nativeElement.value = '';
+      this.dealFileInput.nativeElement.click();
+    }
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target?.files?.[0];
+    if (!file || !this.deal) return;
+
+    this.uploadingFile = true;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', this.activeUploadCategory || 'document');
+    formData.append('description', this.getCategoryLabel(this.activeUploadCategory));
+
+    this.apiService.uploadDealAttachment(this.deal.id, formData).subscribe({
+      next: (res: any) => {
+        this.uploadingFile = false;
+        this.toastService.success('تم رفع وتأمين الملف بالصفقة بنجاح', 'تم الرفع');
+        if (res.data) {
+          if (!this.deal.attachments) this.deal.attachments = [];
+          this.deal.attachments.unshift(res.data);
+        } else {
+          this.refreshData();
+        }
+      },
+      error: (err: any) => {
+        this.uploadingFile = false;
+        this.toastService.error(err.error?.message || 'تعذر رفع الملف', 'خطأ بالرفع');
+      }
+    });
+  }
+
+  confirmDeleteAttachment(att: any): void {
+    if (!att || !this.deal) return;
+    this.confirmService.confirm({
+      title: 'تأكيد حذف الملف',
+      message: `هل أنت متأكد من رغبتك في حذف الملف "${att.file_name || att.name || 'المرفق'}" نهائياً من الصفقة؟`,
+      confirmText: 'نعم، حذف الملف',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      icon: 'fa-solid fa-trash-can',
+      accept: () => {
+        this.apiService.deleteDealAttachment(this.deal.id, att.id).subscribe({
+          next: () => {
+            this.toastService.success('تم حذف الملف من الصفقة بنجاح', 'تم الحذف');
+            if (this.deal.attachments) {
+              this.deal.attachments = this.deal.attachments.filter((a: any) => a.id !== att.id);
+            }
+          },
+          error: (err: any) => {
+            this.toastService.error(err.error?.message || 'تعذر حذف الملف', 'خطأ');
+          }
+        });
+      }
+    });
+  }
+
+  getFileUrl(att: any): string {
+    if (!att) return '';
+    const raw = typeof att === 'string' ? att : (att.file_url || att.url || att.file_path || att.path || '');
+    return this.apiService.getStorageUrl(raw);
+  }
+
+  getDownloadUrl(att: any): string {
+    const url = this.getFileUrl(att);
+    if (!url) return '';
+    return url.includes('?') ? `${url}&download=1` : `${url}?download=1`;
+  }
+
+  getCategoryLabel(category: string): string {
+    switch (category) {
+      case 'plan': return 'خطة الشهر المعتمدة (Plan PDF)';
+      case 'brief': return 'بريف ومواصفات العمل (Brief)';
+      case 'contract': return 'العقد الرسمي الموثق';
+      default: return 'مستند / مرفق إضافي';
+    }
+  }
+
+  getCategoryIcon(category: string): string {
+    switch (category) {
+      case 'plan': return 'fa-file-lines';
+      case 'brief': return 'fa-clipboard-list';
+      case 'contract': return 'fa-file-contract';
+      default: return 'fa-paperclip';
+    }
+  }
+
+  getFileTypeClass(att: any): string {
+    const type = (att?.file_type || '').toLowerCase();
+    const name = (att?.file_name || att?.name || '').toLowerCase();
+    if (type.includes('pdf') || name.endsWith('.pdf')) return 'type-pdf';
+    if (type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx')) return 'type-word';
+    if (type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return 'type-excel';
+    if (type.includes('image') || name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'type-image';
+    return 'type-default';
+  }
+
+  getFileIcon(att: any): string {
+    const type = (att?.file_type || '').toLowerCase();
+    const name = (att?.file_name || att?.name || '').toLowerCase();
+    if (type.includes('pdf') || name.endsWith('.pdf')) return 'fa-file-pdf';
+    if (type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx')) return 'fa-file-word';
+    if (type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return 'fa-file-excel';
+    if (type.includes('image') || name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'fa-file-image';
+    return 'fa-file';
+  }
+
+  formatFileSize(bytes: any): string {
+    if (!bytes || isNaN(bytes)) return '';
+    const b = Number(bytes);
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
   }
 
   confirmDeleteDeal(): void {

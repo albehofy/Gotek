@@ -26,7 +26,7 @@ import { TextareaModule } from 'primeng/textarea';
           </div>
           <div>
             <div class="eyebrow-pill">
-              <span class="pulse-dot"></span> حساب عميل VIP
+              <span class="pulse-dot"></span> {{ portalData.client_category_label || (portalData.is_vip ? 'حساب عميل VIP' : 'بوابة عملاء الوكالة') }}
             </div>
             <h1 class="portal-title">أهلاً بك، {{ portalData.client_name }} 👋</h1>
             <p class="portal-sub">متابعة دقيقة للصفقات والعقود المالية، حركات الدفع والتحصيل، وسجل المهام والخطوات الفرعية.</p>
@@ -164,53 +164,135 @@ import { TextareaModule } from 'primeng/textarea';
 
       <!-- ── 3. CLIENT DEALS & CONTRACTS CARDS GRID ── -->
       <div class="section-container margin-top">
-        <div class="section-head">
+        <div class="section-head flex-between">
           <div>
-            <h2><i class="fa-solid fa-handshake text-violet"></i> العقود والصفقات النشطة</h2>
-            <p>تفاصيل مبالغ العقود، تاريخ الدفعات، ونطاق العمل المتفق عليه</p>
+            <h2><i class="fa-solid fa-handshake text-violet"></i> العقود والصفقات الشهرية</h2>
+            <p>مقسمة ومنظمة حسب شهور التعاقد، مع بيان تواريخ التعاقد ونطاق العمل وتفاصيل السداد</p>
           </div>
         </div>
 
+        <!-- Month Navigation Filter Pills -->
+        <div class="deals-month-nav" *ngIf="getDealsByMonth().length > 1">
+          <button
+            type="button"
+            class="month-pill-btn"
+            [class.active]="selectedMonthKey === 'all'"
+            (click)="selectedMonthKey = 'all'"
+          >
+            <i class="fa-solid fa-layer-group"></i> جميع الشهور ({{ (portalData.deals || []).length }})
+          </button>
+          <button
+            type="button"
+            *ngFor="let mg of getDealsByMonth()"
+            class="month-pill-btn"
+            [class.active]="selectedMonthKey === mg.key"
+            (click)="selectedMonthKey = mg.key"
+          >
+            <i class="fa-regular fa-calendar-check"></i> {{ mg.label }} ({{ mg.deals.length }})
+          </button>
+        </div>
+
         <div class="deals-cards-grid">
-          <div class="deal-card glass-panel" *ngFor="let deal of portalData.deals">
-            <div class="dc-header">
-              <div>
-                <h4 class="dc-title">{{ deal.title }}</h4>
-                <span class="dc-status-pill">{{ deal.status || 'نشط' }}</span>
+          <!-- Month-grouped deals -->
+          <ng-container *ngFor="let monthGroup of getFilteredMonthGroups()">
+            <div class="deals-month-group-header">
+              <div class="dmg-left">
+                <i class="fa-solid fa-calendar-days text-violet"></i>
+                <span class="dmg-month-title">عقود شهر: {{ monthGroup.label }}</span>
+                <span class="deals-month-count">{{ monthGroup.deals.length }} عقود وصفقات</span>
               </div>
-              <div class="dc-amount-badge">
-                <small>إجمالي العقد</small>
-                <strong>{{ (deal.calculated_total || deal.total_price || 0) | number:'1.0-0' }} ج.م</strong>
-              </div>
-            </div>
-
-            <!-- Financial Split Bar -->
-            <div class="dc-financial-bar margin-top">
-              <div class="df-stat">
-                <span class="df-lbl">المدفوع</span>
-                <span class="df-val emerald-text">{{ (deal.calculated_paid || 0) | number:'1.0-0' }} ج.م</span>
-              </div>
-              <div class="df-stat">
-                <span class="df-lbl">المتبقي</span>
-                <span class="df-val rose-text">{{ (deal.remaining_balance || 0) | number:'1.0-0' }} ج.م</span>
+              <div class="dmg-stats">
+                <span>إجمالي الشهر: <strong>{{ monthGroup.totalAmount | number:'1.0-0' }} ج.م</strong></span>
+                <span class="dmg-paid"><i class="fa-solid fa-circle-check"></i> المسدد: <strong>{{ monthGroup.totalPaid | number:'1.0-0' }} ج.م</strong></span>
               </div>
             </div>
 
-            <div class="deal-progress-box">
-              <div class="dp-header">
-                <span>تقدم تنفيذ الصفقة</span>
-                <span>{{ getDealProgress(deal) }}%</span>
+            <div class="deal-card glass-panel" *ngFor="let deal of monthGroup.deals">
+              <div class="dc-header">
+                <div>
+                  <h4 class="dc-title">{{ deal.title }}</h4>
+                  <span class="dc-status-pill">{{ deal.status || 'نشط' }}</span>
+                </div>
+                <div class="dc-amount-badge">
+                  <small>إجمالي العقد</small>
+                  <strong>{{ (deal.calculated_total || deal.total_price || 0) | number:'1.0-0' }} ج.م</strong>
+                </div>
               </div>
-              <div class="dp-track">
-                <div class="dp-fill" [style.width.%]="getDealProgress(deal)"></div>
-              </div>
-            </div>
 
-            <div class="dc-scope" *ngIf="deal.agreed_scope">
-              <small><i class="fa-solid fa-file-contract"></i> نطاق العمل المتفق عليه:</small>
-              <p>{{ deal.agreed_scope }}</p>
+              <!-- Contract & Execution Dates Bar -->
+              <div class="dc-dates-bar">
+                <div class="dcd-item">
+                  <i class="fa-regular fa-calendar-check text-emerald"></i>
+                  <span>تاريخ التعاقد: <strong>{{ (deal.created_at | date:'yyyy/MM/dd') || 'غير محدد' }}</strong></span>
+                </div>
+                <div class="dcd-item" *ngIf="deal.start_date || deal.shooting_date">
+                  <i class="fa-regular fa-clock text-cyan"></i>
+                  <span>بدء التنفيذ: <strong>{{ (deal.start_date || deal.shooting_date | date:'yyyy/MM/dd') }}</strong></span>
+                </div>
+                <div class="dcd-item" *ngIf="deal.end_date || deal.delivery_date || deal.due_date">
+                  <i class="fa-regular fa-calendar-xmark text-amber"></i>
+                  <span>تاريخ التسليم: <strong>{{ (deal.end_date || deal.delivery_date || deal.due_date | date:'yyyy/MM/dd') }}</strong></span>
+                </div>
+              </div>
+
+              <!-- Financial Split Bar -->
+              <div class="dc-financial-bar">
+                <div class="df-stat">
+                  <span class="df-lbl">المدفوع</span>
+                  <span class="df-val emerald-text">{{ (deal.calculated_paid || 0) | number:'1.0-0' }} ج.م</span>
+                </div>
+                <div class="df-stat">
+                  <span class="df-lbl">المتبقي</span>
+                  <span class="df-val rose-text">{{ (deal.remaining_balance || 0) | number:'1.0-0' }} ج.م</span>
+                </div>
+              </div>
+
+              <div class="deal-progress-box">
+                <div class="dp-header">
+                  <span>تقدم تنفيذ الصفقة</span>
+                  <span>{{ getDealProgress(deal) }}%</span>
+                </div>
+                <div class="dp-track">
+                  <div class="dp-fill" [style.width.%]="getDealProgress(deal)"></div>
+                </div>
+              </div>
+
+              <div class="dc-scope" *ngIf="deal.agreed_scope">
+                <small><i class="fa-solid fa-file-contract"></i> نطاق العمل المتفق عليه:</small>
+                <p>{{ deal.agreed_scope }}</p>
+              </div>
+
+              <!-- Deal Plan, Brief & Attachments for Client -->
+              <div class="dc-files-section" *ngIf="deal.attachments && deal.attachments.length > 0" style="margin-top:14px; padding-top:12px; border-top:1px dashed rgba(255,255,255,0.1);">
+                <div style="font-size:0.8rem; font-weight:800; color:var(--violet-light, #a5b4fc); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid fa-folder-open"></i> وثائق وخطة الشهر المعتمدة للتعاقد
+                </div>
+                <div class="dc-files-grid" style="display:flex; flex-direction:column; gap:6px;">
+                  <div *ngFor="let att of deal.attachments" style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:6px; padding:8px 12px;">
+                    <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                      <i class="fa-solid" [ngClass]="getDealFileIconClass(att)" style="font-size:1.1rem;"></i>
+                      <div style="display:flex; flex-direction:column; min-width:0;">
+                        <span style="font-size:0.82rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                          {{ att.file_name || att.name || 'ملف التعاقد' }}
+                        </span>
+                        <span style="font-size:0.68rem; color:var(--text-3);">
+                          {{ getDealCategoryLabel(att.category) }} <span *ngIf="att.human_file_size">• {{ att.human_file_size }}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                      <a [href]="getFileUrl(att)" target="_blank" style="background:rgba(99,102,241,0.15); color:var(--violet-light); border:1px solid rgba(99,102,241,0.3); padding:4px 8px; border-radius:5px; font-size:0.72rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح
+                      </a>
+                      <a [href]="getDownloadUrl(att)" download style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:4px 8px; border-radius:5px; font-size:0.72rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                        <i class="fa-solid fa-download"></i> تحميل
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </ng-container>
 
           <div class="empty-glass-card" *ngIf="!portalData.deals || portalData.deals.length === 0">
             <i class="fa-solid fa-handshake-slash"></i>
@@ -342,7 +424,7 @@ import { TextareaModule } from 'primeng/textarea';
                 <div class="note-author-row">
                   <span class="author-name">
                     <i class="fa-solid" [ngClass]="note.user?.role === 'client' ? 'fa-user-tie' : 'fa-headset'"></i>
-                    {{ note.user?.name || 'فريق العمل' }}
+                    {{ getNoteAuthorLabel(note) }}
                   </span>
                   <span class="note-time">{{ note.created_at | date:'yyyy/MM/dd HH:mm' }}</span>
                 </div>
@@ -496,6 +578,25 @@ import { TextareaModule } from 'primeng/textarea';
     .section-head p { font-size: 0.82rem; color: var(--text-2); margin-top: 2px; }
 
     .deals-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+    
+    .deals-month-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .month-pill-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); color: var(--text-2); padding: 8px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 7px; }
+    .month-pill-btn:hover { background: rgba(99, 102, 241, 0.12); color: var(--violet-light); border-color: rgba(99, 102, 241, 0.3); }
+    .month-pill-btn.active { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border-color: #6366f1; box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35); }
+
+    .deals-month-group-header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.22); border-radius: 8px; margin-top: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+    .dmg-left { display: flex; align-items: center; gap: 10px; }
+    .dmg-left i { font-size: 1.15rem; }
+    .dmg-month-title { font-size: 0.98rem; font-weight: 800; color: #ffffff; }
+    .deals-month-count { font-size: 0.74rem; font-weight: 700; background: rgba(99, 102, 241, 0.2); color: #c7d2fe; padding: 3px 10px; border-radius: 6px; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .dmg-stats { display: flex; align-items: center; gap: 16px; font-size: 0.8rem; color: var(--text-2); flex-wrap: wrap; }
+    .dmg-stats strong { color: var(--text); }
+    .dmg-paid { color: #34d399; }
+    .dmg-paid strong { color: #34d399; }
+
+    .dc-dates-bar { display: flex; gap: 14px; flex-wrap: wrap; background: rgba(0, 0, 0, 0.18); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; margin: 12px 0 10px; font-size: 0.78rem; }
+    .dcd-item { display: flex; align-items: center; gap: 6px; color: var(--text-2); }
+    .dcd-item strong { color: var(--text); font-weight: 700; }
     .deal-card { padding: 22px; background: var(--bg-card, #12121e); border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: var(--r-lg, 16px); display: flex; flex-direction: column; justify-content: space-between; }
     .dc-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .dc-title { font-size: 1.05rem; font-weight: 800; color: #fff; line-height: 1.3; }
@@ -773,6 +874,30 @@ export class ClientPortalViewComponent implements OnInit {
     return this.apiService.getStorageUrl(raw);
   }
 
+  getDownloadUrl(urlOrAtt: any): string {
+    const url = typeof urlOrAtt === 'string' ? urlOrAtt : this.getFileUrl(urlOrAtt);
+    if (!url) return '';
+    return url.includes('?') ? `${url}&download=1` : `${url}?download=1`;
+  }
+
+  getDealFileIconClass(att: any): string {
+    const type = (att?.file_type || '').toLowerCase();
+    const name = (att?.file_name || att?.name || '').toLowerCase();
+    if (type.includes('pdf') || name.endsWith('.pdf')) return 'fa-file-pdf text-rose';
+    if (type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx')) return 'fa-file-word text-blue';
+    if (type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return 'fa-file-excel text-emerald';
+    return 'fa-file-lines text-violet';
+  }
+
+  getDealCategoryLabel(cat: string): string {
+    switch (cat) {
+      case 'plan': return 'خطة الشهر المعتمدة (Plan PDF)';
+      case 'brief': return 'بريف ومواصفات العمل (Brief)';
+      case 'contract': return 'العقد الرسمي';
+      default: return 'مستند إضافي';
+    }
+  }
+
   ngOnInit(): void {
     this.loadPortalData();
   }
@@ -894,6 +1019,60 @@ export class ClientPortalViewComponent implements OnInit {
   isTaskAwaitingReview(task: any): boolean {
     return ['client_review', 'review', 'awaiting_approval'].includes(task.status);
   }
+
+  /**
+   * Returns a privacy-safe label for the comment author.
+   * Client role shows "العميل", all others show "مسؤول في النظام".
+   */
+  getNoteAuthorLabel(note: any): string {
+    if (!note || !note.user) return 'مسؤول';
+    return note.user.role === 'client' ? 'العميل' : 'مسؤول';
+  }
+
+  selectedMonthKey: string = 'all';
+
+  /**
+   * Groups the deals array by Arabic month+year of creation date,
+   * sorted from newest to oldest with month financials.
+   */
+  getDealsByMonth(): { label: string; key: string; totalAmount: number; totalPaid: number; deals: any[] }[] {
+    const deals = this.portalData?.deals || [];
+    if (!deals.length) return [];
+
+    const arabicMonths = [
+      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+
+    const map = new Map<string, { label: string; key: string; totalAmount: number; totalPaid: number; deals: any[] }>();
+
+    for (const deal of deals) {
+      const rawDate = deal.created_at || deal.start_date || deal.contract_date;
+      const d = rawDate ? new Date(rawDate) : new Date();
+      const year = d.getFullYear();
+      const month = d.getMonth(); // 0-indexed
+      const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+      const label = `${arabicMonths[month]} ${year}`;
+
+      if (!map.has(key)) {
+        map.set(key, { label, key, totalAmount: 0, totalPaid: 0, deals: [] });
+      }
+      const group = map.get(key)!;
+      group.deals.push(deal);
+      group.totalAmount += Number(deal.calculated_total || deal.total_price || 0);
+      group.totalPaid += Number(deal.calculated_paid || 0);
+    }
+
+    // Sort groups newest first
+    return Array.from(map.values()).sort((a, b) => b.key.localeCompare(a.key));
+  }
+
+  getFilteredMonthGroups(): { label: string; key: string; totalAmount: number; totalPaid: number; deals: any[] }[] {
+    const all = this.getDealsByMonth();
+    if (this.selectedMonthKey === 'all') return all;
+    return all.filter(g => g.key === this.selectedMonthKey);
+  }
+
 
   getTaskStatusBadgeClass(task: any): string {
     if (this.isTaskAwaitingReview(task)) return 'review';

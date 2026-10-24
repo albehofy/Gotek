@@ -13,6 +13,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
@@ -59,8 +61,15 @@ class TaskController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Return parent tasks only if explicitly requested
-        if ($request->has('parents_only') && ($request->get('parents_only') === 'true' || $request->get('parents_only') === true)) {
+        // Filter by task type: main (parents only), partials (subtasks only), or all
+        if ($request->filled('task_type')) {
+            $tType = strtolower($request->get('task_type'));
+            if ($tType === 'main') {
+                $query->whereNull('parent_id');
+            } elseif ($tType === 'partials' || $tType === 'partial' || $tType === 'subtasks') {
+                $query->whereNotNull('parent_id');
+            }
+        } elseif ($request->has('parents_only') && ($request->get('parents_only') === 'true' || $request->get('parents_only') === true)) {
             $query->whereNull('parent_id');
         }
 
@@ -795,8 +804,45 @@ class TaskController extends Controller
 
     public function destroy($id)
     {
-        $task = Task::findOrFail($id);
-        $task->delete();
-        return response()->json(['message' => 'تم حذف المهمة بنجاح']);
+        $task = Task::find($id);
+        if (!$task) {
+            return response()->json(['message' => 'المهمة غير موجودة'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Delete notifications related to this task
+            NotificationModel::where('notifiable_type', Task::class)
+                ->where('notifiable_id', $task->id)
+                ->delete();
+
+            // Detach users
+            $task->users()->detach();
+
+            // Delete subtasks if any
+            $subtasks = Task::where('parent_id', $task->id)->get();
+            foreach ($subtasks as $subtask) {
+                NotificationModel::where('notifiable_type', Task::class)
+                    ->where('notifiable_id', $subtask->id)
+                    ->delete();
+                $subtask->users()->detach();
+                $subtask->delete();
+            }
+
+            $task->delete();
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم حذف المهمة بنجاح'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Task deletion failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'تعذر حذف المهمة لوجود ارتباطات في النظام: ' . $e->getMessage()
+            ], 422);
+        }
     }
 }

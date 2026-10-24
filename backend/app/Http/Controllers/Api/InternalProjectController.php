@@ -77,6 +77,14 @@ public function show($id)
  */
 public function destroy($id)
 {
+    $authUser = \Illuminate\Support\Facades\Auth::user();
+    if (!$authUser || !$authUser->isSuperAdmin()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'غير مصرح لك بحذف المشاريع الداخلية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+        ], 403);
+    }
+
     $project = InternalProject::findOrFail($id);
     $project->delete();
     return response()->json(['message' => 'تم حذف المشروع بنجاح']);

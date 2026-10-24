@@ -56,17 +56,17 @@ BACKEND_PID=$!
 sleep 2
 
 # 3. Start Website View Frontend (Port 4200)
-if [ -d "$ROOT_DIR/fontend/view" ]; then
+if [ -d "$ROOT_DIR/frontend/view" ]; then
     echo -e "${BLUE}🌐 [3/4] Starting Public Website View Frontend on http://localhost:4200...${NC}"
-    cd "$ROOT_DIR/fontend/view" || exit 1
+    cd "$ROOT_DIR/frontend/view" || exit 1
     npx ng serve --port 4200 --host 0.0.0.0 &
     VIEW_PID=$!
 fi
 
 # 4. Start Angular CRM Dashboard Frontend (Port 4201)
-if [ -d "$ROOT_DIR/fontend/dashboard" ]; then
+if [ -d "$ROOT_DIR/frontend/dashboard" ]; then
     echo -e "${CYAN}💻 [4/4] Starting Angular CRM Dashboard UI on http://localhost:4201...${NC}"
-    cd "$ROOT_DIR/fontend/dashboard" || exit 1
+    cd "$ROOT_DIR/frontend/dashboard" || exit 1
     npx ng serve --port 4201 --host 0.0.0.0 &
     DASHBOARD_PID=$!
 fi

@@ -22,14 +22,8 @@ class FinanceController extends Controller
     public function summary()
     {
         $user = Auth::user();
-        if ($user && $user->role === 'client') {
-            return response()->json(['message' => 'غير مسموح للعملاء بدخول الإدارة المالية'], 403);
-        }
-
-        // Department Manager scope limit if not admin/super_admin
-        $deptId = null;
-        if ($user && in_array($user->role, ['department_manager', 'Department Manager']) && $user->department_id) {
-            $deptId = $user->department_id;
+        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
+            return response()->json(['message' => 'غير مصرح لمدير القسم أو الموظف بدخول الإدارة المالية'], 403);
         }
 
         $incomeQuery = LedgerEntry::where('type', 'income');
@@ -122,8 +116,8 @@ class FinanceController extends Controller
     public function getLedger(Request $request)
     {
         $user = Auth::user();
-        if ($user && $user->role === 'client') {
-            return response()->json(['message' => 'غير مسموح للعملاء بفتح السجل المالي'], 403);
+        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
+            return response()->json(['message' => 'غير مصرح لمدير القسم بفتح السجل المالي'], 403);
         }
 
         $query = LedgerEntry::with(['category', 'department', 'deal', 'client', 'employee', 'creator'])->latest();
@@ -212,8 +206,8 @@ class FinanceController extends Controller
     public function getClientBalances(Request $request)
     {
         $user = Auth::user();
-        if ($user && $user->role === 'client') {
-            return response()->json(['message' => 'غير مسموح للعملاء بفتح كشف أرصدة العملاء'], 403);
+        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
+            return response()->json(['message' => 'غير مصرح لمدير القسم بفتح كشف أرصدة العملاء'], 403);
         }
 
         $query = User::where(function($q) {
@@ -273,8 +267,8 @@ class FinanceController extends Controller
     public function storeClientPayment(Request $request)
     {
         $user = Auth::user();
-        if ($user && $user->role === 'client') {
-            return response()->json(['message' => 'غير مسموح للعملاء بتسجيل دفعات مالية بنفسهم'], 403);
+        if ($user && !in_array($user->role, ['super_admin', 'admin'])) {
+            return response()->json(['message' => 'غير مصرح لك بتسجيل دفعات مالية أو تحصيلات'], 403);
         }
         $validated = $request->validate([
             'deal_id' => 'required|exists:deals,id',
@@ -309,6 +303,44 @@ class FinanceController extends Controller
 
             'created_by' => Auth::id()
         ]);
+
+        // Record Activity in Deal History
+        try {
+            $methodNames = [
+                'cash' => 'نقدي (Cash)',
+                'cash_hand' => 'نقداً باليد',
+                'instapay' => 'إنستاباي (InstaPay)',
+                'bank_transfer' => 'تحويل بنكي'
+            ];
+            $methodLabel = $methodNames[$validated['payment_method']] ?? $validated['payment_method'];
+
+            DB::table('activity_log')->insert([
+                'log_name' => 'deal',
+                'description' => "تم تسجيل دفعة مالية بقيمة " . number_format($validated['amount'], 2) . " ج.م بواسطة {$user->name} (طريقة التحصيل: {$methodLabel})",
+                'subject_type' => \App\Models\Deal::class,
+                'subject_id' => $deal->id,
+                'causer_type' => \App\Models\User::class,
+                'causer_id' => $user->id,
+                'properties' => json_encode([
+                    'title' => 'تسجيل تحصيل مالي',
+                    'field' => 'payment',
+                    'amount' => (float)$validated['amount'],
+                    'payment_method' => $validated['payment_method'],
+                    'payment_method_label' => $methodLabel,
+                    'receipt_ref' => $validated['receipt_ref'] ?? null,
+                    'icon' => 'fa-money-bill-wave',
+                    'color' => '#10b981',
+                    'causer_name' => $user->name,
+                    'causer_role' => $user->role,
+                    'causer_email' => $user->email,
+                    'created_at_human' => now()->translatedFormat('d M Y - h:i A')
+                ], JSON_UNESCAPED_UNICODE),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to log deal payment activity: ' . $e->getMessage());
+        }
 
         return response()->json([
             'status' => 'success',
@@ -482,6 +514,11 @@ class FinanceController extends Controller
     // --- Payroll & Employee Calculations (Hybrid formula) ---
     public function getPayrollSummary(Request $request)
     {
+        $user = Auth::user();
+        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
+            return response()->json(['message' => 'غير مصرح لمدير القسم بالاطلاع على مسيرات الرواتب والمستحقات العامة'], 403);
+        }
+
         $month = $request->get('month', now()->month);
         $year = $request->get('year', now()->year);
 

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -373,51 +374,97 @@ class UserController extends Controller
             return response()->json(['message' => 'لا يمكنك حذف حسابك الشخصي من هنا'], 403);
         }
 
-        $fallbackAdminId = auth()->id() ?: User::where('role', 'super_admin')->value('id') ?: 1;
+        $fallbackAdminId = auth()->id() ?: User::where('role', 'super_admin')->where('id', '!=', $user->id)->value('id') ?: 1;
 
-        // Safely reassign created_by to prevent cascade deletion of company assets
-        if (Schema::hasColumn('deals', 'created_by')) {
-            Deal::where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
-        }
-        if (Schema::hasColumn('client_payments', 'created_by')) {
-            ClientPayment::where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
-        }
-        if (Schema::hasColumn('ledger_entries', 'created_by')) {
-            LedgerEntry::where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
-        }
+        DB::beginTransaction();
+        try {
+            // Safely reassign created_by to prevent cascade deletion of company assets
+            if (Schema::hasColumn('deals', 'created_by')) {
+                Deal::where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
+            }
+            if (Schema::hasColumn('client_payments', 'created_by')) {
+                ClientPayment::where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
+            }
+            if (Schema::hasColumn('ledger_entries', 'created_by')) {
+                LedgerEntry::where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
+            }
 
-        // Unlink or clean up user relations
-        if (Schema::hasTable('contracts')) {
-            Contract::where('client_id', $user->id)->orWhere('admin_id', $user->id)->delete();
-        }
-        if (Schema::hasColumn('deals', 'client_id')) {
-            Deal::where('client_id', $user->id)->update(['client_id' => null]);
-        }
-        if (Schema::hasColumn('deals', 'sales_person_id')) {
-            Deal::where('sales_person_id', $user->id)->update(['sales_person_id' => null]);
-        }
-        if (Schema::hasColumn('client_payments', 'client_id')) {
-            ClientPayment::where('client_id', $user->id)->update(['client_id' => null]);
-        }
-        if (Schema::hasColumn('ledger_entries', 'employee_id')) {
-            LedgerEntry::where('employee_id', $user->id)->update(['employee_id' => null]);
-        }
-        if (Schema::hasColumn('departments', 'manager_id')) {
-            Department::where('manager_id', $user->id)->update(['manager_id' => null]);
-        }
-        
-        $user->tasks()->detach();
-        $user->roles()->detach();
+            // Contracts
+            if (Schema::hasTable('contracts')) {
+                // If user is the client, contracts associated with this client can be removed
+                Contract::where('client_id', $user->id)->delete();
+                // If user was the admin creating the contract, reassign to fallback admin to preserve contract record
+                Contract::where('admin_id', $user->id)->update(['admin_id' => $fallbackAdminId]);
+            }
 
-        if (Schema::hasTable('notifications')) {
-            NotificationModel::where('user_id', $user->id)->delete();
+            // Unlink or clean up user relations
+            if (Schema::hasColumn('deals', 'client_id')) {
+                Deal::where('client_id', $user->id)->update(['client_id' => null]);
+            }
+            if (Schema::hasColumn('deals', 'sales_person_id')) {
+                Deal::where('sales_person_id', $user->id)->update(['sales_person_id' => null]);
+            }
+            if (Schema::hasColumn('client_payments', 'client_id')) {
+                ClientPayment::where('client_id', $user->id)->update(['client_id' => null]);
+            }
+            if (Schema::hasColumn('ledger_entries', 'employee_id')) {
+                LedgerEntry::where('employee_id', $user->id)->update(['employee_id' => null]);
+            }
+            if (Schema::hasColumn('ledger_entries', 'client_id')) {
+                LedgerEntry::where('client_id', $user->id)->update(['client_id' => null]);
+            }
+            if (Schema::hasColumn('departments', 'manager_id')) {
+                Department::where('manager_id', $user->id)->update(['manager_id' => null]);
+            }
+
+            // Task relations
+            if (Schema::hasTable('task_checklists') && Schema::hasColumn('task_checklists', 'completed_by')) {
+                DB::table('task_checklists')->where('completed_by', $user->id)->update(['completed_by' => null]);
+            }
+            if (Schema::hasTable('task_status_histories') && Schema::hasColumn('task_status_histories', 'changed_by')) {
+                DB::table('task_status_histories')->where('changed_by', $user->id)->update(['changed_by' => null]);
+            }
+            if (Schema::hasTable('task_attachments') && Schema::hasColumn('task_attachments', 'uploaded_by')) {
+                DB::table('task_attachments')->where('uploaded_by', $user->id)->update(['uploaded_by' => null]);
+            }
+            if (Schema::hasTable('attachments') && Schema::hasColumn('attachments', 'uploaded_by')) {
+                DB::table('attachments')->where('uploaded_by', $user->id)->update(['uploaded_by' => $fallbackAdminId]);
+            }
+
+            // Custody & Payroll
+            if (Schema::hasTable('custody_accounts')) {
+                if (Schema::hasColumn('custody_accounts', 'created_by')) {
+                    DB::table('custody_accounts')->where('created_by', $user->id)->update(['created_by' => $fallbackAdminId]);
+                }
+                if (Schema::hasColumn('custody_accounts', 'employee_id')) {
+                    DB::table('custody_accounts')->where('employee_id', $user->id)->delete();
+                }
+            }
+            if (Schema::hasTable('payroll_records') && Schema::hasColumn('payroll_records', 'employee_id')) {
+                DB::table('payroll_records')->where('employee_id', $user->id)->delete();
+            }
+            
+            $user->tasks()->detach();
+            $user->roles()->detach();
+
+            if (Schema::hasTable('notifications')) {
+                NotificationModel::where('user_id', $user->id)->delete();
+            }
+
+            $user->delete();
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم حذف المستخدم بنجاح'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('User deletion failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'تعذر حذف المستخدم لوجود ارتباطات في النظام: ' . $e->getMessage()
+            ], 422);
         }
-
-        $user->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم حذف المستخدم بنجاح'
-        ]);
     }
 }

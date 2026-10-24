@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 import { SoundService } from '../../../services/sound.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-notification-center',
@@ -266,6 +267,7 @@ import { SoundService } from '../../../services/sound.service';
     .notif-icon.mention { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
     .notif-icon.status_change { background: rgba(16, 185, 129, 0.15); color: #34d399; }
     .notif-icon.client_note { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .notif-icon.comment { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
 
     .notif-content {
       flex: 1;
@@ -335,6 +337,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   public soundService = inject(SoundService);
+  private toastService = inject(ToastService);
 
   notifications: any[] = [];
   unreadCount = 0;
@@ -382,10 +385,14 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
         const newNotifications = res.data?.data || res.data || [];
         const newFirstNotifId = newNotifications.length > 0 ? newNotifications[0].id : null;
 
-        // Play loud sound if new unread notification arrived
+        // Play loud sound chime and show toast if new unread notification arrived
         if (this.previousUnreadCount >= 0) {
           if (newUnreadCount > this.previousUnreadCount || (newFirstNotifId && newFirstNotifId !== this.previousFirstNotifId && newUnreadCount > 0)) {
             this.playNotificationSound();
+            if (newNotifications.length > 0) {
+              const latest = newNotifications[0];
+              this.toastService.info(latest.message || latest.title || 'إشعار جديد', latest.title || 'تنبيه جديد');
+            }
           }
         }
 
@@ -417,7 +424,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
     this.isOpen = false;
 
     const taskId = notif.notifiable_id || notif.task_id || notif.data?.task_id;
-    if (taskId && (notif.notifiable_type?.includes('Task') || notif.type === 'status_change' || notif.type === 'assignment')) {
+    if (taskId && (notif.notifiable_type?.includes('Task') || notif.type === 'status_change' || notif.type === 'assignment' || notif.type === 'comment' || notif.type === 'client_note')) {
       this.router.navigate(['/tasks'], { queryParams: { taskId: taskId } });
     } else if (notif.link) {
       this.router.navigateByUrl(notif.link);
@@ -440,6 +447,7 @@ export class NotificationCenterComponent implements OnInit, OnDestroy {
   getNotifIcon(type: string): string {
     switch (type) {
       case 'assignment': return 'fa-solid fa-user-plus';
+      case 'comment': return 'fa-solid fa-comments';
       case 'mention': return 'fa-solid fa-at';
       case 'status_change': return 'fa-solid fa-rotate';
       case 'client_note': return 'fa-solid fa-comment-dots';

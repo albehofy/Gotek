@@ -123,7 +123,7 @@ import { ConfirmService } from '../../services/confirm.service';
                       <button type="button" class="sub-action-btn edit" (click)="openEditSubCategoryModal(sub, dept)" title="تعديل التصنيف الفرعي">
                         <i class="fa-solid fa-pen"></i>
                       </button>
-                      <button type="button" class="sub-action-btn delete" (click)="confirmDeleteSubCategory(sub, dept)" title="حذف التصنيف الفرعي">
+                      <button *ngIf="isSuperAdmin()" type="button" class="sub-action-btn delete" (click)="confirmDeleteSubCategory(sub, dept)" title="حذف التصنيف الفرعي">
                         <i class="fa-solid fa-xmark"></i>
                       </button>
                     </span>
@@ -140,7 +140,7 @@ import { ConfirmService } from '../../services/confirm.service';
               <button class="btn-action edit" (click)="openEditModal(dept)">
                 <i class="fa-solid fa-pen-to-square"></i> تعديل القسم
               </button>
-              <button class="btn-action delete" (click)="confirmDeleteDepartment(dept)" title="حذف القسم">
+              <button *ngIf="isSuperAdmin()" class="btn-action delete" (click)="confirmDeleteDepartment(dept)" title="حذف القسم">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
@@ -705,6 +705,10 @@ export class DepartmentsSectionsComponent implements OnInit {
     this.loadData();
   }
 
+  isSuperAdmin(): boolean {
+    return (this.currentUser?.role || '').toLowerCase() === 'super_admin';
+  }
+
   isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
   isDepartmentManager(): boolean { return this.currentUser?.role === 'department_manager'; }
   isManagerOrAdmin(): boolean {
@@ -790,6 +794,11 @@ export class DepartmentsSectionsComponent implements OnInit {
   }
 
   confirmDeleteDepartment(dept: any): void {
+    if (!this.isSuperAdmin()) {
+      this.toastService.error('غير مصرح لك بحذف الأقسام. الحذف مقتصر حصرياً على السوبر أدمن');
+      return;
+    }
+
     this.confirmService.confirm({
       title: 'حذف القسم الرئيسي',
       message: `هل أنت تأكد من رغبتك في حذف القسم "${dept.name}"؟ قد يؤثر ذلك على الصفقات والمهام التابعة له.`,
@@ -924,6 +933,11 @@ export class DepartmentsSectionsComponent implements OnInit {
   }
 
   confirmDeleteSubCategory(sub: any, dept: any): void {
+    if (!this.isSuperAdmin()) {
+      this.toastService.error('غير مصرح لك بحذف التصنيفات الفرعية. الحذف مقتصر حصرياً على السوبر أدمن');
+      return;
+    }
+
     const subName = sub.name_ar || sub.name_en || '';
     this.confirmService.confirm({
       title: 'حذف التصنيف الفرعي',

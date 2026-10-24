@@ -27,6 +27,8 @@ class Deal extends Model
         'sales_commission_value',
         'total_price',
         'paid_amount',
+        'discount_type',
+        'discount_value',
         'status',
         'created_by',
     ];
@@ -37,9 +39,10 @@ class Deal extends Model
         'end_date' => 'date',
         'shooting_date' => 'date',
         'delivery_date' => 'date',
+        'discount_value' => 'decimal:2',
     ];
 
-    protected $appends = ['calculated_total', 'calculated_paid', 'remaining_balance', 'progress', 'department_breakdown', 'attachment_url', 'deal_link'];
+    protected $appends = ['calculated_total', 'gross_total', 'discount_amount', 'calculated_paid', 'remaining_balance', 'progress', 'department_breakdown', 'attachment_url', 'deal_link'];
 
     public function getDealLinkAttribute()
     {
@@ -92,10 +95,33 @@ class Deal extends Model
         return $this->hasMany(ClientPayment::class, 'deal_id')->latest();
     }
 
-    public function getCalculatedTotalAttribute()
+    public function attachments()
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->latest();
+    }
+
+    public function getGrossTotalAttribute()
     {
         $taskSum = $this->tasks()->whereNull('parent_id')->sum('client_price');
         return $taskSum > 0 ? (float) $taskSum : (float) $this->total_price;
+    }
+
+    public function getDiscountAmountAttribute()
+    {
+        $gross = $this->getGrossTotalAttribute();
+        if ($this->discount_type === 'percentage' && $this->discount_value > 0) {
+            return ($gross * (float) $this->discount_value) / 100;
+        } elseif ($this->discount_type === 'fixed' && $this->discount_value > 0) {
+            return min($gross, (float) $this->discount_value);
+        }
+        return 0;
+    }
+
+    public function getCalculatedTotalAttribute()
+    {
+        $gross = $this->getGrossTotalAttribute();
+        $discount = $this->getDiscountAmountAttribute();
+        return max(0, (float) ($gross - $discount));
     }
 
     public function getCalculatedPaidAttribute()
@@ -112,9 +138,28 @@ class Deal extends Model
     public function getProgressAttribute()
     {
         $totalTasks = $this->tasks()->whereNull('parent_id')->count();
-        if ($totalTasks === 0) return 0;
-        $completedTasks = $this->tasks()->whereNull('parent_id')->where('status', 'done')->count();
-        return round(($completedTasks / $totalTasks) * 100);
+        if ($totalTasks === 0) {
+            return in_array($this->status, ['won', 'closed', 'completed']) ? 100 : 0;
+        }
+        $completedTasks = $this->tasks()->whereNull('parent_id')->whereIn('status', ['done', 'completed', 'approved'])->count();
+        return (int) round(($completedTasks / $totalTasks) * 100);
+    }
+
+    public function syncFinancialTotals()
+    {
+        $taskSum = (float) $this->tasks()->whereNull('parent_id')->sum('client_price');
+        if ($taskSum > 0) {
+            $this->total_price = $taskSum;
+        }
+
+        if (!$this->department_id) {
+            $firstDept = $this->tasks()->whereNotNull('department_id')->value('department_id');
+            if ($firstDept) {
+                $this->department_id = $firstDept;
+            }
+        }
+
+        $this->saveQuietly();
     }
 
     public function getDepartmentBreakdownAttribute()

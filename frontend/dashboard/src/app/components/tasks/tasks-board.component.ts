@@ -44,7 +44,7 @@ import { ConfirmService } from '../../services/confirm.service';
           <div class="tb-stats" *ngIf="!isClient()">
             <span class="stat-pill">
               <i class="fa-solid fa-circle-dot" style="color:var(--violet-light)"></i>
-              {{ tasks.length }} الإجمالي
+              {{ getMainTasksCount() }} الإجمالي
             </span>
             <span class="stat-pill emerald">
               <i class="fa-solid fa-check-circle"></i>
@@ -91,6 +91,45 @@ import { ConfirmService } from '../../services/confirm.service';
           />
           <button type="button" class="btn-clear-search" *ngIf="searchQuery" (click)="searchQuery = ''">
             <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Ticket Type Segmented Controls (All / Main / Partials) -->
+        <div class="ticket-type-segmented-control" role="group" aria-label="تصفية نوع التذاكر">
+          <button 
+            type="button" 
+            class="type-tab-btn" 
+            [class.active]="taskTypeFilter === 'all'" 
+            (click)="setTaskTypeFilter('all')"
+            title="عرض جميع التذاكر الأساسية والفرعية (All Tickets)"
+          >
+            <i class="fa-solid fa-layer-group"></i>
+            <span>الكل</span>
+            <span class="tab-count">{{ getTotalTasksRawCount() }}</span>
+          </button>
+
+          <button 
+            type="button" 
+            class="type-tab-btn" 
+            [class.active]="taskTypeFilter === 'main'" 
+            (click)="setTaskTypeFilter('main')"
+            title="عرض التذاكر الأساسية فقط (Main Tasks)"
+          >
+            <i class="fa-solid fa-diagram-project"></i>
+            <span>الأساسية</span>
+            <span class="tab-count">{{ getMainTasksCount() }}</span>
+          </button>
+
+          <button 
+            type="button" 
+            class="type-tab-btn" 
+            [class.active]="taskTypeFilter === 'partials'" 
+            (click)="setTaskTypeFilter('partials')"
+            title="عرض التذاكر والمهام الفرعية فقط (Partials / Subtasks)"
+          >
+            <i class="fa-solid fa-code-branch"></i>
+            <span>الفرعية (Partials)</span>
+            <span class="tab-count">{{ getPartialTasksCount() }}</span>
           </button>
         </div>
 
@@ -190,6 +229,19 @@ import { ConfirmService } from '../../services/confirm.service';
                 [options]="priorityOptions"
                 [(ngModel)]="selectedPriorityFilter"
                 placeholder="الأولوية"
+                styleClass="prime-luxury-dropdown"
+                appendTo="body"
+                [baseZIndex]="999999"
+              ></p-dropdown>
+            </div>
+
+            <!-- Ticket Type Filter (Main / Partials / All) -->
+            <div class="filter-group-item">
+              <label class="filter-label"><i class="fa-solid fa-cubes-stacked"></i> تصنيف ونوع التذكرة</label>
+              <p-dropdown
+                [options]="taskTypeOptions"
+                [(ngModel)]="taskTypeFilter"
+                placeholder="نوع التذكرة (الكل / أساسية / فرعية)"
                 styleClass="prime-luxury-dropdown"
                 appendTo="body"
                 [baseZIndex]="999999"
@@ -346,7 +398,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </div>
 
       <!-- ── KANBAN BOARD FOR STAFF / ADMIN ───────────────────────── -->
-      <div class="kanban-board" *ngIf="!isClient()">
+      <div class="kanban-board" *ngIf="!isClient()" #kanbanBoard (wheel)="onBoardWheel($event, kanbanBoard)">
         <div
           class="kanban-col"
           *ngFor="let col of columns"
@@ -372,7 +424,7 @@ import { ConfirmService } from '../../services/confirm.service';
             <div
               class="tk-card"
               *ngFor="let task of getTasksForColumn(col.key)"
-              draggable="true"
+              [draggable]="canReopenCompletedTasks() || !['done', 'completed', 'approved'].includes(task.status)"
               (dragstart)="onDragStart($event, task)"
               (dragend)="onDragEnd()"
               (click)="openTaskDetail(task)"
@@ -382,9 +434,12 @@ import { ConfirmService } from '../../services/confirm.service';
               <div class="priority-ribbon" [class]="'p-' + (task.priority || 'medium')"></div>
 
               <!-- Top tags -->
-              <div class="tk-tags" *ngIf="task.parent_id || task.parent || task.deal || task.sub_category">
-                <span class="tag tag-subtask" *ngIf="task.parent_id || task.parent">
-                  <i class="fa-solid fa-code-branch"></i> مهمة فرعية{{ task.parent ? ': ' + (task.parent.title | slice:0:15) : '' }}
+              <div class="tk-tags" *ngIf="task.parent_id || task.parent || task.deal || task.sub_category || (task.subtasks?.length > 0)">
+                <span class="tag tag-subtask" *ngIf="task.parent_id || task.parent" title="مهمة فرعية / جزئية">
+                  <i class="fa-solid fa-code-branch"></i> فرعية{{ task.parent ? ': ' + (task.parent.title | slice:0:15) : '' }}
+                </span>
+                <span class="tag tag-main-task" *ngIf="!task.parent_id && !task.parent && (task.subtasks?.length > 0)" title="مهمة أساسية تتضمن مهام فرعية">
+                  <i class="fa-solid fa-diagram-project"></i> أساسية ({{ task.subtasks.length }})
                 </span>
                 <span class="tag tag-deal" *ngIf="task.deal">
                   <i class="fa-solid fa-handshake"></i> {{ task.deal.title | slice:0:18 }}{{ task.deal.title?.length > 18 ? '...' : '' }}
@@ -400,8 +455,8 @@ import { ConfirmService } from '../../services/confirm.service';
               <!-- Scope preview -->
               <div class="tk-scope" *ngIf="task.scope">{{ task.scope }}</div>
 
-              <!-- Margin chip -->
-              <div class="tk-margin" *ngIf="task.client_price > 0">
+              <!-- Margin chip (Admins only) -->
+              <div class="tk-margin" *ngIf="isAdmin() && task.client_price > 0">
                 <span class="m-item"><i class="fa-solid fa-arrow-up-right-dots"></i> {{ task.client_price | number:'1.0-0' }} EGP</span>
                 <span class="m-sep">→</span>
                 <span class="m-profit">+{{ (task.client_price - task.employee_price) | number:'1.0-0' }} margin</span>
@@ -447,9 +502,9 @@ import { ConfirmService } from '../../services/confirm.service';
                   <div
                     *ngFor="let u of (task.users || []).slice(0,4)"
                     class="av-sm"
-                    [title]="u.name"
-                  >{{ u.name?.charAt(0) }}</div>
-                  <div class="av-sm av-more" *ngIf="(task.users || []).length > 4">
+                    [title]="isClient() ? 'مسؤول في النظام' : u.name"
+                  >{{ isClient() ? 'م' : u.name?.charAt(0) }}</div>
+                  <div class="av-sm av-more" *ngIf="(task.users || []).length > 4 && !isClient()">
                     +{{ (task.users || []).length - 4 }}
                   </div>
                 </div>
@@ -515,8 +570,13 @@ import { ConfirmService } from '../../services/confirm.service';
                 <i class="fa-solid" [class.fa-expand]="!isWideDrawer" [class.fa-compress]="isWideDrawer"></i>
               </button>
 
-              <!-- Delete Task Button -->
-              <button class="icon-action-btn btn-del-task" *ngIf="isAdminOrManager()" (click)="confirmDeleteMainTask(selectedTask)" title="حذف المهمة نهائياً">
+              <!-- Edit Task Button -->
+              <button class="icon-action-btn btn-edit-task" *ngIf="isAdminOrManager()" (click)="openEditTaskModal(selectedTask)" title="تعديل بيانات وأسعار ومواصفات المهمة">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+
+              <!-- Delete Task Button (Super Admin only) -->
+              <button class="icon-action-btn btn-del-task" *ngIf="isSuperAdmin()" (click)="confirmDeleteMainTask(selectedTask)" title="حذف المهمة نهائياً">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
 
@@ -612,7 +672,12 @@ import { ConfirmService } from '../../services/confirm.service';
 
               <!-- Priority Switcher (تعديل الأولوية) -->
               <div class="drawer-card priority-switcher-card" *ngIf="!isClient()">
-                <div class="dc-head"><i class="fa-solid fa-bolt" style="color:var(--amber);"></i> مستوى الأولوية (تعديل الأولوية)</div>
+                <div class="dc-head">
+                  <i class="fa-solid fa-bolt" style="color:var(--amber);"></i> مستوى الأولوية
+                  <span *ngIf="isRegularEmployee()" style="font-size:0.75rem; color:var(--text-3); font-weight:normal; margin-right:6px;">
+                    <i class="fa-solid fa-lock"></i> (مقتصر على مدير القسم أو الإدارة)
+                  </span>
+                </div>
                 <div class="priority-steps-grid">
                   <button
                     type="button"
@@ -620,6 +685,8 @@ import { ConfirmService } from '../../services/confirm.service';
                     class="priority-step-btn"
                     [class.active]="(selectedTask.priority || 'medium') === p.id"
                     [class]="'p-step-' + p.id"
+                    [disabled]="isRegularEmployee()"
+                    [title]="isRegularEmployee() ? 'تعديل الأولوية مقتصر على مدير القسم أو الإدارة' : p.label"
                     (click)="updateTaskPriority(selectedTask, p.id)"
                   >
                     <i class="fa-solid" [ngClass]="getPriorityIcon(p.id)"></i>
@@ -631,12 +698,18 @@ import { ConfirmService } from '../../services/confirm.service';
 
               <!-- Pipeline Progress Switcher (الحالة / مرحلة التنفيذ - بالقمة) -->
               <div class="drawer-card pipeline-card" *ngIf="!isClient()">
-                <div class="dc-head"><i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (تعديل الحالة)</div>
+                <div class="dc-head">
+                  <i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (تعديل الحالة)
+                  <span *ngIf="!canReopenCompletedTasks() && ['done', 'completed', 'approved'].includes(selectedTask.status)" style="font-size:0.75rem; color:#f59e0b; font-weight:normal; margin-right:6px;">
+                    <i class="fa-solid fa-lock"></i> المهمة مكتملة (إعادة الفتح مقصورة على المدير، الأدمن، أو مدير القسم)
+                  </span>
+                </div>
                 <div class="ps-grid">
                   <button
                     *ngFor="let col of columns"
                     class="ps-step"
                     [class.active]="selectedTask.status === col.key"
+                    [disabled]="!canReopenCompletedTasks() && ['done', 'completed', 'approved'].includes(selectedTask.status) && !['done', 'completed', 'approved'].includes(col.key)"
                     (click)="updateTaskStatus(selectedTask, col.key)"
                   >
                     <span class="ps-dot" [style.background]="col.color"></span>
@@ -647,7 +720,7 @@ import { ConfirmService } from '../../services/confirm.service';
               </div>
 
               <!-- Full Pricing Margin Hero Card (للإدارة والأدمن فقط) -->
-              <div class="pricing-hero-card" *ngIf="isAdminOrManager() && (selectedTask.client_price > 0 || selectedTask.employee_price > 0)">
+              <div class="pricing-hero-card" *ngIf="isAdmin() && (selectedTask.client_price > 0 || selectedTask.employee_price > 0)">
                 <div class="ph-stat">
                   <span class="ph-lbl"><i class="fa-solid fa-user-tie"></i> سعر العميل</span>
                   <strong class="ph-val teal">{{ selectedTask.client_price | number:'1.2-2' }} <small>EGP</small></strong>
@@ -686,6 +759,46 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="dc-body scope-text">{{ selectedTask.scope }}</div>
               </div>
 
+              <!-- Deal Plan & Monthly Brief Card (خطة الشهر المعتمدة وبريف التعاقد) -->
+              <div class="drawer-card deal-plan-brief-card" *ngIf="selectedTask.deal && hasDealAttachments(selectedTask.deal)" style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.08)); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:16px;">
+                <div class="dc-head flex align-items-center justify-content-between" style="margin-bottom:10px;">
+                  <span style="color:var(--violet-light, #a5b4fc); font-weight:800; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-folder-open"></i> خطة الشهر المعتمدة وبريف التعاقد (Deal Plan & Brief)
+                  </span>
+                  <span style="font-size:0.75rem; color:var(--text-2); background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:6px;">
+                    صفقة: {{ selectedTask.deal.title }}
+                  </span>
+                </div>
+                <p style="font-size:0.78rem; color:var(--text-2); margin:0 0 12px; line-height:1.5;">
+                  مستندات وخطة العمل المعتمدة للشهر الحالي متاحة للاطلاع لكافة أعضاء الفريق لتوضيح تفاصيل ونطاق التنفيذ:
+                </p>
+
+                <div class="deal-plan-files-list" style="display:flex; flex-direction:column; gap:8px;">
+                  <div *ngFor="let dAtt of getDealAttachmentsList(selectedTask.deal)" class="deal-plan-file-row" style="display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:8px; padding:10px 14px;">
+                    <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                      <i class="fa-solid" [ngClass]="getDealFileIconClass(dAtt)" style="font-size:1.3rem;"></i>
+                      <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                          <strong style="font-size:0.85rem; color:var(--text); word-break:break-all;">{{ dAtt.file_name || dAtt.name || 'ملف التعاقد' }}</strong>
+                          <span [style.background]="getDealCategoryBg(dAtt.category)" style="font-size:0.68rem; font-weight:800; padding:2px 6px; border-radius:4px; color:#fff;">
+                            {{ getDealCategoryLabel(dAtt.category) }}
+                          </span>
+                        </div>
+                        <small style="color:var(--text-3); font-size:0.72rem;">{{ dAtt.human_file_size || formatDealFileSize(dAtt.file_size) }}</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                      <a [href]="getFileUrl(dAtt)" target="_blank" style="background:rgba(99,102,241,0.15); color:var(--violet-light); border:1px solid rgba(99,102,241,0.3); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> معاينة
+                      </a>
+                      <a [href]="getDownloadUrl(dAtt)" download style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); padding:5px 10px; border-radius:6px; font-size:0.75rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                        <i class="fa-solid fa-download"></i> تحميل
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Team Assignment Section -->
               <div class="drawer-card">
                 <div class="dc-head"><i class="fa-solid fa-user-check"></i> {{ isClient() ? 'الموظف المكلف بالمهمة' : 'الفريق المكلف بالمهمة' }}</div>
@@ -706,10 +819,10 @@ import { ConfirmService } from '../../services/confirm.service';
                   <!-- Assigned Team Members Chips (Placed ON BOTTOM) -->
                   <div class="team-chips-grid">
                     <div class="team-chip-card" *ngFor="let u of (selectedTask.users || [])">
-                      <div class="tc-av">{{ u.name?.charAt(0) }}</div>
+                      <div class="tc-av">{{ isClient() ? 'م' : u.name?.charAt(0) }}</div>
                       <div class="tc-info">
-                        <span class="tc-name">{{ u.name }}</span>
-                        <small class="tc-role">{{ isClient() ? 'مسؤول التنفيذ بالمشروع' : (u.email || 'عضو الفريق') }}</small>
+                        <span class="tc-name">{{ isClient() ? 'مسؤول في النظام' : u.name }}</span>
+                        <small class="tc-role">{{ isClient() ? 'مسؤول في النظام' : (u.email || 'عضو الفريق') }}</small>
                       </div>
                       <button class="tc-remove-btn" *ngIf="!isClient() && !isRegularEmployee()" (click)="removeUserFromTask(u.id)" title="إزالة من المهمة">
                         <i class="fa-solid fa-xmark"></i>
@@ -776,13 +889,19 @@ import { ConfirmService } from '../../services/confirm.service';
                   </div>
                 </div>
 
-                <div class="upload-zone-modern" *ngIf="!isClient()" (click)="fileInput.click()">
-                  <input type="file" #fileInput (change)="onFileSelected($event)" style="display:none" />
-                  <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                  <div class="uz-text">
-                    <strong>اضغط لرفع ملف أو سحب وإسقاط المستند هنا</strong>
-                    <small>يدعم الصور والملفات المرفقة (PNG, JPG, PDF)</small>
-                  </div>
+                <!-- Dual Upload Buttons: Images and Word/PDF Documents -->
+                <div class="upload-dual-actions" *ngIf="!isClient()" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                  <button type="button" class="btn-att-dual" (click)="imgFileInput.click()" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:8px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:#818cf8; cursor:pointer; font-weight:700; font-size:0.84rem; font-family:inherit; transition:all 0.2s ease;">
+                    <i class="fa-solid fa-image" style="font-size:1.15rem; color:#6366f1;"></i>
+                    <span>رفع صورة / مخرج</span>
+                  </button>
+                  <input type="file" #imgFileInput accept="image/*" (change)="onFileSelected($event)" style="display:none" />
+
+                  <button type="button" class="btn-att-dual" (click)="docFileInput.click()" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border-radius:8px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; cursor:pointer; font-weight:700; font-size:0.84rem; font-family:inherit; transition:all 0.2s ease;">
+                    <i class="fa-solid fa-file-lines" style="font-size:1.15rem; color:#38bdf8;"></i>
+                    <span>رفع مستند Word أو PDF</span>
+                  </button>
+                  <input type="file" #docFileInput accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onFileSelected($event)" style="display:none" />
                 </div>
                 
                 <!-- Client Visibility Checkbox for Upload -->
@@ -821,11 +940,11 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="dc-head"><i class="fa-solid fa-comments"></i> التعليقات والملاحظات</div>
                 <div class="notes-timeline">
                   <div class="note-bubble" *ngFor="let note of getTaskNotesForUser(selectedTask)">
-                    <div class="note-av">{{ note.user?.name?.charAt(0) || 'U' }}</div>
+                    <div class="note-av">{{ getNoteAuthorAvatar(note) }}</div>
                     <div class="note-content">
                       <div class="note-meta" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
                         <div>
-                          <strong class="note-author">{{ note.user?.name || 'مستخدم' }}</strong>
+                          <strong class="note-author">{{ getNoteAuthorName(note) }}</strong>
                           <span class="note-time" style="margin-right:8px;">{{ note.created_at | date:'short' }}</span>
                         </div>
                         <!-- Note Visibility Toggle Badge -->
@@ -922,7 +1041,7 @@ import { ConfirmService } from '../../services/confirm.service';
                       <button class="st-open-btn" (click)="selectSubtaskInDrawer(st)" title="عرض التفاصيل في نفس اللوحة">
                         <i class="fa-solid fa-chevron-left"></i>
                       </button>
-                      <button class="st-del-btn" (click)="deleteSubtask(selectedTask, st)" title="حذف المهمة الفرعية">
+                      <button class="st-del-btn" *ngIf="isSuperAdmin()" (click)="deleteSubtask(selectedTask, st)" title="حذف المهمة الفرعية">
                         <i class="fa-solid fa-trash-can"></i>
                       </button>
                     </div>
@@ -962,7 +1081,7 @@ import { ConfirmService } from '../../services/confirm.service';
                     <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-user"></i> الموظفون المكلفون:</div>
                     <div class="st-users-chips" *ngIf="(selectedSubtask.users || []).length">
                       <span class="st-user-tag" *ngFor="let u of selectedSubtask.users" style="padding:4px 8px; font-size:0.75rem;">
-                        <i class="fa-solid fa-user"></i> {{ u.name }}
+                        <i class="fa-solid fa-user"></i> {{ isClient() ? 'مسؤول في النظام' : u.name }}
                       </span>
                     </div>
                     <div class="notes-empty" *ngIf="!(selectedSubtask.users || []).length" style="padding:2px 0;">
@@ -987,13 +1106,17 @@ import { ConfirmService } from '../../services/confirm.service';
                       </div>
                     </div>
 
-                    <!-- Upload attachment to subtask -->
-                    <div class="upload-zone-modern" (click)="drawerSubtaskFileInput.click()" style="margin-top:8px; padding:10px;">
-                      <input type="file" #drawerSubtaskFileInput (change)="onSubtaskDetailFileSelected($event)" style="display:none" />
-                      <div class="uz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                      <div class="uz-text">
-                        <strong>اضغط لرفع صورة أو مستند لهذه المهمة الفرعية</strong>
-                      </div>
+                    <!-- Dual Upload Buttons for Subtask -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+                      <button type="button" (click)="drawerSubtaskImgInput.click()" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:8px 10px; border-radius:6px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:#818cf8; cursor:pointer; font-weight:700; font-size:0.78rem; font-family:inherit;">
+                        <i class="fa-solid fa-image"></i> رفع صورة
+                      </button>
+                      <input type="file" #drawerSubtaskImgInput accept="image/*" (change)="onSubtaskDetailFileSelected($event)" style="display:none" />
+
+                      <button type="button" (click)="drawerSubtaskDocInput.click()" style="display:flex; align-items:center; justify-content:center; gap:6px; padding:8px 10px; border-radius:6px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; cursor:pointer; font-weight:700; font-size:0.78rem; font-family:inherit;">
+                        <i class="fa-solid fa-file-lines"></i> مستند Word/PDF
+                      </button>
+                      <input type="file" #drawerSubtaskDocInput accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" (change)="onSubtaskDetailFileSelected($event)" style="display:none" />
                     </div>
                   </div>
                 </div>
@@ -1165,10 +1288,10 @@ import { ConfirmService } from '../../services/confirm.service';
             <div class="dc-head"><i class="fa-solid fa-user-plus"></i> الموظفون المكلفون بالمهمة الفرعية</div>
             <div class="team-chips-grid" style="display:flex; flex-wrap:wrap; gap:8px;">
               <div class="team-chip-card" *ngFor="let u of (selectedSubtask.users || [])">
-                <div class="tc-av">{{ u.name?.charAt(0) }}</div>
+                <div class="tc-av">{{ isClient() ? 'م' : u.name?.charAt(0) }}</div>
                 <div class="tc-info">
-                  <span class="tc-name">{{ u.name }}</span>
-                  <small class="tc-role">{{ u.email || 'عضو الفريق' }}</small>
+                  <span class="tc-name">{{ isClient() ? 'مسؤول في النظام' : u.name }}</span>
+                  <small class="tc-role">{{ isClient() ? 'مسؤول في النظام' : (u.email || 'عضو الفريق') }}</small>
                 </div>
               </div>
               <div class="notes-empty" *ngIf="!(selectedSubtask.users || []).length" style="padding:4px 0;">
@@ -1322,11 +1445,11 @@ import { ConfirmService } from '../../services/confirm.service';
           <div class="drawer-hd">
             <div class="drawer-hd-left">
               <div class="drawer-task-av">
-                <i class="fa-solid fa-plus"></i>
+                <i class="fa-solid" [class.fa-plus]="!isEditingTask" [class.fa-pen-to-square]="isEditingTask"></i>
               </div>
               <div class="drawer-hd-text">
-                <div class="drawer-title">إنشاء مهمة جديدة</div>
-                <div class="drawer-meta">إضافة وتسعير وتكليف مهمة في النظام</div>
+                <div class="drawer-title">{{ isEditingTask ? 'تعديل بيانات وأسعار المهمة' : 'إنشاء مهمة جديدة' }}</div>
+                <div class="drawer-meta">{{ isEditingTask ? 'تعديل الأسعار والمواصفات وربطها بالصفقات والحسابات' : 'إضافة وتسعير وتكليف مهمة في النظام' }}</div>
               </div>
             </div>
             <button type="button" class="icon-action-btn" (click)="showCreateModal = false">
@@ -1389,17 +1512,17 @@ import { ConfirmService } from '../../services/confirm.service';
                   ></app-prime-picker-select>
                 </div>
 
-                <div class="fg" *ngIf="!isRegularEmployee()">
+                <div class="fg" *ngIf="isAdmin()">
                   <label>سعر العميل / قيمة المهمة (ج.م) (اختياري)</label>
                   <input type="number" pInputText formControlName="client_price" (input)="computeMargin()" placeholder="0 (اختياري)..." />
                 </div>
 
-                <div class="fg" *ngIf="!isRegularEmployee()">
+                <div class="fg" *ngIf="isAdmin()">
                   <label>تكلفة الموظف (ج.م) (اختياري)</label>
                   <input type="number" pInputText formControlName="employee_price" (input)="computeMargin()" placeholder="0 (اختياري)..." />
                 </div>
 
-                <div class="fg full margin-preview" *ngIf="!isRegularEmployee() && computedMarginVal > 0">
+                <div class="fg full margin-preview" *ngIf="isAdmin() && computedMarginVal > 0">
                   <i class="fa-solid fa-chart-line"></i>
                   هامش أرباح الشركة: <strong>+{{ computedMarginVal | number:'1.2-2' }} ج.م</strong>
                 </div>
@@ -1492,7 +1615,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 <button type="button" class="btn-cancel" (click)="showCreateModal = false">إلغاء</button>
                 <button type="submit" class="btn-save" [disabled]="taskForm.invalid || loading">
                   <i class="fa-solid fa-floppy-disk"></i>
-                  {{ loading ? 'جاري الحفظ...' : 'إنشاء المهمة' }}
+                  {{ loading ? 'جاري الحفظ...' : (isEditingTask ? 'حفظ تعديلات المهمة' : 'إنشاء المهمة') }}
                 </button>
               </div>
             </form>
@@ -1538,8 +1661,21 @@ import { ConfirmService } from '../../services/confirm.service';
 
       <!-- ── LIGHTBOX ────────────────────────────────────────────── -->
       <div class="lightbox" *ngIf="expandedImageUrl" (click)="expandedImageUrl = null">
-        <img [src]="expandedImageUrl" (click)="$event.stopPropagation()" alt="معاينة المرفق" />
-        <button class="lb-close" (click)="expandedImageUrl = null"><i class="fa-solid fa-xmark"></i></button>
+        <div class="lb-modal-wrapper" (click)="$event.stopPropagation()">
+          <img [src]="expandedImageUrl" alt="معاينة المرفق" (error)="handleImageError($event)" />
+          <div class="lb-toolbar-bottom">
+            <a [href]="getDownloadUrl(expandedImageUrl)" target="_blank" download class="btn-lb-action btn-lb-download" title="تحميل الصورة بالجودة الأصلية الكاملة">
+              <i class="fa-solid fa-download"></i> تحميل بالجودة الأصلية
+            </a>
+            <a [href]="expandedImageUrl" target="_blank" class="btn-lb-action" title="فتح الصورة كاملة في نافذة جديدة">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> فتح بنافذة جديدة
+            </a>
+            <button type="button" class="btn-lb-action btn-lb-close-txt" (click)="expandedImageUrl = null">
+              <i class="fa-solid fa-xmark"></i> إغلاق
+            </button>
+          </div>
+        </div>
+        <button class="lb-close" (click)="expandedImageUrl = null" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
     </div>
@@ -1605,6 +1741,69 @@ import { ConfirmService } from '../../services/confirm.service';
       padding: 4px;
       font-size: 0.85rem;
     }
+    /* TICKET TYPE SEGMENTED CONTROL */
+    .ticket-type-segmented-control {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+      gap: 4px;
+    }
+    .type-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--text-2, rgba(255, 255, 255, 0.7));
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+    }
+    .type-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .type-tab-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: #fff !important;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+    }
+    .type-tab-btn .tab-count {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.15);
+      color: inherit;
+    }
+    .type-tab-btn.active .tab-count {
+      background: rgba(255, 255, 255, 0.28);
+      color: #fff;
+    }
+    :host-context(body.light-theme) .ticket-type-segmented-control {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    :host-context(body.light-theme) .type-tab-btn {
+      color: #475569;
+    }
+    :host-context(body.light-theme) .type-tab-btn:hover {
+      color: #0f172a;
+      background: #e2e8f0;
+    }
+    :host-context(body.light-theme) .type-tab-btn.active {
+      color: #fff !important;
+    }
+
     .toolbar-actions-group {
       display: flex;
       align-items: center;
@@ -2482,12 +2681,25 @@ import { ConfirmService } from '../../services/confirm.service';
       flex: 1;
       min-height: 0;
       align-items: stretch;
-      padding-bottom: 4px;
+      padding-bottom: 12px;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(99, 102, 241, 0.45) rgba(255, 255, 255, 0.04);
     }
-    .kanban-board::-webkit-scrollbar { display: none; } /* Hide bottom scrollbar */
+    .kanban-board::-webkit-scrollbar {
+      height: 9px;
+    }
+    .kanban-board::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+    }
+    .kanban-board::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      border-radius: 8px;
+    }
+    .kanban-board::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(90deg, #818cf8, #0ea5e9);
+    }
 
     /* ── COLUMN ─────────────────────────────────────────────────── */
     /* ── COLUMN ─────────────────────────────────────────────────── */
@@ -2538,10 +2750,10 @@ import { ConfirmService } from '../../services/confirm.service';
       flex-direction: column;
       gap: 12px;
     }
-    .col-body::-webkit-scrollbar { width: 5px; }
-    .col-body::-webkit-scrollbar-track { background: transparent; }
-    .col-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.35); border-radius: 8px; }
-    .col-body::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.6); }
+    .col-body::-webkit-scrollbar { width: 7px; }
+    .col-body::-webkit-scrollbar-track { background: rgba(10, 11, 28, 0.4); border-radius: 8px; }
+    .col-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(99,102,241,0.65), rgba(6,182,212,0.65)); border-radius: 8px; border: 1px solid rgba(10,11,28,0.5); }
+    .col-body::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #22d3ee); box-shadow: 0 0 8px rgba(99,102,241,0.5); }
 
     .col-empty {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -2645,6 +2857,16 @@ import { ConfirmService } from '../../services/confirm.service';
       background: rgba(147, 51, 234, 0.1) !important;
       color: #7e22ce !important;
       border-color: rgba(147, 51, 234, 0.25) !important;
+    }
+    .tag-main-task {
+      background: rgba(14, 165, 233, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+    :host-context(body.light-theme) .tag-main-task {
+      background: #e0f2fe !important;
+      color: #0284c7 !important;
+      border-color: #bae6fd !important;
     }
     .tag-deal { background: var(--violet-soft); color: var(--violet-light); border: 1px solid rgba(99,102,241,0.2); }
     .tag-cat  { background: var(--teal-soft);   color: var(--teal-light);   border: 1px solid rgba(6,182,212,0.2); }
@@ -3084,8 +3306,10 @@ import { ConfirmService } from '../../services/confirm.service';
       flex: 1; overflow-y: auto; padding: 22px 26px;
       display: flex; flex-direction: column; gap: 18px;
     }
-    .drawer-body::-webkit-scrollbar { width: 3px; }
-    .drawer-body::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 4px; }
+    .drawer-body::-webkit-scrollbar { width: 8px; }
+    .drawer-body::-webkit-scrollbar-track { background: rgba(10, 11, 28, 0.4); border-radius: 8px; }
+    .drawer-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(99, 102, 241, 0.75), rgba(79, 70, 229, 0.9)); border-radius: 8px; border: 1px solid rgba(10, 11, 28, 0.5); }
+    .drawer-body::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #6366f1); box-shadow: 0 0 8px rgba(99, 102, 241, 0.5); }
 
     /* Pricing Hero Card */
     .pricing-hero-card {
@@ -3891,10 +4115,37 @@ import { ConfirmService } from '../../services/confirm.service';
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
     }
-    .lightbox img {
-      max-width: 92vw; max-height: 90vh;
-      border-radius: 8px;
+    .lb-modal-wrapper {
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      max-width: 94vw; max-height: 94vh;
+    }
+    .lb-modal-wrapper img {
+      max-width: 90vw; max-height: 80vh;
+      border-radius: 8px; object-fit: contain;
       box-shadow: 0 0 80px rgba(0,0,0,0.8);
+    }
+    .lb-toolbar-bottom {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+    }
+    .btn-lb-action {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff; text-decoration: none; padding: 8px 18px;
+      border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s ease; font-family: inherit;
+    }
+    .btn-lb-action:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-1px);
+    }
+    .btn-lb-download {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #10b981;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    }
+    .btn-lb-download:hover {
+      background: linear-gradient(135deg, #34d399, #10b981);
     }
     .lb-close {
       position: absolute; top: 20px; right: 20px;
@@ -3991,7 +4242,28 @@ export class TasksBoardComponent implements OnInit {
   isAdminOrManager(): boolean {
     if (!this.currentUser) return true;
     const role = this.currentUser.role || '';
-    return ['super_admin', 'admin', 'department_manager'].includes(role);
+    return ['super_admin', 'admin', 'department_manager', 'manager'].includes(role);
+  }
+
+  canReopenCompletedTasks(): boolean {
+    if (!this.currentUser) return false;
+    const role = (this.currentUser.role || '').toLowerCase().trim();
+    const allowed = [
+      'super_admin', 'super admin',
+      'admin',
+      'manager', 'مدير', 'مدير النظام',
+      'department_manager', 'department manager', 'مدير قسم', 'مدير القسم'
+    ];
+    if (allowed.includes(role)) return true;
+    if (this.currentUser.roles && Array.isArray(this.currentUser.roles)) {
+      if (this.currentUser.roles.some((r: any) => {
+        const slug = (r.slug || r.name || '').toLowerCase().trim();
+        return allowed.includes(slug);
+      })) {
+        return true;
+      }
+    }
+    return false;
   }
 
   isRegularEmployee(): boolean {
@@ -4177,9 +4449,6 @@ export class TasksBoardComponent implements OnInit {
         newSt.parent = { id: this.selectedTask.id, title: this.selectedTask.title };
         if (!this.selectedTask.subtasks) this.selectedTask.subtasks = [];
         this.selectedTask.subtasks.push(newSt);
-        if (!this.tasks.some(t => t.id === newSt.id)) {
-          this.tasks.push(newSt);
-        }
         this.showSubtaskModal = false;
         this.showNewSubtaskForm = false;
         this.loadTaskActivities(this.selectedTask.id);
@@ -4200,9 +4469,6 @@ export class TasksBoardComponent implements OnInit {
         newSt.parent = { id: this.selectedTask.id, title: this.selectedTask.title };
         if (!this.selectedTask.subtasks) this.selectedTask.subtasks = [];
         this.selectedTask.subtasks.push(newSt);
-        if (!this.tasks.some(t => t.id === newSt.id)) {
-          this.tasks.push(newSt);
-        }
         this.newSubtaskTitle = '';
         this.loadTaskActivities(this.selectedTask.id);
       }
@@ -4217,6 +4483,11 @@ export class TasksBoardComponent implements OnInit {
   }
 
   deleteSubtask(task: any, subtask: any): void {
+    if (!this.isSuperAdmin()) {
+      this.toastService.error('غير مصرح لك بحذف المهام الفرعية. الحذف مقتصر حصرياً على السوبر أدمن');
+      return;
+    }
+
     this.apiService.deleteSubtask(subtask.id).subscribe(() => {
       if (task.subtasks) {
         task.subtasks = task.subtasks.filter((s: any) => s.id !== subtask.id);
@@ -4285,6 +4556,9 @@ export class TasksBoardComponent implements OnInit {
 
   getTasksForColumn(colKey: string) {
     let list = (this.tasks || []).filter(t => {
+      // Never display subtasks as standalone cards on the main board; they belong strictly inside their parent task
+      if (t.parent_id || t.parent) return false;
+
       if (colKey === 'done') {
         return t.status === 'done' || t.status === 'approved' || t.status === 'completed';
       }
@@ -4378,6 +4652,13 @@ export class TasksBoardComponent implements OnInit {
       list = list.filter((t: any) => t.priority === this.selectedPriorityFilter);
     }
 
+    // Filter by ticket type: main (parent tasks), partials (subtasks), or all
+    if (this.taskTypeFilter === 'main') {
+      list = list.filter((t: any) => !t.parent_id && !t.parent);
+    } else if (this.taskTypeFilter === 'partials') {
+      list = list.filter((t: any) => !!t.parent_id || !!t.parent);
+    }
+
     const q = (this.searchQuery || this.clientSearchQuery || '').trim().toLowerCase();
     if (q) {
       list = list.filter((t: any) => {
@@ -4406,6 +4687,29 @@ export class TasksBoardComponent implements OnInit {
   selectedDepartmentFilter: string = 'all';
   selectedUserFilter: string = 'all';
   selectedPriorityFilter: string = 'all';
+  taskTypeFilter: 'all' | 'main' | 'partials' = 'main';
+
+  taskTypeOptions = [
+    { label: 'جميع التذاكر (الأساسية والفرعية)', value: 'all' },
+    { label: 'الأساسية فقط (Main Tasks)', value: 'main' },
+    { label: 'الفرعية فقط (Partials / Subtasks)', value: 'partials' }
+  ];
+
+  setTaskTypeFilter(type: 'all' | 'main' | 'partials') {
+    this.taskTypeFilter = type;
+  }
+
+  getTotalTasksRawCount(): number {
+    return (this.tasks || []).length;
+  }
+
+  getMainTasksCount(): number {
+    return (this.tasks || []).filter((t: any) => !t.parent_id && !t.parent).length;
+  }
+
+  getPartialTasksCount(): number {
+    return (this.tasks || []).filter((t: any) => !!t.parent_id || !!t.parent).length;
+  }
 
   get dealOptions() {
     const list = [{ label: 'كل الصفقات والمشاريع', value: 'all' }];
@@ -4456,6 +4760,7 @@ export class TasksBoardComponent implements OnInit {
     if (this.selectedDepartmentFilter && this.selectedDepartmentFilter !== 'all') count++;
     if (this.selectedUserFilter && this.selectedUserFilter !== 'all') count++;
     if (this.selectedPriorityFilter && this.selectedPriorityFilter !== 'all') count++;
+    if (this.taskTypeFilter && this.taskTypeFilter !== 'all') count++;
     if (this.searchQuery && this.searchQuery.trim()) count++;
     return count;
   }
@@ -4479,6 +4784,7 @@ export class TasksBoardComponent implements OnInit {
     this.selectedDepartmentFilter = 'all';
     this.selectedUserFilter = 'all';
     this.selectedPriorityFilter = 'all';
+    this.taskTypeFilter = 'all';
     this.searchQuery = '';
     this.clientSearchQuery = '';
   }
@@ -4511,7 +4817,8 @@ export class TasksBoardComponent implements OnInit {
 
   getFilteredClientTasks(): any[] {
     if (!this.tasks) return [];
-    let list = this.tasks;
+    // Strictly main tasks only; subtasks belong inside their parent main task
+    let list = this.tasks.filter((t: any) => !t.parent_id && !t.parent);
 
     if (this.selectedDealFilter !== 'all') {
       const dealId = Number(this.selectedDealFilter);
@@ -4521,6 +4828,13 @@ export class TasksBoardComponent implements OnInit {
     if (this.selectedDepartmentFilter !== 'all') {
       const deptId = Number(this.selectedDepartmentFilter);
       list = list.filter((t: any) => Number(t.department_id) === deptId || Number(t.department?.id) === deptId);
+    }
+
+    // Filter by ticket type: main / partials / all
+    if (this.taskTypeFilter === 'main') {
+      list = list.filter((t: any) => !t.parent_id && !t.parent);
+    } else if (this.taskTypeFilter === 'partials') {
+      list = list.filter((t: any) => !!t.parent_id || !!t.parent);
     }
 
     if (this.clientStatusFilter === 'pending') {
@@ -4629,7 +4943,12 @@ export class TasksBoardComponent implements OnInit {
     this.computedMarginVal = Math.max(0, cp - ep);
   }
 
+  isEditingTask = false;
+  editingTaskId: number | null = null;
+
   openCreateModal(): void {
+    this.isEditingTask = false;
+    this.editingTaskId = null;
     this.taskForm.reset({
       status: 'new',
       priority: 'medium',
@@ -4640,6 +4959,36 @@ export class TasksBoardComponent implements OnInit {
     });
     this.createTaskFiles = [];
     this.computedMarginVal = 0;
+    this.showCreateModal = true;
+  }
+
+  openEditTaskModal(task: any): void {
+    if (!task) return;
+    this.isEditingTask = true;
+    this.editingTaskId = task.id;
+    this.createTaskFiles = [];
+
+    const cp = Number(task.client_price || 0);
+    const ep = Number(task.employee_price || 0);
+    this.computedMarginVal = Math.max(0, cp - ep);
+
+    this.taskForm.patchValue({
+      title: task.title,
+      deal_id: task.deal_id || task.deal?.id || null,
+      is_standalone: Boolean(task.is_standalone || !task.deal_id),
+      assigned_to: task.users?.[0]?.id || null,
+      department_id: task.department_id || task.department?.id || null,
+      client_price: cp,
+      employee_price: ep,
+      shooting_date: task.shooting_date || '',
+      delivery_date: task.delivery_date || '',
+      dates_not_specified: Boolean(task.dates_not_specified),
+      due_date: task.due_date || '',
+      status: task.status || 'new',
+      priority: task.priority || 'medium',
+      scope: task.scope || task.description || ''
+    });
+
     this.showCreateModal = true;
   }
 
@@ -4690,10 +5039,32 @@ export class TasksBoardComponent implements OnInit {
       payload = taskVal;
     }
 
+    if (this.isEditingTask && this.editingTaskId) {
+      this.apiService.updateTask(this.editingTaskId, payload).subscribe({
+        next: (res) => {
+          this.loading = false;
+          this.toastService.success('تم تعديل بيانات وأسعار المهمة وتحديث كافة الصفقات والحسابات المرتبطة بنجاح', 'تم الحفظ والتحديث');
+          this.showCreateModal = false;
+          this.isEditingTask = false;
+          this.editingTaskId = null;
+          this.createTaskFiles = [];
+          if (res && res.data && this.selectedTask && this.selectedTask.id === res.data.id) {
+            this.selectedTask = { ...this.selectedTask, ...res.data };
+          }
+          this.loadData();
+        },
+        error: (err) => {
+          this.loading = false;
+          this.toastService.error(err.error?.message || 'تعذر حفظ تعديلات المهمة');
+        }
+      });
+      return;
+    }
+
     this.apiService.createTask(payload).subscribe({
       next: () => {
         this.loading = false;
-        this.toastService.success('تم إنشاء المهمة الجديدة بنجاح', 'تمت العملية');
+        this.toastService.success('تم إنشاء المهمة الجديدة وتحديث سجل الصفقة بنجاح', 'تمت العملية');
         this.showCreateModal = false;
         this.createTaskFiles = [];
         this.loadData();
@@ -4753,6 +5124,11 @@ export class TasksBoardComponent implements OnInit {
 
   confirmDeleteMainTask(task: any): void {
     if (!task) return;
+    if (!this.isSuperAdmin()) {
+      this.toastService.error('غير مصرح لك بحذف المهام. الحذف مقتصر حصرياً على السوبر أدمن');
+      return;
+    }
+
     this.confirmService.confirm({
       title: 'تأكيد حذف المهمة',
       message: `هل أنت متأكد من رغبتك في حذف المهمة "${task.title}" ومرفقاتها وبياناتها نهائياً؟`,
@@ -4885,9 +5261,16 @@ export class TasksBoardComponent implements OnInit {
 
     this.apiService.updateTask(task.id, payload).subscribe({
       next: () => {},
-      error: () => {
+      error: (err: any) => {
+        if (err?.status === 403) {
+          this.toastService.error(err?.error?.message || 'المهمة مكتملة، ولا يمكن إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.');
+          if (rollbackCallback) rollbackCallback();
+          return;
+        }
         this.apiService.updateTaskStatus(task.id, newStatus).subscribe({
-          error: () => {
+          next: () => {},
+          error: (err2: any) => {
+            this.toastService.error(err2?.error?.message || err?.error?.message || 'تعذر تغيير حالة المهمة');
             if (rollbackCallback) rollbackCallback();
           }
         });
@@ -4897,12 +5280,21 @@ export class TasksBoardComponent implements OnInit {
 
   updateTaskStatus(task: any, newStatus: string): void {
     const oldStatus = task.status;
+    const completedStatuses = ['done', 'completed', 'approved'];
+    if (!this.canReopenCompletedTasks() && completedStatuses.includes(oldStatus) && !completedStatuses.includes(newStatus)) {
+      this.toastService.error('المهمة مكتملة، ولا يمكن إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.');
+      return;
+    }
     task.status = newStatus;
     this.persistStatusUpdate(task, newStatus, () => task.status = oldStatus);
   }
 
   updateTaskPriority(task: any, newPriority: string): void {
     if (!task || task.priority === newPriority) return;
+    if (this.isRegularEmployee()) {
+      this.toastService.error('تعديل أولوية المهمة مقتصر على مدير القسم أو الإدارة العليا فقط.');
+      return;
+    }
     const oldPriority = task.priority;
     task.priority = newPriority;
 
@@ -4947,6 +5339,12 @@ export class TasksBoardComponent implements OnInit {
     return this.apiService.getStorageUrl(raw);
   }
 
+  getDownloadUrl(urlOrAtt: any): string {
+    const url = typeof urlOrAtt === 'string' ? urlOrAtt : this.getFileUrl(urlOrAtt);
+    if (!url) return '';
+    return url.includes('?') ? `${url}&download=1` : `${url}?download=1`;
+  }
+
   handleImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target) {
@@ -4958,6 +5356,51 @@ export class TasksBoardComponent implements OnInit {
   getImageAttachments(task: any) {
     if (!task || !task.attachments) return [];
     return task.attachments.filter((a: any) => this.isImage(a));
+  }
+
+  hasDealAttachments(deal: any): boolean {
+    if (!deal) return false;
+    return Boolean(deal.attachments && deal.attachments.length > 0);
+  }
+
+  getDealAttachmentsList(deal: any): any[] {
+    if (!deal || !deal.attachments) return [];
+    return deal.attachments;
+  }
+
+  getDealFileIconClass(att: any): string {
+    const type = (att?.file_type || '').toLowerCase();
+    const name = (att?.file_name || att?.name || '').toLowerCase();
+    if (type.includes('pdf') || name.endsWith('.pdf')) return 'fa-file-pdf text-rose';
+    if (type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx')) return 'fa-file-word text-blue';
+    if (type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return 'fa-file-excel text-emerald';
+    return 'fa-file-lines text-violet';
+  }
+
+  getDealCategoryLabel(cat: string): string {
+    switch (cat) {
+      case 'plan': return 'خطة الشهر المعتمدة (PDF)';
+      case 'brief': return 'بريف ومواصفات العمل';
+      case 'contract': return 'العقد الرسمي';
+      default: return 'مستند إضافي';
+    }
+  }
+
+  getDealCategoryBg(cat: string): string {
+    switch (cat) {
+      case 'plan': return '#ef4444';
+      case 'brief': return '#3b82f6';
+      case 'contract': return '#10b981';
+      default: return '#6366f1';
+    }
+  }
+
+  formatDealFileSize(bytes: any): string {
+    if (!bytes || isNaN(bytes)) return '';
+    const b = Number(bytes);
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
   }
 
   expandImage(attOrUrl: any, event?: Event): void {
@@ -4997,6 +5440,22 @@ export class TasksBoardComponent implements OnInit {
     note.visible_to_client = !(note.visible_to_client !== false);
   }
 
+  getNoteAuthorName(note: any): string {
+    if (!note || !note.user) return this.isClient() ? 'مسؤول' : 'مستخدم';
+    if (this.isClient()) {
+      return note.user.role === 'client' ? 'العميل' : 'مسؤول';
+    }
+    return note.user.role === 'client' ? 'العميل' : (note.user.name || 'موظف');
+  }
+
+  getNoteAuthorAvatar(note: any): string {
+    if (!note || !note.user) return this.isClient() ? 'م' : 'U';
+    if (this.isClient()) {
+      return note.user.role === 'client' ? 'ع' : 'م';
+    }
+    return note.user.role === 'client' ? 'ع' : (note.user.name?.charAt(0) || 'U');
+  }
+
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file && this.selectedTask) {
@@ -5031,6 +5490,12 @@ export class TasksBoardComponent implements OnInit {
 
   /* ── DRAG & DROP ──────────────────────────────────────────── */
   onDragStart(event: DragEvent, task: any): void {
+    const completedStatuses = ['done', 'completed', 'approved'];
+    if (!this.canReopenCompletedTasks() && completedStatuses.includes(task.status)) {
+      event.preventDefault();
+      this.toastService.error('المهمة مكتملة ولا يمكن تحريكها أو إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.');
+      return;
+    }
     this.draggingTask = task;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -5068,7 +5533,28 @@ export class TasksBoardComponent implements OnInit {
     if (task.status === targetColKey) return;
 
     const oldStatus = task.status;
+    const completedStatuses = ['done', 'completed', 'approved'];
+    if (!this.canReopenCompletedTasks() && completedStatuses.includes(oldStatus) && !completedStatuses.includes(targetColKey)) {
+      this.toastService.error('المهمة مكتملة، ولا يمكن إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.');
+      return;
+    }
+
     task.status = targetColKey;
     this.persistStatusUpdate(task, targetColKey, () => task.status = oldStatus);
+  }
+
+  onBoardWheel(event: WheelEvent, board: HTMLElement): void {
+    const target = event.target as HTMLElement;
+    if (target && target.closest('.col-body')) {
+      const colBody = target.closest('.col-body') as HTMLElement;
+      const canScrollVertically = (event.deltaY > 0 && colBody.scrollTop + colBody.clientHeight < colBody.scrollHeight) ||
+                                  (event.deltaY < 0 && colBody.scrollTop > 0);
+      if (canScrollVertically) {
+        return;
+      }
+    }
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      board.scrollLeft += event.deltaY;
+    }
   }
 }

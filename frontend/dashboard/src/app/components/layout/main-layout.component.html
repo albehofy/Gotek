@@ -47,12 +47,12 @@
           <span class="sb-text">نظرة عامة على CRM</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager()" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
+        <a class="sb-item" *ngIf="isAdmin()" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
           <span class="sb-icon"><i class="fa-solid fa-users"></i></span>
           <span class="sb-text">العملاء</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin() || isDepartmentManager()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
+        <a class="sb-item" *ngIf="isAdmin()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
           <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span>
           <span class="sb-text">الصفقات والعقود</span>
         </a>
@@ -72,9 +72,9 @@
           <span class="sb-text">المالية والخزينة</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin()" routerLink="/roles" routerLinkActive="active" data-tooltip="الأدوار والصلاحيات">
-          <span class="sb-icon"><i class="fa-solid fa-shield-halved"></i></span>
-          <span class="sb-text">الأدوار والصلاحيات</span>
+        <a class="sb-item" *ngIf="isAdmin()" routerLink="/roles" routerLinkActive="active" data-tooltip="المستخدمون والأدوار">
+          <span class="sb-icon"><i class="fa-solid fa-users-gear"></i></span>
+          <span class="sb-text">المستخدمون والأدوار</span>
         </a>
 
         <!-- Console Section -->
