@@ -81,6 +81,15 @@ class UserController extends Controller
             $query->where('is_hold', false);
         }
 
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        // If for_assignment is requested and current user is a department manager, restrict strictly to their department
+        if ($request->boolean('for_assignment') && $user && in_array(strtolower($user->role), ['department_manager', 'department manager']) && $user->department_id) {
+            $query->where('department_id', $user->department_id);
+        }
+
         if ($request->filled('is_hold')) {
             $query->where('is_hold', $request->boolean('is_hold'));
         }

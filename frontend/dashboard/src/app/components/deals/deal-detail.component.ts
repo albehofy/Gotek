@@ -777,9 +777,13 @@ export class DealDetailComponent implements OnInit {
       next: () => {
         this.submitting = false;
         this.showPaymentModal = false;
+        this.toastService.success('تم تسجيل الدفعة المالية وتحديث رصيد الصفقة بنجاح', 'تمت العملية');
         this.refreshData();
       },
-      error: () => this.submitting = false
+      error: (err) => {
+        this.submitting = false;
+        this.toastService.error(err.error?.message || 'تعذر تسجيل الدفعة المالية');
+      }
     });
   }
 

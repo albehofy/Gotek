@@ -962,7 +962,7 @@ import { ConfirmService } from '../../services/confirm.service';
                           <span>{{ note.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي للفريق' }}</span>
                         </span>
                       </div>
-                      <div class="note-text" style="margin-top:4px;">{{ note.note }}</div>
+                      <div class="note-text" style="margin-top:4px;" [innerHTML]="formatNoteText(note.note)"></div>
                     </div>
                   </div>
                   <div class="notes-empty" *ngIf="!getTaskNotesForUser(selectedTask).length">
@@ -970,18 +970,72 @@ import { ConfirmService } from '../../services/confirm.service';
                   </div>
                 </div>
                 
-                <div class="add-note-box" style="display:flex; flex-direction:column; gap:10px;">
-                  <textarea
-                    [(ngModel)]="newNoteText"
-                    placeholder="اكتب تعليقاً أو ملاحظة..."
-                    rows="2"
-                    dir="rtl"
-                  ></textarea>
-                  <div style="display:flex; align-items:center; justify-content:space-between;">
-                    <label style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-2); cursor:pointer;" *ngIf="!isClient()">
-                      <input type="checkbox" [(ngModel)]="newNoteVisibleToClient" style="accent-color:var(--violet); cursor:pointer;" />
-                      <span>إظهار التعليق للعميل 👁️</span>
-                    </label>
+                <div class="add-note-box" style="display:flex; flex-direction:column; gap:10px; position:relative;">
+                  <div style="position:relative;">
+                    <textarea
+                      [(ngModel)]="newNoteText"
+                      (input)="onNoteInput($event)"
+                      (click)="onNoteInput($event)"
+                      (keyup)="onNoteInput($event)"
+                      placeholder="اكتب تعليقاً أو ملاحظة... (اكتب @ للإشارة لزميل من أي قسم)"
+                      rows="2"
+                      dir="rtl"
+                      style="width:100%; box-sizing:border-box;"
+                    ></textarea>
+
+                    <!-- Mention Suggestions Dropdown Popup -->
+                    <div 
+                      class="mention-suggestions-box" 
+                      *ngIf="showMentionDropdown"
+                      style="position:absolute; bottom:calc(100% + 6px); right:0; left:0; max-height:220px; overflow-y:auto; background:#1e1b4b; border:1px solid rgba(139,92,246,0.4); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.55); z-index:100; backdrop-filter:blur(12px); padding:6px;"
+                    >
+                      <div style="padding:6px 10px; font-size:0.75rem; color:#a5b4fc; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+                        <span><i class="fa-solid fa-at" style="color:var(--violet-light)"></i> إشارة إلى زميل من أي تيم ({{ filteredMentionUsers.length }})</span>
+                        <i class="fa-solid fa-xmark" style="cursor:pointer; color:#f43f5e;" (click)="showMentionDropdown = false"></i>
+                      </div>
+                      <div 
+                        *ngFor="let mUser of filteredMentionUsers" 
+                        (click)="selectMentionUser(mUser)"
+                        class="mention-user-row"
+                        style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:8px; cursor:pointer; margin-top:2px;"
+                      >
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;">
+                            {{ mUser.name ? mUser.name.charAt(0).toUpperCase() : 'U' }}
+                          </div>
+                          <div>
+                            <div style="font-size:0.85rem; font-weight:700; color:#fff;">{{ mUser.name }}</div>
+                            <div style="font-size:0.72rem; color:#94a3b8;">{{ mUser.email || mUser.role }}</div>
+                          </div>
+                        </div>
+                        <span style="font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:6px; background:rgba(99,102,241,0.25); color:#c7d2fe;">
+                          {{ mUser.department?.name || 'عام' }}
+                        </span>
+                      </div>
+                      <div *ngIf="!filteredMentionUsers.length" style="padding:12px; text-align:center; color:#94a3b8; font-size:0.8rem;">
+                        لا يوجد موظف مطابق للبحث
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                      <button 
+                        type="button" 
+                        class="btn-quick-mention" 
+                        (click)="openMentionPicker()"
+                        style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; border-radius:8px; padding:4px 10px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;"
+                        title="إشارة إلى أي موظف من أي قسم"
+                      >
+                        <i class="fa-solid fa-at"></i> إشارة لزميل
+                      </button>
+
+                      <label style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-2); cursor:pointer;" *ngIf="!isClient()">
+                        <input type="checkbox" [(ngModel)]="newNoteVisibleToClient" style="accent-color:var(--violet); cursor:pointer;" />
+                        <span>إظهار التعليق للعميل 👁️</span>
+                      </label>
+                    </div>
+
                     <button class="btn-send-note-modern" (click)="submitNote()" [disabled]="!newNoteText.trim()">
                       <i class="fa-solid fa-paper-plane"></i> إرسال التعليق
                     </button>
@@ -1147,7 +1201,7 @@ import { ConfirmService } from '../../services/confirm.service';
                       <div class="fg">
                         <label class="fg-lbl">إسناد لموظف</label>
                         <app-prime-picker-select
-                          [items]="allUsers"
+                          [items]="assignableUsers"
                           optionLabel="name"
                           optionValue="id"
                           optionSubLabel="email"
@@ -1392,7 +1446,7 @@ import { ConfirmService } from '../../services/confirm.service';
               <div class="fg">
                 <label class="fg-lbl" style="font-weight:700; font-size:0.85rem; margin-bottom:4px; display:block;"><i class="fa-solid fa-user-plus" style="color:var(--teal)"></i> إسناد لموظف</label>
                 <app-prime-picker-select
-                  [items]="allUsers"
+                  [items]="assignableUsers"
                   optionLabel="name"
                   optionValue="id"
                   optionSubLabel="email"
@@ -3727,6 +3781,30 @@ import { ConfirmService } from '../../services/confirm.service';
       color: #fff; font-weight: 700; font-size: 0.82rem; cursor: pointer;
       box-shadow: 0 4px 16px var(--violet-glow); transition: all 0.2s;
     }
+    .mention-user-row:hover { background: rgba(99, 102, 241, 0.22) !important; }
+    ::ng-deep .mention-pill {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      display: inline-block;
+      direction: rtl;
+    }
+    :host-context(body.light-theme) ::ng-deep .mention-pill {
+      background: rgba(99, 102, 241, 0.12);
+      color: #4f46e5;
+      border-color: rgba(99, 102, 241, 0.25);
+    }
+    :host-context(body.light-theme) .mention-suggestions-box {
+      background: #ffffff !important;
+      border: 1px solid rgba(99, 102, 241, 0.25) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+    :host-context(body.light-theme) .mention-suggestions-box .mention-user-row:hover {
+      background: rgba(99, 102, 241, 0.08) !important;
+    }
 
     /* ── LIGHT THEME OVERRIDES FOR DETAIL DRAWER ─────────────────────── */
     :host-context(body.light-theme) .detail-drawer,
@@ -4298,8 +4376,23 @@ export class TasksBoardComponent implements OnInit {
     return n.includes('سوشيال') || n.includes('social');
   }
 
-  get employeeUsers(): any[] {
+  get assignableUsers(): any[] {
+    const list = (this.allUsers || []).filter((u: any) => u.role !== 'client' && !u.is_hold);
+    if (this.isDepartmentManager()) {
+      const myDeptId = this.currentUser?.department_id || this.currentUser?.department?.id;
+      if (myDeptId) {
+        return list.filter((u: any) => Number(u.department_id || u.department?.id) === Number(myDeptId));
+      }
+    }
+    return list;
+  }
+
+  get mentionableUsers(): any[] {
     return (this.allUsers || []).filter((u: any) => u.role !== 'client' && !u.is_hold);
+  }
+
+  get employeeUsers(): any[] {
+    return this.assignableUsers;
   }
 
   createTaskFiles: File[] = [];
@@ -5168,9 +5261,9 @@ export class TasksBoardComponent implements OnInit {
   }
 
   unassignedUsers(): any[] {
-    if (!this.selectedTask) return this.allUsers || [];
+    if (!this.selectedTask) return this.assignableUsers;
     const assignedIds = (this.selectedTask.users || []).map((u: any) => u.id);
-    return (this.allUsers || []).filter(u => !assignedIds.includes(u.id));
+    return this.assignableUsers.filter(u => !assignedIds.includes(u.id));
   }
 
   assignUserById(userId: number): void {
@@ -5473,8 +5566,71 @@ export class TasksBoardComponent implements OnInit {
     }
   }
 
+  showMentionDropdown = false;
+  mentionSearchQuery = '';
+  mentionCursorPos = 0;
+
+  get filteredMentionUsers(): any[] {
+    const q = (this.mentionSearchQuery || '').toLowerCase().trim();
+    if (!q) return this.mentionableUsers;
+    return this.mentionableUsers.filter(u =>
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.department?.name && u.department.name.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q))
+    );
+  }
+
+  onNoteInput(event: any): void {
+    const text = this.newNoteText || '';
+    const cursor = event?.target?.selectionStart ?? text.length;
+    this.mentionCursorPos = cursor;
+
+    const textBeforeCursor = text.slice(0, cursor);
+    const lastAtMatch = textBeforeCursor.match(/@([^\s@]*)$/);
+
+    if (lastAtMatch) {
+      this.showMentionDropdown = true;
+      this.mentionSearchQuery = lastAtMatch[1];
+    } else {
+      this.showMentionDropdown = false;
+      this.mentionSearchQuery = '';
+    }
+  }
+
+  selectMentionUser(user: any): void {
+    if (!user) return;
+    const text = this.newNoteText || '';
+    const cursor = this.mentionCursorPos || text.length;
+    const textBeforeCursor = text.slice(0, cursor);
+    const textAfterCursor = text.slice(cursor);
+
+    const newBefore = textBeforeCursor.replace(/@([^\s@]*)$/, `@${user.name} `);
+    this.newNoteText = newBefore + textAfterCursor;
+    this.showMentionDropdown = false;
+    this.mentionSearchQuery = '';
+  }
+
+  openMentionPicker(): void {
+    this.showMentionDropdown = !this.showMentionDropdown;
+    this.mentionSearchQuery = '';
+    if (this.showMentionDropdown && !this.newNoteText.endsWith('@')) {
+      this.newNoteText = (this.newNoteText ? this.newNoteText + ' ' : '') + '@';
+      this.mentionCursorPos = this.newNoteText.length;
+    }
+  }
+
+  formatNoteText(rawText: string): string {
+    if (!rawText) return '';
+    const escaped = rawText
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return escaped.replace(/@([\p{L}\p{N}_\-]+(?:\s+[\p{L}\p{N}_\-]+)?)/gu, '<span class="mention-pill">@$1</span>');
+  }
+
   submitNote(): void {
     if (!this.newNoteText.trim() || !this.selectedTask) return;
+    this.showMentionDropdown = false;
     const isVis = this.newNoteVisibleToClient;
     const noteText = this.newNoteText.trim();
     this.apiService.addTaskNote(this.selectedTask.id, noteText).subscribe(res => {

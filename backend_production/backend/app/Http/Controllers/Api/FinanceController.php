@@ -15,11 +15,13 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FinanceController extends Controller
 {
     // --- Top-Level Dashboard & Accounts Summary ---
-    public function summary()
+    public function summary(Request $request)
     {
         $user = Auth::user();
         if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
@@ -30,6 +32,7 @@ class FinanceController extends Controller
         $expenseQuery = LedgerEntry::where('type', 'expense');
         $clientPaymentsQuery = ClientPayment::query();
 
+        $deptId = $request->query('department_id');
         if ($deptId) {
             $incomeQuery->where('department_id', $deptId);
             $expenseQuery->where('department_id', $deptId);
@@ -267,9 +270,18 @@ class FinanceController extends Controller
     public function storeClientPayment(Request $request)
     {
         $user = Auth::user();
-        if ($user && !in_array($user->role, ['super_admin', 'admin'])) {
+        if ($user && !in_array(strtolower($user->role), ['super_admin', 'super admin', 'admin', 'manager'])) {
             return response()->json(['message' => 'غير مصرح لك بتسجيل دفعات مالية أو تحصيلات'], 403);
         }
+
+        // Auto-fill client_id from deal if not passed
+        if (!$request->filled('client_id') && $request->filled('deal_id')) {
+            $dealTemp = Deal::find($request->deal_id);
+            if ($dealTemp && $dealTemp->client_id) {
+                $request->merge(['client_id' => $dealTemp->client_id]);
+            }
+        }
+
         $validated = $request->validate([
             'deal_id' => 'required|exists:deals,id',
             'client_id' => 'required|exists:users,id',
@@ -281,66 +293,74 @@ class FinanceController extends Controller
         ]);
 
         $validated['created_by'] = Auth::id();
-        $payment = ClientPayment::create($validated);
 
-        // Update deal paid amount
-        $deal = Deal::find($validated['deal_id']);
-        $deal->increment('paid_amount', $validated['amount']);
-        if ($deal->status === 'pending') {
-            $deal->update(['status' => 'active']);
-        }
+        $payment = DB::transaction(function () use ($validated, $user) {
+            $payment = ClientPayment::create($validated);
 
-        // Also record in primary ledger for income tracking
-        LedgerEntry::create([
-            'date' => $validated['payment_date'],
-            'type' => 'income',
-            'deal_id' => $deal->id,
-            'client_id' => $validated['client_id'],
-            'department_id' => $deal->department_id,
-            'amount' => $validated['amount'],
-            'payment_method' => $validated['payment_method'],
-            'description' => 'دفعة جزئية للعقد/الصفقة: ' . $deal->title . (!empty($validated['notes']) ? ' - ' . $validated['notes'] : ''),
+            // Update deal paid amount
+            $deal = Deal::find($validated['deal_id']);
+            if ($deal) {
+                $deal->increment('paid_amount', $validated['amount']);
+                if ($deal->status === 'pending') {
+                    $deal->update(['status' => 'active']);
+                }
+            }
 
-            'created_by' => Auth::id()
-        ]);
-
-        // Record Activity in Deal History
-        try {
-            $methodNames = [
-                'cash' => 'نقدي (Cash)',
-                'cash_hand' => 'نقداً باليد',
-                'instapay' => 'إنستاباي (InstaPay)',
-                'bank_transfer' => 'تحويل بنكي'
-            ];
-            $methodLabel = $methodNames[$validated['payment_method']] ?? $validated['payment_method'];
-
-            DB::table('activity_log')->insert([
-                'log_name' => 'deal',
-                'description' => "تم تسجيل دفعة مالية بقيمة " . number_format($validated['amount'], 2) . " ج.م بواسطة {$user->name} (طريقة التحصيل: {$methodLabel})",
-                'subject_type' => \App\Models\Deal::class,
-                'subject_id' => $deal->id,
-                'causer_type' => \App\Models\User::class,
-                'causer_id' => $user->id,
-                'properties' => json_encode([
-                    'title' => 'تسجيل تحصيل مالي',
-                    'field' => 'payment',
-                    'amount' => (float)$validated['amount'],
-                    'payment_method' => $validated['payment_method'],
-                    'payment_method_label' => $methodLabel,
-                    'receipt_ref' => $validated['receipt_ref'] ?? null,
-                    'icon' => 'fa-money-bill-wave',
-                    'color' => '#10b981',
-                    'causer_name' => $user->name,
-                    'causer_role' => $user->role,
-                    'causer_email' => $user->email,
-                    'created_at_human' => now()->translatedFormat('d M Y - h:i A')
-                ], JSON_UNESCAPED_UNICODE),
-                'created_at' => now(),
-                'updated_at' => now()
+            // Also record in primary ledger for income tracking
+            LedgerEntry::create([
+                'date' => $validated['payment_date'],
+                'type' => 'income',
+                'deal_id' => $deal ? $deal->id : null,
+                'client_id' => $validated['client_id'],
+                'department_id' => $deal ? $deal->department_id : null,
+                'amount' => $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'description' => 'دفعة جزئية للعقد/الصفقة: ' . ($deal ? $deal->title : '') . (!empty($validated['notes']) ? ' - ' . $validated['notes'] : ''),
+                'created_by' => Auth::id()
             ]);
-        } catch (\Throwable $e) {
-            Log::warning('Failed to log deal payment activity: ' . $e->getMessage());
-        }
+
+            // Record Activity in Deal History
+            try {
+                $methodNames = [
+                    'cash' => 'نقدي (Cash)',
+                    'cash_hand' => 'نقداً باليد',
+                    'instapay' => 'إنستاباي (InstaPay)',
+                    'bank_transfer' => 'تحويل بنكي'
+                ];
+                $methodLabel = $methodNames[$validated['payment_method']] ?? $validated['payment_method'];
+
+                if ($deal && $user) {
+                    DB::table('activity_log')->insert([
+                        'log_name' => 'deal',
+                        'description' => "تم تسجيل دفعة مالية بقيمة " . number_format($validated['amount'], 2) . " ج.م بواسطة {$user->name} (طريقة التحصيل: {$methodLabel})",
+                        'subject_type' => \App\Models\Deal::class,
+                        'subject_id' => $deal->id,
+                        'causer_type' => \App\Models\User::class,
+                        'causer_id' => $user->id,
+                        'properties' => json_encode([
+                            'title' => 'تسجيل تحصيل مالي',
+                            'field' => 'payment',
+                            'amount' => (float)$validated['amount'],
+                            'payment_method' => $validated['payment_method'],
+                            'payment_method_label' => $methodLabel,
+                            'receipt_ref' => $validated['receipt_ref'] ?? null,
+                            'icon' => 'fa-money-bill-wave',
+                            'color' => '#10b981',
+                            'causer_name' => $user->name,
+                            'causer_role' => $user->role,
+                            'causer_email' => $user->email,
+                            'created_at_human' => now()->translatedFormat('d M Y - h:i A')
+                        ], JSON_UNESCAPED_UNICODE),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Failed to log deal payment activity: ' . $e->getMessage());
+            }
+
+            return $payment;
+        });
 
         return response()->json([
             'status' => 'success',

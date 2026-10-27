@@ -255,6 +255,19 @@ class TaskController extends Controller
 
         $assignedIds = !empty($validated['user_ids']) ? $validated['user_ids'] : (!empty($validated['assigned_user_ids']) ? $validated['assigned_user_ids'] : []);
         if (!empty($assignedIds)) {
+            // Check department manager boundary
+            $currentUser = Auth::user();
+            $isSuperOrAdmin = $currentUser && in_array(strtolower($currentUser->role), ['super_admin', 'super admin', 'admin']);
+            $isDeptManager = $currentUser && in_array(strtolower($currentUser->role), ['department_manager', 'department manager']);
+            if (!$isSuperOrAdmin && $isDeptManager && $currentUser->department_id) {
+                $deptUserIds = User::where('department_id', $currentUser->department_id)->pluck('id')->toArray();
+                foreach ($assignedIds as $uid) {
+                    if (!in_array((int)$uid, $deptUserIds)) {
+                        return response()->json(['message' => 'يمكن لمدير القسم إسناد المهمة فقط لموظفي قسمه'], 403);
+                    }
+                }
+            }
+
             $task->users()->sync($assignedIds);
 
             // Send notification to assigned employees (excluding current acting user)
@@ -478,6 +491,18 @@ class TaskController extends Controller
 
         $assignedIds = !empty($validated['user_ids']) ? $validated['user_ids'] : (!empty($validated['assigned_user_ids']) ? $validated['assigned_user_ids'] : null);
         if ($assignedIds !== null) {
+            $currentUser = Auth::user();
+            $isSuperOrAdmin = $currentUser && in_array(strtolower($currentUser->role), ['super_admin', 'super admin', 'admin']);
+            $isDeptManager = $currentUser && in_array(strtolower($currentUser->role), ['department_manager', 'department manager']);
+            if (!$isSuperOrAdmin && $isDeptManager && $currentUser->department_id && !empty($assignedIds)) {
+                $deptUserIds = User::where('department_id', $currentUser->department_id)->pluck('id')->toArray();
+                foreach ($assignedIds as $uid) {
+                    if (!in_array((int)$uid, $deptUserIds)) {
+                        return response()->json(['message' => 'يمكن لمدير القسم إسناد المهمة فقط لموظفي قسمه'], 403);
+                    }
+                }
+            }
+
             $task->users()->sync($assignedIds);
         }
 
@@ -799,11 +824,16 @@ class TaskController extends Controller
         $prevCommenters = TaskNote::where('task_id', $task->id)->pluck('user_id')->toArray();
         $recipientIds = array_merge($recipientIds, $prevCommenters);
 
-        // 6. Extract @mentions (e.g., @name or @id)
-        preg_match_all('/@([a-zA-Z0-9_\-\.\s]+)/', $request->note, $matches);
+        // 6. Extract @mentions (e.g., @name or @id) supporting Unicode & Arabic names
+        preg_match_all('/@([\p{L}\p{N}_\-]+(?:\s+[\p{L}\p{N}_\-]+)?)/u', $request->note, $matches);
         if (!empty($matches[1])) {
             foreach ($matches[1] as $mentionedName) {
-                $mUser = User::where('name', 'like', '%' . trim($mentionedName) . '%')->first();
+                $cleanName = trim($mentionedName);
+                if (empty($cleanName)) continue;
+                $mUser = User::where('name', $cleanName)
+                    ->orWhere('name', 'like', $cleanName . '%')
+                    ->orWhere('name', 'like', '%' . $cleanName . '%')
+                    ->first();
                 if ($mUser) {
                     $recipientIds[] = $mUser->id;
                 }
@@ -1065,6 +1095,18 @@ class TaskController extends Controller
             $userIds = json_decode($userIds, true);
         }
         if (is_array($userIds) && count($userIds) > 0) {
+            $currentUser = Auth::user();
+            $isSuperOrAdmin = $currentUser && in_array(strtolower($currentUser->role), ['super_admin', 'super admin', 'admin']);
+            $isDeptManager = $currentUser && in_array(strtolower($currentUser->role), ['department_manager', 'department manager']);
+            if (!$isSuperOrAdmin && $isDeptManager && $currentUser->department_id) {
+                $deptUserIds = User::where('department_id', $currentUser->department_id)->pluck('id')->toArray();
+                foreach ($userIds as $uid) {
+                    if (!in_array((int)$uid, $deptUserIds)) {
+                        return response()->json(['message' => 'يمكن لمدير القسم إسناد المهمة الفرعية فقط لموظفي قسمه'], 403);
+                    }
+                }
+            }
+
             $subtask->users()->sync($userIds);
         }
 
