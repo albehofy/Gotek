@@ -1,3 +1,6 @@
+-- Select database automatically
+USE `gotenrze_mediaglow`;
+
 -- MySQL dump 10.13  Distrib 8.4.11, for Linux (x86_64)
 --
 -- Host: localhost    Database: media_glow_crm
