@@ -34,6 +34,12 @@ export class ControllerDashboardComponent implements OnInit {
     if (!this.currentUser) return true;
     return ['super_admin', 'admin'].includes(this.currentUser.role);
   }
+  canAccessFinance(): boolean {
+    if (!this.currentUser) return false;
+    const role = this.currentUser.role;
+    const roles = Array.isArray(this.currentUser.roles) ? this.currentUser.roles.map((r: any) => r.slug) : [];
+    return ['super_admin', 'account_manager'].includes(role) || roles.some((r: string) => ['super_admin', 'account_manager'].includes(r));
+  }
   isAdminOrManager(): boolean {
     if (!this.currentUser) return true;
     return ['super_admin', 'admin', 'department_manager'].includes(this.currentUser.role);

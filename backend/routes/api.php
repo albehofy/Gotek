@@ -141,8 +141,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [RoleController::class, 'destroyRole']);
     });
 
-    // Full Accounting & Finance Routes
-    Route::prefix('finance')->middleware('role:super_admin,admin')->group(function () {
+    // Full Accounting & Finance Routes (Restricted strictly to super_admin and account_manager)
+    Route::prefix('finance')->middleware('role:super_admin,account_manager')->group(function () {
         Route::get('/summary', [FinanceController::class, 'summary']);
         Route::get('/ledger', [FinanceController::class, 'getLedger']);
         Route::post('/ledger', [FinanceController::class, 'storeLedger']);

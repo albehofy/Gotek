@@ -76,7 +76,7 @@
       </div>
 
       <!-- 2. Total Paid / Collected -->
-      <div class="kpi-card card-emerald" routerLink="/finance" *ngIf="isAdmin()">
+      <div class="kpi-card card-emerald" routerLink="/finance" *ngIf="canAccessFinance()">
         <div class="kpi-card-head">
           <div class="kpi-icon-badge emerald"><i class="fa-solid fa-circle-check"></i></div>
           <span class="kpi-pill emerald"><i class="fa-solid fa-arrow-trend-up"></i> {{ getCollectionPercentage() }}% نسبة التحصيل</span>
@@ -89,7 +89,7 @@
       </div>
 
       <!-- 3. Remaining Balance -->
-      <div class="kpi-card card-amber" routerLink="/finance" *ngIf="isAdmin()">
+      <div class="kpi-card card-amber" routerLink="/finance" *ngIf="canAccessFinance()">
         <div class="kpi-card-head">
           <div class="kpi-icon-badge amber"><i class="fa-solid fa-clock-rotate-left"></i></div>
           <span class="kpi-pill amber"><i class="fa-solid fa-hourglass-half"></i> ذمم مستحقة</span>
@@ -102,7 +102,7 @@
       </div>
 
       <!-- 4. Total Company Margin / Profits -->
-      <div class="kpi-card card-purple" routerLink="/finance" *ngIf="isAdmin()">
+      <div class="kpi-card card-purple" routerLink="/finance" *ngIf="canAccessFinance()">
         <div class="kpi-card-head">
           <div class="kpi-icon-badge purple"><i class="fa-solid fa-chart-line"></i></div>
           <span class="kpi-pill purple"><i class="fa-solid fa-sack-dollar"></i> صافي الربح</span>
@@ -265,7 +265,7 @@
       <a class="dash-shortcut" routerLink="/clients" *ngIf="isAdmin()"><i class="fa-solid fa-users text-purple"></i><span>دليل العملاء</span></a>
       <a class="dash-shortcut" routerLink="/deals" *ngIf="isAdmin()"><i class="fa-solid fa-handshake text-blue"></i><span>الصفقات والعقود</span></a>
       <a class="dash-shortcut" routerLink="/tasks"><i class="fa-solid fa-list-check text-amber"></i><span>لوحة المهام</span></a>
-      <a class="dash-shortcut" routerLink="/finance" *ngIf="isAdmin()"><i class="fa-solid fa-coins text-emerald"></i><span>المالية والخزينة</span></a>
+      <a class="dash-shortcut" routerLink="/finance" *ngIf="canAccessFinance()"><i class="fa-solid fa-coins text-emerald"></i><span>المالية والخزينة</span></a>
       <a class="dash-shortcut" routerLink="/departments"><i class="fa-solid fa-sitemap text-cyan"></i><span>الأقسام والمراكز</span></a>
       <a class="dash-shortcut" routerLink="/roles" *ngIf="isAdmin()"><i class="fa-solid fa-shield-halved text-rose"></i><span>الصلاحيات</span></a>
     </div>

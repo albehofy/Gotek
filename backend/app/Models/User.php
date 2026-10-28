@@ -122,12 +122,26 @@ class User extends Authenticatable
         return strtolower($this->role ?? '') === 'super_admin' || $this->hasRole('super_admin');
     }
 
-    public function hasRole($roleSlug)
+    public function canAccessFinance(): bool
     {
-        if ($this->role === $roleSlug) {
+        $role = strtolower(str_replace(' ', '_', trim($this->role ?? '')));
+        if (in_array($role, ['super_admin', 'account_manager'])) {
             return true;
         }
-        if ($this->roles && $this->roles->pluck('slug')->contains($roleSlug)) {
+        return $this->hasRole('super_admin') || $this->hasRole('account_manager');
+    }
+
+    public function hasRole($roleSlug)
+    {
+        $slug = strtolower(str_replace(' ', '_', trim($roleSlug)));
+        $currentRole = strtolower(str_replace(' ', '_', trim($this->role ?? '')));
+        if ($currentRole === $slug) {
+            return true;
+        }
+        if ($this->roles && $this->roles->pluck('slug')->map(fn($s) => strtolower(str_replace(' ', '_', trim($s))))->contains($slug)) {
+            return true;
+        }
+        if ($this->roleModel && strtolower(str_replace(' ', '_', trim($this->roleModel->slug ?? ''))) === $slug) {
             return true;
         }
         return false;

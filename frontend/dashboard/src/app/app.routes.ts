@@ -54,7 +54,7 @@ export const routes: Routes = [
       },
       { 
         path: 'finance', 
-        canActivate: [roleGuard(['super_admin', 'admin'])],
+        canActivate: [roleGuard(['super_admin', 'account_manager'])],
         loadComponent: () => import('./components/finance/finance-dashboard.component').then(m => m.FinanceDashboardComponent) 
       },
       { 

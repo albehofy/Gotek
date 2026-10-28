@@ -131,6 +131,7 @@ class DealController extends Controller
             'discount_value' => 'nullable|numeric|min:0',
             'total_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|in:cash,cash_hand,instapay,bank_transfer',
             'status' => 'nullable|string|in:pending,active,completed,cancelled,won,closed,in_progress',
             'tasks' => 'nullable|array',
             'tasks.*.id' => 'nullable',
@@ -168,6 +169,64 @@ class DealController extends Controller
         }
 
         $deal = Deal::create($dealData);
+
+        // Process Down Payment / Deposit if provided during deal creation
+        $paidAmount = (float)($dealData['paid_amount'] ?? 0);
+        if ($paidAmount > 0) {
+            $paymentMethod = $request->input('payment_method', 'cash') ?: 'cash';
+
+            if ($deal->status === 'pending') {
+                $deal->update(['status' => 'active']);
+            }
+
+            if (!empty($deal->client_id)) {
+                ClientPayment::create([
+                    'deal_id' => $deal->id,
+                    'client_id' => $deal->client_id,
+                    'amount' => $paidAmount,
+                    'payment_date' => now()->toDateString(),
+                    'payment_method' => $paymentMethod,
+                    'receipt_ref' => 'DEPOSIT-' . $deal->id,
+                    'notes' => 'دفعة مقدمة / عربون عند إنشاء الصفقة: ' . $deal->title,
+                    'created_by' => Auth::id()
+                ]);
+
+                LedgerEntry::create([
+                    'date' => now()->toDateString(),
+                    'type' => 'income',
+                    'deal_id' => $deal->id,
+                    'client_id' => $deal->client_id,
+                    'department_id' => $deal->department_id,
+                    'amount' => $paidAmount,
+                    'payment_method' => $paymentMethod,
+                    'description' => 'عربون / دفعة مقدمة لصفقة: ' . $deal->title,
+                    'created_by' => Auth::id()
+                ]);
+            }
+
+            $methodNames = [
+                'cash' => 'نقدي (Cash)',
+                'cash_hand' => 'نقداً باليد',
+                'instapay' => 'إنستاباي (InstaPay)',
+                'bank_transfer' => 'تحويل بنكي'
+            ];
+            $methodLabel = $methodNames[$paymentMethod] ?? $paymentMethod;
+
+            $this->recordActivity(
+                $deal->id,
+                "تم تسجيل دفعة مقدمة (عربون) بقيمة " . number_format($paidAmount, 2) . " ج.م بواسطة " . ($user->name ?? 'المستخدم') . " (طريقة التحصيل: {$methodLabel})",
+                'payment',
+                [
+                    'title' => 'تسجيل عربون مقدم',
+                    'field' => 'payment',
+                    'amount' => $paidAmount,
+                    'payment_method' => $paymentMethod,
+                    'payment_method_label' => $methodLabel,
+                    'icon' => 'fa-money-bill-wave',
+                    'color' => '#10b981'
+                ]
+            );
+        }
 
         // Upload dedicated Deal Plan, Brief, Contract & Document files
         if ($request->hasFile('brief_file')) {
@@ -780,11 +839,11 @@ class DealController extends Controller
                 }
 
                 // If explicit tasks list was submitted, remove tasks from this deal that were deleted in the UI
+                $removedTasksQuery = Task::where('deal_id', $deal->id)->whereNull('parent_id');
                 if (!empty($keptTaskIds)) {
-                    $removedTasks = Task::where('deal_id', $deal->id)
-                        ->whereNull('parent_id')
-                        ->whereNotIn('id', $keptTaskIds)
-                        ->get();
+                    $removedTasksQuery->whereNotIn('id', $keptTaskIds);
+                }
+                $removedTasks = $removedTasksQuery->get();
 
                     foreach ($removedTasks as $remTask) {
                         $changesCount++;
@@ -803,7 +862,6 @@ class DealController extends Controller
                         Task::where('parent_id', $remTask->id)->delete();
                         $remTask->delete();
                     }
-                }
             }
         }
 

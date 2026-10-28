@@ -277,19 +277,48 @@ import { ConfirmService } from '../../services/confirm.service';
               <input type="number" pInputText formControlName="discount_value" placeholder="مثال: 10 أو 500" />
             </div>
 
-            <!-- Live Net Price Calculation Banner -->
-            <div class="full-width discount-summary-card" *ngIf="dealForm.value.discount_type && dealForm.value.discount_type !== 'none'">
+            <!-- Down payment / Deposit (العربون أو الدفعة المقدمة عند إنشاء الصفقة) -->
+            <div class="form-group" *ngIf="!isEditMode">
+              <label>الدفعة المقدمة / العربون (ج.م) <small style="color:var(--text-3); font-weight:normal;">(اختياري)</small></label>
+              <input type="number" pInputText formControlName="paid_amount" placeholder="0.00" min="0" />
+            </div>
+            <div class="form-group" *ngIf="!isEditMode && (dealForm.value.paid_amount > 0)">
+              <label>طريقة سداد العربون</label>
+              <p-dropdown
+                formControlName="payment_method"
+                [appendTo]="'body'"
+                [options]="[
+                  { label: 'كاش (الخزينة المحلية)', value: 'cash' },
+                  { label: 'نقداً يد بيد', value: 'cash_hand' },
+                  { label: 'إنستا باي (InstaPay)', value: 'instapay' },
+                  { label: 'تحويل بنكي', value: 'bank_transfer' }
+                ]"
+                optionLabel="label"
+                optionValue="value"
+              ></p-dropdown>
+            </div>
+
+            <!-- Live Net Price & Balance Calculation Banner -->
+            <div class="full-width discount-summary-card" *ngIf="(dealForm.value.total_price > 0) || (dealForm.value.discount_type && dealForm.value.discount_type !== 'none') || (dealForm.value.paid_amount > 0)">
               <div class="disc-row">
                 <span>الإجمالي الأصلي قبل الخصم:</span>
                 <strong>{{ (dealForm.value.total_price || 0) | number:'1.2-2' }} ج.م</strong>
               </div>
-              <div class="disc-row" style="color:var(--rose-light);">
+              <div class="disc-row" style="color:var(--rose-light);" *ngIf="dealForm.value.discount_type && dealForm.value.discount_type !== 'none'">
                 <span>قيمة الخصم المالي المستقطع:</span>
                 <strong>- {{ getCalculatedDiscountAmount() | number:'1.2-2' }} ج.م</strong>
               </div>
               <div class="disc-row" style="color:var(--emerald-light); font-weight:bold;">
                 <span>صافي قيمة العقد بعد الخصم:</span>
                 <strong>{{ getCalculatedNetTotal() | number:'1.2-2' }} ج.م</strong>
+              </div>
+              <div class="disc-row" style="color:var(--teal-light);" *ngIf="dealForm.value.paid_amount > 0">
+                <span>المدفوع مقدماً (العربون):</span>
+                <strong>- {{ (dealForm.value.paid_amount || 0) | number:'1.2-2' }} ج.م</strong>
+              </div>
+              <div class="disc-row" style="color:var(--amber-light); font-weight:bold; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; margin-top:4px;" *ngIf="dealForm.value.paid_amount > 0">
+                <span>المتبقي في ذمة العميل:</span>
+                <strong style="font-size:1.05rem;">{{ getCalculatedRemainingBalance() | number:'1.2-2' }} ج.م</strong>
               </div>
             </div>
 
@@ -1152,6 +1181,8 @@ export class DealsManagementComponent implements OnInit {
       sales_commission_type: ['none'],
       sales_commission_value: [0],
       total_price: [0, [Validators.required, Validators.min(0)]],
+      paid_amount: [0, [Validators.min(0)]],
+      payment_method: ['cash'],
       discount_type: ['none'],
       discount_value: [0],
       agreed_scope: [''],
@@ -1277,6 +1308,12 @@ export class DealsManagementComponent implements OnInit {
     return Math.max(0, total - discount);
   }
 
+  getCalculatedRemainingBalance(): number {
+    const net = this.getCalculatedNetTotal();
+    const paid = Number(this.dealForm.get('paid_amount')?.value) || 0;
+    return Math.max(0, net - paid);
+  }
+
   onTaskFileSelected(event: any, index: number, type: 'image' | 'doc'): void {
     const file = event.target?.files?.[0];
     if (file && this.dealTasks[index]) {
@@ -1311,6 +1348,8 @@ export class DealsManagementComponent implements OnInit {
           sales_commission_type: d.sales_commission_type || 'none',
           sales_commission_value: d.sales_commission_value || 0,
           total_price: d.gross_total || d.total_price || 0,
+          paid_amount: d.calculated_paid || d.paid_amount || 0,
+          payment_method: 'cash',
           discount_type: d.discount_type || 'none',
           discount_value: d.discount_value || 0,
           agreed_scope: d.agreed_scope || d.description || '',
@@ -1388,6 +1427,8 @@ export class DealsManagementComponent implements OnInit {
       sales_commission_type: 'none',
       sales_commission_value: 0,
       total_price: 0,
+      paid_amount: 0,
+      payment_method: 'cash',
       discount_type: 'none',
       discount_value: 0,
       dates_not_specified: false

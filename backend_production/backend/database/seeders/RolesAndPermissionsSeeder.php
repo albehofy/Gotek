@@ -106,12 +106,19 @@ class RolesAndPermissionsSeeder extends Seeder
         $employeePermIds = [];
         $clientPermIds = [];
 
+        $financePerms = [
+            'view_capital', 'manage_finance', 'manage_ledger', 'manage_custody',
+            'manage_fixed_assets', 'manage_payroll', 'manage_partner_splits',
+            'manage_finance_categories', 'manage_client_payments'
+        ];
+
         foreach ($permissions as $pData) {
             $perm = Permission::updateOrCreate(['slug' => $pData['slug']], $pData);
             $pid = $perm->id;
             $allPermIds[] = $pid;
 
-            if (!in_array($pData['slug'], ['manage_roles', 'view_capital', 'manage_partner_splits'])) {
+            // Admin: general operations excluding roles and finance/treasury
+            if (!in_array($pData['slug'], array_merge(['manage_roles'], $financePerms))) {
                 $adminPermIds[] = $pid;
             }
 
@@ -122,12 +129,12 @@ class RolesAndPermissionsSeeder extends Seeder
                 $deptManagerPermIds[] = $pid;
             }
 
-            if (in_array($pData['slug'], [
+            // Account Manager: deals, client relationships, and full finance & treasury
+            if (in_array($pData['slug'], array_merge([
                 'view_deals', 'create_deals', 'edit_deals', 'view_deal_finances',
                 'view_all_tasks', 'create_tasks', 'edit_tasks', 'approve_client_tasks',
-                'view_clients', 'create_clients', 'edit_clients', 'view_client_profile',
-                'manage_client_payments'
-            ])) {
+                'view_clients', 'create_clients', 'edit_clients', 'view_client_profile'
+            ], $financePerms))) {
                 $accountManagerPermIds[] = $pid;
             }
 

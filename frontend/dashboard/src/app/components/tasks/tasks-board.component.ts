@@ -4649,8 +4649,13 @@ export class TasksBoardComponent implements OnInit {
 
   getTasksForColumn(colKey: string) {
     let list = (this.tasks || []).filter(t => {
-      // Never display subtasks as standalone cards on the main board; they belong strictly inside their parent task
-      if (t.parent_id || t.parent) return false;
+      // Respect ticket type filter (main tasks vs subtasks/partials vs all)
+      if (this.taskTypeFilter === 'main') {
+        if (t.parent_id || t.parent) return false;
+      } else if (this.taskTypeFilter === 'partials') {
+        if (!t.parent_id && !t.parent) return false;
+      }
+      // If 'all', include both main tasks and subtasks
 
       if (colKey === 'done') {
         return t.status === 'done' || t.status === 'approved' || t.status === 'completed';

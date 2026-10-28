@@ -14,8 +14,9 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
     try {
       const user = JSON.parse(userStr);
       const role = user?.role || '';
+      const userRoles = Array.isArray(user?.roles) ? user.roles.map((r: any) => r.slug || r.name) : [];
 
-      if (allowedRoles.includes(role)) {
+      if (allowedRoles.includes(role) || userRoles.some((r: string) => allowedRoles.includes(r))) {
         return true;
       }
 

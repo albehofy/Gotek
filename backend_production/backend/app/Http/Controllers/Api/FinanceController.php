@@ -24,8 +24,8 @@ class FinanceController extends Controller
     public function summary(Request $request)
     {
         $user = Auth::user();
-        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
-            return response()->json(['message' => 'غير مصرح لمدير القسم أو الموظف بدخول الإدارة المالية'], 403);
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بدخول الإدارة المالية والخزينة (مخصص للسوبر أدمن ومدير الحسابات فقط)'], 403);
         }
 
         $incomeQuery = LedgerEntry::where('type', 'income');
@@ -61,7 +61,7 @@ class FinanceController extends Controller
         }
 
         // Monthly Obligations (Owed BY company: Base Salaries + Task Earnings + Commissions - Advances - Deductions + Bonuses)
-        $employees = User::whereIn('role', ['employee', 'department_manager', 'manager', 'sales', 'admin', 'super_admin'])->get();
+        $employees = User::whereIn('role', ['employee', 'department_manager', 'manager', 'sales', 'admin', 'super_admin', 'account_manager'])->get();
         $totalMonthlyObligations = 0;
         $totalTaskEarnings = 0;
         $totalCommissions = 0;
@@ -119,8 +119,8 @@ class FinanceController extends Controller
     public function getLedger(Request $request)
     {
         $user = Auth::user();
-        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
-            return response()->json(['message' => 'غير مصرح لمدير القسم بفتح السجل المالي'], 403);
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بفتح السجل المالي'], 403);
         }
 
         $query = LedgerEntry::with(['category', 'department', 'deal', 'client', 'employee', 'creator'])->latest();
@@ -166,6 +166,10 @@ class FinanceController extends Controller
 
     public function storeLedger(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بتسجيل قيود مالية'], 403);
+        }
         $validated = $request->validate([
             'date' => 'required|date',
             'type' => 'required|in:income,expense,custody_issued,custody_returned',
@@ -209,8 +213,8 @@ class FinanceController extends Controller
     public function getClientBalances(Request $request)
     {
         $user = Auth::user();
-        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
-            return response()->json(['message' => 'غير مصرح لمدير القسم بفتح كشف أرصدة العملاء'], 403);
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بفتح كشف أرصدة العملاء'], 403);
         }
 
         $query = User::where(function($q) {
@@ -270,7 +274,7 @@ class FinanceController extends Controller
     public function storeClientPayment(Request $request)
     {
         $user = Auth::user();
-        if ($user && !in_array(strtolower($user->role), ['super_admin', 'super admin', 'admin', 'manager'])) {
+        if (!$user || !$user->canAccessFinance()) {
             return response()->json(['message' => 'غير مصرح لك بتسجيل دفعات مالية أو تحصيلات'], 403);
         }
 
@@ -535,14 +539,14 @@ class FinanceController extends Controller
     public function getPayrollSummary(Request $request)
     {
         $user = Auth::user();
-        if ($user && in_array(strtolower($user->role), ['department_manager', 'department manager', 'employee', 'client'])) {
-            return response()->json(['message' => 'غير مصرح لمدير القسم بالاطلاع على مسيرات الرواتب والمستحقات العامة'], 403);
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بالاطلاع على مسيرات الرواتب والمستحقات'], 403);
         }
 
         $month = $request->get('month', now()->month);
         $year = $request->get('year', now()->year);
 
-        $empQuery = User::whereIn('role', ['employee', 'department_manager', 'manager', 'sales', 'admin', 'super_admin']);
+        $empQuery = User::whereIn('role', ['employee', 'department_manager', 'manager', 'sales', 'admin', 'super_admin', 'account_manager']);
 
         if ($request->filled('employee_id')) {
             $empQuery->where('id', $request->employee_id);

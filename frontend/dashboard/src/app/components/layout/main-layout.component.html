@@ -67,7 +67,7 @@
           <span class="sb-text">الأقسام والمراكز</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin()" routerLink="/finance" routerLinkActive="active" data-tooltip="المالية والخزينة">
+        <a class="sb-item" *ngIf="canAccessFinance()" routerLink="/finance" routerLinkActive="active" data-tooltip="المالية والخزينة">
           <span class="sb-icon"><i class="fa-solid fa-coins"></i></span>
           <span class="sb-text">المالية والخزينة</span>
         </a>

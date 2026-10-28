@@ -142,10 +142,17 @@ export class MainLayoutComponent implements OnInit {
   isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
   isClient(): boolean { return this.currentUser?.role === 'client'; }
 
+  canAccessFinance(): boolean {
+    const role = this.currentUser?.role;
+    const roles = Array.isArray(this.currentUser?.roles) ? this.currentUser.roles.map((r: any) => r.slug) : [];
+    return ['super_admin', 'account_manager'].includes(role) || roles.some((r: string) => ['super_admin', 'account_manager'].includes(r));
+  }
+
   getRoleBadgeLabel(): string {
     const role = this.currentUser?.role;
     if (role === 'super_admin') return 'سوبر أدمن';
     if (role === 'admin') return 'أدمن';
+    if (role === 'account_manager') return 'مدير حسابات';
     if (role === 'department_manager') return 'مدير قسم';
     if (role === 'employee') return 'موظف / صانع محتوى';
     if (role === 'client') return 'عميل VIP';
