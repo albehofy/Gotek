@@ -4542,6 +4542,9 @@ export class TasksBoardComponent implements OnInit {
         newSt.parent = { id: this.selectedTask.id, title: this.selectedTask.title };
         if (!this.selectedTask.subtasks) this.selectedTask.subtasks = [];
         this.selectedTask.subtasks.push(newSt);
+        if (!this.tasks.some(t => t.id === newSt.id)) {
+          this.tasks.push(newSt);
+        }
         this.showSubtaskModal = false;
         this.showNewSubtaskForm = false;
         this.loadTaskActivities(this.selectedTask.id);
@@ -4562,6 +4565,9 @@ export class TasksBoardComponent implements OnInit {
         newSt.parent = { id: this.selectedTask.id, title: this.selectedTask.title };
         if (!this.selectedTask.subtasks) this.selectedTask.subtasks = [];
         this.selectedTask.subtasks.push(newSt);
+        if (!this.tasks.some(t => t.id === newSt.id)) {
+          this.tasks.push(newSt);
+        }
         this.newSubtaskTitle = '';
         this.loadTaskActivities(this.selectedTask.id);
       }
@@ -4915,8 +4921,7 @@ export class TasksBoardComponent implements OnInit {
 
   getFilteredClientTasks(): any[] {
     if (!this.tasks) return [];
-    // Strictly main tasks only; subtasks belong inside their parent main task
-    let list = this.tasks.filter((t: any) => !t.parent_id && !t.parent);
+    let list = [...this.tasks];
 
     if (this.selectedDealFilter !== 'all') {
       const dealId = Number(this.selectedDealFilter);

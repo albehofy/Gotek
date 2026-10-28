@@ -65,15 +65,31 @@ class TaskController extends Controller
             $query->where('status', $request->status);
         }
 
-        // By default, only retrieve top-level/main tasks so subtasks do not clutter the board
-        if ($request->filled('task_type') && in_array(strtolower($request->get('task_type')), ['partials', 'partial', 'subtasks'])) {
-            $query->whereNotNull('parent_id');
-        } else {
-            // Strictly main tasks only! Subtasks are eagerly loaded inside their parent task's subtasks relation
-            $query->whereNull('parent_id');
+        // Filter by task_type if specified; otherwise return all tasks so frontend board can filter seamlessly
+        if ($request->filled('task_type')) {
+            $taskType = strtolower($request->get('task_type'));
+            if (in_array($taskType, ['partials', 'partial', 'subtasks'])) {
+                $query->whereNotNull('parent_id');
+            } elseif ($taskType === 'main') {
+                $query->whereNull('parent_id');
+            }
         }
 
         $tasks = $query->get();
+
+        // Ensure subtasks inherit parent deal & department context if not explicitly set
+        foreach ($tasks as $t) {
+            if ($t->parent_id && $t->parent) {
+                if (!$t->deal && $t->parent->deal) {
+                    $t->setRelation('deal', $t->parent->deal);
+                    $t->deal_id = $t->parent->deal_id;
+                }
+                if (!$t->department && $t->parent->department) {
+                    $t->setRelation('department', $t->parent->department);
+                    $t->department_id = $t->parent->department_id;
+                }
+            }
+        }
 
         $isRestricted = $user && in_array(strtolower($user->role), ['employee', 'department_manager', 'department manager']) && !$user->hasRole('super_admin') && !$user->hasRole('admin');
         if ($isRestricted) {
