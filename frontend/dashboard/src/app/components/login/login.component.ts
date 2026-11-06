@@ -60,6 +60,8 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/client-portal']);
           } else if (user && user.role === 'employee') {
             this.router.navigate(['/tasks']);
+          } else if (user && user.role === 'account_manager') {
+            this.router.navigate(['/finance']);
           } else {
             this.router.navigate(['/dashboard']);
           }

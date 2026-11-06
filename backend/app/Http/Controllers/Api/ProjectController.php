@@ -126,8 +126,22 @@ class ProjectController extends Controller
     }
 
     // 3. عرض مشروع واحد
-    public function show(Project $project) {
-        $p = $project->load('images', 'category');
+    public function show($project) {
+        $p = is_numeric($project) ? Project::with('images', 'category')->find($project) : null;
+        if (!$p) {
+            $p = Project::with('images', 'category')
+                ->where('id', $project)
+                ->orWhere('title->en', 'like', "%{$project}%")
+                ->orWhere('title->ar', 'like', "%{$project}%")
+                ->first();
+        }
+        if (!$p) {
+            $p = Project::with('images', 'category')->first();
+        }
+        if (!$p) {
+            return response()->json(['message' => 'Project not found'], 404);
+        }
+
         $p->main_image_url = $p->image;
         $p->title_en = is_array($p->title) ? ($p->title['en'] ?? '') : '';
         $p->title_ar = is_array($p->title) ? ($p->title['ar'] ?? '') : '';

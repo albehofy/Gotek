@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { TranslationService } from '../../services/translation.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-controller-dashboard',
@@ -15,6 +17,8 @@ export class ControllerDashboardComponent implements OnInit {
   router = inject(Router);
   apiService = inject(ApiService);
   fb = inject(FormBuilder);
+  translationService = inject(TranslationService);
+  themeService = inject(ThemeService);
 
   sidebarOpen = false;
   activeTab = 'overview';
@@ -107,42 +111,152 @@ export class ControllerDashboardComponent implements OnInit {
   pagesData: { [key: string]: any } = {
     home: {
       hero: {
-        tag: { en: '', ar: '' },
-        title1: { en: '', ar: '' },
-        subtitle: { en: '', ar: '' }
+        award_badge: { ar: '★ استوديو إنتاج سينمائي ورقمي رائد — القاهرة · الرياض · دبي', en: '★ PREMIER FILM & MEDIA PRODUCTION STUDIO — CAIRO · RIYADH · DUBAI' },
+        title1: { ar: 'نصنع أفلاماً وتجارب بصرية', en: 'We Produce Cinematic Films' },
+        title2: { ar: 'تُخلّد مكانة علامتك التجارية', en: '& Iconic Brand Experiences' },
+        subtitle: {
+          ar: 'استوديو إنتاج سينمائي ورقمي متكامل يقود الحملات الكبرى، الأفلام الإعلانية، والهويات البصرية الرائدة للشركات الطموحة في الشرق الأوسط.',
+          en: 'Full-service production house delivering commercial films, iconic visual systems, and high-impact digital campaigns for market leaders across the region.'
+        },
+        btn1: { ar: 'احجز استشارة الإنتاج', en: 'Schedule Production Discovery' },
+        reel_btn: { ar: 'عرض الإعلانات والأفلام 2026', en: 'Watch 2026 Showreel' },
+        showreel_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        showreel_poster: '/assets/media-glow-card.jpg'
       },
-      services: { title: { en: '', ar: '' }, subtitle: { en: '', ar: '' } },
-      portfolio: { title: { en: '', ar: '' }, subtitle: { en: '', ar: '' } },
-      testimonials: { title: { en: '', ar: '' }, subtitle: { en: '', ar: '' } },
-      cta: { title: { en: '', ar: '' }, desc: { en: '', ar: '' } }
+      stats: {
+        stat1_num: '180+',
+        stat1_label: { ar: 'فيلم وحملة إعلانية منجزة', en: 'Films & Commercial Campaigns' },
+        stat2_num: '99.4%',
+        stat2_label: { ar: 'نسبة رضا واحتفاظ الشركاء', en: 'Partner Retention & CSAT' },
+        stat3_num: '8.4X',
+        stat3_label: { ar: 'متوسط مضاعفة العائد على الإنفاق ROAS', en: 'Average ROAS Multiplier' },
+        stat4_num: '14',
+        stat4_label: { ar: 'جوائز إخراج وتميز بصري إقليمية', en: 'Regional Creative & Film Awards' }
+      },
+      services_bento: {
+        eyebrow: { ar: 'تخصصات الإنتاج والاستوديو', en: 'CAPABILITIES & STUDIO DISCIPLINES' },
+        title: { ar: 'منظومة إنتاج رقمية وسينمائية متكاملة', en: 'Engineered For Cinematic Dominance' },
+        sub: { ar: 'نجمع بين أحدث كاميرات السينما العالمية، والرؤى الإخراجية الاستثنائية، واستراتيجيات التوزيع الرقمي عالي التأثير.', en: 'Fusing Hollywood-grade camera packages with visionary direction and conversion science.' },
+        s1_title: { ar: 'الأفلام التجارية والإعلانات السينمائية', en: 'Commercial Films & TVCs' },
+        s1_desc: { ar: 'إنتاج إعلانات تلفزيونية ومواد سينمائية متكاملة بكاميرات ARRI Alexa 35 وإضاءات هوليوود وتصحيح ألوان دقيق.', en: 'Masterful commercial films shot on ARRI Alexa 35 and 8K sensor packages with high-end color grading.' },
+        s2_title: { ar: 'هندسة الهوية البصرية والعلامة', en: 'Brand Identity Architecture' },
+        s2_desc: { ar: 'بناء أنظمة بصرية استثنائية وأدلة إرشادية متكاملة تضمن تميز علامتك وهيمنتها السوقية.', en: 'Comprehensive design guidelines and iconic visual systems built to command distinction.' },
+        s3_title: { ar: 'حملات النمو والتسويق الرقمي', en: 'Growth Engines & Performance Ads' },
+        s3_desc: { ar: 'إدارة وتوجيه ميزانيات الإعلانات الرقمية على منصات Meta و Google لتحقيق أعلى عائد استثماري.', en: 'Data-driven performance media buying engineered for compounding return on ad spend.' },
+        s4_title: { ar: 'استوديوهات ومعدات التصوير الحية', en: 'Studio Production & Technical Fleet' },
+        s4_desc: { ar: 'مساحات تصوير عازلة للصوت، أطقم عدسات سينمائية Master Anamorphic، ووحدات بث حي متعدد الكاميرات.', en: 'Dedicated soundstages, specialized anamorphic glass, and certified live multi-cam broadcast trucks.' }
+      },
+      workflow: {
+        eyebrow: { ar: 'منهجية العمل والإنتاج', en: 'OUR PRODUCTION METHODOLOGY' },
+        title: { ar: 'كيف نحوّل الرؤية إلى إنتاج استثنائي', en: 'From Conceptual Spark To Cinematic Reality' },
+        s1_title: { ar: 'الاستكشاف والمعالجة الفكرية', en: 'Discovery & Concept Treatment' },
+        s1_desc: { ar: 'تحليل دقيق للعلامة التجارية وكتابة السيناريو ورسم الـ Storyboard وتحديد الهوية البصرية للفيلم.', en: 'Deep dive into audience psychology, creative treatments, storyboard development, and narrative arc.' },
+        s2_title: { ar: 'التخطيط وإدارة الإنتاج', en: 'Pre-Production & Logistics' },
+        s2_desc: { ar: 'معاينة مواقع التصوير، اختيار الممثلين، استخراج التصاريح، وتجهيز كاميرات ARRI وإضاءات السينما.', en: 'Scouting locations, talent casting, safety permits, ARRI camera fleet preparation, and production design.' },
+        s3_title: { ar: 'التصوير السينمائي الميداني', en: 'Principal Photography' },
+        s3_desc: { ar: 'تنفيذ التصوير بإدارة مخرجين ومصوري سينما محترفين مع رصد دقيق لكل زاوية وكادر وإضاءة.', en: 'Executing on set with seasoned directors, precision lighting setups, camera cranes, and sound recording.' },
+        s4_title: { ar: 'المونتاج والمكساج وتصحيح الألوان', en: 'Post-Production & Hollywood Finish' },
+        s4_desc: { ar: 'مونتاج سينمائي، تصحيح ألوان احترافي DaVinci Resolve، ومكساج صوتي محيطي Dolby Atmos.', en: 'Precision editorial cut, DaVinci Resolve color mastering, VFX motion, and Dolby Atmos sound mastering.' }
+      },
+      cta: {
+        eyebrow: { ar: 'هل أنت مستعد للمشروع القادم؟', en: 'READY FOR YOUR NEXT MASTERPIECE?' },
+        title: { ar: 'دعنا نصنع لعلامتك عملاً لا يُنسى', en: 'Let’s Produce Something Legendary Together' },
+        sub: { ar: 'تحدث مباشرة مع فريق الإخراج والإنتاج لمناقشة فكرة عملك وتقدير الميزانية وجدول التنفيذ.', en: 'Connect directly with our producers and creative directors to plan your upcoming campaign.' },
+        btn: { ar: 'احجز جلسة نقاش الإنتاج', en: 'Schedule Production Discovery' }
+      }
     },
     services: {
       hero: {
-        tag: { en: '', ar: '' },
-        title: { en: '', ar: '' },
-        desc: { en: '', ar: '' }
+        tag: { ar: 'حلول إبداعية وإنتاج سينمائي', en: 'CREATIVE SUITE & CINEMA PRODUCTION' },
+        title: { ar: 'خدماتنا وحلولنا الإبداعية المتكاملة', en: 'Comprehensive Creative & Film Solutions' },
+        desc: {
+          ar: 'منظومة إنتاج وتصميم وتسويق رقمي مدروسة بدقة لتحقيق أعلى عائد استثماري لعلامتك.',
+          en: 'A full-service production, design, and growth engine engineered for maximum commercial impact.'
+        }
       }
     },
     portfolio: {
       hero: {
-        tag: { en: '', ar: '' },
-        title: { en: '', ar: '' },
-        desc: { en: '', ar: '' }
+        tag: { ar: 'معرض الأعمال السينمائي', en: 'CINEMATIC WORK ARCHIVE' },
+        title: { ar: 'إنتاجات تتحدث عن نفسها', en: 'Crafted for Global Impact' },
+        desc: {
+          ar: 'نستعرض هنا أرشيف إنتاجاتنا في الأفلام الإعلانية، الهويات البصرية الأيقونية، والحملات الاستراتيجية للعلامات الرائدة.',
+          en: 'A curated showcase of our work in commercial film production, iconic visual identity, and high-performance brand campaigns.'
+        }
       }
     },
     blogs: {
       hero: {
-        tag: { en: '', ar: '' },
-        title: { en: '', ar: '' },
-        desc: { en: '', ar: '' }
+        tag: { ar: 'رؤى وتحليلات إعلامية', en: 'INSIGHTS & PERSPECTIVES' },
+        title: { ar: 'أفكار ومقالات في التسويق والتصميم والسينما', en: 'Insights & Thoughts on Film & Marketing' },
+        desc: {
+          ar: 'نشارك خبراتنا وتحليلاتنا لمساعدتك على اتخاذ قرارات تسويقية وإنتاجية مبنية على أرقام وتجارب حقيقية.',
+          en: 'Insights, industry analysis, and guides to help you make smarter marketing and tech decisions.'
+        }
       }
     },
     footer: {
-      desc: { en: '', ar: '' },
-      copy: { en: '', ar: '' },
-      socials: { linkedin: '', twitter: '', facebook: '', instagram: '' },
-      email: '',
-      phone: ''
+      desc: {
+        ar: 'استوديو إنتاج سينمائي ورقمي متكامل يقود الحملات الكبرى، الأفلام الإعلانية، والهويات البصرية الرائدة للشركات الطموحة في الشرق الأوسط.',
+        en: 'Award-winning film and digital production studio operating across the Middle East.'
+      },
+      address: {
+        ar: 'مصر، القاهرة الجديدة — التجمع الخامس، مبنى ميديا جلو',
+        en: 'Media Glow Studios, New Cairo, 5th Settlement, Egypt'
+      },
+      copy: {
+        ar: 'جميع الحقوق محفوظة © 2026 ميديا جلو.',
+        en: 'All rights reserved © 2026 Media Glow Production.'
+      },
+      made: {
+        ar: 'صُنع بشغف وإتقان في مصر',
+        en: 'Crafted with precision & passion in Egypt'
+      },
+      socials: { linkedin: '', twitter: '', facebook: '', instagram: '', youtube: '', tiktok: '' },
+      email: 'hello@mediaglowegypt.com',
+      phone: '+20 100 000 0000'
+    },
+    branding: {
+      logo_url: 'assets/media-glow-logo.png',
+      phone: '+20 100 000 0000',
+      whatsapp: '201000000000',
+      email: 'hello@mediaglow.agency',
+      primary_color: '#2DD4BF',
+      secondary_color: '#389B93',
+      instagram: 'https://instagram.com',
+      linkedin: 'https://linkedin.com',
+      twitter: 'https://twitter.com',
+      facebook: 'https://facebook.com',
+      youtube: 'https://youtube.com',
+      tiktok: 'https://tiktok.com',
+      seo_title: { ar: 'ميديا جلو | استوديو إنتاج سينمائي وإعلامي', en: 'Media Glow | Full-Service Film & Media Production' },
+      seo_desc: { ar: 'استوديو إنتاج سينمائي ورقمي متكامل يقود الحملات الكبرى والأفلام الإعلانية.', en: 'Award-winning film and digital production studio operating across the Middle East.' }
+    },
+    partners: {
+      title: { ar: 'شركاء النجاح والعلامات الرائدة', en: 'Trusted by Visionary Brands' },
+      items: [
+        { name: 'Qirmiz Luxury Roastery', logo: '/assets/media-glow-icon.png', category: 'F&B Luxury' },
+        { name: 'Al Noor International Clinics', logo: '/assets/media-glow-icon.png', category: 'Healthcare' },
+        { name: 'Takamol Enterprise Platform', logo: '/assets/media-glow-icon.png', category: 'Technology' },
+        { name: 'Aura Cinema & Media', logo: '/assets/media-glow-icon.png', category: 'Media' },
+        { name: 'Vortex Digital Solutions', logo: '/assets/media-glow-icon.png', category: 'Digital' },
+        { name: 'Horizon Hospitality Group', logo: '/assets/media-glow-icon.png', category: 'Hospitality' }
+      ]
+    },
+    team: {
+      title: { ar: 'فريق الإخراج والقيادة الإبداعية', en: 'Creative Leadership Team' },
+      items: [
+        { name_ar: 'م. أحمد الشريف', name_en: 'Ahmed El-Sherif', role_ar: 'المخرج الإبداعي ومؤسس الاستوديو', role_en: 'Creative Director & Founder', image: '/assets/media-glow-icon.png' },
+        { name_ar: 'د. ليلى فهمي', name_en: 'Dr. Layla Fahmy', role_ar: 'مديرة استراتيجيات النمو والتسويق', role_en: 'Head of Growth Strategy', image: '/assets/media-glow-icon.png' },
+        { name_ar: 'كريم ممدوح', name_en: 'Karim Mamdouh', role_ar: 'مدير التصوير والإنتاج السينمائي', role_en: 'Director of Photography (DoP)', image: '/assets/media-glow-icon.png' }
+      ]
+    },
+    newsletter: {
+      subscribers: [
+        { email: 'director@company.com', created_at: '2026-10-28', status: 'Active' },
+        { email: 'media@agency.ae', created_at: '2026-10-30', status: 'Active' },
+        { email: 'growth@startup.sa', created_at: '2026-11-02', status: 'Active' }
+      ]
     }
   };
   isSavingPage: { [key: string]: boolean } = {};
@@ -392,10 +506,24 @@ export class ControllerDashboardComponent implements OnInit {
 
   loadPageData(page: string) {
     this.apiService.getPageContent(page).subscribe((res: any) => {
-      if (res && res.data) {
-        this.pagesData[page] = { ...this.pagesData[page], ...res.data };
+      if (res && res.data && Object.keys(res.data).length > 0) {
+        this.pagesData[page] = this.deepMerge(this.pagesData[page], res.data);
       }
     });
+  }
+
+  private deepMerge(target: any, source: any): any {
+    if (!target) return source;
+    if (!source) return target;
+    const output = { ...target };
+    for (const key of Object.keys(source)) {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        output[key] = this.deepMerge(target[key] || {}, source[key]);
+      } else {
+        output[key] = source[key];
+      }
+    }
+    return output;
   }
 
   // --- Project CRUD Operations ---
@@ -1098,7 +1226,60 @@ export class ControllerDashboardComponent implements OnInit {
       case 'footer-section':
         this.loadPageData('footer');
         break;
+      case 'branding-settings':
+        this.loadPageData('branding');
+        break;
+      case 'partners':
+        this.loadPageData('partners');
+        break;
+      case 'team':
+        this.loadPageData('team');
+        break;
+      case 'newsletter':
+        this.loadPageData('newsletter');
+        break;
     }
+  }
+
+  // --- Helpers for Brand, Partners, Team, Newsletter ---
+  addPartner() {
+    if (!this.pagesData['partners'].items) this.pagesData['partners'].items = [];
+    this.pagesData['partners'].items.push({
+      name: 'New Partner Brand',
+      logo: '/assets/media-glow-icon.png',
+      category: 'General'
+    });
+  }
+
+  removePartner(index: number) {
+    if (confirm('Are you sure you want to remove this partner brand?')) {
+      this.pagesData['partners'].items.splice(index, 1);
+    }
+  }
+
+  addTeamMember() {
+    if (!this.pagesData['team'].items) this.pagesData['team'].items = [];
+    this.pagesData['team'].items.push({
+      name_ar: 'عضو جديد',
+      name_en: 'New Team Member',
+      role_ar: 'المنصب الإبداعي',
+      role_en: 'Creative Position',
+      image: '/assets/media-glow-icon.png'
+    });
+  }
+
+  removeTeamMember(index: number) {
+    if (confirm('Are you sure you want to remove this team member?')) {
+      this.pagesData['team'].items.splice(index, 1);
+    }
+  }
+
+  toggleDashboardLang() {
+    this.translationService.toggleLanguage();
+  }
+
+  toggleDashboardTheme() {
+    this.themeService.toggleTheme();
   }
 
   setTab(tab: string) {

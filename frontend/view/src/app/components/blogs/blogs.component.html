@@ -4,24 +4,22 @@
 
 <section class="blogs-hero">
   <div class="wrap">
-    <div class="eyebrow">
-      <span class="dash"></span>
-      <span>{{ translationService.translate('nav.blogs') }}</span>
+    <div class="badge-award">
+      <i class="fa-solid fa-book-open-reader icon-twinkle"></i>
+      <span>{{ getHeroTag() }}</span>
     </div>
 
     <h1>
-      <span>{{ translationService.currentLang() === 'ar' ? 'أفكار ومقالات في التسويق والتصميم' : 'Insights & Thoughts' }}</span>
+      <span>{{ getHeroTitle() }}</span>
     </h1>
 
     <p class="lead">
-      {{ translationService.currentLang() === 'ar'
-         ? 'نشارك خبراتنا وتحليلاتنا لمساعدتك على اتخاذ قرارات تسويقية وتقنية مبنية على أرقام وتجارب حقيقية.'
-         : 'Insights, industry analysis, and guides to help you make smarter marketing and tech decisions.' }}
+      {{ getHeroDesc() }}
     </p>
 
     <!-- Search Input -->
     <div class="search-bar">
-      <i class="fa-solid fa-magnifying-glass"></i>
+      <i class="fa-solid fa-magnifying-glass icon-pulse"></i>
       <input 
         type="text" 
         [(ngModel)]="searchQuery" 
@@ -35,28 +33,28 @@
 <section class="section section-soft">
   <div class="wrap">
     <div class="articles-grid">
-      <a *ngFor="let b of filteredBlogs" [routerLink]="['/blog-details', b.id]" class="article-card">
+      <a *ngFor="let b of filteredBlogs" [routerLink]="['/blog-details', b.id]" class="article-card card-interactive">
         <div class="art-thumb">
           <img *ngIf="b.media_path || b.image" [src]="b.media_path || b.image" [alt]="b.title?.ar || b.title" />
           <div *ngIf="!b.media_path && !b.image" class="art-placeholder">
-            <i class="fa-solid fa-newspaper"></i>
+            <i class="fa-solid fa-newspaper icon-pulse"></i>
           </div>
         </div>
 
         <div class="art-body">
-          <div class="art-tag">{{ b.category || (translationService.currentLang() === 'ar' ? 'مقال' : 'Article') }}</div>
-          <h3>{{ b.title?.ar || b.title_ar || b.title }}</h3>
-          <p>{{ b.description?.ar || b.description_ar || b.description }}</p>
+          <div class="art-tag">{{ getBlogCategory(b) }}</div>
+          <h3>{{ getBlogTitle(b) }}</h3>
+          <p>{{ getBlogDesc(b) }}</p>
           <span class="read-more">
             <span>{{ translationService.currentLang() === 'ar' ? 'اقرأ المقال' : 'Read Article' }}</span>
-            <i class="fa-solid fa-arrow-left"></i>
+            <i class="fa-solid fa-arrow-left arrow-dir"></i>
           </span>
         </div>
       </a>
     </div>
 
     <div *ngIf="!filteredBlogs.length" class="empty-state">
-      <i class="fa-regular fa-folder-open"></i>
+      <i class="fa-regular fa-folder-open icon-float"></i>
       <h3>{{ translationService.currentLang() === 'ar' ? 'لا توجد نتائج بحث مطابقة' : 'No articles match your search' }}</h3>
     </div>
   </div>

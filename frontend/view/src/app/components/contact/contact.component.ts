@@ -102,4 +102,13 @@ export class ContactComponent implements OnInit {
     const lang = this.translationService.currentLang();
     return d?.hours?.[lang] || d?.hours?.ar || d?.hours?.en || (lang === 'ar' ? 'الأحد – الخميس: 9:00 ص – 6:00 م' : 'Sunday – Thursday: 9:00 AM – 6:00 PM');
   }
+
+  getWhatsAppUrl(): string {
+    const phone = this.getContactData()?.whatsapp || this.getPhone() || '201000000000';
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const msg = this.translationService.currentLang() === 'ar' 
+      ? encodeURIComponent('مرحباً ميديا جلو، أود بدء استشارة فورية لمشروعي') 
+      : encodeURIComponent('Hello Media Glow, I would like to start a consultation for my project');
+    return `https://wa.me/${cleanPhone}?text=${msg}`;
+  }
 }

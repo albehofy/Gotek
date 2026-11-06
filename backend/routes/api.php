@@ -146,6 +146,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/summary', [FinanceController::class, 'summary']);
         Route::get('/ledger', [FinanceController::class, 'getLedger']);
         Route::post('/ledger', [FinanceController::class, 'storeLedger']);
+        Route::put('/ledger/{id}', [FinanceController::class, 'updateLedger']);
+        Route::delete('/ledger/{id}', [FinanceController::class, 'deleteLedger']);
         Route::get('/categories', [FinanceController::class, 'getCategories']);
         Route::post('/categories', [FinanceController::class, 'storeCategory']);
         Route::get('/client-balances', [FinanceController::class, 'getClientBalances']);

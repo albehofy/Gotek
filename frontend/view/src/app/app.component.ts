@@ -31,6 +31,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.translationService.setLanguage(this.translationService.currentLang());
     this.loadGlobalSiteContent();
   }
 
@@ -43,5 +44,16 @@ export class AppComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  getWhatsAppUrl(): string {
+    const phone = this.translationService.siteContent()?.contact?.whatsapp 
+      || this.translationService.siteContent()?.footer?.phone 
+      || '201000000000';
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const msg = this.translationService.currentLang() === 'ar' 
+      ? encodeURIComponent('مرحباً ميديا جلو، أود الاستفسار عن خدمات الإنتاج والتسويق') 
+      : encodeURIComponent('Hello Media Glow, I would like to inquire about your production & marketing services');
+    return `https://wa.me/${cleanPhone}?text=${msg}`;
   }
 }

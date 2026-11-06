@@ -841,7 +841,7 @@ import { DropdownModule } from 'primeng/dropdown';
           </div>
 
           <!-- Upload Plan Dialog -->
-          <p-dialog [(visible)]="showPdfUploadDialog" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="رفع بريف أو خطة جديدة" [style]="{ width: '92vw', maxWidth: '480px' }">
+          <p-dialog [(visible)]="showPdfUploadDialog" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="cancelPdfUpload()" header="رفع بريف أو خطة جديدة" [style]="{ width: '92vw', maxWidth: '480px' }">
             <div style="padding:10px 0;" dir="rtl">
               <div class="form-group">
                 <label style="font-weight:700;font-size:0.85rem;margin-bottom:6px;display:block;">نوع الملف</label>
@@ -884,6 +884,7 @@ import { DropdownModule } from 'primeng/dropdown';
         [modal]="true"
         [dismissableMask]="true"
         [appendTo]="'body'"
+        (onHide)="closePaymentModal()"
         header="تسجيل دفعة مالية جديدة للعميل"
         [style]="{ width: '92vw', maxWidth: '520px' }"
         styleClass="custom-crm-dialog"
@@ -927,7 +928,7 @@ import { DropdownModule } from 'primeng/dropdown';
           </div>
 
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showPaymentModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closePaymentModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="paymentForm.invalid || submitting">
               <i class="fa-solid fa-check" *ngIf="!submitting"></i>
               <i class="fa-solid fa-spinner fa-spin" *ngIf="submitting"></i>
@@ -943,6 +944,7 @@ import { DropdownModule } from 'primeng/dropdown';
         [modal]="true"
         [dismissableMask]="true"
         [appendTo]="'body'"
+        (onHide)="closeEditModal()"
         header="تعديل بيانات العميل وكلمة المرور"
         [style]="{ width: '92vw', maxWidth: '540px' }"
         styleClass="custom-crm-dialog"
@@ -990,7 +992,7 @@ import { DropdownModule } from 'primeng/dropdown';
           </div>
 
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showEditModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeEditModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="editClientForm.invalid || submitting">
               <i class="fa-solid fa-check" *ngIf="!submitting"></i>
               <i class="fa-solid fa-spinner fa-spin" *ngIf="submitting"></i>
@@ -3620,8 +3622,20 @@ export class ClientDetailComponent implements OnInit {
     });
   }
 
+  closePaymentModal(): void {
+    this.showPaymentModal = false;
+    this.paymentForm.reset({
+      deal_id: null,
+      amount: 0,
+      payment_date: new Date().toISOString().split('T')[0],
+      payment_method: 'cash',
+      receipt_ref: ''
+    });
+  }
+
   openPaymentModal(): void {
     if (!this.client) return;
+    this.closePaymentModal();
     this.paymentForm.reset({
       deal_id: this.deals.length > 0 ? this.deals[0].id : null,
       amount: this.remainingBalance > 0 ? this.remainingBalance : 0,
@@ -3644,7 +3658,7 @@ export class ClientDetailComponent implements OnInit {
     this.apiService.storeClientPayment(payload).subscribe({
       next: () => {
         this.submitting = false;
-        this.showPaymentModal = false;
+        this.closePaymentModal();
         this.toastService.success('تم تسجيل الدفعة بنجاح', 'تمت العملية');
         this.loadClientData();
       },
@@ -3655,8 +3669,14 @@ export class ClientDetailComponent implements OnInit {
     });
   }
 
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.editClientForm.reset();
+  }
+
   openEditModal(): void {
     if (!this.client) return;
+    this.closeEditModal();
     this.editClientForm.patchValue({
       name: this.client.name || this.client.client_name || '',
       email: this.client.email || this.client.client_email || '',
@@ -3691,7 +3711,7 @@ export class ClientDetailComponent implements OnInit {
     this.apiService.updateUser(clientId, payload).subscribe({
       next: (res) => {
         this.submitting = false;
-        this.showEditModal = false;
+        this.closeEditModal();
         this.toastService.success('تم تحديث بيانات وتصنيف العميل بنجاح', 'حفظ التعديلات');
         this.loadClientData();
       },

@@ -467,7 +467,7 @@ import { TextareaModule } from 'primeng/textarea';
       </div>
 
       <!-- PrimeNG Dialog for Client Revision Notes -->
-      <p-dialog [(visible)]="showRevisionDialog" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="طلب تعديل وملاحظات العميل" [style]="{ width: '92vw', maxWidth: '520px' }">
+      <p-dialog [(visible)]="showRevisionDialog" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeRevisionDialog()" header="طلب تعديل وملاحظات العميل" [style]="{ width: '92vw', maxWidth: '520px' }">
         <div style="padding: 10px 0;" dir="rtl">
           <p style="font-size:0.88rem; color:var(--text-2); margin-bottom:14px; line-height:1.6;">
             يرجى كتابة التعديلات والملاحظات المطلوبة على المهمة ({{ activeTaskForRevision?.title }}) ليتم إرسالها فوراً لفريق العمل:
@@ -479,7 +479,7 @@ import { TextareaModule } from 'primeng/textarea';
             <textarea [(ngModel)]="revisionText" pInputTextarea rows="4" placeholder="اكتب ملاحظاتك وتعديلاتك بالتفصيل..." style="width:100%; border-radius: 8px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;" dir="rtl"></textarea>
           </div>
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showRevisionDialog = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeRevisionDialog()">إلغاء</button>
             <button type="button" class="btn-dialog-submit" [disabled]="!revisionText.trim()" (click)="submitRevisionNote()">
               <i class="fa-solid fa-paper-plane"></i> إرسال طلب التعديل
             </button>
@@ -1110,12 +1110,18 @@ export class ClientPortalViewComponent implements OnInit {
     this.showRevisionDialog = true;
   }
 
+  closeRevisionDialog(): void {
+    this.showRevisionDialog = false;
+    this.revisionText = '';
+    this.activeTaskForRevision = null;
+  }
+
   submitRevisionNote(): void {
     if (!this.activeTaskForRevision || !this.revisionText.trim()) return;
     
     this.apiService.addClientTaskNote(this.activeTaskForRevision.id, this.revisionText).subscribe({
       next: () => {
-        this.showRevisionDialog = false;
+        this.closeRevisionDialog();
         this.loadPortalData();
       }
     });

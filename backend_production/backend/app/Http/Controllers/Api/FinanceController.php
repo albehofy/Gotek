@@ -190,6 +190,54 @@ class FinanceController extends Controller
         return response()->json(['status' => 'success', 'data' => $entry->load(['category', 'department', 'creator'])], 201);
     }
 
+    public function updateLedger(Request $request, $id)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بتعديل قيود مالية'], 403);
+        }
+
+        $entry = LedgerEntry::findOrFail($id);
+
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'type' => 'required|in:income,expense,custody_issued,custody_returned',
+            'category_id' => 'nullable|exists:finance_categories,id',
+            'department_id' => 'nullable|exists:departments,id',
+            'deal_id' => 'nullable|exists:deals,id',
+            'client_id' => 'nullable|exists:users,id',
+            'employee_id' => 'nullable|exists:users,id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|in:cash,cash_hand,instapay,bank_transfer',
+            'description' => 'nullable|string',
+            'receipt_path' => 'nullable|string'
+        ]);
+
+        $entry->update($validated);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم تعديل المعاملة المالية بنجاح',
+            'data' => $entry->load(['category', 'department', 'creator'])
+        ]);
+    }
+
+    public function deleteLedger($id)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->canAccessFinance()) {
+            return response()->json(['message' => 'غير مصرح لك بحذف قيود مالية'], 403);
+        }
+
+        $entry = LedgerEntry::findOrFail($id);
+        $entry->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم حذف المعاملة المالية بنجاح'
+        ]);
+    }
+
     // --- Manageable Categories ---
     public function getCategories()
     {

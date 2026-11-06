@@ -19,8 +19,16 @@ export const routes: Routes = [
     loadComponent: () => import('./components/services/services.component').then(m => m.ServicesComponent) 
   },
   { 
+    path: 'services/:slug', 
+    loadComponent: () => import('./components/service-details/service-details.component').then(m => m.ServiceDetailsComponent) 
+  },
+  { 
     path: 'portfolio', 
     loadComponent: () => import('./components/portfolio/portfolio.component').then(m => m.PortfolioComponent) 
+  },
+  { 
+    path: 'portfolio/:id', 
+    loadComponent: () => import('./components/project-details/project-details.component').then(m => m.ProjectDetailsComponent) 
   },
   { 
     path: 'project/:id', 

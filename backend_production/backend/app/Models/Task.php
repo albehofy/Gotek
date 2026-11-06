@@ -62,6 +62,17 @@ class Task extends Model
         static::saving(function ($task) {
             $task->company_margin = max(0, (float) $task->client_price - (float) $task->employee_price);
 
+            // Synchronize description and scope so task details/specs are never lost
+            if (!empty($task->description) && empty($task->scope)) {
+                $task->scope = $task->description;
+            } elseif (!empty($task->scope) && empty($task->description)) {
+                $task->description = $task->scope;
+            } elseif ($task->isDirty('description') && !$task->isDirty('scope')) {
+                $task->scope = $task->description;
+            } elseif ($task->isDirty('scope') && !$task->isDirty('description')) {
+                $task->description = $task->scope;
+            }
+
             // Automatically sync client_id from deal if deal_id is provided and client_id is empty
             if ($task->deal_id && empty($task->client_id)) {
                 $dealClientId = Deal::where('id', $task->deal_id)->value('client_id');
@@ -173,7 +184,7 @@ class Task extends Model
                         'new' => 'جديدة',
                         'todo' => 'بانتظار البدء',
                         'in_progress' => 'قيد التنفيذ',
-                        'content_creator' => 'صناعة المحتوى',
+                        'content_creator' => 'كتابة المحتوى',
                         'in_review' => 'قيد المراجعة الفنية',
                         'client_review' => 'مراجعة العميل',
                         'client_feedback' => 'ملاحظات وتعديلات',

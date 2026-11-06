@@ -20,19 +20,34 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
         return true;
       }
 
-      // If user is client and attempting to access non-client routes (e.g. /clients, /deals, /finance, /roles)
+      // If user is client and attempting to access non-client routes
       if (role === 'client') {
-        router.navigate(['/client-portal']);
+        if (!state.url.startsWith('/client-portal')) {
+          router.navigate(['/client-portal']);
+        }
         return false;
       }
 
       // If user is employee attempting forbidden admin routes
       if (role === 'employee') {
-        router.navigate(['/tasks']);
+        if (!state.url.startsWith('/tasks')) {
+          router.navigate(['/tasks']);
+        }
         return false;
       }
 
-      router.navigate(['/dashboard']);
+      // If user is account manager attempting forbidden routes (e.g. /dashboard, /tasks, etc.)
+      if (role === 'account_manager') {
+        if (!state.url.startsWith('/finance') && !state.url.startsWith('/clients') && !state.url.startsWith('/deals')) {
+          router.navigate(['/finance']);
+        }
+        return false;
+      }
+
+      // Safe fallback: never redirect to the current route to prevent infinite loops
+      if (!state.url.startsWith('/dashboard')) {
+        router.navigate(['/dashboard']);
+      }
       return false;
 
     } catch (e) {

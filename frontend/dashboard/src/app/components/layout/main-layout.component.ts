@@ -141,6 +141,11 @@ export class MainLayoutComponent implements OnInit {
   isDepartmentManager(): boolean { return this.currentUser?.role === 'department_manager'; }
   isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
   isClient(): boolean { return this.currentUser?.role === 'client'; }
+  isAccountManager(): boolean {
+    const role = (this.currentUser?.role || '').toLowerCase().replace(' ', '_');
+    const roles = Array.isArray(this.currentUser?.roles) ? this.currentUser.roles.map((r: any) => (r.slug || r.name || '').toLowerCase().replace(' ', '_')) : [];
+    return role === 'account_manager' || roles.includes('account_manager');
+  }
 
   canAccessFinance(): boolean {
     const role = this.currentUser?.role;

@@ -55,6 +55,20 @@
         </div>
       </div>
 
+      <div class="sb-section">Brand & Site Controls</div>
+      <a class="sb-item" [class.active]="activeTab === 'branding-settings'" (click)="setTab('branding-settings')">
+        <span class="sb-icon"><i class="fa-solid fa-palette"></i></span><span>Branding & Identity</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'partners'" (click)="setTab('partners')">
+        <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span><span>Partners & Clients</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'team'" (click)="setTab('team')">
+        <span class="sb-icon"><i class="fa-solid fa-users"></i></span><span>Creative & Exec Team</span>
+      </a>
+      <a class="sb-item" [class.active]="activeTab === 'newsletter'" (click)="setTab('newsletter')">
+        <span class="sb-icon"><i class="fa-solid fa-envelope-open-text"></i></span><span>Newsletter Subscribers</span>
+      </a>
+
       <div class="sb-section">Static Page Editors</div>
       <a class="sb-item" [class.active]="activeTab === 'home-page'" (click)="setTab('home-page')">
         <span class="sb-icon"><i class="fa-solid fa-house"></i></span><span>Home Page Section</span>
@@ -109,7 +123,30 @@
         <span class="cur">{{ activeTab | titlecase }}</span>
       </div>
     </div>
-    <div class="tb-r">
+    <div class="tb-r" style="display: flex; align-items: center; gap: 12px;">
+      <!-- Language Toggle Pill in Dashboard -->
+      <button 
+        type="button" 
+        class="dash-lang-btn" 
+        (click)="toggleDashboardLang()" 
+        title="Toggle Arabic / English"
+        style="background: rgba(255,255,255,0.06); border: 1px solid var(--admin-border); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;"
+      >
+        <i class="fa-solid fa-globe"></i>
+        <span>{{ translationService.currentLang() === 'ar' ? 'English' : 'عربي' }}</span>
+      </button>
+
+      <!-- Theme Switcher in Dashboard -->
+      <button 
+        type="button" 
+        class="dash-theme-btn" 
+        (click)="toggleDashboardTheme()" 
+        title="Toggle Theme"
+        style="background: rgba(255,255,255,0.06); border: 1px solid var(--admin-border); color: #fff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+      >
+        <i class="fa-solid" [class.fa-sun]="themeService.isDark()" [class.fa-moon]="!themeService.isDark()"></i>
+      </button>
+
       <div class="tb-user" (click)="toggleDropdown('user')">
         <div class="tb-av"><i class="fa-solid fa-user-shield"></i></div>
         <span class="tb-uname">Media Glow Admin</span>
@@ -1028,23 +1065,138 @@
     <!-- HOME PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'home-page'">
       <div class="pg-head">
-        <h2>Home Page Header Sections</h2>
-        <p>Edit the core textual properties of the main homepage.</p>
+        <h2>{{ translationService.currentLang() === 'ar' ? 'إدارة وتخصيص الصفحة الرئيسية بالكامل' : 'Home Page Complete Content Controls' }}</h2>
+        <p>{{ translationService.currentLang() === 'ar' ? 'تحكم في كافة نصوص ومحتويات الصفحة الرئيسية باللغتين العربية والإنجليزية.' : 'Edit every single text and media asset on the homepage in both Arabic and English.' }}</p>
         <button class="save-btn" (click)="savePageData('home')" [disabled]="isSavingPage['home']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['home'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['home'] ? (translationService.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...') : (translationService.currentLang() === 'ar' ? 'حفظ كافة تعديلات الصفحة الرئيسية' : 'Save All Home Changes') }}
         </button>
       </div>
 
+      <!-- 1. Hero Section -->
       <div class="card" style="margin-top:24px;">
-        <div class="card-header"><div class="card-title">Hero Banner Section</div></div>
+        <div class="card-header"><div class="card-title">1. Hero Banner & Showreel</div></div>
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Tagline (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.tag.ar" class="s-input" dir="rtl"></div>
-            <div><label class="s-label">Title Line (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.en" class="s-input"></div>
-            <div><label class="s-label">Title Line (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.ar" class="s-input" dir="rtl"></div>
-            <div class="full-width"><label class="s-label">Subtitle Description (English)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Award / Studio Badge (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.award_badge.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Award / Studio Badge (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.award_badge.en" class="s-input"></div>
+            <div><label class="s-label">Main Title Line 1 (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Main Title Line 1 (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title1.en" class="s-input"></div>
+            <div><label class="s-label">Main Title Line 2 (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title2.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Main Title Line 2 (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.title2.en" class="s-input"></div>
             <div class="full-width"><label class="s-label">Subtitle Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Subtitle Description (English)</label><textarea [(ngModel)]="pagesData['home'].hero.subtitle.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Primary Action Button (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.btn1.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Primary Action Button (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.btn1.en" class="s-input"></div>
+            <div><label class="s-label">Showreel Button (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].hero.reel_btn.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Showreel Button (English)</label><input type="text" [(ngModel)]="pagesData['home'].hero.reel_btn.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Showreel Video URL (.mp4 / stream)</label><input type="text" [(ngModel)]="pagesData['home'].hero.showreel_url" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Showreel Poster Image URL</label><input type="text" [(ngModel)]="pagesData['home'].hero.showreel_poster" class="s-input"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Stats Strip -->
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header"><div class="card-title">2. Counter Strip Metrics (Stats 1 - 4)</div></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Metric 1 Number</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat1_num" class="s-input"></div>
+            <div><label class="s-label">Metric 1 Label (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat1_label.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Metric 1 Label (English)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat1_label.en" class="s-input"></div>
+            <div><label class="s-label">Metric 2 Number</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat2_num" class="s-input"></div>
+            <div><label class="s-label">Metric 2 Label (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat2_label.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Metric 2 Label (English)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat2_label.en" class="s-input"></div>
+            <div><label class="s-label">Metric 3 Number</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat3_num" class="s-input"></div>
+            <div><label class="s-label">Metric 3 Label (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat3_label.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Metric 3 Label (English)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat3_label.en" class="s-input"></div>
+            <div><label class="s-label">Metric 4 Number</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat4_num" class="s-input"></div>
+            <div><label class="s-label">Metric 4 Label (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat4_label.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Metric 4 Label (English)</label><input type="text" [(ngModel)]="pagesData['home'].stats.stat4_label.en" class="s-input"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Services Bento Matrix Section -->
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header"><div class="card-title">3. Bento Matrix Capabilities Section</div></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Section Eyebrow (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.eyebrow.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Section Eyebrow (English)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.eyebrow.en" class="s-input"></div>
+            <div><label class="s-label">Section Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Section Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Section Subtitle (Arabic)</label><textarea [(ngModel)]="pagesData['home'].services_bento.sub.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Section Subtitle (English)</label><textarea [(ngModel)]="pagesData['home'].services_bento.sub.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Pillar 1 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s1_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Pillar 1 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s1_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Pillar 1 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s1_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Pillar 1 Description (English)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s1_desc.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Pillar 2 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s2_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Pillar 2 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s2_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Pillar 2 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s2_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Pillar 2 Description (English)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s2_desc.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Pillar 3 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s3_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Pillar 3 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s3_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Pillar 3 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s3_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Pillar 3 Description (English)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s3_desc.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Pillar 4 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s4_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Pillar 4 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].services_bento.s4_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Pillar 4 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s4_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Pillar 4 Description (English)</label><textarea [(ngModel)]="pagesData['home'].services_bento.s4_desc.en" rows="2" class="s-input"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Workflow Methodology Section -->
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header"><div class="card-title">4. Production Methodology (4 Steps)</div></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Section Eyebrow (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.eyebrow.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Section Eyebrow (English)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.eyebrow.en" class="s-input"></div>
+            <div><label class="s-label">Section Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Section Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.title.en" class="s-input"></div>
+
+            <div><label class="s-label">Step 1 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s1_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Step 1 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s1_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Step 1 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].workflow.s1_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Step 1 Description (English)</label><textarea [(ngModel)]="pagesData['home'].workflow.s1_desc.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Step 2 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s2_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Step 2 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s2_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Step 2 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].workflow.s2_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Step 2 Description (English)</label><textarea [(ngModel)]="pagesData['home'].workflow.s2_desc.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Step 3 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s3_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Step 3 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s3_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Step 3 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].workflow.s3_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Step 3 Description (English)</label><textarea [(ngModel)]="pagesData['home'].workflow.s3_desc.en" rows="2" class="s-input"></textarea></div>
+
+            <div><label class="s-label">Step 4 Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s4_title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Step 4 Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].workflow.s4_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Step 4 Description (Arabic)</label><textarea [(ngModel)]="pagesData['home'].workflow.s4_desc.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Step 4 Description (English)</label><textarea [(ngModel)]="pagesData['home'].workflow.s4_desc.en" rows="2" class="s-input"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Finale CTA Banner -->
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header"><div class="card-title">5. Masterpiece Finale CTA Banner</div></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Eyebrow (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].cta.eyebrow.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Eyebrow (English)</label><input type="text" [(ngModel)]="pagesData['home'].cta.eyebrow.en" class="s-input"></div>
+            <div><label class="s-label">Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].cta.title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Title (English)</label><input type="text" [(ngModel)]="pagesData['home'].cta.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Subtitle (Arabic)</label><textarea [(ngModel)]="pagesData['home'].cta.sub.ar" rows="2" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Subtitle (English)</label><textarea [(ngModel)]="pagesData['home'].cta.sub.en" rows="2" class="s-input"></textarea></div>
+            <div><label class="s-label">Button Text (Arabic)</label><input type="text" [(ngModel)]="pagesData['home'].cta.btn.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Button Text (English)</label><input type="text" [(ngModel)]="pagesData['home'].cta.btn.en" class="s-input"></div>
           </div>
         </div>
       </div>
@@ -1101,8 +1253,8 @@
     <!-- SERVICES PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'services-page'">
       <div class="pg-head">
-        <h2>Services Page Header</h2>
-        <p>Edit services banner textual titles.</p>
+        <h2>Services Page Header & Banner</h2>
+        <p>Edit services banner titles and descriptions in Arabic and English.</p>
         <button class="save-btn" (click)="savePageData('services')" [disabled]="isSavingPage['services']" style="margin-top:16px;">
           <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['services'] ? 'Saving...' : 'Save All Changes' }}
         </button>
@@ -1111,9 +1263,12 @@
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['services'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['services'].hero.title.en" class="s-input"></div>
-            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['services'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Tagline (Arabic)</label><input type="text" [(ngModel)]="pagesData['services'].hero.tag.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Tagline (English)</label><input type="text" [(ngModel)]="pagesData['services'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['services'].hero.title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Title (English)</label><input type="text" [(ngModel)]="pagesData['services'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Description (Arabic)</label><textarea [(ngModel)]="pagesData['services'].hero.desc.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Description (English)</label><textarea [(ngModel)]="pagesData['services'].hero.desc.en" rows="3" class="s-input"></textarea></div>
           </div>
         </div>
       </div>
@@ -1122,8 +1277,8 @@
     <!-- PORTFOLIO PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'portfolio-page'">
       <div class="pg-head">
-        <h2>Portfolio Page Header</h2>
-        <p>Edit portfolio banner titles.</p>
+        <h2>Portfolio Page Header & Banner</h2>
+        <p>Edit portfolio banner titles and descriptions in Arabic and English.</p>
         <button class="save-btn" (click)="savePageData('portfolio')" [disabled]="isSavingPage['portfolio']" style="margin-top:16px;">
           <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['portfolio'] ? 'Saving...' : 'Save All Changes' }}
         </button>
@@ -1132,9 +1287,12 @@
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.en" class="s-input"></div>
-            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['portfolio'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Tagline (Arabic)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.tag.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Tagline (English)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Title (English)</label><input type="text" [(ngModel)]="pagesData['portfolio'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Description (Arabic)</label><textarea [(ngModel)]="pagesData['portfolio'].hero.desc.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Description (English)</label><textarea [(ngModel)]="pagesData['portfolio'].hero.desc.en" rows="3" class="s-input"></textarea></div>
           </div>
         </div>
       </div>
@@ -1143,8 +1301,8 @@
     <!-- BLOGS PAGE SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'blogs-page'">
       <div class="pg-head">
-        <h2>Blogs Page Header</h2>
-        <p>Edit blogs header banner textual titles.</p>
+        <h2>Blogs Page Header & Banner</h2>
+        <p>Edit blogs header banner textual titles in Arabic and English.</p>
         <button class="save-btn" (click)="savePageData('blogs')" [disabled]="isSavingPage['blogs']" style="margin-top:16px;">
           <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['blogs'] ? 'Saving...' : 'Save All Changes' }}
         </button>
@@ -1153,33 +1311,234 @@
       <div class="card" style="margin-top:24px;">
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div><label class="s-label">Tagline (EN)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.en" class="s-input"></div>
-            <div><label class="s-label">Title (EN)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.title.en" class="s-input"></div>
-            <div class="full-width"><label class="s-label">Description (EN)</label><textarea [(ngModel)]="pagesData['blogs'].hero.desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Tagline (Arabic)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Tagline (English)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.tag.en" class="s-input"></div>
+            <div><label class="s-label">Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.title.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Title (English)</label><input type="text" [(ngModel)]="pagesData['blogs'].hero.title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Description (Arabic)</label><textarea [(ngModel)]="pagesData['blogs'].hero.desc.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Description (English)</label><textarea [(ngModel)]="pagesData['blogs'].hero.desc.en" rows="3" class="s-input"></textarea></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- FOOTER CONTENT SECTION TAB -->
+    <!-- FOOTER SECTION TAB -->
     <div class="view" [class.active]="activeTab === 'footer-section'">
       <div class="pg-head">
-        <h2>Footer Global Content</h2>
-        <p>Edit description text and links inside the global website footer.</p>
+        <h2>Footer Content & Contact Details</h2>
+        <p>Configure footer brand statement, studio location address, and copyright notices.</p>
         <button class="save-btn" (click)="savePageData('footer')" [disabled]="isSavingPage['footer']" style="margin-top:16px;">
-          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['footer'] ? 'Saving...' : 'Save All Changes' }}
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['footer'] ? 'Saving...' : 'Save Footer Changes' }}
         </button>
       </div>
 
       <div class="card" style="margin-top:24px;">
+        <div class="card-header"><div class="card-title">Footer Brand & Address</div></div>
         <div class="cb" style="padding:24px;">
           <div class="form-grid-custom">
-            <div class="full-width"><label class="s-label">Company Description in Footer (EN)</label><textarea [(ngModel)]="pagesData['footer'].desc.en" rows="3" class="s-input"></textarea></div>
-            <div><label class="s-label">Email Address</label><input type="text" [(ngModel)]="pagesData['footer'].email" class="s-input"></div>
-            <div><label class="s-label">Phone Number</label><input type="text" [(ngModel)]="pagesData['footer'].phone" class="s-input"></div>
-            <div><label class="s-label">LinkedIn URL</label><input type="text" [(ngModel)]="pagesData['footer'].socials.linkedin" class="s-input"></div>
-            <div><label class="s-label">Twitter URL</label><input type="text" [(ngModel)]="pagesData['footer'].socials.twitter" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Brand Summary Statement (Arabic)</label><textarea [(ngModel)]="pagesData['footer'].desc.ar" rows="3" class="s-input" dir="rtl"></textarea></div>
+            <div class="full-width"><label class="s-label">Brand Summary Statement (English)</label><textarea [(ngModel)]="pagesData['footer'].desc.en" rows="3" class="s-input"></textarea></div>
+            <div><label class="s-label">Studio Address (Arabic)</label><input type="text" [(ngModel)]="pagesData['footer'].address.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Studio Address (English)</label><input type="text" [(ngModel)]="pagesData['footer'].address.en" class="s-input"></div>
+            <div><label class="s-label">Copyright Notice (Arabic)</label><input type="text" [(ngModel)]="pagesData['footer'].copy.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Copyright Notice (English)</label><input type="text" [(ngModel)]="pagesData['footer'].copy.en" class="s-input"></div>
+            <div><label class="s-label">Crafted Tag (Arabic)</label><input type="text" [(ngModel)]="pagesData['footer'].made.ar" class="s-input" dir="rtl"></div>
+            <div><label class="s-label">Crafted Tag (English)</label><input type="text" [(ngModel)]="pagesData['footer'].made.en" class="s-input"></div>
+            <div><label class="s-label">Footer Contact Email</label><input type="text" [(ngModel)]="pagesData['footer'].email" class="s-input"></div>
+            <div><label class="s-label">Footer Contact Phone</label><input type="text" [(ngModel)]="pagesData['footer'].phone" class="s-input"></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANDING & THEME SETTINGS TAB -->
+    <div class="view" [class.active]="activeTab === 'branding-settings'">
+      <div class="pg-head">
+        <h2>Brand Identity & Site System</h2>
+        <p>Configure official brand assets, WhatsApp quick link, colors, and SEO metadata.</p>
+        <button class="save-btn" (click)="savePageData('branding')" [disabled]="isSavingPage['branding']" style="margin-top:16px;">
+          <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['branding'] ? 'Saving...' : 'Save Branding Changes' }}
+        </button>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="ch"><h3>Official Brand Visuals & Contact</h3></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div>
+              <label class="s-label">Logo Path / URL</label>
+              <input type="text" [(ngModel)]="pagesData['branding'].logo_url" class="s-input">
+            </div>
+            <div>
+              <label class="s-label">Direct WhatsApp Number (International format e.g. 201000000000)</label>
+              <input type="text" [(ngModel)]="pagesData['branding'].whatsapp" class="s-input">
+            </div>
+            <div>
+              <label class="s-label">Support Email</label>
+              <input type="text" [(ngModel)]="pagesData['branding'].email" class="s-input">
+            </div>
+            <div>
+              <label class="s-label">Office Phone</label>
+              <input type="text" [(ngModel)]="pagesData['branding'].phone" class="s-input">
+            </div>
+            <div>
+              <label class="s-label">Primary Brand Accent Color</label>
+              <input type="color" [(ngModel)]="pagesData['branding'].primary_color" class="s-input" style="height:44px; padding:4px;">
+            </div>
+            <div>
+              <label class="s-label">Secondary Brand Color</label>
+              <input type="color" [(ngModel)]="pagesData['branding'].secondary_color" class="s-input" style="height:44px; padding:4px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="ch"><h3>Social Media Channels</h3></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">Instagram URL</label><input type="text" [(ngModel)]="pagesData['branding'].instagram" class="s-input"></div>
+            <div><label class="s-label">LinkedIn URL</label><input type="text" [(ngModel)]="pagesData['branding'].linkedin" class="s-input"></div>
+            <div><label class="s-label">X / Twitter URL</label><input type="text" [(ngModel)]="pagesData['branding'].twitter" class="s-input"></div>
+            <div><label class="s-label">YouTube URL</label><input type="text" [(ngModel)]="pagesData['branding'].youtube" class="s-input"></div>
+            <div><label class="s-label">TikTok URL</label><input type="text" [(ngModel)]="pagesData['branding'].tiktok" class="s-input"></div>
+            <div><label class="s-label">Facebook URL</label><input type="text" [(ngModel)]="pagesData['branding'].facebook" class="s-input"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="ch"><h3>Default SEO Metadata</h3></div>
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom">
+            <div><label class="s-label">SEO Page Title (Arabic)</label><input type="text" [(ngModel)]="pagesData['branding'].seo_title.ar" class="s-input"></div>
+            <div><label class="s-label">SEO Page Title (English)</label><input type="text" [(ngModel)]="pagesData['branding'].seo_title.en" class="s-input"></div>
+            <div class="full-width"><label class="s-label">Meta Description (Arabic)</label><textarea [(ngModel)]="pagesData['branding'].seo_desc.ar" rows="2" class="s-input"></textarea></div>
+            <div class="full-width"><label class="s-label">Meta Description (English)</label><textarea [(ngModel)]="pagesData['branding'].seo_desc.en" rows="2" class="s-input"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARTNERS & CLIENT LOGOS TAB -->
+    <div class="view" [class.active]="activeTab === 'partners'">
+      <div class="pg-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h2>Partners & Client Brand Showcase</h2>
+          <p>Control the logos running in the cinema infinite marquee ticker on the home page.</p>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <button class="save-btn" (click)="addPartner()" style="background:rgba(255,255,255,0.08); border:1px solid var(--admin-border);">
+            <i class="fa-solid fa-plus"></i> Add Client Brand
+          </button>
+          <button class="save-btn" (click)="savePageData('partners')" [disabled]="isSavingPage['partners']">
+            <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['partners'] ? 'Saving...' : 'Save Partners' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <div class="form-grid-custom" style="margin-bottom:24px;">
+            <div><label class="s-label">Section Eyebrow (Arabic)</label><input type="text" [(ngModel)]="pagesData['partners'].title.ar" class="s-input"></div>
+            <div><label class="s-label">Section Eyebrow (English)</label><input type="text" [(ngModel)]="pagesData['partners'].title.en" class="s-input"></div>
+          </div>
+
+          <table class="tbl" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); text-align:start;">
+                <th style="padding:12px 16px;">#</th>
+                <th style="padding:12px 16px;">Client Name</th>
+                <th style="padding:12px 16px;">Logo URL / Icon</th>
+                <th style="padding:12px 16px;">Industry / Category</th>
+                <th style="padding:12px 16px; text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of pagesData['partners']?.items; let i = index" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:12px 16px; opacity:0.6;">{{ i + 1 }}</td>
+                <td style="padding:12px 16px;"><input type="text" [(ngModel)]="p.name" class="s-input" style="padding:6px 12px;"></td>
+                <td style="padding:12px 16px;"><input type="text" [(ngModel)]="p.logo" class="s-input" style="padding:6px 12px;"></td>
+                <td style="padding:12px 16px;"><input type="text" [(ngModel)]="p.category" class="s-input" style="padding:6px 12px;"></td>
+                <td style="padding:12px 16px; text-align:center;">
+                  <button (click)="removePartner(i)" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM MEMBERS TAB -->
+    <div class="view" [class.active]="activeTab === 'team'">
+      <div class="pg-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h2>Creative Leadership & Executive Team</h2>
+          <p>Highlight key directors, producers, and strategists on the About page.</p>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <button class="save-btn" (click)="addTeamMember()" style="background:rgba(255,255,255,0.08); border:1px solid var(--admin-border);">
+            <i class="fa-solid fa-plus"></i> Add Team Member
+          </button>
+          <button class="save-btn" (click)="savePageData('team')" [disabled]="isSavingPage['team']">
+            <i class="fa-solid fa-floppy-disk"></i> {{ isSavingPage['team'] ? 'Saving...' : 'Save Team' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <div *ngFor="let m of pagesData['team']?.items; let i = index" class="card" style="margin-bottom:18px; border:1px solid var(--admin-border); background:rgba(255,255,255,0.01);">
+            <div class="cb" style="padding:20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h4 style="color:var(--accent); font-weight:700;">#{{ i + 1 }} {{ m.name_en || m.name_ar || 'Leader' }}</h4>
+                <button (click)="removeTeamMember(i)" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:4px 10px; border-radius:6px; cursor:pointer;">
+                  <i class="fa-solid fa-trash"></i> Remove
+                </button>
+              </div>
+              <div class="form-grid-custom">
+                <div><label class="s-label">Name (Arabic)</label><input type="text" [(ngModel)]="m.name_ar" class="s-input"></div>
+                <div><label class="s-label">Name (English)</label><input type="text" [(ngModel)]="m.name_en" class="s-input"></div>
+                <div><label class="s-label">Role / Title (Arabic)</label><input type="text" [(ngModel)]="m.role_ar" class="s-input"></div>
+                <div><label class="s-label">Role / Title (English)</label><input type="text" [(ngModel)]="m.role_en" class="s-input"></div>
+                <div class="full-width"><label class="s-label">Photo / Avatar URL</label><input type="text" [(ngModel)]="m.image" class="s-input"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWSLETTER SUBSCRIBERS TAB -->
+    <div class="view" [class.active]="activeTab === 'newsletter'">
+      <div class="pg-head">
+        <h2>VIP Creative Newsletter Subscribers</h2>
+        <p>Real-time list of visitors subscribed through the website footer newsletter strip.</p>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="cb" style="padding:24px;">
+          <table class="tbl" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--admin-border); text-align:start;">
+                <th style="padding:12px 16px;">#</th>
+                <th style="padding:12px 16px;">Email Address</th>
+                <th style="padding:12px 16px;">Subscription Date</th>
+                <th style="padding:12px 16px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of pagesData['newsletter']?.subscribers; let i = index" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:12px 16px; opacity:0.6;">{{ i + 1 }}</td>
+                <td style="padding:12px 16px; font-weight:600; color:#fff;">{{ s.email }}</td>
+                <td style="padding:12px 16px; opacity:0.8;">{{ s.created_at || 'Recent' }}</td>
+                <td style="padding:12px 16px;"><span style="background:rgba(45,212,191,0.15); color:var(--accent); padding:4px 10px; border-radius:12px; font-size:12px; font-weight:700;">{{ s.status || 'Active' }}</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

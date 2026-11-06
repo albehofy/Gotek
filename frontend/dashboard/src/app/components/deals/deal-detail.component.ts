@@ -345,7 +345,14 @@ import { DatePickerModule } from 'primeng/datepicker';
                 </thead>
                 <tbody>
                   <tr *ngFor="let t of deal.tasks">
-                    <td style="font-weight:700; color:var(--text);">{{ t.title }}</td>
+                    <td style="font-weight:700; color:var(--text);">
+                      <a [routerLink]="['/tasks']" [queryParams]="{ taskId: t.id }" style="color:inherit; text-decoration:none;" title="فتح المهمة في صفحة المهام">
+                        {{ t.title }}
+                      </a>
+                      <small *ngIf="t.description || t.scope" style="display:block; color:var(--text-2); font-weight:normal; font-size:0.78rem; margin-top:3px; max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" [title]="t.description || t.scope">
+                        {{ t.description || t.scope }}
+                      </small>
+                    </td>
                     <td><span class="dept-badge">{{ t.department?.name || 'عام' }}</span></td>
                     <td>
                       <div class="users-flex" *ngIf="t.users && t.users.length > 0">
@@ -383,7 +390,7 @@ import { DatePickerModule } from 'primeng/datepicker';
       </div>
 
       <!-- PrimeNG Dialog: Add Payment -->
-      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'تسجيل دفعة / قسط: ' + (deal?.title || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
+      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closePaymentModal()" [header]="'تسجيل دفعة / قسط: ' + (deal?.title || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;" *ngIf="deal">
             <div class="form-group">
@@ -417,7 +424,7 @@ import { DatePickerModule } from 'primeng/datepicker';
           </div>
 
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showPaymentModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closePaymentModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="paymentForm.invalid || submitting">
               {{ submitting ? 'جاري المعالجة...' : 'تأكيد وتسجيل الدفعة' }}
             </button>
@@ -740,12 +747,23 @@ export class DealDetailComponent implements OnInit {
     return this.deal.tasks.filter((t: any) => this.isTaskCompleted(t.status)).length;
   }
 
+  closePaymentModal(): void {
+    this.showPaymentModal = false;
+    this.paymentForm.reset({
+      amount: 0,
+      payment_date: new Date().toISOString().split('T')[0],
+      payment_method: 'cash',
+      receipt_ref: ''
+    });
+  }
+
   openPaymentModal(): void {
     if (!this.deal) return;
     this.paymentForm.reset({
       amount: this.deal.remaining_balance || 0,
       payment_date: new Date().toISOString().split('T')[0],
-      payment_method: 'cash'
+      payment_method: 'cash',
+      receipt_ref: ''
     });
     this.showPaymentModal = true;
   }
@@ -776,7 +794,7 @@ export class DealDetailComponent implements OnInit {
     this.apiService.storeClientPayment(payload).subscribe({
       next: () => {
         this.submitting = false;
-        this.showPaymentModal = false;
+        this.closePaymentModal();
         this.toastService.success('تم تسجيل الدفعة المالية وتحديث رصيد الصفقة بنجاح', 'تمت العملية');
         this.refreshData();
       },

@@ -1,0 +1,144 @@
+<div class="service-details-page">
+
+  <!-- Ambient Light Mesh -->
+  <div class="service-ambient-mesh"></div>
+
+  <!-- Loader -->
+  <div class="service-loader-container" *ngIf="loading">
+    <div class="cinema-pulse-spinner"></div>
+    <span class="loader-status-text">{{ translationService.currentLang() === 'ar' ? 'جاري تجهيز بيانات الخدمة...' : 'Configuring Studio Capabilities...' }}</span>
+  </div>
+
+  <div *ngIf="!loading && service" class="service-content-flow">
+    
+    <!-- 1. HERO SECTION -->
+    <section class="sd-hero">
+      <div class="wrap">
+        
+        <div class="hero-top-nav">
+          <a routerLink="/services" class="cinema-back-link">
+            <i class="fa-solid fa-arrow-right nav-arrow"></i>
+            <span>{{ (translationService.currentLang() === 'ar' ? 'العودة لجميع الخدمات' : 'Back to All Capabilities') }}</span>
+          </a>
+
+          <div class="cinema-live-pill">
+            <span class="live-dot"></span>
+            <span>{{ getText(service.tag) }}</span>
+          </div>
+        </div>
+
+        <div class="sd-hero-main-block">
+          <div class="sd-badge-icon-wrap">
+            <i [class]="service.icon + ' service-flagship-icon'"></i>
+          </div>
+
+          <h1 class="sd-title">
+            {{ getText(service.title) }}
+          </h1>
+
+          <p class="sd-lead-text">
+            {{ getText(service.lead) }}
+          </p>
+
+          <div class="sd-hero-actions">
+            <a [href]="getWhatsAppServiceUrl()" target="_blank" rel="noopener noreferrer" class="btn btn-solid whatsapp-cta">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'استشارة فورية مع المنتج التنفيذي' : 'Instant WhatsApp Consultation' }}</span>
+            </a>
+            <a routerLink="/portfolio" class="btn btn-line">
+              <i class="fa-solid fa-film"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'استعراض المشاريع المماثلة' : 'Related Productions' }}</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. SERVICE STATS STRIP -->
+        <div class="service-stats-matrix" *ngIf="getStats().length">
+          <div class="sd-stat-cell" *ngFor="let st of getStats()">
+            <div class="sd-stat-num num">{{ st.value }}</div>
+            <div class="sd-stat-label">{{ getText(st.label) }}</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. KEY DELIVERABLES GRID (BENTO TILES) -->
+    <section class="section section-soft deliverables-section">
+      <div class="wrap">
+        <div class="editorial-head">
+          <div class="micro-eyebrow">
+            <span class="dash"></span>
+            <span>{{ translationService.currentLang() === 'ar' ? 'مواصفات المخرجات' : 'TURNKEY DELIVERABLES' }}</span>
+          </div>
+          <h2 class="editorial-title">{{ translationService.currentLang() === 'ar' ? 'ما ستحصل عليه مؤسستكم في هذا المشروع' : 'Master Specifications & Deliverables' }}</h2>
+          <p class="editorial-lead">{{ translationService.currentLang() === 'ar' ? 'نلتزم بتسليم كافة العناصر والمواد الأصلية بأعلى معايير الإتقان السينمائي العالمي.' : 'Engineered to broadcast standards with total intellectual property transfer.' }}</p>
+        </div>
+
+        <div class="deliverables-grid">
+          <div class="deliv-card card-interactive" *ngFor="let item of getDeliverables(); let i = index">
+            <div class="deliv-icon-badge">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="deliv-info">
+              <span class="deliv-index num">0{{ i + 1 }}</span>
+              <h4>{{ item }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PRODUCTION WORKFLOW (FROM BRIEF TO RELEASE) -->
+    <section class="section workflow-section" *ngIf="service.process && service.process.length">
+      <div class="wrap">
+        <div class="editorial-head">
+          <div class="micro-eyebrow">
+            <span class="dash"></span>
+            <span>{{ translationService.currentLang() === 'ar' ? 'خارطة الطريق' : 'PRODUCTION ROADMAP' }}</span>
+          </div>
+          <h2 class="editorial-title">{{ translationService.currentLang() === 'ar' ? 'مراحل التنفيذ من أول فكرة وحتى الماستر النهائي' : 'From Conceptual Brief to Master Broadcast' }}</h2>
+        </div>
+
+        <div class="workflow-steps-grid">
+          <div class="wf-step-card card-interactive" *ngFor="let step of service.process; let i = index">
+            <div class="wf-card-top">
+              <span class="wf-step-num num">0{{ i + 1 }}</span>
+              <div class="wf-step-indicator-dot"></div>
+            </div>
+            <h3 class="wf-step-title">{{ getText(step.title) }}</h3>
+            <p class="wf-step-desc">{{ getText(step.desc) }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. VIP PRODUCER CONSULTATION DESK -->
+    <section class="service-vip-desk-section">
+      <div class="wrap" style="max-width: 960px;">
+        <div class="vip-desk-box">
+          <div class="vip-desk-header">
+            <div class="vip-live-status">
+              <span class="live-dot-green"></span>
+              <span>{{ translationService.currentLang() === 'ar' ? 'مكتب التنسيق والإنتاج متاح الآن' : 'EXECUTIVE DESK ONLINE' }}</span>
+            </div>
+            <h2 class="vip-desk-title">{{ translationService.currentLang() === 'ar' ? 'هل أنت مستعد لبدء الإنتاج السينمائي لعلامتك؟' : 'Ready to Bring Your Vision to Life?' }}</h2>
+            <p class="vip-desk-desc">{{ translationService.currentLang() === 'ar' ? 'فريق الإنتاج التنفيذي جاهز لمناقشة المتطلبات الفنية، تحديد مواعيد التصوير، وتزويدكم بعرض سعر رسمي مفصل.' : 'Our executive production crew is ready to scope your technical brief, schedule set dates, and deliver a formal line-item estimate.' }}</p>
+          </div>
+
+          <div class="vip-desk-cta-row">
+            <a [href]="getWhatsAppServiceUrl()" target="_blank" rel="noopener noreferrer" class="btn btn-solid whatsapp-cta">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'بدء محادثة واتساب فورية' : 'Start WhatsApp Chat' }}</span>
+            </a>
+            <a routerLink="/contact" class="btn btn-line">
+              <i class="fa-solid fa-file-pen"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'تعبئة طلب مشروع رسمي' : 'Submit Project Brief' }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

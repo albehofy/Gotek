@@ -186,8 +186,9 @@ export class ApiService {
     return this.http.post<any>(`${API_BASE_URL}/tasks/${parentId}/subtasks`, body, { headers: this.getHeaders() });
   }
 
-  toggleSubtask(id: string | number): Observable<any> {
-    return this.http.put<any>(`${API_BASE_URL}/tasks/subtasks/${id}/toggle`, {}, { headers: this.getHeaders() });
+  toggleSubtask(id: string | number, status?: string): Observable<any> {
+    const body = status ? { status } : {};
+    return this.http.put<any>(`${API_BASE_URL}/tasks/subtasks/${id}/toggle`, body, { headers: this.getHeaders() });
   }
 
   deleteSubtask(id: string | number): Observable<any> {
@@ -378,6 +379,14 @@ export class ApiService {
 
   storeLedgerEntry(data: any): Observable<any> {
     return this.http.post<any>(`${API_BASE_URL}/finance/ledger`, data, { headers: this.getHeaders() });
+  }
+
+  updateLedgerEntry(id: number | string, data: any): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/finance/ledger/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteLedgerEntry(id: number | string): Observable<any> {
+    return this.http.delete<any>(`${API_BASE_URL}/finance/ledger/${id}`, { headers: this.getHeaders() });
   }
 
   getFinanceCategories(): Observable<any> {

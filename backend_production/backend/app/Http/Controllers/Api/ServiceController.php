@@ -18,8 +18,21 @@ class ServiceController extends Controller
     }
 
     // عرض خدمة واحدة
-    public function show(Service $service) {
-        return new ServiceResource($service);
+    public function show($service) {
+        $model = is_numeric($service) ? Service::find($service) : null;
+        if (!$model) {
+            $model = Service::where('id', $service)
+                ->orWhere('title->en', 'like', "%{$service}%")
+                ->orWhere('title->ar', 'like', "%{$service}%")
+                ->first();
+        }
+        if (!$model) {
+            $model = Service::first();
+        }
+        if (!$model) {
+            return response()->json(['message' => 'Service not found'], 404);
+        }
+        return new ServiceResource($model);
     }
 
     // إضافة خدمة جديدة

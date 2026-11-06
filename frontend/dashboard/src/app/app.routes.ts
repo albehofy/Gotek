@@ -24,22 +24,22 @@ export const routes: Routes = [
       },
       { 
         path: 'clients', 
-        canActivate: [roleGuard(['super_admin', 'admin'])],
+        canActivate: [roleGuard(['super_admin', 'admin', 'account_manager'])],
         loadComponent: () => import('./components/clients/clients-list.component').then(m => m.ClientsListComponent) 
       },
       { 
         path: 'clients/:id', 
-        canActivate: [roleGuard(['super_admin', 'admin'])],
+        canActivate: [roleGuard(['super_admin', 'admin', 'account_manager'])],
         loadComponent: () => import('./components/clients/client-detail.component').then(m => m.ClientDetailComponent) 
       },
       { 
         path: 'deals', 
-        canActivate: [roleGuard(['super_admin', 'admin'])],
+        canActivate: [roleGuard(['super_admin', 'admin', 'account_manager'])],
         loadComponent: () => import('./components/deals/deals-management.component').then(m => m.DealsManagementComponent) 
       },
       { 
         path: 'deals/:id', 
-        canActivate: [roleGuard(['super_admin', 'admin'])],
+        canActivate: [roleGuard(['super_admin', 'admin', 'account_manager'])],
         loadComponent: () => import('./components/deals/deal-detail.component').then(m => m.DealDetailComponent) 
       },
       { 

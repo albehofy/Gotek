@@ -1,51 +1,56 @@
 <!-- ════════════════════════════════════════════
-     SERVICES — MINIMALIST EDITORIAL LIST
+     SERVICES — ULTRA-LUXURY EDITORIAL SUITE
      ════════════════════════════════════════════ -->
 
 <section class="services-hero">
   <div class="wrap">
-    <div class="eyebrow">
-      <span class="dash"></span>
-      <span>{{ translationService.translate('services.eyebrow') }}</span>
+    <div class="badge-award">
+      <i class="fa-solid fa-wand-magic-sparkles icon-twinkle"></i>
+      <span>{{ getHeroTag() }}</span>
     </div>
 
     <h1>
-      <span>{{ translationService.translate('services.title') }}</span>
+      <span>{{ getHeroTitle() }}</span>
     </h1>
 
     <p class="lead">
-      {{ translationService.translate('services.sub') }}
+      {{ getHeroDesc() }}
     </p>
   </div>
 </section>
 
+<!-- Detailed Services List -->
 <section class="section section-soft">
   <div class="wrap">
     <div class="services-list-detailed">
-      <div class="service-block" *ngFor="let s of (services.length ? services : defaultServices); let i = index">
+      <div class="service-block card-interactive" *ngFor="let s of (services.length ? services : defaultServices); let i = index">
         <div class="sb-header">
-          <div class="sb-num">0{{ i + 1 }}</div>
-          <div class="sb-icon">
+          <div class="sb-num num">0{{ i + 1 }}</div>
+          <div class="sb-icon icon-badge">
             <img *ngIf="isImageUrl(s.icon)" [src]="s.icon" class="service-custom-icon-img" [alt]="s.title" onerror="this.src='/assets/media-glow-icon.png'" />
-            <i *ngIf="!isImageUrl(s.icon)" class="fa-solid" [class]="s.icon || 'fa-palette'"></i>
+            <i *ngIf="!isImageUrl(s.icon)" [class]="getServiceIcon(s.icon, i)"></i>
           </div>
           <div class="sb-title">
-            <h3>{{ s.title?.ar || s.title_ar || s.title }}</h3>
-            <p>{{ s.desc || s.description?.ar || s.description_ar || s.description }}</p>
+            <h3>{{ getServiceTitle(s) }}</h3>
+            <p>{{ getServiceDesc(s) }}</p>
           </div>
         </div>
 
-        <div class="sb-features" *ngIf="s.features && s.features.length">
-          <div class="feature-item" *ngFor="let f of s.features">
-            <i class="fa-solid fa-check"></i>
+        <div class="sb-features" *ngIf="getServiceFeatures(s).length">
+          <div class="feature-item" *ngFor="let f of getServiceFeatures(s)">
+            <i class="fa-solid fa-circle-check feature-check-icon icon-pulse"></i>
             <span>{{ f }}</span>
           </div>
         </div>
 
         <div class="sb-cta">
-          <a routerLink="/contact" class="btn btn-line">
-            <span>{{ translationService.currentLang() === 'ar' ? 'طلب الخدمة' : 'Request Service' }}</span>
-            <i class="fa-solid fa-arrow-left"></i>
+          <a [routerLink]="['/services', getServiceSlug(s, i)]" class="btn btn-line">
+            <span>{{ translationService.currentLang() === 'ar' ? 'تفاصيل الخدمة' : 'Service Details' }}</span>
+            <i class="fa-solid fa-arrow-left arrow-dir"></i>
+          </a>
+          <a [href]="getWhatsAppUrl(getServiceTitle(s))" target="_blank" rel="noopener noreferrer" class="btn btn-solid">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>{{ translationService.currentLang() === 'ar' ? 'طلب استشارة سريعة' : 'Instant Consultation' }}</span>
           </a>
         </div>
       </div>
@@ -53,14 +58,54 @@
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta">
+<!-- Production Process Methodology -->
+<section class="section">
   <div class="wrap">
-    <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
-    <h2>{{ translationService.translate('cta.title') }}</h2>
-    <p class="sub">{{ translationService.translate('cta.sub') }}</p>
-    <a routerLink="/contact" class="btn btn-solid">
-      <span>{{ translationService.translate('cta.btn') }}</span>
-    </a>
+    <div class="head-block">
+      <div class="eyebrow">
+        <span class="dash"></span>
+        <span>{{ translationService.currentLang() === 'ar' ? 'منهجية العمل والإنتاج' : 'PRODUCTION METHODOLOGY' }}</span>
+      </div>
+      <h2>{{ translationService.currentLang() === 'ar' ? 'كيف نحوّل الرؤية إلى إنتاج استثنائي' : 'From Conceptual Spark To High Impact' }}</h2>
+      <p class="sub">{{ translationService.currentLang() === 'ar' ? 'مسار منظم ومعايير عالمية تضمن أعلى مقاييس الجودة والإبهار البصري في كل مرحلة.' : 'A rigorous, repeatable creative process engineered for world-class caliber.' }}</p>
+    </div>
+
+    <div class="process-grid">
+      <div class="process-card card-interactive" *ngFor="let p of processSteps">
+        <div class="proc-top">
+          <span class="proc-num num">{{ p.num }}</span>
+          <div class="proc-icon-badge icon-badge">
+            <i [class]="p.icon"></i>
+          </div>
+        </div>
+        <h3>{{ getProcessTitle(p) }}</h3>
+        <p>{{ getProcessDesc(p) }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Masterpiece CTA -->
+<section class="cta" id="contact">
+  <div class="wrap">
+    <div class="cta-inner-card">
+      <div class="cta-ambient-glow"></div>
+      <div class="eyebrow" style="justify-content:center;">
+        <span class="dash"></span> 
+        <span>{{ translationService.translate('cta.eyebrow') }}</span>
+      </div>
+      <h2>{{ translationService.translate('cta.title') }}</h2>
+      <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+      <div class="cta-actions">
+        <a routerLink="/contact" class="btn btn-solid cta-main-btn">
+          <span>{{ translationService.translate('cta.btn') }}</span>
+          <i class="fa-solid fa-arrow-left arrow-dir"></i>
+        </a>
+        <a [href]="getWhatsAppUrl()" target="_blank" rel="noopener noreferrer" class="btn btn-line cta-wa-btn">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>{{ translationService.currentLang() === 'ar' ? 'تحدث مباشرة عبر واتساب' : 'Chat via WhatsApp' }}</span>
+        </a>
+      </div>
+    </div>
   </div>
 </section>

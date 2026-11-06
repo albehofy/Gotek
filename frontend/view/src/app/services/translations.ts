@@ -88,7 +88,21 @@ export const translations: Record<string, Record<string, string>> = {
     "foot.h3": "المواقع والمكاتب",
     "foot.l7": "القاهرة · الرياض · دبي",
     "foot.copy": "© 2026 ميديا جلو للإنتاج الإعلامي. جميع الحقوق محفوظة.",
-    "foot.made": "إنتاج سينمائي بمعايير عالمية"
+    "foot.made": "إنتاج سينمائي بمعايير عالمية",
+
+    // Common and Auth
+    "login": "تسجيل الدخول",
+    "proj_breadcrumb_home": "الرئيسية",
+    "contact_label_email_form": "البريد الإلكتروني",
+    "email_placeholder": "name@company.com",
+    "hero_badge": "استوديو إنتاج سينمائي ورقمي",
+    "hero_title_1": "نصنع أفلاماً وتجارب بصرية",
+    "hero_title_2": "تُخلّد مكانة علامتك",
+    "hero_desc": "استوديو إنتاج سينمائي ورقمي متكامل يقود الحملات الكبرى، الأفلام الإعلانية، والهويات البصرية الرائدة.",
+    "back_to_work": "العودة لجميع الأعمال",
+    "back_to_blogs": "العودة للمدونة",
+    "like_article": "إعجاب بالمقال",
+    "liked_article": "أعجبني هذا المقال"
   },
   en: {
     brand: "Media Glow",
@@ -179,6 +193,20 @@ export const translations: Record<string, Record<string, string>> = {
     "foot.h3": "Locations",
     "foot.l7": "Cairo · Riyadh · Dubai",
     "foot.copy": "© 2026 Media Glow Production. All rights reserved.",
-    "foot.made": "Crafted with cinematic precision"
+    "foot.made": "Crafted with cinematic precision",
+
+    // Common and Auth
+    "login": "Sign In",
+    "proj_breadcrumb_home": "Home",
+    "contact_label_email_form": "Email Address",
+    "email_placeholder": "name@company.com",
+    "hero_badge": "Full-Service Cinema & Digital Studio",
+    "hero_title_1": "We produce cinematic films",
+    "hero_title_2": "& extraordinary brand experiences",
+    "hero_desc": "Full-service production studio delivering commercial films, high-impact TVCs, and iconic brand identity systems.",
+    "back_to_work": "Back to all work",
+    "back_to_blogs": "Back to blogs",
+    "like_article": "Like article",
+    "liked_article": "Liked"
   }
 };

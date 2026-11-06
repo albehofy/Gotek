@@ -4,8 +4,8 @@
 
 <section class="about-hero">
   <div class="wrap">
-    <div class="eyebrow">
-      <span class="dash"></span>
+    <div class="badge-award">
+      <i class="fa-solid fa-award icon-twinkle"></i>
       <span>{{ getHeroEyebrow() }}</span>
     </div>
 
@@ -32,8 +32,13 @@
     </div>
 
     <div class="pillars-grid">
-      <div class="pillar-card" *ngFor="let p of getPrinciples()">
-        <div class="pillar-num">{{ p.num }}</div>
+      <div class="pillar-card card-interactive" *ngFor="let p of getPrinciples(); let i = index">
+        <div class="pillar-top">
+          <div class="pillar-num num">{{ p.num }}</div>
+          <div class="pillar-icon-badge icon-badge">
+            <i [class]="getPrincipleIcon(p, i)"></i>
+          </div>
+        </div>
         <h3>{{ getPrincipleTitle(p) }}</h3>
         <p>{{ getPrincipleDesc(p) }}</p>
       </div>
@@ -53,11 +58,43 @@
     </div>
 
     <div class="timeline-list">
-      <div class="timeline-row" *ngFor="let t of timeline">
-        <div class="t-year">{{ t.year }}</div>
+      <div class="timeline-row card-interactive" *ngFor="let t of timeline; let i = index">
+        <div class="t-year-col">
+          <div class="t-icon-badge icon-badge">
+            <i [class]="getTimelineIcon(t, i)"></i>
+          </div>
+          <span class="t-year num">{{ t.year }}</span>
+        </div>
         <div class="t-content">
-          <h3>{{ t.title?.ar || t.title_ar || t.title }}</h3>
-          <p>{{ t.desc || t.description?.ar || t.description_ar || t.description }}</p>
+          <h3>{{ getTimelineTitle(t) }}</h3>
+          <p>{{ getTimelineDesc(t) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Creative Leadership Team -->
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="head-block">
+      <div class="eyebrow">
+        <span class="dash"></span>
+        <span>{{ translationService.currentLang() === 'ar' ? 'فريق العمل' : 'Our Leaders' }}</span>
+      </div>
+      <h2>{{ translationService.currentLang() === 'ar' ? 'عقول إبداعية تقود التحول' : 'Creative Minds Behind The Vision' }}</h2>
+      <p class="sub">{{ translationService.currentLang() === 'ar' ? 'نخبة من صناع السينما والمخرجين واستراتيجيي النمو المتفرغين لصناعة الفارق لعلامتك.' : 'Visionary directors, cinematographers, and marketing strategists dedicated to scaling your brand.' }}</p>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card card-interactive" *ngFor="let m of getTeamMembers()">
+        <div class="team-avatar-wrap">
+          <img [src]="m.image || '/assets/media-glow-icon.png'" [alt]="getTeamMemberName(m)" class="team-img" onerror="this.src='/assets/media-glow-icon.png'" />
+          <div class="team-badge-icon"><i class="fa-solid fa-crown"></i></div>
+        </div>
+        <div class="team-info">
+          <h3>{{ getTeamMemberName(m) }}</h3>
+          <span class="team-role">{{ getTeamMemberRole(m) }}</span>
         </div>
       </div>
     </div>
@@ -65,13 +102,19 @@
 </section>
 
 <!-- CTA -->
-<section class="cta">
+<section class="cta" id="contact">
   <div class="wrap">
-    <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
-    <h2>{{ translationService.translate('cta.title') }}</h2>
-    <p class="sub">{{ translationService.translate('cta.sub') }}</p>
-    <a routerLink="/contact" class="btn btn-solid">
-      <span>{{ translationService.translate('cta.btn') }}</span>
-    </a>
+    <div class="cta-inner-card">
+      <div class="cta-ambient-glow"></div>
+      <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
+      <h2>{{ translationService.translate('cta.title') }}</h2>
+      <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+      <div class="cta-actions">
+        <a routerLink="/contact" class="btn btn-solid cta-main-btn">
+          <span>{{ translationService.translate('cta.btn') }}</span>
+          <i class="fa-solid fa-arrow-left arrow-dir"></i>
+        </a>
+      </div>
+    </div>
   </div>
 </section>

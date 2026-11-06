@@ -48,10 +48,10 @@ if [ -d "$ROOT_DIR/backend" ]; then
     php artisan media:cleanup-old 2>/dev/null || true
 fi
 
-# 2. Start Laravel Backend API Server (Port 8000)
+# 2. Start Laravel Backend API Server (Port 8000) with concurrent workers
 echo -e "${GREEN}⚡ [2/4] Starting Laravel Backend API on http://localhost:8000...${NC}"
 cd "$ROOT_DIR/backend" || exit 1
-php artisan serve --host=127.0.0.1 --port=8000 &
+PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=127.0.0.1 --port=8000 &
 BACKEND_PID=$!
 sleep 2
 

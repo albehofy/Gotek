@@ -1,303 +1,447 @@
 <!-- ══════════════════════════════════════════════════════════════════
-     HERO SECTION — CINEMATIC REEL & AWARDS
+     MEDIA GLOW — CINEMA & COMMERCIAL PRODUCTION STUDIO
+     Ultra-Luxury Minimalist Editorial Aesthetic
      ══════════════════════════════════════════════════════════════════ -->
-<section class="hero">
-  <div class="wrap">
-    <!-- Awards Badge -->
-    <div class="badge-award">
-      <i class="fa-solid fa-crown"></i>
-      <span>{{ getAwardBadge() }}</span>
-    </div>
 
-    <!-- Main Headline -->
-    <h1>
-      <span>{{ getHeroLine1() }}</span>
-      <span class="accent"> {{ getHeroLine2() }}</span>
-    </h1>
+<div class="home-experience">
 
-    <div class="hero-bottom">
-      <p class="lead">{{ getHeroSub() }}</p>
-      
-      <div class="hero-actions">
-        <a routerLink="/contact" class="btn btn-solid">
-          <span>{{ translationService.translate('hero.btn1') }}</span>
+  <!-- 1. CINEMATIC HERO SECTION -->
+  <section class="cinema-hero">
+    <div class="hero-ambient-mesh"></div>
+
+    <div class="wrap">
+      <!-- Micro-meta studio badge -->
+      <div class="hero-meta-badge">
+        <span class="live-status-dot"></span>
+        <span class="badge-text">{{ getAwardBadge() }}</span>
+      </div>
+
+      <!-- Monumental Headline -->
+      <h1 class="hero-headline">
+        <span class="hl-line-1">{{ getHeroLine1() }}</span>
+        <span class="hl-line-2">{{ getHeroLine2() }}</span>
+      </h1>
+
+      <!-- Editorial Sub-lead -->
+      <p class="hero-lead">
+        {{ getHeroSub() }}
+      </p>
+
+      <!-- Magnetic Action Bar -->
+      <div class="hero-cta-group">
+        <a routerLink="/contact" class="btn btn-solid hero-primary-btn">
+          <span>{{ getHeroBtn1() }}</span>
           <i class="fa-solid fa-arrow-left arrow-dir"></i>
         </a>
-        <button type="button" (click)="openShowreel()" class="btn-reel">
-          <span class="play-icon"><i class="fa-solid fa-play"></i></span>
-          <span>{{ translationService.translate('hero.reelBtn') }}</span>
+        <button type="button" (click)="openShowreel()" class="btn-reel-luxury">
+          <span class="reel-play-circle"><i class="fa-solid fa-play"></i></span>
+          <span class="reel-btn-label">{{ getHeroReelBtn() }}</span>
+          <span class="reel-spec-pill">4K CINEMA</span>
         </button>
       </div>
-    </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════
-         CINEMATIC SHOWREEL PREVIEW WINDOW (16:9 Widescreen Showcase)
-         ══════════════════════════════════════════════════════════════════ -->
-    <div class="showreel-frame" (click)="openShowreel()">
-      <div class="showreel-glow"></div>
-      
-      <div class="showreel-viewport">
-        <!-- Background Imagery / Ambient Video Poster -->
-        <img 
-          [src]="getShowreelPoster()" 
-          alt="Media Glow Cinema Showreel" 
-          class="showreel-poster"
-          onerror="this.src='/assets/hero-visual.png'"
-        />
+      <!-- 2. HIGH-END CINEMATIC SHOWREEL PREVIEW VIEWPORT -->
+      <div class="cinema-viewport-frame" (click)="openShowreel()">
+        <div class="frame-ambient-glow"></div>
+        <div class="frame-inner">
+          <img 
+            [src]="getShowreelPoster()" 
+            alt="Media Glow Cinema Production Showreel" 
+            class="viewport-poster-img"
+            onerror="this.src='/assets/media-glow-card.jpg'"
+          />
+          <div class="viewport-cinematic-mask"></div>
 
-        <div class="showreel-overlay"></div>
+          <!-- Cinema Frame Top Bar -->
+          <div class="frame-top-bar">
+            <div class="camera-spec-tag">
+              <span class="rec-dot"></span>
+              <span>ARRI ALEXA 35 &bull; 8K RAW &bull; ANAMORPHIC</span>
+            </div>
+            <div class="timecode-spec">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>TC 00:02:45:12</span>
+            </div>
+          </div>
 
-        <!-- Top Status Pill -->
-        <div class="reel-top-bar">
-          <span class="reel-tag">
-            <span class="live-dot"></span>
-            {{ translationService.translate('hero.reelBadge') }}
-          </span>
-          <span class="reel-sound-ind"><i class="fa-solid fa-volume-high"></i> STEREO CINEMA SOUND</span>
-        </div>
+          <!-- Center Magnetic Play Trigger -->
+          <div class="frame-center-trigger">
+            <div class="pulse-aura-1"></div>
+            <div class="pulse-aura-2"></div>
+            <div class="play-trigger-core">
+              <i class="fa-solid fa-play"></i>
+            </div>
+          </div>
 
-        <!-- Big Center Pulsating Play Trigger -->
-        <div class="reel-center-play">
-          <div class="pulse-ring"></div>
-          <div class="pulse-ring pulse-ring-delayed"></div>
-          <div class="play-btn-circle">
-            <i class="fa-solid fa-play"></i>
+          <!-- Cinema Frame Bottom Info -->
+          <div class="frame-bottom-bar">
+            <div class="reel-client-tag">
+              <span class="reel-title-text">MEDIA GLOW 2026 COMMERCIAL REEL</span>
+              <span class="reel-aspect-text">2.39:1 CINEMATIC SCOPE</span>
+            </div>
+            <div class="sound-fidelity-tag">
+              <i class="fa-solid fa-volume-high"></i>
+              <span>DOLBY ATMOS SOUNDTRACK</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- Bottom Reel Ticker -->
-        <div class="reel-bottom-bar">
-          <span class="reel-meta">MEDIA GLOW CINEMA &bull; COMMERCIAL &bull; BRAND FILM &bull; TVC PRODUCTION</span>
-          <span class="reel-duration">02:45 / 4K</span>
+      <!-- 3. MONUMENTAL PRODUCTION COUNTERS (HAIRLINE STRIP) -->
+      <div class="stats-hairline-strip">
+        <div class="stat-counter-cell" *ngFor="let i of [1, 2, 3, 4]">
+          <div class="counter-num-wrap">
+            <span class="counter-digit num">{{ getStatNum(i, translationService.translate('stats.p' + i + '.num')) }}</span>
+            <span class="counter-glow-dot"></span>
+          </div>
+          <div class="counter-label-text">{{ getStatLabel(i, 'stats.p' + i + '.lbl') }}</div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- ══════════════════════════════════════════════════════════════════
-         PRODUCTION STATS TICKER (Orbis Production Style)
-         ══════════════════════════════════════════════════════════════════ -->
-    <div class="stats-ticker">
-      <div class="stat-card">
-        <div class="stat-num num">{{ getStatNum(1, translationService.translate('stats.p1.num')) }}</div>
-        <div class="stat-lbl">{{ getStatLabel(1, 'stats.p1.lbl') }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num num">{{ getStatNum(2, translationService.translate('stats.p2.num')) }}</div>
-        <div class="stat-lbl">{{ getStatLabel(2, 'stats.p2.lbl') }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num num">{{ getStatNum(3, translationService.translate('stats.p3.num')) }}</div>
-        <div class="stat-lbl">{{ getStatLabel(3, 'stats.p3.lbl') }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num num">{{ getStatNum(4, translationService.translate('stats.p4.num')) }}</div>
-        <div class="stat-lbl">{{ getStatLabel(4, 'stats.p4.lbl') }}</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════════════════════
-     CLIENT & BRAND TRUST RUNWAY
-     ══════════════════════════════════════════════════════════════════ -->
-<div class="logo-strip">
-  <div class="wrap">
-    <span class="cap">{{ getPartnersCaption() }}</span>
-    <div class="logo-row">
-      <ng-container *ngFor="let b of getPartnersList()">
-        <img *ngIf="b.logo" [src]="b.logo" [alt]="b.name" class="partner-logo-img" onerror="this.style.display='none'" />
-        <span *ngIf="!b.logo || !b.logo.trim()" class="client-logo">{{ b.name }}</span>
-      </ng-container>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════════
-     CORE PRODUCTION SERVICES (4 Pillars - 100% Dynamic with Icon or Custom Image)
-     ══════════════════════════════════════════════════════════════════ -->
-<section class="section" id="services">
-  <div class="wrap">
-    <div class="head-block">
-      <div class="eyebrow">
-        <span class="dash"></span>
-        <span>{{ translationService.translate('services.eyebrow') }}</span>
-      </div>
-      <h2>{{ translationService.translate('services.title') }}</h2>
-      <p class="sub">{{ translationService.translate('services.sub') }}</p>
-    </div>
-
-    <div class="pillars-grid">
-      <div class="pillar-card" *ngFor="let p of getPillars(); let i = index" [routerLink]="p.url || '/services'">
-        <div class="pillar-top">
-          <span class="pillar-index num">{{ p.index || ('0' + (i + 1)) }}</span>
-          <div class="pillar-icon">
-            <img *ngIf="isPillarImage(p)" [src]="p.icon" [alt]="getPillarTitle(p)" class="pillar-custom-img" onerror="this.src='/assets/media-glow-icon.png'" />
-            <i *ngIf="!isPillarImage(p)" [class]="p.icon || 'fa-solid fa-film'"></i>
+  <!-- 4. CLIENT & PARTNER TRUST RUNWAY (CONTAINED CINEMA MARQUEE) -->
+  <section class="partners-runway-section">
+    <div class="wrap">
+      <div class="runway-enclosure">
+        <div class="runway-header">
+          <div class="runway-caption">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>{{ getPartnersCaption() }}</span>
+          </div>
+          <div class="runway-meta-badge">
+            <span class="live-pulse"></span>
+            <span>{{ translationService.currentLang() === 'ar' ? 'شركاء النجاح المعتمدون' : 'VERIFIED GLOBAL PARTNERS' }}</span>
           </div>
         </div>
-        <h3>{{ getPillarTitle(p) }}</h3>
-        <p>{{ getPillarDesc(p) }}</p>
-        <div class="pillar-action">
-          <span>{{ getPillarBtn(p) }}</span>
-          <i class="fa-solid fa-arrow-left arrow-dir"></i>
+        <div class="marquee-viewport">
+          <div class="marquee-track">
+            <ng-container *ngFor="let b of getPartnersList()">
+              <div class="partner-pill">
+                <img *ngIf="b.logo" [src]="b.logo" [alt]="b.name" class="partner-img" onerror="this.style.display='none'" />
+                <span class="partner-brand-name">{{ b.name }}</span>
+              </div>
+            </ng-container>
+            <!-- Seamless duplicate loop -->
+            <ng-container *ngFor="let b of getPartnersList()">
+              <div class="partner-pill" aria-hidden="true">
+                <img *ngIf="b.logo" [src]="b.logo" [alt]="b.name" class="partner-img" onerror="this.style.display='none'" />
+                <span class="partner-brand-name">{{ b.name }}</span>
+              </div>
+            </ng-container>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ══════════════════════════════════════════════════════════════════
-     SELECTED WORKS / PORTFOLIO SHOWCASE (Cinematic 16:9 Cards)
-     ══════════════════════════════════════════════════════════════════ -->
-<section class="section section-soft" id="work">
-  <div class="wrap">
-    <div class="head-row">
-      <div class="head-block" style="margin-bottom:0;">
-        <div class="eyebrow">
+  <!-- 5. BENTO MATRIX CAPABILITIES (4 PRODUCTION PILLARS) -->
+  <section class="section capabilities-section" id="services">
+    <div class="wrap">
+      <div class="editorial-head">
+        <div class="micro-eyebrow">
           <span class="dash"></span>
-          <span>{{ translationService.translate('work.eyebrow') }}</span>
+          <span>{{ getBentoEyebrow() }}</span>
         </div>
-        <h2>{{ translationService.translate('work.title') }}</h2>
+        <h2 class="editorial-title">{{ getBentoTitle() }}</h2>
+        <p class="editorial-lead">{{ getBentoSub() }}</p>
       </div>
-      <a routerLink="/portfolio" class="link-arrow">
-        <span>{{ translationService.translate('work.viewall') }}</span>
-        <i class="fa-solid fa-arrow-left arrow-dir"></i>
-      </a>
-    </div>
 
-    <div class="cinematic-grid">
-      <!-- Project Card 1 -->
-      <a [routerLink]="projects.length > 0 ? ['/project', projects[0].id] : ['/portfolio']" class="cinema-card">
-        <div class="cinema-thumb">
-          <img *ngIf="projects.length > 0 && projects[0].image" [src]="projects[0].image" [alt]="getProjectTitle(projects[0])" class="cinema-img" />
-          <div *ngIf="!projects.length || !projects[0].image" class="cinema-placeholder cinema-grad-1">
-            <i class="fa-solid fa-clapperboard placeholder-icon"></i>
+      <div class="bento-container">
+        <!-- Bento Card 1: Film & Commercials (Large 8 Cols) -->
+        <div class="bento-card bento-hero-card">
+          <div class="bento-glow-mesh"></div>
+          <div class="bento-header">
+            <div class="bento-badge-tag">
+              <i class="fa-solid fa-film"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'الإنتاج السينمائي الرئيسي' : 'FLAGSHIP CINEMA' }}</span>
+            </div>
+            <span class="bento-index num">01</span>
           </div>
-          <div class="cinema-gradient-overlay"></div>
-          <div class="cinema-play-hover"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
-        </div>
-
-        <div class="cinema-info">
-          <div class="cinema-tag">{{ projects.length > 0 ? (getCategoryName(projects[0]) || translationService.translate('work.p1.tag')) : translationService.translate('work.p1.tag') }}</div>
-          <h3>{{ projects.length > 0 ? (getProjectTitle(projects[0]) || translationService.translate('work.p1.t')) : translationService.translate('work.p1.t') }}</h3>
-          <p class="cinema-desc">{{ projects.length > 0 ? (getProjectDesc(projects[0]) || translationService.translate('work.p1.d')) : translationService.translate('work.p1.d') }}</p>
-        </div>
-      </a>
-
-      <!-- Project Card 2 -->
-      <a [routerLink]="projects.length > 1 ? ['/project', projects[1].id] : ['/portfolio']" class="cinema-card">
-        <div class="cinema-thumb">
-          <img *ngIf="projects.length > 1 && projects[1].image" [src]="projects[1].image" [alt]="getProjectTitle(projects[1])" class="cinema-img" />
-          <div *ngIf="projects.length < 2 || !projects[1].image" class="cinema-placeholder cinema-grad-2">
-            <i class="fa-solid fa-bullhorn placeholder-icon"></i>
+          <h3 class="bento-title">{{ getBentoPillarTitle(1, 'services.s1.t') }}</h3>
+          <p class="bento-desc">{{ getBentoPillarDesc(1, 'services.s1.d') }}</p>
+          <div class="bento-tags-row">
+            <span class="spec-tag">ARRI Alexa 35</span>
+            <span class="spec-tag">RED 8K V-Raptor</span>
+            <span class="spec-tag">Commercial TVCs</span>
+            <span class="spec-tag">Aerial Drone 4K</span>
           </div>
-          <div class="cinema-gradient-overlay"></div>
-          <div class="cinema-play-hover"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
-        </div>
-
-        <div class="cinema-info">
-          <div class="cinema-tag">{{ projects.length > 1 ? (getCategoryName(projects[1]) || translationService.translate('work.p2.tag')) : translationService.translate('work.p2.tag') }}</div>
-          <h3>{{ projects.length > 1 ? (getProjectTitle(projects[1]) || translationService.translate('work.p2.t')) : translationService.translate('work.p2.t') }}</h3>
-          <p class="cinema-desc">{{ projects.length > 1 ? (getProjectDesc(projects[1]) || translationService.translate('work.p2.d')) : translationService.translate('work.p2.d') }}</p>
-        </div>
-      </a>
-
-      <!-- Project Card 3 -->
-      <a [routerLink]="projects.length > 2 ? ['/project', projects[2].id] : ['/portfolio']" class="cinema-card">
-        <div class="cinema-thumb">
-          <img *ngIf="projects.length > 2 && projects[2].image" [src]="projects[2].image" [alt]="getProjectTitle(projects[2])" class="cinema-img" />
-          <div *ngIf="projects.length < 3 || !projects[2].image" class="cinema-placeholder cinema-grad-3">
-            <i class="fa-solid fa-laptop-code placeholder-icon"></i>
+          <div class="bento-footer">
+            <a routerLink="/services/film-production" class="bento-link-btn">
+              <span>{{ translationService.currentLang() === 'ar' ? 'استكشف إمكانيات الإنتاج' : 'Explore Capabilities' }}</span>
+              <i class="fa-solid fa-arrow-left arrow-dir"></i>
+            </a>
           </div>
-          <div class="cinema-gradient-overlay"></div>
-          <div class="cinema-play-hover"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
         </div>
 
-        <div class="cinema-info">
-          <div class="cinema-tag">{{ projects.length > 2 ? (getCategoryName(projects[2]) || translationService.translate('work.p3.tag')) : translationService.translate('work.p3.tag') }}</div>
-          <h3>{{ projects.length > 2 ? (getProjectTitle(projects[2]) || translationService.translate('work.p3.t')) : translationService.translate('work.p3.t') }}</h3>
-          <p class="cinema-desc">{{ projects.length > 2 ? (getProjectDesc(projects[2]) || translationService.translate('work.p3.d')) : translationService.translate('work.p3.d') }}</p>
+        <!-- Bento Card 2: Brand Identity (4 Cols) -->
+        <div class="bento-card">
+          <div class="bento-header">
+            <div class="bento-badge-tag">
+              <i class="fa-solid fa-palette"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'الهوية البصرية' : 'BRAND IDENTITY' }}</span>
+            </div>
+            <span class="bento-index num">02</span>
+          </div>
+          <h3 class="bento-title">{{ getBentoPillarTitle(2, 'services.s2.t') }}</h3>
+          <p class="bento-desc">{{ getBentoPillarDesc(2, 'services.s2.d') }}</p>
+          <div class="bento-footer">
+            <a routerLink="/services/brand-identity" class="bento-link-btn">
+              <span>{{ translationService.currentLang() === 'ar' ? 'دليل الهوية' : 'View System' }}</span>
+              <i class="fa-solid fa-arrow-left arrow-dir"></i>
+            </a>
+          </div>
         </div>
-      </a>
-    </div>
-  </div>
-</section>
 
-<!-- ══════════════════════════════════════════════════════════════════
-     PRODUCTION WORKFLOW PROCESS (100% Dynamic)
-     ══════════════════════════════════════════════════════════════════ -->
-<section class="section" id="process">
-  <div class="wrap">
-    <div class="head-block">
-      <div class="eyebrow">
-        <span class="dash"></span>
-        <span>{{ getProcessEyebrow() }}</span>
+        <!-- Bento Card 3: Digital Growth (4 Cols) -->
+        <div class="bento-card">
+          <div class="bento-header">
+            <div class="bento-badge-tag">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'النمو الرقمي' : 'GROWTH & ADS' }}</span>
+            </div>
+            <span class="bento-index num">03</span>
+          </div>
+          <h3 class="bento-title">{{ getBentoPillarTitle(3, 'services.s3.t') }}</h3>
+          <p class="bento-desc">{{ getBentoPillarDesc(3, 'services.s3.d') }}</p>
+          <div class="bento-footer">
+            <a routerLink="/services/digital-marketing" class="bento-link-btn">
+              <span>{{ translationService.currentLang() === 'ar' ? 'استراتيجية العائد' : 'ROAS Strategy' }}</span>
+              <i class="fa-solid fa-arrow-left arrow-dir"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Bento Card 4: Production Services & Equipment (8 Cols) -->
+        <div class="bento-card bento-hero-card">
+          <div class="bento-header">
+            <div class="bento-badge-tag">
+              <i class="fa-solid fa-sliders"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'تجهيزات ومعدات الاستوديو' : 'STUDIO SERVICES' }}</span>
+            </div>
+            <span class="bento-index num">04</span>
+          </div>
+          <h3 class="bento-title">{{ getBentoPillarTitle(4, 'services.s4.t') }}</h3>
+          <p class="bento-desc">{{ getBentoPillarDesc(4, 'services.s4.d') }}</p>
+          <div class="bento-tags-row">
+            <span class="spec-tag">Master Anamorphic Lenses</span>
+            <span class="spec-tag">Cinema Lighting Kits</span>
+            <span class="spec-tag">Soundstages</span>
+            <span class="spec-tag">Multi-Camera Live Broadcast</span>
+          </div>
+          <div class="bento-footer">
+            <a routerLink="/contact" class="bento-link-btn">
+              <span>{{ translationService.currentLang() === 'ar' ? 'حجز طاقم ومعدات' : 'Book Crew & Equipment' }}</span>
+              <i class="fa-solid fa-arrow-left arrow-dir"></i>
+            </a>
+          </div>
+        </div>
       </div>
-      <h2>{{ getProcessTitle() }}</h2>
     </div>
+  </section>
 
-    <div class="process-grid">
-      <div class="process-step" *ngFor="let st of getProcessSteps()">
-        <div class="process-num num">{{ st.num }}</div>
-        <h3>{{ getStepTitle(st) }}</h3>
-        <p>{{ getStepDesc(st) }}</p>
+  <!-- 6. CURATED WORKS ARCHIVE (SHOWCASE) -->
+  <section class="section showcase-section" id="work">
+    <div class="wrap">
+      <div class="showcase-top-row">
+        <div class="editorial-head" style="margin-bottom: 0;">
+          <div class="micro-eyebrow">
+            <span class="dash"></span>
+            <span>{{ translationService.translate('work.eyebrow') }}</span>
+          </div>
+          <h2 class="editorial-title">{{ translationService.translate('work.title') }}</h2>
+        </div>
+        <a routerLink="/portfolio" class="luxury-viewall-link">
+          <span>{{ translationService.translate('work.viewall') }}</span>
+          <i class="fa-solid fa-arrow-left arrow-dir"></i>
+        </a>
+      </div>
+
+      <div class="archive-cards-grid">
+        <a 
+          *ngFor="let p of projects; let i = index" 
+          [routerLink]="['/project', p.id]" 
+          class="archive-cinema-card"
+        >
+          <div class="archive-thumb-box">
+            <img [src]="p.image || '/assets/media-glow-card.jpg'" [alt]="getProjectTitle(p)" class="archive-card-img" />
+            <div class="archive-vignette"></div>
+            <div class="archive-hover-action">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </div>
+            <div class="archive-cat-pill">
+              {{ getCategoryName(p) }}
+            </div>
+          </div>
+          <div class="archive-card-meta">
+            <h3 class="archive-project-name">{{ getProjectTitle(p) }}</h3>
+            <p class="archive-project-desc">{{ getProjectDesc(p) }}</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. METHODOLOGY (4-STEP PRODUCTION WORKFLOW) -->
+  <section class="section workflow-section" id="process">
+    <div class="wrap">
+      <div class="editorial-head">
+        <div class="micro-eyebrow">
+          <span class="dash"></span>
+          <span>{{ getWorkflowEyebrow() }}</span>
+        </div>
+        <h2 class="editorial-title">{{ getWorkflowTitle() }}</h2>
+      </div>
+
+      <div class="workflow-steps-track">
+        <div class="wf-step-node" *ngFor="let step of [
+          { num: 1, code: '01', key: 's1', icon: 'fa-solid fa-compass-drafting' },
+          { num: 2, code: '02', key: 's2', icon: 'fa-solid fa-clapperboard' },
+          { num: 3, code: '03', key: 's3', icon: 'fa-solid fa-camera' },
+          { num: 4, code: '04', key: 's4', icon: 'fa-solid fa-wand-magic-sparkles' }
+        ]; let i = index">
+          <div class="wf-node-top">
+            <span class="wf-node-num num">{{ step.code }}</span>
+            <div class="wf-node-icon"><i [class]="step.icon"></i></div>
+          </div>
+          <h3 class="wf-node-title">{{ getWorkflowStepTitle(step.num, 'process.' + step.key + '.t') }}</h3>
+          <p class="wf-node-desc">{{ getWorkflowStepDesc(step.num, 'process.' + step.key + '.d') }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. VIP CLIENT TESTIMONIAL QUOTE -->
+  <section class="section testimonial-spotlight-section">
+    <div class="wrap">
+      <div class="spotlight-quote-card" *ngIf="getActiveTestimonial() as t">
+        <div class="quote-watermark"><i class="fa-solid fa-quote-right"></i></div>
+        <div class="star-rating-row">
+          <i class="fa-solid fa-star" *ngFor="let s of [1,2,3,4,5]"></i>
+          <span class="rating-verified-tag"><i class="fa-solid fa-circle-check"></i> {{ translationService.currentLang() === 'ar' ? 'شهادة تنفيذية موثقة' : 'VERIFIED EXECUTIVE ENDORSEMENT' }}</span>
+        </div>
+        <p class="quote-text">{{ getTestimonialFeedback(t) }}</p>
+        <div class="quote-author-block">
+          <div class="author-avatar-seal">
+            <span>{{ getTestimonialInitials(t) }}</span>
+          </div>
+          <div class="author-identity">
+            <h4 class="author-name">{{ getTestimonialName(t) }}</h4>
+            <span class="author-title">{{ getTestimonialRole(t) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. FREQUENTLY ASKED QUESTIONS (ACCORDION) -->
+  <section class="section faq-section" id="faq">
+    <div class="wrap">
+      <div class="faq-layout-grid">
+
+        <!-- Column 1: Sticky Editorial Context & Direct Help Card -->
+        <div class="faq-sidebar">
+          <div class="micro-eyebrow">
+            <span class="dash"></span>
+            <span>{{ translationService.currentLang() === 'ar' ? 'الأسئلة الشائعة والاستشارات' : 'FAQ & PRODUCTION INTELLIGENCE' }}</span>
+          </div>
+          <h2 class="faq-headline">
+            {{ translationService.currentLang() === 'ar' ? 'كل ما تحتاج معرفته عن صناعة الإنتاج معنا' : 'Everything You Need To Know Before Producing' }}
+          </h2>
+          <p class="faq-sublead">
+            {{ translationService.currentLang() === 'ar'
+               ? 'جمعنا لك هنا أهم التفاصيل المتعلقة بمعدات السينما، الجداول الزمنية، وتكاليف ونماذج التعاقد المباشر مع الاستوديو.'
+               : 'Clear, transparent answers on cinema camera packages, turnaround timelines, and commercial IP deliverables.' }}
+          </p>
+
+          <!-- Quick VIP Help Box -->
+          <div class="faq-help-box card-interactive">
+            <div class="help-live-indicator">
+              <span class="live-dot-pulse"></span>
+              <span class="help-badge-text">{{ translationService.currentLang() === 'ar' ? 'المخرج التنفيذي متاح الآن' : 'EXECUTIVE PRODUCER ONLINE' }}</span>
+            </div>
+            <h4>{{ translationService.currentLang() === 'ar' ? 'لديك متطلبات خاصة لمشروعك؟' : 'Have a custom production brief?' }}</h4>
+            <p>{{ translationService.currentLang() === 'ar' ? 'تحدث مع فريق الإخراج والإنتاج مباشرة للحصول على دراسة مبدئية وتقدير ميزانية فوري.' : 'Connect directly with our senior producers for immediate scope analysis and preliminary estimation.' }}</p>
+            <a [href]="getWhatsAppUrl()" target="_blank" rel="noopener noreferrer" class="btn btn-solid w-100 faq-whatsapp-btn">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'محادثة فورية عبر واتساب' : 'Chat via WhatsApp Now' }}</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Column 2: Accordion List -->
+        <div class="faq-accordion-list">
+          <div 
+            class="faq-accordion-item card-interactive" 
+            *ngFor="let faq of (faqs.length ? faqs : defaultFaqs); let i = index"
+            [class.active]="activeFaqIndex === i"
+            (click)="toggleFaq(i)"
+          >
+            <div class="faq-item-header">
+              <div class="faq-header-left">
+                <span class="faq-item-num num">{{ getFaqNumber(faq, i) }}</span>
+                <span class="faq-item-tag">{{ getFaqTag(faq, i) }}</span>
+              </div>
+              <span class="faq-toggle-icon">
+                <i class="fa-solid" [class.fa-plus]="activeFaqIndex !== i" [class.fa-minus]="activeFaqIndex === i"></i>
+              </span>
+            </div>
+
+            <h3 class="faq-item-question">{{ getFaqQuestion(faq) }}</h3>
+
+            <div class="faq-answer-body" *ngIf="activeFaqIndex === i">
+              <div class="answer-inner">
+                <i class="fa-solid fa-circle-check answer-check-icon"></i>
+                <p>{{ getFaqAnswer(faq) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. GRAND MASTERPIECE FINALE CTA -->
+  <section class="section finale-cta-section" id="contact">
+    <div class="wrap">
+      <div class="finale-card">
+        <div class="finale-ambient-glow"></div>
+        <div class="finale-inner">
+          <div class="micro-eyebrow" style="justify-content: center;">
+            <span class="dash"></span>
+            <span>{{ getCtaEyebrow() }}</span>
+          </div>
+          <h2 class="finale-title">{{ getCtaTitle() }}</h2>
+          <p class="finale-lead">{{ getCtaSub() }}</p>
+          <div class="finale-buttons-row">
+            <a routerLink="/contact" class="btn btn-solid finale-main-btn">
+              <span>{{ getCtaBtn() }}</span>
+              <i class="fa-solid fa-arrow-left arrow-dir"></i>
+            </a>
+            <a routerLink="/portfolio" class="btn btn-line">
+              <span>{{ translationService.currentLang() === 'ar' ? 'تصفح الأعمال السابقة' : 'Browse Works' }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. FULL 4K CINEMA SHOWREEL MODAL -->
+  <div class="showreel-modal" *ngIf="isShowreelOpen" (click)="closeShowreel()">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close" (click)="closeShowreel()" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="video-container">
+        <video autoplay controls loop playsinline class="modal-video" [poster]="getShowreelPoster()">
+          <source [src]="getShowreelUrl()" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
       </div>
     </div>
   </div>
-</section>
 
-<!-- ══════════════════════════════════════════════════════════════════
-     TESTIMONIAL SECTION (Luxury Cinema Quote - 100% Dynamic)
-     ══════════════════════════════════════════════════════════════════ -->
-<section class="section section-soft">
-  <div class="wrap testi-container">
-    <div class="testi-card">
-      <div class="quote-symbol"><i class="fa-solid fa-quote-right"></i></div>
-      <p class="testi-text">{{ getTestiQuote() }}</p>
-      <div class="testi-author">
-        <span class="author-name">{{ getTestiAuthor() }}</span>
-        <span class="author-sep">&bull;</span>
-        <span class="author-role">{{ getTestiRole() }}</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════════════════════
-     CINEMATIC CTA BANNER (100% Dynamic)
-     ══════════════════════════════════════════════════════════════════ -->
-<section class="cta" id="contact">
-  <div class="cta-glow"></div>
-  <div class="wrap cta-content">
-    <div class="eyebrow" style="justify-content:center;">
-      <span class="dash"></span>
-      <span>{{ getCtaEyebrow() }}</span>
-    </div>
-    <h2>{{ getCtaTitle() }}</h2>
-    <p class="sub">{{ getCtaSub() }}</p>
-    <div class="cta-actions">
-      <a routerLink="/contact" class="btn btn-solid">
-        <span>{{ getCtaBtn() }}</span>
-        <i class="fa-solid fa-arrow-left arrow-dir"></i>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════════════════════
-     SHOWREEL MODAL (Interactive Video Player)
-     ══════════════════════════════════════════════════════════════════ -->
-<div class="showreel-modal" *ngIf="isShowreelOpen" (click)="closeShowreel()">
-  <div class="modal-backdrop"></div>
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <button type="button" class="modal-close" (click)="closeShowreel()" aria-label="Close">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div class="video-container">
-      <video autoplay controls loop playsinline class="modal-video" [poster]="getShowreelPoster()">
-        <source [src]="getShowreelUrl()" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  </div>
 </div>

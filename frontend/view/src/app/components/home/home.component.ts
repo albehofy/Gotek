@@ -17,13 +17,67 @@ export class HomeComponent implements OnInit {
   apiService = inject(ApiService);
   translationService = inject(TranslationService);
 
-  // Data from API
   projects: any[] = [];
   testimonials: any[] = [];
+  faqs: any[] = [];
   services: any[] = [];
   homePageData: any = null;
   activeTestimonialIndex = 0;
   isShowreelOpen = false;
+  activeFaqIndex: number | null = 0;
+
+  defaultFaqs = [
+    {
+      num: '01',
+      tag: { ar: 'مجالات الاستوديو', en: 'STUDIO CAPABILITIES' },
+      icon: 'fa-solid fa-clapperboard',
+      q: { ar: 'ما هي مجالات الإنتاج الرئيسية في استوديو ميديا جلو؟', en: 'What are Media Glow\'s primary production capabilities?' },
+      a: {
+        ar: 'نحن استوديو إنتاج سينمائي ورقمي متكامل يقدم إعلانات تلفزيونية TVCs، أفلام تجارية، تصوير ريلز ومحتوى مرئي، بناء الهويات البصرية الفاخرة، وحملات النمو الرقمية.',
+        en: 'A premier full-service production house specializing in broadcast TVCs, commercial cinema, brand identity architecture, and ROI-driven marketing campaigns.'
+      }
+    },
+    {
+      num: '02',
+      tag: { ar: 'العتاد والكاميرات', en: 'TECH & CAMERA FLEET' },
+      icon: 'fa-solid fa-camera',
+      q: { ar: 'ما هي المعدات وأنظمة الكاميرات التي تستخدمونها؟', en: 'What cinema camera systems and equipment do you use?' },
+      a: {
+        ar: 'نعتمد كاميرات ARRI Alexa 35 و RED V-Raptor 8K مع عدسات Anamorphic وعدسات سينمائية فاخرة، وإضاءات متكاملة وتصوير جوي معتمد بدقة فائقة.',
+        en: 'We deploy industry-gold-standard ARRI Alexa 35 and RED V-Raptor 8K cinema packages, Master Anamorphic prime lenses, and certified 4K/8K drone systems.'
+      }
+    },
+    {
+      num: '03',
+      tag: { ar: 'الجدول الزمني', en: 'TURNAROUND & TIMELINE' },
+      icon: 'fa-solid fa-clock-rotate-left',
+      q: { ar: 'كم يستغرق إنتاج فيلم إعلاني أو حملة متكاملة؟', en: 'What is the turnaround time for a commercial production?' },
+      a: {
+        ar: 'تتراوح المدة عادة بين 10 إلى 21 يوماً تشمل المعالجة الدرامية، المعاينة، التصوير السينمائي، والمونتاج وتصحيح الألوان (Color Grading).',
+        en: 'Production typically spans 10 to 21 business days across discovery, pre-production, principal photography, and Hollywood-grade color grading.'
+      }
+    },
+    {
+      num: '04',
+      tag: { ar: 'التعاقد والإنتاج', en: 'CONTRACTING & ONBOARDING' },
+      icon: 'fa-solid fa-handshake',
+      q: { ar: 'كيف يمكننا بدء مشروع والتعاقد مع الاستوديو؟', en: 'How do we initiate a project or request a consultation?' },
+      a: {
+        ar: 'يمكنك النقر على زر "ابدأ مشروعك" أو مراسلتنا مباشرة على واتساب لتحديد جلسة نقاش إبداعي ومراجعة أهداف علامتك التجارية.',
+        en: 'Click "Start a Project" or connect directly via WhatsApp to schedule an executive discovery session and receive a custom production proposal.'
+      }
+    },
+    {
+      num: '05',
+      tag: { ar: 'حقوق الملكية والملفات', en: 'IP & RAW DELIVERABLES' },
+      icon: 'fa-solid fa-file-shield',
+      q: { ar: 'هل نحصل على كافة ملفات العمل الخام وحقوق الملكية الكاملة؟', en: 'Do we receive full copyright ownership and raw project files?' },
+      a: {
+        ar: 'نعم بالتأكيد، كافة الحقوق التجارية والملكية الفكرية تنتقل لعلامتك التجارية بالكامل فور التسليم، مع إمكانية تسليم ملفات RAW وتصديرات متعددة المنصات.',
+        en: 'Absolutely. Full commercial rights and IP transfer to your organization upon final delivery, including raw camera master archives and multi-platform aspect ratios.'
+      }
+    }
+  ];
 
   ngOnInit() {
     this.loadApiData();
@@ -33,19 +87,55 @@ export class HomeComponent implements OnInit {
   loadApiData() {
     this.apiService.getProjects({ limit: 3 }).subscribe((res: any) => {
       const data = res?.data ?? res ?? [];
-      this.projects = Array.isArray(data) ? data : [];
+      this.projects = Array.isArray(data) && data.length ? data : [
+        {
+          id: 1,
+          title: { ar: 'فيلم إطلاق قِرمز التراثي', en: 'Qirmiz Heritage Commercial' },
+          category: { name_ar: 'إنتاج سينمائي', name_en: 'Cinema Production' },
+          description: { ar: 'حملة إطلاق سينمائية كبرى مع تصوير جوي وإضاءة احترافية وتأليف موسيقي حصري.', en: 'Cinematic brand launch campaign with drone cinematography and custom sound score.' },
+          image: '/assets/media-glow-card.jpg'
+        },
+        {
+          id: 2,
+          title: { ar: 'حملة عيادات النور الدولية', en: 'Al Noor Healthcare Campaign' },
+          category: { name_ar: 'حملة إعلامية', name_en: 'Integrated Campaign' },
+          description: { ar: 'حملة مرئية تلفزيونية رفعت الحجوزات ونسبة الوعي بالعلامة 3 أضعاف في الربع الأول.', en: 'Cross-platform commercial film campaign that tripled consultations and regional authority.' },
+          image: '/assets/media-glow-card.jpg'
+        },
+        {
+          id: 3,
+          title: { ar: 'منصة تكامل للأعمال VIP', en: 'Takamol Enterprise Platform' },
+          category: { name_ar: 'منصة رقمية', name_en: 'Digital Platform' },
+          description: { ar: 'بناء منصة رقمية تفاعلية ثنائية اللغة فائقة السرعة مع هوية سينمائية متطورة.', en: 'Bilingual digital ecosystem built from the ground up with cinema-grade visuals and lightning speed.' },
+          image: '/assets/media-glow-card.jpg'
+        }
+      ];
     });
 
-    this.apiService.getTestimonials(5).subscribe((res: any) => {
+    this.apiService.getTestimonials(6).subscribe((res: any) => {
       const data = res?.data ?? res ?? [];
-      this.testimonials = Array.isArray(data) ? data : [];
+      this.testimonials = Array.isArray(data) && data.length ? data : [
+        {
+          client_name: { ar: 'أحمد السعيد', en: 'Ahmed El-Saeed' },
+          job_title: { ar: 'الرئيس التنفيذي — تيك نور', en: 'CEO — TechNoor' },
+          feedback: {
+            ar: 'تجربة الاستشارات والإنتاج السينمائي مع ميديا جلو كانت نقطة تحول حقيقية في هوية ومبيعات شركتنا.',
+            en: 'Our commercial film and campaign with Media Glow marked a defining inflection point for brand perception and enterprise growth.'
+          }
+        }
+      ];
+    });
+
+    this.apiService.getFaqs().subscribe((res: any) => {
+      const data = res?.data ?? res ?? [];
+      this.faqs = Array.isArray(data) && data.length ? data : [];
     });
   }
 
   loadPageContent() {
     this.apiService.getPageContent('home').subscribe({
       next: (res: any) => {
-        if (res && res.data) {
+        if (res && res.data && Object.keys(res.data).length > 0) {
           this.homePageData = res.data;
         }
       },
@@ -58,7 +148,7 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.hero?.award_badge?.[lang]
       || this.homePageData?.hero?.award_badge?.ar
       || this.homePageData?.hero?.award_badge?.en
-      || this.translationService.translate('hero.award');
+      || (lang === 'ar' ? '★ استوديو إنتاج سينمائي ورقمي رائد — القاهرة · الرياض · دبي' : '★ PREMIER FILM & MEDIA PRODUCTION STUDIO — CAIRO · RIYADH · DUBAI');
   }
 
   getHeroLine1(): string {
@@ -66,7 +156,7 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.hero?.title1?.[lang]
       || this.homePageData?.hero?.title1?.ar
       || this.homePageData?.hero?.title1?.en
-      || this.translationService.translate('hero.line1');
+      || (lang === 'ar' ? 'نصنع أفلاماً وتجارب بصرية' : 'We Produce Cinematic Films');
   }
 
   getHeroLine2(): string {
@@ -74,7 +164,7 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.hero?.title2?.[lang]
       || this.homePageData?.hero?.title2?.ar
       || this.homePageData?.hero?.title2?.en
-      || this.translationService.translate('hero.line2');
+      || (lang === 'ar' ? 'تُخلّد مكانة علامتك التجارية' : '& Iconic Brand Experiences');
   }
 
   getHeroSub(): string {
@@ -82,15 +172,123 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.hero?.subtitle?.[lang]
       || this.homePageData?.hero?.subtitle?.ar
       || this.homePageData?.hero?.subtitle?.en
-      || this.translationService.translate('hero.sub');
+      || (lang === 'ar'
+        ? 'استوديو إنتاج سينمائي ورقمي متكامل يقود الحملات الكبرى، الأفلام الإعلانية، والهويات البصرية الرائدة للشركات الطموحة في الشرق الأوسط.'
+        : 'Full-service production house delivering commercial films, iconic visual systems, and high-impact digital campaigns for market leaders across the region.');
+  }
+
+  getHeroBtn1(): string {
+    const lang = this.translationService.currentLang();
+    return this.homePageData?.hero?.btn1?.[lang]
+      || this.homePageData?.hero?.btn1?.ar
+      || this.homePageData?.hero?.btn1?.en
+      || this.translationService.translate('hero.btn1');
+  }
+
+  getHeroReelBtn(): string {
+    const lang = this.translationService.currentLang();
+    return this.homePageData?.hero?.reel_btn?.[lang]
+      || this.homePageData?.hero?.reel_btn?.ar
+      || this.homePageData?.hero?.reel_btn?.en
+      || this.translationService.translate('hero.reelBtn');
+  }
+
+  getShowreelPoster(): string {
+    return this.homePageData?.hero?.showreel_poster || '/assets/media-glow-card.jpg';
   }
 
   getShowreelUrl(): string {
     return this.homePageData?.hero?.showreel_url || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
   }
 
-  getShowreelPoster(): string {
-    return this.homePageData?.hero?.showreel_poster || '/assets/hero-visual-premium.png';
+  openShowreel() {
+    this.isShowreelOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeShowreel() {
+    this.isShowreelOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  toggleFaq(index: number) {
+    this.activeFaqIndex = this.activeFaqIndex === index ? null : index;
+  }
+
+  getFaqQuestion(faq: any): string {
+    if (!faq) return '';
+    const lang = this.translationService.currentLang();
+    if (faq.q && typeof faq.q === 'object') return faq.q[lang] || faq.q['ar'] || '';
+    if (lang === 'en') return faq.question_en || faq.question_ar || faq.question || '';
+    return faq.question_ar || faq.question_en || faq.question || '';
+  }
+
+  getFaqAnswer(faq: any): string {
+    if (!faq) return '';
+    const lang = this.translationService.currentLang();
+    if (faq.a && typeof faq.a === 'object') return faq.a[lang] || faq.a['ar'] || '';
+    if (lang === 'en') return faq.answer_en || faq.answer_ar || faq.answer || '';
+    return faq.answer_ar || faq.answer_en || faq.answer || '';
+  }
+
+  getFaqTag(faq: any, index: number): string {
+    if (!faq) return '';
+    const lang = this.translationService.currentLang();
+    if (faq.tag && typeof faq.tag === 'object') return faq.tag[lang] || faq.tag['ar'] || '';
+    const fallbackTags = [
+      lang === 'ar' ? 'مجالات الاستوديو' : 'STUDIO CAPABILITIES',
+      lang === 'ar' ? 'العتاد والكاميرات' : 'TECH & CAMERA FLEET',
+      lang === 'ar' ? 'الجدول الزمني' : 'TURNAROUND & TIMELINE',
+      lang === 'ar' ? 'التعاقد والإنتاج' : 'CONTRACTING & ONBOARDING',
+      lang === 'ar' ? 'حقوق الملكية والملفات' : 'IP & RAW DELIVERABLES'
+    ];
+    return fallbackTags[index % fallbackTags.length];
+  }
+
+  getFaqNumber(faq: any, index: number): string {
+    if (faq && faq.num) return faq.num;
+    return `0${index + 1}`;
+  }
+
+  getFaqIcon(faq: any, index: number): string {
+    if (faq && faq.icon) return faq.icon;
+    const icons = ['fa-solid fa-clapperboard', 'fa-solid fa-camera', 'fa-solid fa-clock-rotate-left', 'fa-solid fa-handshake', 'fa-solid fa-file-shield'];
+    return icons[index % icons.length];
+  }
+
+  getWhatsAppUrl(): string {
+    const phone = this.translationService.siteContent()?.branding?.whatsapp 
+      || this.translationService.siteContent()?.contact?.whatsapp 
+      || this.translationService.siteContent()?.footer?.phone 
+      || '201000000000';
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const msg = this.translationService.currentLang() === 'ar' 
+      ? encodeURIComponent('مرحباً ميديا جلو، أود الاستفسار عن تفاصيل الإنتاج والأسعار') 
+      : encodeURIComponent('Hello Media Glow, I would like to inquire about production details and pricing');
+    return `https://wa.me/${cleanPhone}?text=${msg}`;
+  }
+
+  getPartnersCaption(): string {
+    const lang = this.translationService.currentLang();
+    return this.homePageData?.partners?.title?.[lang]
+      || this.homePageData?.partners?.title?.ar
+      || this.homePageData?.partners?.title?.en
+      || (lang === 'ar' ? 'شركاء الإنتاج والعلامات التجارية التي وضعت ثقتها فينا' : 'Trusted by Visionary Brands & Industry Pioneers');
+  }
+
+  getPartnersList(): any[] {
+    const fromHome = this.homePageData?.partners?.items;
+    if (Array.isArray(fromHome) && fromHome.length > 0) return fromHome;
+    const fromSite = this.translationService.siteContent()?.partners?.items;
+    if (Array.isArray(fromSite) && fromSite.length > 0) return fromSite;
+    return [
+      { name: 'QIRMIZ ROASTERY', logo: '/assets/media-glow-icon.png' },
+      { name: 'AL NOOR CLINICS', logo: '/assets/media-glow-icon.png' },
+      { name: 'TAKAMOL PLATFORM', logo: '/assets/media-glow-icon.png' },
+      { name: 'AURA CINEMA', logo: '/assets/media-glow-icon.png' },
+      { name: 'VORTEX DIGITAL', logo: '/assets/media-glow-icon.png' },
+      { name: 'HORIZON GROUP', logo: '/assets/media-glow-icon.png' }
+    ];
   }
 
   getStatNum(index: number, fallback: string): string {
@@ -105,222 +303,167 @@ export class HomeComponent implements OnInit {
       || this.translationService.translate(defaultKey);
   }
 
-  openShowreel() {
-    this.isShowreelOpen = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  closeShowreel() {
-    this.isShowreelOpen = false;
-    document.body.style.overflow = '';
-  }
-
-  setTestimonialIndex(index: number) {
-    this.activeTestimonialIndex = index;
-  }
-
-  getProjectTitle(p: any): string {
+  // Bento Services Section
+  getBentoEyebrow(): string {
     const lang = this.translationService.currentLang();
-    if (p.title && typeof p.title === 'object') {
-      return p.title[lang] || p.title.ar || p.title.en || '';
-    }
-    return p.title_ar || p.title || '';
+    return this.homePageData?.services_bento?.eyebrow?.[lang]
+      || this.homePageData?.services_bento?.eyebrow?.ar
+      || this.homePageData?.services_bento?.eyebrow?.en
+      || this.translationService.translate('services.eyebrow');
   }
 
-  getProjectDesc(p: any): string {
+  getBentoTitle(): string {
     const lang = this.translationService.currentLang();
-    if (p.description && typeof p.description === 'object') {
-      return p.description[lang] || p.description.ar || p.description.en || '';
-    }
-    return p.description_ar || p.description || '';
+    return this.homePageData?.services_bento?.title?.[lang]
+      || this.homePageData?.services_bento?.title?.ar
+      || this.homePageData?.services_bento?.title?.en
+      || this.translationService.translate('services.title');
   }
 
-  getCategoryName(p: any): string {
+  getBentoSub(): string {
     const lang = this.translationService.currentLang();
-    const cat = p.category;
-    if (!cat) return '';
-    if (cat.name && typeof cat.name === 'object') {
-      return cat.name[lang] || cat.name.ar || cat.name.en || '';
-    }
-    return cat.name_ar || cat.name || '';
+    return this.homePageData?.services_bento?.sub?.[lang]
+      || this.homePageData?.services_bento?.sub?.ar
+      || this.homePageData?.services_bento?.sub?.en
+      || this.translationService.translate('services.sub');
   }
 
-  // 4 Core Pillars dynamic support
-  getPillars(): any[] {
-    if (this.homePageData?.pillars && Array.isArray(this.homePageData.pillars) && this.homePageData.pillars.length > 0) {
-      return this.homePageData.pillars;
-    }
-    return [
-      {
-        index: '01',
-        icon_type: 'icon',
-        icon: 'fa-solid fa-film',
-        title: { ar: this.translationService.translate('services.s1.t'), en: 'Cinematic Production' },
-        desc: { ar: this.translationService.translate('services.s1.d'), en: '4K/8K Cinematography & TVCs' },
-        btn_text: { ar: 'استكشف الخدمة', en: 'Explore Service' },
-        url: '/services'
-      },
-      {
-        index: '02',
-        icon_type: 'icon',
-        icon: 'fa-solid fa-palette',
-        title: { ar: this.translationService.translate('services.s2.t'), en: 'Brand Identity' },
-        desc: { ar: this.translationService.translate('services.s2.d'), en: 'Iconic branding and art direction' },
-        btn_text: { ar: 'استكشف الخدمة', en: 'Explore Service' },
-        url: '/services'
-      },
-      {
-        index: '03',
-        icon_type: 'icon',
-        icon: 'fa-solid fa-chart-line',
-        title: { ar: this.translationService.translate('services.s3.t'), en: 'Digital Campaigns' },
-        desc: { ar: this.translationService.translate('services.s3.d'), en: 'High ROI digital growth' },
-        btn_text: { ar: 'استكشف الخدمة', en: 'Explore Service' },
-        url: '/services'
-      },
-      {
-        index: '04',
-        icon_type: 'icon',
-        icon: 'fa-solid fa-video',
-        title: { ar: this.translationService.translate('services.s4.t'), en: 'Live Events Coverage' },
-        desc: { ar: this.translationService.translate('services.s4.d'), en: 'Cinema gear and broadcasting' },
-        btn_text: { ar: 'استكشف الخدمة', en: 'Explore Service' },
-        url: '/services'
-      }
-    ];
-  }
-
-  isPillarImage(p: any): boolean {
-    if (!p) return false;
-    if (p.icon_type === 'image') return true;
-    const val = p.icon || '';
-    return val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/') || val.startsWith('data:') || /\.(png|jpg|jpeg|svg|webp|gif)$/i.test(val);
-  }
-
-  getPillarTitle(p: any): string {
+  getBentoPillarTitle(pillarNum: number, defaultKey: string): string {
     const lang = this.translationService.currentLang();
-    if (p.title && typeof p.title === 'object') {
-      return p.title[lang] || p.title.ar || p.title.en || '';
-    }
-    return p.title || '';
+    return this.homePageData?.services_bento?.[`s${pillarNum}_title`]?.[lang]
+      || this.homePageData?.services_bento?.[`s${pillarNum}_title`]?.ar
+      || this.homePageData?.services_bento?.[`s${pillarNum}_title`]?.en
+      || this.translationService.translate(defaultKey);
   }
 
-  getPillarDesc(p: any): string {
+  getBentoPillarDesc(pillarNum: number, defaultKey: string): string {
     const lang = this.translationService.currentLang();
-    if (p.desc && typeof p.desc === 'object') {
-      return p.desc[lang] || p.desc.ar || p.desc.en || '';
-    }
-    return p.desc || '';
+    return this.homePageData?.services_bento?.[`s${pillarNum}_desc`]?.[lang]
+      || this.homePageData?.services_bento?.[`s${pillarNum}_desc`]?.ar
+      || this.homePageData?.services_bento?.[`s${pillarNum}_desc`]?.en
+      || this.translationService.translate(defaultKey);
   }
 
-  getPillarBtn(p: any): string {
+  // Workflow Methodology Section
+  getWorkflowEyebrow(): string {
     const lang = this.translationService.currentLang();
-    if (p.btn_text && typeof p.btn_text === 'object') {
-      return p.btn_text[lang] || p.btn_text.ar || p.btn_text.en || '';
-    }
-    return p.btn_text || (lang === 'ar' ? 'استكشف الخدمة' : 'Explore Service');
-  }
-
-  // Partners & Brand Trust
-  getPartnersCaption(): string {
-    const lang = this.translationService.currentLang();
-    return this.homePageData?.partners?.caption?.[lang]
-      || this.homePageData?.partners?.caption?.ar
-      || this.homePageData?.partners?.caption?.en
-      || this.translationService.translate('strip.cap');
-  }
-
-  getPartnersList(): any[] {
-    if (this.homePageData?.partners?.brands && Array.isArray(this.homePageData.partners.brands) && this.homePageData.partners.brands.length > 0) {
-      return this.homePageData.partners.brands;
-    }
-    return [
-      { name: 'QIRMIZ', logo: '' },
-      { name: 'AL NOOR', logo: '' },
-      { name: 'TAKAMOL', logo: '' },
-      { name: 'NILEWAVE', logo: '' },
-      { name: 'ORBITA', logo: '' },
-      { name: 'LUMINA', logo: '' }
-    ];
-  }
-
-  // Process Steps
-  getProcessEyebrow(): string {
-    const lang = this.translationService.currentLang();
-    return this.homePageData?.process?.eyebrow?.[lang]
-      || this.homePageData?.process?.eyebrow?.ar
-      || this.homePageData?.process?.eyebrow?.en
+    return this.homePageData?.workflow?.eyebrow?.[lang]
+      || this.homePageData?.workflow?.eyebrow?.ar
+      || this.homePageData?.workflow?.eyebrow?.en
       || this.translationService.translate('process.eyebrow');
   }
 
-  getProcessTitle(): string {
+  getWorkflowTitle(): string {
     const lang = this.translationService.currentLang();
-    return this.homePageData?.process?.title?.[lang]
-      || this.homePageData?.process?.title?.ar
-      || this.homePageData?.process?.title?.en
+    return this.homePageData?.workflow?.title?.[lang]
+      || this.homePageData?.workflow?.title?.ar
+      || this.homePageData?.workflow?.title?.en
       || this.translationService.translate('process.title');
   }
 
-  getProcessSteps(): any[] {
-    if (this.homePageData?.process?.steps && Array.isArray(this.homePageData.process.steps) && this.homePageData.process.steps.length > 0) {
-      return this.homePageData.process.steps;
+  getWorkflowStepTitle(stepNum: number, defaultKey: string): string {
+    const lang = this.translationService.currentLang();
+    return this.homePageData?.workflow?.[`s${stepNum}_title`]?.[lang]
+      || this.homePageData?.workflow?.[`s${stepNum}_title`]?.ar
+      || this.homePageData?.workflow?.[`s${stepNum}_title`]?.en
+      || this.translationService.translate(defaultKey);
+  }
+
+  getWorkflowStepDesc(stepNum: number, defaultKey: string): string {
+    const lang = this.translationService.currentLang();
+    return this.homePageData?.workflow?.[`s${stepNum}_desc`]?.[lang]
+      || this.homePageData?.workflow?.[`s${stepNum}_desc`]?.ar
+      || this.homePageData?.workflow?.[`s${stepNum}_desc`]?.en
+      || this.translationService.translate(defaultKey);
+  }
+
+  // Testimonials
+  getActiveTestimonial(): any {
+    if (this.testimonials.length > 0) {
+      return this.testimonials[this.activeTestimonialIndex % this.testimonials.length];
     }
-    return [
-      { num: '01', title: { ar: this.translationService.translate('process.s1.t'), en: 'Discovery & Script' }, desc: { ar: this.translationService.translate('process.s1.d'), en: 'Message & Storyboard' } },
-      { num: '02', title: { ar: this.translationService.translate('process.s2.t'), en: 'Pre-Production' }, desc: { ar: this.translationService.translate('process.s2.d'), en: 'Locations & Gear' } },
-      { num: '03', title: { ar: this.translationService.translate('process.s3.t'), en: 'Production' }, desc: { ar: this.translationService.translate('process.s3.d'), en: 'Cinema Cameras & Crew' } },
-      { num: '04', title: { ar: this.translationService.translate('process.s4.t'), en: 'Post-Production' }, desc: { ar: this.translationService.translate('process.s4.d'), en: 'Color Grading & VFX' } }
-    ];
+    return null;
   }
 
-  getStepTitle(st: any): string {
+  getTestimonialFeedback(t: any): string {
+    if (!t) return this.translationService.translate('testi.t1');
     const lang = this.translationService.currentLang();
-    if (st.title && typeof st.title === 'object') {
-      return st.title[lang] || st.title.ar || st.title.en || '';
+    if (t.feedback && typeof t.feedback === 'object') return t.feedback[lang] || t.feedback['ar'] || '';
+    if (lang === 'en') return t.feedback_en || t.feedback_ar || t.feedback || '';
+    return t.feedback_ar || t.feedback_en || t.feedback || '';
+  }
+
+  getTestimonialName(t: any): string {
+    if (!t) return this.translationService.translate('testi.n1');
+    const lang = this.translationService.currentLang();
+    if (t.client_name && typeof t.client_name === 'object') return t.client_name[lang] || t.client_name['ar'] || '';
+    if (lang === 'en') return t.client_name_en || t.client_name_ar || t.client_name || '';
+    return t.client_name_ar || t.client_name_en || t.client_name || '';
+  }
+
+  getTestimonialRole(t: any): string {
+    if (!t) return this.translationService.translate('testi.r1');
+    const lang = this.translationService.currentLang();
+    if (t.job_title && typeof t.job_title === 'object') return t.job_title[lang] || t.job_title['ar'] || '';
+    if (lang === 'en') return t.job_title_en || t.job_title_ar || t.job_title || '';
+    return t.job_title_ar || t.job_title_en || t.job_title || '';
+  }
+
+  getTestimonialInitials(t: any): string {
+    const name = this.getTestimonialName(t);
+    if (!name) return 'MG';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  }
+
+  getProjectTitle(p: any): string {
+    if (!p) return '';
+    const lang = this.translationService.currentLang();
+    if (p.title && typeof p.title === 'object') {
+      return p.title[lang] || p.title[lang === 'ar' ? 'en' : 'ar'] || '';
     }
-    return st.title || '';
-  }
-
-  getStepDesc(st: any): string {
-    const lang = this.translationService.currentLang();
-    if (st.desc && typeof st.desc === 'object') {
-      return st.desc[lang] || st.desc.ar || st.desc.en || '';
+    if (lang === 'en') {
+      return p.title_en || p.title_ar || (typeof p.title === 'string' ? p.title : '') || '';
     }
-    return st.desc || '';
+    return p.title_ar || p.title_en || (typeof p.title === 'string' ? p.title : '') || '';
   }
 
-  // Testimonial Quote
-  getTestiQuote(): string {
+  getProjectDesc(p: any): string {
+    if (!p) return '';
     const lang = this.translationService.currentLang();
-    return this.homePageData?.testi?.quote?.[lang]
-      || this.homePageData?.testi?.quote?.ar
-      || this.homePageData?.testi?.quote?.en
-      || this.translationService.translate('testi.t1');
+    const desc = p.description || p.desc;
+    if (desc && typeof desc === 'object') {
+      return desc[lang] || desc[lang === 'ar' ? 'en' : 'ar'] || '';
+    }
+    if (lang === 'en') {
+      return p.description_en || p.description_ar || (typeof desc === 'string' ? desc : '') || '';
+    }
+    return p.description_ar || p.description_en || (typeof desc === 'string' ? desc : '') || '';
   }
 
-  getTestiAuthor(): string {
+  getCategoryName(p: any): string {
+    if (!p) return '';
     const lang = this.translationService.currentLang();
-    return this.homePageData?.testi?.name?.[lang]
-      || this.homePageData?.testi?.name?.ar
-      || this.homePageData?.testi?.name?.en
-      || this.translationService.translate('testi.n1');
+    const cat = p.category;
+    if (!cat) return '';
+    if (typeof cat === 'string') return cat;
+    if (cat.name && typeof cat.name === 'object') {
+      return cat.name[lang] || cat.name[lang === 'ar' ? 'en' : 'ar'] || '';
+    }
+    if (lang === 'en') {
+      return cat.name_en || cat.name || cat.name_ar || 'Cinema Production';
+    }
+    return cat.name_ar || cat.name || cat.name_en || 'إنتاج سينمائي';
   }
 
-  getTestiRole(): string {
-    const lang = this.translationService.currentLang();
-    return this.homePageData?.testi?.role?.[lang]
-      || this.homePageData?.testi?.role?.ar
-      || this.homePageData?.testi?.role?.en
-      || this.translationService.translate('testi.r1');
-  }
-
-  // CTA
+  // Finale CTA
   getCtaEyebrow(): string {
     const lang = this.translationService.currentLang();
     return this.homePageData?.cta?.eyebrow?.[lang]
       || this.homePageData?.cta?.eyebrow?.ar
       || this.homePageData?.cta?.eyebrow?.en
-      || this.translationService.translate('cta.eyebrow');
+      || (lang === 'ar' ? 'هل أنت مستعد للمشروع القادم؟' : 'Ready for your next masterpiece?');
   }
 
   getCtaTitle(): string {
@@ -328,7 +471,7 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.cta?.title?.[lang]
       || this.homePageData?.cta?.title?.ar
       || this.homePageData?.cta?.title?.en
-      || this.translationService.translate('cta.title');
+      || (lang === 'ar' ? 'دعنا نصنع لعلامتك عملاً لا يُنسى' : 'Let’s produce something extraordinary together');
   }
 
   getCtaSub(): string {
@@ -336,7 +479,9 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.cta?.sub?.[lang]
       || this.homePageData?.cta?.sub?.ar
       || this.homePageData?.cta?.sub?.en
-      || this.translationService.translate('cta.sub');
+      || (lang === 'ar'
+        ? 'تحدث مباشرة مع فريق الإخراج والإنتاج لمناقشة فكرة عملك وتقدير الميزانية وجدول التنفيذ.'
+        : 'Connect directly with our producers and creative directors to plan your upcoming campaign.');
   }
 
   getCtaBtn(): string {
@@ -344,6 +489,6 @@ export class HomeComponent implements OnInit {
     return this.homePageData?.cta?.btn?.[lang]
       || this.homePageData?.cta?.btn?.ar
       || this.homePageData?.cta?.btn?.en
-      || this.translationService.translate('cta.btn');
+      || (lang === 'ar' ? 'احجز جلسة نقاش الإنتاج' : 'Schedule Production Discovery');
   }
 }

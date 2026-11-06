@@ -240,7 +240,7 @@ import { InputTextModule } from 'primeng/inputtext';
       </div>
 
       <!-- PrimeNG Dialog: Add / Edit User Modal -->
-      <p-dialog [(visible)]="showUserModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="isEditMode ? 'تعديل بيانات الحساب والأدوار' : (activeTab === 'clients' ? 'إضافة عميل جديد' : 'إضافة موظف / مستخدم جديد')" [style]="{ width: '92vw', maxWidth: '620px' }">
+      <p-dialog [(visible)]="showUserModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeUserModal()" [header]="isEditMode ? 'تعديل بيانات الحساب والأدوار' : (activeTab === 'clients' ? 'إضافة عميل جديد' : 'إضافة موظف / مستخدم جديد')" [style]="{ width: '92vw', maxWidth: '620px' }">
         <form [formGroup]="userForm" (ngSubmit)="saveUser()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-row-2">
@@ -344,7 +344,7 @@ import { InputTextModule } from 'primeng/inputtext';
           </div>
 
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showUserModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeUserModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="userForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : (isEditMode ? 'تحديث البيانات' : 'حفظ المستخدم') }}
             </button>
@@ -807,10 +807,28 @@ export class RolesManagementComponent implements OnInit {
   }
 
   // --- USER MODAL ACTIONS ---
-  openAddUserModal(): void {
+  closeUserModal(): void {
+    this.showUserModal = false;
     this.isEditMode = false;
     this.editingUserId = null;
     this.selectedRoleIds = [];
+    this.userForm.reset({
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      department_id: null,
+      payment_type: 'salary_based',
+      base_salary: 0,
+      commission_rate: 0,
+      is_hold: false
+    });
+    this.userForm.get('password')?.clearValidators();
+    this.userForm.get('password')?.updateValueAndValidity();
+  }
+
+  openAddUserModal(): void {
+    this.closeUserModal();
 
     // Pre-select role matching tab
     if (this.activeTab === 'clients') {
@@ -928,7 +946,7 @@ export class RolesManagementComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.toastService.success('تم تحديث بيانات المستخدم وأدواره بنجاح');
-          this.showUserModal = false;
+          this.closeUserModal();
           this.loadUsers();
         },
         error: (err) => {
@@ -941,7 +959,7 @@ export class RolesManagementComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.toastService.success('تم إضافة المستخدم الجديد بنجاح');
-          this.showUserModal = false;
+          this.closeUserModal();
           this.loadUsers();
         },
         error: (err) => {

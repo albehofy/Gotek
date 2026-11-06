@@ -154,6 +154,12 @@ export class ApiService {
     );
   }
 
+  getService(id: string | number): Observable<any> {
+    return this.http.get(`${API_BASE_URL}/services/${id}`, {
+      headers: this.getHeaders()
+    }).pipe(catchError(this.handleError('getService', null)));
+  }
+
   getTeam(): Observable<any> {
     return this.http.get(`${API_BASE_URL}/team`, {
       headers: this.getHeaders()
@@ -162,13 +168,13 @@ export class ApiService {
 
   submitContact(formData: any): Observable<any> {
     const payload = {
-      full_name: formData.name,
+      full_name: formData.name || formData.full_name,
       phone: formData.phone,
       email: formData.email,
-      company_name: formData.company || "",
-      service_needed: formData.service,
-      budget_range: formData.budget || "",
-      project_details: formData.message,
+      company_name: formData.company || formData.company_name || "",
+      service_needed: formData.service || formData.service_needed || "استشارة عامة",
+      budget_range: formData.budget || formData.budget_range || "",
+      project_details: formData.details || formData.message || formData.project_details || "طلب استشارة عامة",
     };
     return this.http.post(`${API_BASE_URL}/contact`, payload, {
       headers: this.getHeaders()

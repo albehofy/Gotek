@@ -149,7 +149,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </div>
 
       <!-- PrimeNG Dialog: Add / Edit Department -->
-      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="editingDeptId ? 'تعديل بيانات القسم' : 'إنشاء قسم جديد'" [style]="{ width: '92vw', maxWidth: '540px' }">
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeAddModal()" [header]="editingDeptId ? 'تعديل بيانات القسم' : 'إنشاء قسم جديد'" [style]="{ width: '92vw', maxWidth: '540px' }">
         <form [formGroup]="deptForm" (ngSubmit)="saveDepartment()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
@@ -206,7 +206,7 @@ import { ConfirmService } from '../../services/confirm.service';
 
           <!-- Dialog Footer Actions -->
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showAddModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeAddModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="deptForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : (editingDeptId ? 'حفظ التعديلات' : 'حفظ القسم') }}
             </button>
@@ -215,7 +215,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </p-dialog>
 
       <!-- PrimeNG Dialog: Add Employee -->
-      <p-dialog [(visible)]="showEmployeeModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة موظف جديد وتعيين قسمه" [style]="{ width: '92vw', maxWidth: '560px' }">
+      <p-dialog [(visible)]="showEmployeeModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeEmployeeModal()" header="إضافة موظف جديد وتعيين قسمه" [style]="{ width: '92vw', maxWidth: '560px' }">
         <form [formGroup]="empForm" (ngSubmit)="saveEmployee()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
@@ -271,7 +271,7 @@ import { ConfirmService } from '../../services/confirm.service';
 
           <!-- Dialog Footer Actions -->
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showEmployeeModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeEmployeeModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="empForm.invalid || loading">
               {{ loading ? 'جاري الإضافة...' : 'إضافة الموظف' }}
             </button>
@@ -280,7 +280,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </p-dialog>
 
       <!-- PrimeNG Dialog: Add Sub-category -->
-      <p-dialog [(visible)]="showSubModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'إضافة تصنيف فرعي إلى: ' + (selectedDept?.name || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
+      <p-dialog [(visible)]="showSubModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeSubModal()" [header]="'إضافة تصنيف فرعي إلى: ' + (selectedDept?.name || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="subForm" (ngSubmit)="saveSubCategory()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
@@ -295,7 +295,7 @@ import { ConfirmService } from '../../services/confirm.service';
 
           <!-- Dialog Footer Actions -->
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showSubModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeSubModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="subForm.invalid || loading">
               {{ loading ? 'جاري الإضافة...' : 'حفظ وإضافة التصنيف' }}
             </button>
@@ -304,7 +304,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </p-dialog>
 
       <!-- PrimeNG Dialog: Edit SubCategory -->
-      <p-dialog [(visible)]="showSubEditModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تعديل التصنيف الفرعي" [style]="{ width: '92vw', maxWidth: '460px' }">
+      <p-dialog [(visible)]="showSubEditModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeSubEditModal()" header="تعديل التصنيف الفرعي" [style]="{ width: '92vw', maxWidth: '460px' }">
         <form [formGroup]="subForm" (ngSubmit)="saveSubCategoryEdit()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
@@ -317,7 +317,7 @@ import { ConfirmService } from '../../services/confirm.service';
             </div>
           </div>
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showSubEditModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeSubEditModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="subForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
             </button>
@@ -774,9 +774,14 @@ export class DepartmentsSectionsComponent implements OnInit {
     }
   }
 
-  openAddModal(): void {
+  closeAddModal(): void {
+    this.showAddModal = false;
     this.editingDeptId = null;
     this.deptForm.reset({ has_partner: false, partner_percentage: 50 });
+  }
+
+  openAddModal(): void {
+    this.closeAddModal();
     this.showAddModal = true;
   }
 
@@ -833,8 +838,7 @@ export class DepartmentsSectionsComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.toastService.success('تم تحديث بيانات القسم بنجاح', 'تمت العملية');
-          this.showAddModal = false;
-          this.editingDeptId = null;
+          this.closeAddModal();
           this.loadData();
         },
         error: (err) => {
@@ -847,7 +851,7 @@ export class DepartmentsSectionsComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.toastService.success('تم إنشاء القسم الجديد بنجاح', 'تمت العملية');
-          this.showAddModal = false;
+          this.closeAddModal();
           this.loadData();
         },
         error: (err) => {
@@ -858,14 +862,22 @@ export class DepartmentsSectionsComponent implements OnInit {
     }
   }
 
-  openAddEmployeeModal(deptId?: number): void {
+  closeEmployeeModal(): void {
+    this.showEmployeeModal = false;
     this.empForm.reset({
       role: 'employee',
-      department_id: deptId || null,
+      department_id: null,
       payment_type: 'salary_based',
       base_salary: 0,
       commission_rate: 0,
       password: 'password123'
+    });
+  }
+
+  openAddEmployeeModal(deptId?: number): void {
+    this.closeEmployeeModal();
+    this.empForm.patchValue({
+      department_id: deptId || null
     });
     this.showEmployeeModal = true;
   }
@@ -877,7 +889,7 @@ export class DepartmentsSectionsComponent implements OnInit {
     this.apiService.createUser(this.empForm.value).subscribe({
       next: () => {
         this.loading = false;
-        this.showEmployeeModal = false;
+        this.closeEmployeeModal();
         this.loadData();
       },
       error: (err) => {
@@ -887,9 +899,15 @@ export class DepartmentsSectionsComponent implements OnInit {
     });
   }
 
-  openSubCategoryModal(dept: any): void {
-    this.selectedDept = dept;
+  closeSubModal(): void {
+    this.showSubModal = false;
+    this.selectedDept = null;
     this.subForm.reset();
+  }
+
+  openSubCategoryModal(dept: any): void {
+    this.closeSubModal();
+    this.selectedDept = dept;
     this.showSubModal = true;
   }
 
@@ -900,14 +918,22 @@ export class DepartmentsSectionsComponent implements OnInit {
     this.apiService.addSubCategory(this.selectedDept.id, this.subForm.value).subscribe({
       next: () => {
         this.loading = false;
-        this.showSubModal = false;
+        this.closeSubModal();
         this.loadData();
       },
       error: () => this.loading = false
     });
   }
 
+  closeSubEditModal(): void {
+    this.showSubEditModal = false;
+    this.editingSubCategory = null;
+    this.selectedDept = null;
+    this.subForm.reset();
+  }
+
   openEditSubCategoryModal(sub: any, dept: any): void {
+    this.closeSubEditModal();
     this.editingSubCategory = sub;
     this.selectedDept = dept;
     this.subForm.patchValue({
@@ -924,8 +950,7 @@ export class DepartmentsSectionsComponent implements OnInit {
     this.apiService.updateSubCategory(this.editingSubCategory.id, this.subForm.value).subscribe({
       next: () => {
         this.loading = false;
-        this.showSubEditModal = false;
-        this.editingSubCategory = null;
+        this.closeSubEditModal();
         this.loadData();
       },
       error: () => this.loading = false

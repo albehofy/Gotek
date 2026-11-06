@@ -227,10 +227,13 @@ class TaskController extends Controller
             $clientId = Deal::where('id', $validated['deal_id'])->value('client_id');
         }
 
+        $taskDesc = !empty($validated['description']) ? $validated['description'] : ($validated['scope'] ?? '');
+        $taskScope = !empty($validated['scope']) ? $validated['scope'] : ($validated['description'] ?? '');
+
         $task = Task::create([
             'title' => $validated['title'],
-            'description' => $validated['description'] ?? '',
-            'scope' => $validated['scope'] ?? null,
+            'description' => $taskDesc ?: $taskScope,
+            'scope' => $taskScope ?: $taskDesc,
             'deal_id' => $validated['deal_id'] ?? null,
             'client_id' => $clientId,
             'department_id' => $validated['department_id'] ?? null,
@@ -482,10 +485,16 @@ class TaskController extends Controller
             $clientId = Deal::where('id', $targetDealId)->value('client_id');
         }
 
+        $taskDesc = array_key_exists('description', $validated) ? $validated['description'] : null;
+        $taskScope = array_key_exists('scope', $validated) ? $validated['scope'] : null;
+
+        $finalDesc = $taskDesc !== null ? $taskDesc : ($taskScope !== null ? $taskScope : $task->description);
+        $finalScope = $taskScope !== null ? $taskScope : ($taskDesc !== null ? $taskDesc : $task->scope);
+
         $task->update([
             'title' => $validated['title'],
-            'description' => $validated['description'] ?? $task->description,
-            'scope' => $validated['scope'] ?? $task->scope,
+            'description' => $finalDesc,
+            'scope' => $finalScope,
             'deal_id' => $targetDealId,
             'client_id' => $clientId,
             'department_id' => array_key_exists('department_id', $validated) ? $validated['department_id'] : $task->department_id,
@@ -663,7 +672,7 @@ class TaskController extends Controller
         $statusLabels = [
             'new'             => 'جديد',
             'in_progress'     => 'قيد التنفيذ',
-            'content_creator' => 'صناعة المحتوى',
+            'content_creator' => 'كتابة المحتوى',
             'in_review'       => 'قيد المراجعة',
             'client_feedback' => 'ملاحظات العميل',
             'done'            => 'مكتمل',
@@ -1154,12 +1163,24 @@ class TaskController extends Controller
     public function toggleSubtask(Request $request, $id)
     {
         $subtask = Task::findOrFail($id);
-        $newStatus = $subtask->status === 'done' ? 'new' : 'done';
+        if ($request->filled('status')) {
+            $newStatus = $request->status;
+        } else {
+            $isDone = in_array($subtask->status, ['done', 'completed', 'approved']);
+            $newStatus = $isDone ? 'in_progress' : 'done';
+        }
         $subtask->update(['status' => $newStatus]);
 
         if ($subtask->parent_id) {
             $userName = Auth::user() ? Auth::user()->name : 'مستخدم';
-            $stLabel = $newStatus === 'done' ? 'مكتملة' : 'قيد التنفيذ';
+            $stLabel = match($newStatus) {
+                'done', 'completed', 'approved' => 'مكتمل',
+                'in_review', 'client_review', 'review' => 'قيد المراجعة',
+                'content_creator' => 'كتابة المحتوى',
+                'client_feedback', 'needs_revision' => 'ملاحظات العميل',
+                'new', 'todo', 'pending' => 'جديد',
+                default => 'قيد التنفيذ'
+            };
             $this->logActivity($subtask->parent_id, "قام {$userName} بتحديث حالة المهمة الفرعية ({$subtask->title}) إلى {$stLabel}");
         }
 

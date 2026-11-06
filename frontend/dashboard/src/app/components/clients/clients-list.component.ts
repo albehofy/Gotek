@@ -189,7 +189,7 @@ import { catchError } from 'rxjs/operators';
       </div>
 
       <!-- PrimeNG Dialog: Add / Edit Client -->
-      <p-dialog [(visible)]="showModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="isEditMode ? 'تعديل بيانات العميل وكلمة المرور' : 'إضافة عميل جديد'" [style]="{ width: '92vw', maxWidth: '480px' }">
+      <p-dialog [(visible)]="showModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeModal()" [header]="isEditMode ? 'تعديل بيانات العميل وكلمة المرور' : 'إضافة عميل جديد'" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
@@ -244,7 +244,7 @@ import { catchError } from 'rxjs/operators';
           </div>
 
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="clientForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : (isEditMode ? 'تحديث العميل' : 'حفظ العميل') }}
             </button>
@@ -618,10 +618,25 @@ export class ClientsListComponent implements OnInit {
     return 'cat-' + this.getClientCategory(client);
   }
 
-  openAddModal(): void {
+  closeModal(): void {
+    this.showModal = false;
     this.isEditMode = false;
     this.editingClientId = null;
     this.showPassword = false;
+    this.clientForm.reset({
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      client_category: 'normal',
+      is_hold: false
+    });
+    this.clientForm.get('password')?.clearValidators();
+    this.clientForm.get('password')?.updateValueAndValidity();
+  }
+
+  openAddModal(): void {
+    this.closeModal();
     this.clientForm.reset({
       name: '',
       email: '',
@@ -682,7 +697,7 @@ export class ClientsListComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.toastService.success('تم تحديث بيانات وتصنيف العميل بنجاح');
-          this.showModal = false;
+          this.closeModal();
           this.loadClients();
         },
         error: (err) => {
@@ -695,7 +710,7 @@ export class ClientsListComponent implements OnInit {
         next: () => {
           this.loading = false;
           this.toastService.success('تم إضافة العميل الجديد وتحديد تصنيفه بنجاح');
-          this.showModal = false;
+          this.closeModal();
           this.loadClients();
         },
         error: (err) => {

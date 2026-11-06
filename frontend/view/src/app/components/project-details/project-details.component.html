@@ -1,87 +1,282 @@
-<div class="project-details-page" *ngIf="project">
-  <!-- Top Hero -->
-  <section class="project-hero">
-    <div class="wrap">
-      <a routerLink="/portfolio" class="back-link">
-        <i class="fa-solid fa-arrow-right"></i>
-        <span>{{ (translationService.currentLang() === 'ar' ? 'العودة لجميع الأعمال' : 'Back to all work') }}</span>
-      </a>
+<div class="project-details-page">
 
-      <div class="project-tag mt-24">
-        {{ project.category?.name_ar || project.category?.name || project.category || 'مشروع ميديا جلو' }}
-      </div>
+  <!-- Cinema Ambient Light -->
+  <div class="project-ambient-mesh"></div>
 
-      <h1 class="project-title">
-        {{ project.title?.ar || project.title_ar || (typeof project.title === 'string' ? project.title : '') || 'مشروع' }}
-      </h1>
-
-      <p class="lead" *ngIf="project.description">
-        {{ project.description?.ar || project.description_ar || (typeof project.description === 'string' ? project.description : '') }}
-      </p>
-
-      <!-- Project Metadata Grid -->
-      <div class="meta-strip">
-        <div class="meta-item" *ngIf="project.client">
-          <span class="meta-lbl">{{ translationService.currentLang() === 'ar' ? 'العميل' : 'Client' }}</span>
-          <span class="meta-val">{{ project.client }}</span>
-        </div>
-        <div class="meta-item" *ngIf="project.timeline">
-          <span class="meta-lbl">{{ translationService.currentLang() === 'ar' ? 'المدة' : 'Timeline' }}</span>
-          <span class="meta-val">{{ project.timeline }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-lbl">{{ translationService.currentLang() === 'ar' ? 'الخدمة' : 'Service' }}</span>
-          <span class="meta-val">{{ project.category?.name_ar || project.category?.name || 'استشارات' }}</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Main Showcase Image -->
-  <div class="wrap mb-50" *ngIf="activeImage || project.image || project.main_image">
-    <div class="main-image-wrap">
-      <img [src]="activeImage || project.image || project.main_image" [alt]="project.title?.ar || project.title" />
-    </div>
-
-    <!-- Gallery Thumbs -->
-    <div class="gallery-thumbs" *ngIf="project.gallery && project.gallery.length > 1">
-      <div 
-        *ngFor="let g of project.gallery" 
-        class="thumb-box" 
-        [class.active]="activeImage === g"
-        (click)="setActiveImage(g)"
-      >
-        <img [src]="g" alt="Gallery item" />
-      </div>
-    </div>
+  <!-- Loading State -->
+  <div class="project-loader-container" *ngIf="loading">
+    <div class="cinema-pulse-spinner"></div>
+    <span class="loader-status-text">{{ translationService.currentLang() === 'ar' ? 'جاري تحميل المواد السينمائية...' : 'Loading Cinema Master Assets...' }}</span>
   </div>
 
-  <!-- Challenge & Solution Section -->
-  <section class="section section-soft" *ngIf="project.challenge || project.solution">
-    <div class="wrap cs-grid">
-      <div class="cs-col" *ngIf="project.challenge">
-        <div class="eyebrow"><span class="dash"></span> <span>{{ translationService.currentLang() === 'ar' ? 'التحدي' : 'The Challenge' }}</span></div>
-        <h3>{{ translationService.currentLang() === 'ar' ? 'ما واجهه المشروع' : 'The Problem' }}</h3>
-        <p>{{ project.challenge?.ar || project.challenge_ar || (typeof project.challenge === 'string' ? project.challenge : '') }}</p>
-      </div>
+  <div *ngIf="!loading && project" class="project-content-flow">
 
-      <div class="cs-col" *ngIf="project.solution">
-        <div class="eyebrow"><span class="dash"></span> <span>{{ translationService.currentLang() === 'ar' ? 'الحل' : 'The Solution' }}</span></div>
-        <h3>{{ translationService.currentLang() === 'ar' ? 'رؤية وتنفيذ ميديا جلو' : 'Our Approach' }}</h3>
-        <p>{{ project.solution?.ar || project.solution_ar || (typeof project.solution === 'string' ? project.solution : '') }}</p>
-      </div>
-    </div>
-  </section>
+    <!-- 1. TOP CINEMATIC HERO -->
+    <section class="project-hero">
+      <div class="wrap">
+        
+        <!-- Back Navigation & Eyebrow -->
+        <div class="hero-top-nav">
+          <a routerLink="/portfolio" class="cinema-back-link">
+            <i class="fa-solid fa-arrow-right nav-arrow"></i>
+            <span>{{ (translationService.currentLang() === 'ar' ? 'العودة لأرشيف الأعمال' : 'Back to Curated Archive') }}</span>
+          </a>
 
-  <!-- CTA -->
-  <section class="cta">
-    <div class="wrap">
-      <div class="eyebrow" style="justify-content:center;"><span class="dash"></span> <span>{{ translationService.translate('cta.eyebrow') }}</span></div>
-      <h2>{{ translationService.translate('cta.title') }}</h2>
-      <p class="sub">{{ translationService.translate('cta.sub') }}</p>
-      <a routerLink="/contact" class="btn btn-solid">
-        <span>{{ translationService.translate('cta.btn') }}</span>
-      </a>
-    </div>
-  </section>
+          <div class="cinema-live-pill">
+            <span class="live-dot"></span>
+            <span>{{ getCategoryName() }}</span>
+          </div>
+        </div>
+
+        <!-- Monumental Editorial Title -->
+        <h1 class="project-main-title">
+          {{ getProjectTitle() }}
+        </h1>
+
+        <!-- Sub-lead Summary -->
+        <p class="project-lead-desc" *ngIf="getProjectDesc()">
+          {{ getProjectDesc() }}
+        </p>
+
+        <!-- High-Contrast Glassmorphic Meta Strip -->
+        <div class="cinema-meta-matrix">
+          <div class="meta-cell">
+            <span class="meta-micro-label">
+              <i class="fa-solid fa-building-shield"></i>
+              {{ translationService.currentLang() === 'ar' ? 'العميل' : 'Client' }}
+            </span>
+            <span class="meta-strong-val">{{ getClient() }}</span>
+          </div>
+
+          <div class="meta-cell">
+            <span class="meta-micro-label">
+              <i class="fa-solid fa-stopwatch"></i>
+              {{ translationService.currentLang() === 'ar' ? 'الجدول الزمني' : 'Timeline' }}
+            </span>
+            <span class="meta-strong-val">{{ getTimeline() }}</span>
+          </div>
+
+          <div class="meta-cell">
+            <span class="meta-micro-label">
+              <i class="fa-solid fa-camera-retro"></i>
+              {{ translationService.currentLang() === 'ar' ? 'أسطول الكاميرات' : 'Camera Fleet' }}
+            </span>
+            <span class="meta-strong-val">{{ getCameraFleet() }}</span>
+          </div>
+
+          <div class="meta-cell">
+            <span class="meta-micro-label">
+              <i class="fa-solid fa-expand"></i>
+              {{ translationService.currentLang() === 'ar' ? 'معيار العرض' : 'Format Spec' }}
+            </span>
+            <span class="meta-strong-val">{{ getFormat() }}</span>
+          </div>
+        </div>
+
+        <!-- Tags / Hardware Spec Pills -->
+        <div class="cinema-specs-row" *ngIf="getTags().length">
+          <span *ngFor="let t of getTags()" class="cinema-spec-pill">
+            <i class="fa-solid fa-film"></i>
+            <span>{{ t }}</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MASTER CINEMA VIEWPORT (HERO FRAME) -->
+    <section class="master-viewport-section">
+      <div class="wrap">
+        <div class="cinema-frame-container">
+          <div class="cinema-frame-glow"></div>
+          
+          <div class="cinema-frame-inner">
+            <!-- Frame Top HUD Bar -->
+            <div class="hud-top-bar">
+              <div class="hud-rec-indicator">
+                <span class="rec-red-dot"></span>
+                <span>REC • 8K RAW • MASTER AUDIO</span>
+              </div>
+              <div class="hud-timecode">
+                <i class="fa-solid fa-clock"></i>
+                <span>TC 00:01:28:16</span>
+              </div>
+            </div>
+
+            <!-- Main High-Res Image -->
+            <div class="cinema-media-viewport">
+              <img [src]="activeImage || project.image || project.main_image" [alt]="getProjectTitle()" class="cinema-master-photo" />
+              <div class="cinema-aspect-overlay"></div>
+            </div>
+
+            <!-- Frame Bottom HUD Bar -->
+            <div class="hud-bottom-bar">
+              <div class="hud-client-scope">
+                <span class="hud-client-title">{{ getProjectTitle() }}</span>
+                <span class="hud-scope-tag">2.39:1 CINEMATIC SCOPE</span>
+              </div>
+              <div class="hud-audio-spec">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>DOLBY ATMOS SPATIAL SOUND</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Gallery Filmstrip -->
+          <div class="cinema-gallery-filmstrip" *ngIf="project.gallery && project.gallery.length > 1">
+            <div 
+              *ngFor="let g of project.gallery" 
+              class="filmstrip-thumb-cell" 
+              [class.active]="activeImage === g"
+              (click)="setActiveImage(g)"
+            >
+              <img [src]="g" alt="Production frame" />
+              <div class="thumb-highlight-border"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. THE CHALLENGE & THE CINEMATIC SOLUTION -->
+    <section class="section narrative-cs-section" *ngIf="getChallenge() || getSolution()">
+      <div class="wrap">
+        <div class="editorial-head" style="margin-bottom: 40px;">
+          <div class="micro-eyebrow">
+            <span class="dash"></span>
+            <span>{{ translationService.currentLang() === 'ar' ? 'ما وراء الكواليس' : 'BEHIND THE SCENES' }}</span>
+          </div>
+          <h2 class="editorial-title">{{ translationService.currentLang() === 'ar' ? 'القصة الإخراجية والتنفيذ الميداني' : 'Directorial Vision & Field Engineering' }}</h2>
+        </div>
+
+        <div class="cs-narrative-grid">
+          <!-- The Challenge -->
+          <div class="cs-narrative-card card-challenge" *ngIf="getChallenge()">
+            <div class="cs-card-header">
+              <div class="cs-icon-badge">
+                <i class="fa-solid fa-compass-drafting"></i>
+              </div>
+              <span class="cs-eyebrow">{{ translationService.currentLang() === 'ar' ? 'التحدي الفني والإنتاجي' : 'THE TECHNICAL CHALLENGE' }}</span>
+            </div>
+            <h3 class="cs-card-title">{{ translationService.currentLang() === 'ar' ? 'العقبات الإخراجية واللوجستية' : 'Production Complexity' }}</h3>
+            <p class="cs-card-body">{{ getChallenge() }}</p>
+          </div>
+
+          <!-- The Solution -->
+          <div class="cs-narrative-card card-solution" *ngIf="getSolution()">
+            <div class="cs-card-header">
+              <div class="cs-icon-badge solution-glow">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </div>
+              <span class="cs-eyebrow">{{ translationService.currentLang() === 'ar' ? 'الحل والابتكار الإخراجي' : 'OUR CINEMATIC APPROACH' }}</span>
+            </div>
+            <h3 class="cs-card-title">{{ translationService.currentLang() === 'ar' ? 'كيف صنعت ميديا جلو الفارق' : 'How Media Glow Executed' }}</h3>
+            <p class="cs-card-body">{{ getSolution() }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DELIVERABLES & MARKET IMPACT -->
+    <section class="section deliverables-impact-section" *ngIf="getDeliverables().length || getResults()">
+      <div class="wrap">
+        <div class="deliv-impact-grid">
+          
+          <!-- Key Deliverables List -->
+          <div class="deliv-panel" *ngIf="getDeliverables().length">
+            <div class="panel-eyebrow">
+              <i class="fa-solid fa-box-archive"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'مخرجات العمل النهائية' : 'MASTER DELIVERABLES' }}</span>
+            </div>
+            <h3 class="panel-title">{{ translationService.currentLang() === 'ar' ? 'ما تم تسليمه للعميل' : 'Turnkey Deliverables Pack' }}</h3>
+            
+            <div class="deliverables-checklist">
+              <div class="deliv-row-item" *ngFor="let d of getDeliverables()">
+                <div class="deliv-chk-circle">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="deliv-text">{{ d }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Impact & Reach -->
+          <div class="impact-panel" *ngIf="getResults()">
+            <div class="panel-eyebrow">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>{{ translationService.currentLang() === 'ar' ? 'الأثر والنتائج السوقية' : 'MEASURABLE IMPACT' }}</span>
+            </div>
+            <h3 class="panel-title">{{ translationService.currentLang() === 'ar' ? 'أرقام وإشادات استثنائية' : 'Audience Reach & ROI' }}</h3>
+            
+            <div class="impact-statement-card">
+              <p class="impact-body-text">{{ getResults() }}</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. VIP EXECUTIVE TESTIMONIAL -->
+    <section class="section testimonial-vip-section" *ngIf="getTestimonial()">
+      <div class="wrap" style="max-width: 900px;">
+        <div class="vip-quote-card">
+          <div class="quote-stars-row">
+            <i class="fa-solid fa-star" *ngFor="let s of [1,2,3,4,5]"></i>
+            <span class="verified-seal">{{ translationService.currentLang() === 'ar' ? 'عميل معتمد لدى ميديا جلو' : 'VERIFIED PRODUCTION PARTNER' }}</span>
+          </div>
+
+          <p class="vip-quote-text">
+            "{{ getTestimonial().text }}"
+          </p>
+
+          <div class="vip-author-block">
+            <img *ngIf="getTestimonial().avatar" [src]="getTestimonial().avatar" [alt]="getTestimonial().name" class="vip-author-avatar" />
+            <div class="vip-author-meta">
+              <h4 class="vip-author-name">{{ getTestimonial().name }}</h4>
+              <span class="vip-author-role">{{ getTestimonial().role }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. NEXT PROJECT TEASER & EXECUTIVE HOTLINE CTA -->
+    <section class="project-footer-cta-section">
+      <div class="wrap">
+        <div class="dual-footer-actions">
+          
+          <!-- Next Project Teaser -->
+          <div class="next-proj-teaser" *ngIf="nextProject">
+            <span class="next-micro-tag">{{ translationService.currentLang() === 'ar' ? 'المشروع التالي' : 'NEXT PRODUCTION' }}</span>
+            <h3 class="next-proj-title">{{ nextProject.title?.ar || nextProject.title_ar || nextProject.title?.en || nextProject.title }}</h3>
+            <a [routerLink]="['/project', nextProject.id]" class="btn btn-line next-proj-btn">
+              <span>{{ translationService.currentLang() === 'ar' ? 'استعراض المشروع' : 'View Production' }}</span>
+              <i class="fa-solid fa-arrow-left arrow-dir"></i>
+            </a>
+          </div>
+
+          <!-- Direct Producer Consultation -->
+          <div class="executive-hotline-card">
+            <div class="hotline-badge">
+              <span class="live-glow-dot"></span>
+              <span>{{ translationService.currentLang() === 'ar' ? 'استشارة إنتاجية فورية' : 'DIRECT PRODUCER HOTLINE' }}</span>
+            </div>
+            <h3 class="hotline-title">{{ translationService.currentLang() === 'ar' ? 'هل تخطط لإنتاج عمل مماثل؟' : 'Ready to Engineer a Similar Production?' }}</h3>
+            <p class="hotline-desc">{{ translationService.currentLang() === 'ar' ? 'تحدث مباشرة مع المنتج التنفيذي لمناقشة المتطلبات الفنية والميزانية وحجز الطاقم.' : 'Consult directly with our executive producer to align on camera packages, schedules, and custom pricing.' }}</p>
+            <div class="hotline-buttons-row">
+              <a [href]="getWhatsAppProjectUrl()" target="_blank" rel="noopener noreferrer" class="btn btn-solid whatsapp-cta">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>{{ translationService.currentLang() === 'ar' ? 'محادثة فورية على واتساب' : 'Chat on WhatsApp' }}</span>
+              </a>
+              <a routerLink="/contact" class="btn btn-line">
+                <span>{{ translationService.currentLang() === 'ar' ? 'إرسال ملخص المشروع' : 'Submit Creative Brief' }}</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
 </div>

@@ -10,6 +10,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-finance-dashboard',
@@ -253,6 +254,7 @@ import { ToastService } from '../../services/toast.service';
                   <th>طريقة الدفع</th>
                   <th>المبلغ (ج.م)</th>
                   <th>الوصف والبيان</th>
+                  <th style="text-align:center; width:90px;">الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
@@ -265,9 +267,19 @@ import { ToastService } from '../../services/toast.service';
                     {{ entry.type === 'income' ? '+' : '-' }}{{ entry.amount | number:'1.2-2' }} ج.م
                   </td>
                   <td style="color:var(--text-2);">{{ entry.description }}</td>
+                  <td style="text-align:center;">
+                    <div style="display:flex; gap:6px; justify-content:center; align-items:center;">
+                      <button type="button" class="action-icon-btn btn-teal" (click)="openEditLedgerModal(entry)" data-tooltip="تعديل المعاملة" title="تعديل المعاملة">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button type="button" class="action-icon-btn btn-rose" (click)="deleteLedgerEntry(entry)" data-tooltip="حذف المعاملة" title="حذف المعاملة">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
                 <tr *ngIf="ledgerEntries.length === 0">
-                  <td colspan="6">
+                  <td colspan="7">
                     <div class="empty-state">
                       <div class="empty-state-icon"><i class="fa-solid fa-folder-open"></i></div>
                       <div class="empty-state-title">لا توجد قيود مالية</div>
@@ -520,8 +532,8 @@ import { ToastService } from '../../services/toast.service';
         </div>
       </div>
 
-      <!-- PrimeNG Dialog: Add Ledger Entry -->
-      <p-dialog [(visible)]="showLedgerModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسجيل قسط / حركة مالية جديدة" [style]="{ width: '92vw', maxWidth: '640px' }">
+      <!-- PrimeNG Dialog: Add / Edit Ledger Entry -->
+      <p-dialog [(visible)]="showLedgerModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeLedgerModal()" [header]="editingLedgerId ? 'تعديل المعاملة المالية' : 'تسجيل قسط / حركة مالية جديدة'" [style]="{ width: '92vw', maxWidth: '640px' }">
         <form [formGroup]="ledgerForm" (ngSubmit)="saveLedgerEntry()">
           <div class="form-grid" style="padding: 10px 0;">
             <div class="form-group">
@@ -581,16 +593,16 @@ import { ToastService } from '../../services/toast.service';
           </div>
 
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showLedgerModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeLedgerModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="ledgerForm.invalid || loading">
-              {{ loading ? 'جاري المعالجة...' : 'تأكيد وحفظ القيد' }}
+              {{ loading ? 'جاري المعالجة...' : (editingLedgerId ? 'تأكيد وتعديل القيد' : 'تأكيد وحفظ القيد') }}
             </button>
           </div>
         </form>
       </p-dialog>
 
       <!-- PrimeNG Dialog: Quick Add Category Modal -->
-      <p-dialog [(visible)]="showCatModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة فئة مالية جديدة" [style]="{ width: '90vw', maxWidth: '420px' }">
+      <p-dialog [(visible)]="showCatModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeCatModal()" header="إضافة فئة مالية جديدة" [style]="{ width: '90vw', maxWidth: '420px' }">
         <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
           <div class="form-group">
             <label>اسم الفئة المالـية <span class="required">*</span></label>
@@ -598,13 +610,13 @@ import { ToastService } from '../../services/toast.service';
           </div>
         </div>
         <div class="dialog-footer-actions">
-          <button type="button" class="btn-dialog-cancel" (click)="showCatModal = false">إلغاء</button>
+          <button type="button" class="btn-dialog-cancel" (click)="closeCatModal()">إلغاء</button>
           <button type="button" class="btn-dialog-submit" [disabled]="!catNameInput || !catNameInput.trim()" (click)="saveCategory()">حفظ الفئة</button>
         </div>
       </p-dialog>
 
       <!-- PrimeNG Dialog: Issue Custody Modal -->
-      <p-dialog [(visible)]="showCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="صرف عهدة مالية لموظف" [style]="{ width: '90vw', maxWidth: '460px' }">
+      <p-dialog [(visible)]="showCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeCustodyModal()" header="صرف عهدة مالية لموظف" [style]="{ width: '90vw', maxWidth: '460px' }">
         <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
           <div class="form-group">
             <label>القسم المستهدف <span class="required">*</span></label>
@@ -637,13 +649,13 @@ import { ToastService } from '../../services/toast.service';
           </div>
         </div>
         <div class="dialog-footer-actions">
-          <button type="button" class="btn-dialog-cancel" (click)="showCustodyModal = false">إلغاء</button>
+          <button type="button" class="btn-dialog-cancel" (click)="closeCustodyModal()">إلغاء</button>
           <button type="button" class="btn-dialog-submit" [disabled]="!custodyEmpId || custodyAmount <= 0" (click)="saveIssueCustody()">صرف العهدة</button>
         </div>
       </p-dialog>
 
       <!-- PrimeNG Dialog: Return Custody Modal -->
-      <p-dialog [(visible)]="showReturnCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="تسوية وتصفية عهدة مالية" [style]="{ width: '92vw', maxWidth: '500px' }">
+      <p-dialog [(visible)]="showReturnCustodyModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeReturnCustodyModal()" header="تسوية وتصفية عهدة مالية" [style]="{ width: '92vw', maxWidth: '500px' }">
         <div style="padding:10px 0; display:flex; flex-direction:column; gap:16px;" *ngIf="selectedCustody">
           
           <div style="background:rgba(99, 102, 241, 0.08); border:1px solid var(--border); border-radius: 8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -685,7 +697,7 @@ import { ToastService } from '../../services/toast.service';
 
         </div>
         <div class="dialog-footer-actions">
-          <button type="button" class="btn-dialog-cancel" (click)="showReturnCustodyModal = false">إلغاء</button>
+          <button type="button" class="btn-dialog-cancel" (click)="closeReturnCustodyModal()">إلغاء</button>
           <button type="button" class="btn-dialog-submit" (click)="saveReturnCustody()">تأكيد وإتمام التسوية</button>
         </div>
       </p-dialog>
@@ -788,7 +800,7 @@ import { ToastService } from '../../services/toast.service';
           </button>
         </div>
       </p-dialog>
-      <p-dialog [(visible)]="showAssetModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة أصل ثابت جديد" [style]="{ width: '92vw', maxWidth: '520px' }">
+      <p-dialog [(visible)]="showAssetModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeAssetModal()" header="إضافة أصل ثابت جديد" [style]="{ width: '92vw', maxWidth: '520px' }">
         <form [formGroup]="assetForm" (ngSubmit)="saveAsset()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
@@ -819,7 +831,7 @@ import { ToastService } from '../../services/toast.service';
             </div>
           </div>
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showAssetModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeAssetModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="assetForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : 'حفظ وتسجيل الأصل' }}
             </button>
@@ -1516,6 +1528,9 @@ export class FinanceDashboardComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private confirmService = inject(ConfirmService);
+
+  editingLedgerId: number | null = null;
 
   activeTab = 'summary';
   summary: any = {};
@@ -1845,23 +1860,104 @@ export class FinanceDashboardComponent implements OnInit {
     return type;
   }
 
+  closeLedgerModal(): void {
+    this.showLedgerModal = false;
+    this.editingLedgerId = null;
+    this.ledgerForm.reset({
+      type: 'expense',
+      payment_method: 'cash',
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      department_id: null,
+      client_id: null,
+      category_id: null,
+      description: '',
+      receipt_ref: ''
+    });
+  }
+
   openAddLedgerModal(): void {
-    this.ledgerForm.reset({ type: 'expense', payment_method: 'cash', amount: 0, date: new Date().toISOString().split('T')[0] });
+    this.closeLedgerModal();
+    this.editingLedgerId = null;
     this.showLedgerModal = true;
+  }
+
+  openEditLedgerModal(entry: any): void {
+    this.closeLedgerModal();
+    this.editingLedgerId = entry.id;
+    this.ledgerForm.patchValue({
+      type: entry.type || 'expense',
+      category_id: entry.category_id || (entry.category ? entry.category.id : null),
+      amount: entry.amount,
+      payment_method: entry.payment_method || 'cash',
+      department_id: entry.department_id || (entry.department ? entry.department.id : null),
+      date: entry.date,
+      description: entry.description || ''
+    });
+    this.showLedgerModal = true;
+  }
+
+  deleteLedgerEntry(entry: any): void {
+    this.confirmService.confirm({
+      title: 'تأكيد حذف المعاملة المالية',
+      message: `هل أنت متأكد من حذف هذه المعاملة بقيمة (${entry.amount} ج.م)؟ سيتم تحديث رصيد الخزينة والملخص المالي تلقائياً.`,
+      confirmText: 'نعم، حذف نهائياً',
+      cancelText: 'إلغاء',
+      type: 'danger',
+      accept: () => {
+        this.loading = true;
+        this.apiService.deleteLedgerEntry(entry.id).subscribe({
+          next: () => {
+            this.loading = false;
+            this.toastService.success('تم حذف المعاملة المالية بنجاح', 'تم الحذف');
+            this.loadAllData();
+          },
+          error: (err: any) => {
+            this.loading = false;
+            this.toastService.error(err.error?.message || 'تعذر حذف المعاملة المالية');
+          }
+        });
+      }
+    });
   }
 
   showCatModal = false;
   catNameInput = '';
+
+  closeCatModal(): void {
+    this.showCatModal = false;
+    this.catNameInput = '';
+  }
+
   showCustodyModal = false;
   custodyDeptId: any = null;
   custodyEmpId: any = null;
   filteredCustodyEmployees: any[] = [];
   custodyAmount: number = 0;
+  custodyNotes: string = '';
+
+  closeCustodyModal(): void {
+    this.showCustodyModal = false;
+    this.custodyDeptId = null;
+    this.custodyEmpId = null;
+    this.custodyAmount = 0;
+    this.custodyNotes = '';
+    this.filteredCustodyEmployees = [];
+  }
+
   showReturnCustodyModal = false;
   selectedCustody: any = null;
   returnedAmount: number = 0;
   returnNotes: string = '';
   returnCategoryId: any = null;
+
+  closeReturnCustodyModal(): void {
+    this.showReturnCustodyModal = false;
+    this.selectedCustody = null;
+    this.returnedAmount = 0;
+    this.returnNotes = '';
+    this.returnCategoryId = null;
+  }
 
   onCustodyDeptChange(): void {
     this.custodyEmpId = null;
@@ -1924,29 +2020,28 @@ export class FinanceDashboardComponent implements OnInit {
       date: this.formatDatePayload(this.ledgerForm.value.date)
     };
 
-    this.apiService.storeLedgerEntry(payload).subscribe({
+    const req$ = this.editingLedgerId
+      ? this.apiService.updateLedgerEntry(this.editingLedgerId, payload)
+      : this.apiService.storeLedgerEntry(payload);
+
+    req$.subscribe({
       next: () => {
         this.loading = false;
-        this.toastService.success('تم تسجيل المعاملة المالية بنجاح', 'تمت العملية');
-        this.showLedgerModal = false;
+        this.toastService.success(this.editingLedgerId ? 'تم تعديل المعاملة المالية بنجاح' : 'تم تسجيل المعاملة المالية بنجاح', 'تمت العملية');
+        this.closeLedgerModal();
         this.loadAllData();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
-        this.toastService.error(err.error?.message || 'تعذر تسجيل المعاملة المالية');
+        this.toastService.error(err.error?.message || 'تعذر حفظ المعاملة المالية');
       }
     });
   }
 
   openIssueCustodyModal(): void {
-    this.custodyDeptId = null;
-    this.custodyEmpId = null;
-    this.custodyAmount = 0;
-    this.filteredCustodyEmployees = [];
+    this.closeCustodyModal();
     this.showCustodyModal = true;
   }
-
-  custodyNotes = '';
 
   saveIssueCustody(): void {
     if (!this.custodyEmpId || this.custodyAmount <= 0) return;
@@ -1958,8 +2053,7 @@ export class FinanceDashboardComponent implements OnInit {
       payload.notes = this.custodyNotes.trim();
     }
     this.apiService.issueCustody(payload).subscribe(() => {
-      this.showCustodyModal = false;
-      this.custodyNotes = '';
+      this.closeCustodyModal();
       this.loadAllData();
     });
   }
@@ -2002,7 +2096,7 @@ export class FinanceDashboardComponent implements OnInit {
 
     this.apiService.returnCustody(this.selectedCustody.id, payload).subscribe({
       next: () => {
-        this.showReturnCustodyModal = false;
+        this.closeReturnCustodyModal();
         this.toastService.success('تم إتمام تسوية وتصفية حساب العهدة بنجاح', 'تمت العملية');
         this.loadAllData();
       },
@@ -2014,8 +2108,13 @@ export class FinanceDashboardComponent implements OnInit {
 
   showAssetModal = false;
 
-  openAddAssetModal(): void {
+  closeAssetModal(): void {
+    this.showAssetModal = false;
     this.assetForm.reset({ value: 0, purchase_date: new Date().toISOString().split('T')[0] });
+  }
+
+  openAddAssetModal(): void {
+    this.closeAssetModal();
     this.showAssetModal = true;
   }
 
@@ -2031,7 +2130,7 @@ export class FinanceDashboardComponent implements OnInit {
     this.apiService.storeFixedAsset(payload).subscribe({
       next: () => {
         this.loading = false;
-        this.showAssetModal = false;
+        this.closeAssetModal();
         this.loadAllData();
       },
       error: () => this.loading = false

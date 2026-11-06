@@ -6,3 +6,16 @@
 
 <!-- App Footer -->
 <app-footer *ngIf="showHeaderFooter"></app-footer>
+
+<!-- Floating WhatsApp Action Button -->
+<a 
+  *ngIf="showHeaderFooter" 
+  [href]="getWhatsAppUrl()" 
+  target="_blank" 
+  rel="noopener noreferrer" 
+  class="whatsapp-fab"
+  [title]="translationService.currentLang() === 'ar' ? 'تحدث معنا على واتساب' : 'Chat on WhatsApp'"
+>
+  <i class="fa-brands fa-whatsapp"></i>
+  <span>{{ translationService.currentLang() === 'ar' ? 'تحدث معنا' : 'WhatsApp Us' }}</span>
+</a>

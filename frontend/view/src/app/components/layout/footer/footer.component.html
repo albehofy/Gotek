@@ -4,16 +4,17 @@
       <!-- Brand column -->
       <div class="foot-brand">
         <div class="logo-text">
+          <img [src]="getLogoUrl()" alt="Media Glow" class="brand-logo-img" />
           <span class="brand-name">{{ translationService.translate('brand') }}</span>
           <span class="studio-badge">STUDIO</span>
           <span class="dot"></span>
         </div>
         <p>{{ getFooterDesc() }}</p>
         <div class="social-row">
-          <a [href]="getSocial('instagram', 'https://instagram.com')" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a [href]="getSocial('linkedin', 'https://linkedin.com')" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-          <a [href]="getSocial('twitter', 'https://twitter.com')" target="_blank" rel="noopener" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-          <a [href]="getSocial('whatsapp', 'https://wa.me/201000000000')" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a [href]="getSocial('instagram', 'https://instagram.com')" target="_blank" rel="noopener" aria-label="Instagram" class="social-btn social-ig"><i class="fa-brands fa-instagram"></i></a>
+          <a [href]="getSocial('linkedin', 'https://linkedin.com')" target="_blank" rel="noopener" aria-label="LinkedIn" class="social-btn social-li"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a [href]="getSocial('twitter', 'https://twitter.com')" target="_blank" rel="noopener" aria-label="Twitter" class="social-btn social-tw"><i class="fa-brands fa-x-twitter"></i></a>
+          <a [href]="getSocial('whatsapp', 'https://wa.me/201000000000')" target="_blank" rel="noopener" aria-label="WhatsApp" class="social-btn social-wa"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
       </div>
 
@@ -38,14 +39,45 @@
         <h4>{{ translationService.translate('foot.h3') }}</h4>
         <a [href]="'tel:' + getPhone()" dir="ltr" style="text-align:start"><span class="num">{{ getPhone() }}</span></a>
         <a [href]="'mailto:' + getEmail()" dir="ltr" style="text-align:start">{{ getEmail() }}</a>
-        <span class="foot-loc"><i class="fa-solid fa-location-dot"></i> {{ getAddress() }}</span>
+        <span class="foot-loc"><i class="fa-solid fa-location-dot icon-pulse"></i> {{ getAddress() }}</span>
+      </div>
+    </div>
+
+    <!-- Newsletter VIP Subscription Strip -->
+    <div class="footer-newsletter-card">
+      <div class="newsletter-info">
+        <div class="newsletter-badge">
+          <i class="fa-solid fa-paper-plane icon-twinkle"></i>
+          <span>{{ translationService.currentLang() === 'ar' ? 'النشرة البريدية الإبداعية' : 'VIP CREATIVE NEWSLETTER' }}</span>
+        </div>
+        <h3>{{ translationService.currentLang() === 'ar' ? 'كن أول من يطّلع على أحدث إنتاجاتنا واستراتيجيات النمو' : 'Stay Ahead with Exclusive Production Insights & Industry Trends' }}</h3>
+      </div>
+      <div class="newsletter-form-wrap">
+        <div *ngIf="newsletterSuccess" class="newsletter-success-msg">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>{{ translationService.currentLang() === 'ar' ? 'شكراً لاشتراكك! ستصلك رسائلنا الحصرية قريباً.' : 'Thank you for subscribing to Media Glow insights!' }}</span>
+        </div>
+        <form *ngIf="!newsletterSuccess" (ngSubmit)="subscribeNewsletter()" class="newsletter-form">
+          <input 
+            type="email" 
+            [(ngModel)]="newsletterEmail" 
+            name="newsletterEmail" 
+            [placeholder]="translationService.currentLang() === 'ar' ? 'أدخل بريدك الإلكتروني...' : 'Enter your business email...'" 
+            required 
+            dir="ltr"
+          />
+          <button type="submit" class="btn btn-solid" [disabled]="newsletterLoading">
+            <span *ngIf="!newsletterLoading">{{ translationService.currentLang() === 'ar' ? 'اشتراك' : 'Subscribe' }}</span>
+            <span *ngIf="newsletterLoading"><i class="fa-solid fa-spinner fa-spin"></i></span>
+          </button>
+        </form>
       </div>
     </div>
 
     <!-- Bottom Bar -->
     <div class="foot-bottom">
-      <span>{{ translationService.translate('foot.copy') }}</span>
-      <span class="foot-made-tag"><i class="fa-solid fa-film"></i> {{ translationService.translate('foot.made') }}</span>
+      <span>{{ getCopy() }}</span>
+      <span class="foot-made-tag"><i class="fa-solid fa-clapperboard icon-pulse"></i> {{ getMade() }}</span>
     </div>
   </div>
 </footer>

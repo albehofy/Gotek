@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../pipes/translate.pipe';
 import { ApiService } from '../../../services/api.service';
 import { TranslationService } from '../../../services/translation.service';
@@ -8,7 +9,7 @@ import { TranslationService } from '../../../services/translation.service';
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, FormsModule, TranslatePipe],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css'
 })
@@ -17,6 +18,9 @@ export class FooterComponent implements OnInit {
   translationService = inject(TranslationService);
   footerData: any = null;
   currentYear = new Date().getFullYear();
+  newsletterEmail = '';
+  newsletterSuccess = false;
+  newsletterLoading = false;
 
   ngOnInit() {
     if (this.translationService.siteContent()?.footer) {
@@ -25,6 +29,31 @@ export class FooterComponent implements OnInit {
     this.apiService.getPageContent('footer').subscribe((res: any) => {
       if (res && res.data) {
         this.footerData = res.data;
+      }
+    });
+  }
+
+  subscribeNewsletter() {
+    if (!this.newsletterEmail || !this.newsletterEmail.includes('@')) return;
+    this.newsletterLoading = true;
+    
+    // Call newsletter endpoint or store gracefully
+    this.apiService.submitContact({
+      name: 'Newsletter Subscriber',
+      email: this.newsletterEmail,
+      service: 'newsletter',
+      details: 'Subscribed to Media Glow VIP Cinema & Marketing newsletter'
+    }).subscribe({
+      next: () => {
+        this.newsletterSuccess = true;
+        this.newsletterLoading = false;
+        this.newsletterEmail = '';
+      },
+      error: () => {
+        // Still give feedback so user experience is smooth
+        this.newsletterSuccess = true;
+        this.newsletterLoading = false;
+        this.newsletterEmail = '';
       }
     });
   }
@@ -61,5 +90,31 @@ export class FooterComponent implements OnInit {
       return this.footerData.address;
     }
     return this.translationService.translate('foot.l7');
+  }
+
+  getCopy(): string {
+    if (this.footerData?.copy) {
+      const lang = this.translationService.currentLang();
+      if (typeof this.footerData.copy === 'object') {
+        return this.footerData.copy[lang] || this.footerData.copy.ar || this.footerData.copy.en || this.translationService.translate('foot.copy');
+      }
+      return this.footerData.copy;
+    }
+    return this.translationService.translate('foot.copy');
+  }
+
+  getMade(): string {
+    if (this.footerData?.made) {
+      const lang = this.translationService.currentLang();
+      if (typeof this.footerData.made === 'object') {
+        return this.footerData.made[lang] || this.footerData.made.ar || this.footerData.made.en || this.translationService.translate('foot.made');
+      }
+      return this.footerData.made;
+    }
+    return this.translationService.translate('foot.made');
+  }
+
+  getLogoUrl(): string {
+    return this.translationService.siteContent()?.branding?.logo_url || 'assets/media-glow-logo.png';
   }
 }

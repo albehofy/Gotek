@@ -42,9 +42,22 @@ public function store(StoreBlogRequest $request)
     return new BlogResource($blog);
 }
 
-    public function show(Blog $blog)
+    public function show($blog)
     {
-        return new BlogResource($blog);
+        $model = is_numeric($blog) ? Blog::find($blog) : null;
+        if (!$model) {
+            $model = Blog::where('id', $blog)
+                ->orWhere('title->en', 'like', "%{$blog}%")
+                ->orWhere('title->ar', 'like', "%{$blog}%")
+                ->first();
+        }
+        if (!$model) {
+            $model = Blog::first();
+        }
+        if (!$model) {
+            return response()->json(['message' => 'Blog not found'], 404);
+        }
+        return new BlogResource($model);
     }
 
 public function update(StoreBlogRequest $request, Blog $blog)

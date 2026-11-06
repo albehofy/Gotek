@@ -299,9 +299,9 @@ import { ConfirmService } from '../../services/confirm.service';
 
           <!-- Card Description / Scope -->
           <div class="client-card-body">
-            <div class="client-scope-box" *ngIf="task.scope">
+            <div class="client-scope-box" *ngIf="task.scope || task.description">
               <i class="fa-solid fa-quote-right scope-icon"></i>
-              <p>{{ task.scope }}</p>
+              <p>{{ task.scope || task.description }}</p>
             </div>
 
             <!-- Subtasks Checklist Section (الخطوات والمهام الفرعية) -->
@@ -309,10 +309,15 @@ import { ConfirmService } from '../../services/confirm.service';
               <div style="font-size:0.78rem; font-weight:800; color:var(--violet-light, #818cf8); margin-bottom:6px; display:flex; align-items:center; justify-content:space-between;">
                 <span><i class="fa-solid fa-list-check"></i> الخطوات الفرعية ({{ getCompletedSubtasksCount(task) }}/{{ task.subtasks.length }})</span>
               </div>
-              <div style="display:flex; flex-direction:column; gap:4px;">
-                <div *ngFor="let st of task.subtasks" style="font-size:0.8rem; color:var(--text); display:flex; align-items:center; gap:6px;">
-                  <i class="fa-solid" [class.fa-circle-check]="st.status === 'done' || st.status === 'approved'" [class.fa-circle]="st.status !== 'done' && st.status !== 'approved'" [style.color]="(st.status === 'done' || st.status === 'approved') ? '#10b981' : '#94a3b8'"></i>
-                  <span [style.text-decoration]="(st.status === 'done' || st.status === 'approved') ? 'line-through' : 'none'" [style.opacity]="(st.status === 'done' || st.status === 'approved') ? '0.7' : '1'">{{ st.title }}</span>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <div *ngFor="let st of task.subtasks" style="font-size:0.8rem; color:var(--text); display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <i class="fa-solid" [class.fa-circle-check]="isSubtaskCompleted(st)" [class.fa-circle]="!isSubtaskCompleted(st)" [style.color]="isSubtaskCompleted(st) ? '#10b981' : '#94a3b8'"></i>
+                    <span [style.text-decoration]="isSubtaskCompleted(st) ? 'line-through' : 'none'" [style.opacity]="isSubtaskCompleted(st) ? '0.7' : '1'">{{ st.title }}</span>
+                  </div>
+                  <span style="font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;" [style.background]="getSubtaskStatusBg(st.status)" [style.color]="getSubtaskStatusColor(st.status)">
+                    {{ getSubtaskStatusLabel(st.status) }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -453,7 +458,7 @@ import { ConfirmService } from '../../services/confirm.service';
               <div class="tk-title">{{ task.title }}</div>
 
               <!-- Scope preview -->
-              <div class="tk-scope" *ngIf="task.scope">{{ task.scope }}</div>
+              <div class="tk-scope" *ngIf="task.scope || task.description">{{ task.scope || task.description }}</div>
 
               <!-- Margin chip (Admins only) -->
               <div class="tk-margin" *ngIf="isAdmin() && task.client_price > 0">
@@ -471,9 +476,19 @@ import { ConfirmService } from '../../services/confirm.service';
                   <div class="tsp-fill" [style.width.%]="getSubtasksProgressPercent(task)"></div>
                 </div>
                 <div class="tsp-list">
-                  <div class="tsp-item" *ngFor="let st of (task.subtasks || []).slice(0, 3)" [class.done]="st.status === 'done' || st.is_completed">
-                    <i class="fa-solid" [ngClass]="(st.status === 'done' || st.is_completed) ? 'fa-square-check text-emerald' : 'fa-square text-muted'"></i>
-                    <span>{{ st.title }}</span>
+                  <div class="tsp-item" *ngFor="let st of (task.subtasks || []).slice(0, 3)" [class.done]="isSubtaskCompleted(st)" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
+                      <i class="fa-solid" [ngClass]="isSubtaskCompleted(st) ? 'fa-square-check text-emerald' : 'fa-square text-muted'"></i>
+                      <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ st.title }}</span>
+                    </div>
+                    <span
+                      class="tsp-st-badge"
+                      style="font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px; flex-shrink:0;"
+                      [style.background]="getSubtaskStatusBg(st.status)"
+                      [style.color]="getSubtaskStatusColor(st.status)"
+                    >
+                      {{ getSubtaskStatusLabel(st.status) }}
+                    </span>
                   </div>
                   <div class="tsp-more" *ngIf="task.subtasks.length > 3">
                     + {{ task.subtasks.length - 3 }} خطوات فرعية إضافية...
@@ -622,6 +637,14 @@ import { ConfirmService } from '../../services/confirm.service';
             <!-- TAB 1: TASK DETAILS -->
             <div class="drawer-tab-content" *ngIf="activeDrawerTab === 'details'">
 
+              <!-- Scope / Description Card (وصف وتفاصيل ومواصفات المهمة أولاً) -->
+              <div class="drawer-card description-hero-card" *ngIf="selectedTask.scope || selectedTask.description" style="border:1px solid rgba(99,102,241,0.25); background:linear-gradient(135deg, rgba(99,102,241,0.06), rgba(6,182,212,0.06)); padding:18px; border-radius:8px;">
+                <div class="dc-head" style="font-size:0.95rem; font-weight:800; color:var(--violet-light); margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-file-lines"></i> وصف وتفاصيل المهمة
+                </div>
+                <div class="dc-body scope-text" style="font-size:0.92rem; line-height:1.7; white-space:pre-wrap; color:var(--text); background:rgba(0,0,0,0.15); padding:14px; border-radius:6px; border:1px solid rgba(255,255,255,0.04);">{{ selectedTask.scope || selectedTask.description }}</div>
+              </div>
+
               <!-- Parent Task Info Card (When viewing a subtask) -->
               <div class="drawer-card parent-task-link-card" *ngIf="selectedTask.parent_id || selectedTask.parent" (click)="openTaskDetail(selectedTask.parent || findParentTask(selectedTask.parent_id))" style="cursor:pointer; background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.25); transition:all 0.2s;" title="انقر لعرض المهمة الرئيسية المرتبطة">
                 <div class="dc-head flex align-items-center justify-content-between" style="margin-bottom:6px;">
@@ -670,7 +693,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 </div>
               </div>
 
-              <!-- Priority Switcher (تعديل الأولوية) -->
+              <!-- Priority Selector Dropdown (مستوى الأولوية) -->
               <div class="drawer-card priority-switcher-card" *ngIf="!isClient()">
                 <div class="dc-head">
                   <i class="fa-solid fa-bolt" style="color:var(--amber);"></i> مستوى الأولوية
@@ -678,44 +701,16 @@ import { ConfirmService } from '../../services/confirm.service';
                     <i class="fa-solid fa-lock"></i> (مقتصر على مدير القسم أو الإدارة)
                   </span>
                 </div>
-                <div class="priority-steps-grid">
-                  <button
-                    type="button"
-                    *ngFor="let p of priorityList"
-                    class="priority-step-btn"
-                    [class.active]="(selectedTask.priority || 'medium') === p.id"
-                    [class]="'p-step-' + p.id"
+                <div style="margin-top: 8px;">
+                  <app-prime-picker-select
+                    [ngModel]="selectedTask.priority || 'medium'"
+                    [items]="priorityList"
+                    optionLabel="label"
+                    optionValue="id"
+                    placeholder="اختر مستوى الأولوية..."
                     [disabled]="isRegularEmployee()"
-                    [title]="isRegularEmployee() ? 'تعديل الأولوية مقتصر على مدير القسم أو الإدارة' : p.label"
-                    (click)="updateTaskPriority(selectedTask, p.id)"
-                  >
-                    <i class="fa-solid" [ngClass]="getPriorityIcon(p.id)"></i>
-                    <span class="p-step-name">{{ p.label }}</span>
-                    <i class="fa-solid fa-check ps-check" *ngIf="(selectedTask.priority || 'medium') === p.id"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Pipeline Progress Switcher (الحالة / مرحلة التنفيذ - بالقمة) -->
-              <div class="drawer-card pipeline-card" *ngIf="!isClient()">
-                <div class="dc-head">
-                  <i class="fa-solid fa-bars-progress"></i> مرحلة التنفيذ (تعديل الحالة)
-                  <span *ngIf="!canReopenCompletedTasks() && ['done', 'completed', 'approved'].includes(selectedTask.status)" style="font-size:0.75rem; color:#f59e0b; font-weight:normal; margin-right:6px;">
-                    <i class="fa-solid fa-lock"></i> المهمة مكتملة (إعادة الفتح مقصورة على المدير، الأدمن، أو مدير القسم)
-                  </span>
-                </div>
-                <div class="ps-grid">
-                  <button
-                    *ngFor="let col of columns"
-                    class="ps-step"
-                    [class.active]="selectedTask.status === col.key"
-                    [disabled]="!canReopenCompletedTasks() && ['done', 'completed', 'approved'].includes(selectedTask.status) && !['done', 'completed', 'approved'].includes(col.key)"
-                    (click)="updateTaskStatus(selectedTask, col.key)"
-                  >
-                    <span class="ps-dot" [style.background]="col.color"></span>
-                    <span class="ps-name">{{ col.title }}</span>
-                    <i class="fa-solid fa-check ps-check" *ngIf="selectedTask.status === col.key"></i>
-                  </button>
+                    (onChange)="onTaskPriorityChange($event)"
+                  ></app-prime-picker-select>
                 </div>
               </div>
 
@@ -751,12 +746,6 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div style="font-size:1.25rem; font-weight:800; color:var(--teal); margin-top:4px;">
                   {{ selectedTask.client_price | number:'1.2-2' }} <small style="font-size:0.75rem;">EGP</small>
                 </div>
-              </div>
-
-              <!-- Scope / Description Card -->
-              <div class="drawer-card" *ngIf="selectedTask.scope">
-                <div class="dc-head"><i class="fa-solid fa-file-lines"></i> وصف ومواصفات المهمة</div>
-                <div class="dc-body scope-text">{{ selectedTask.scope }}</div>
               </div>
 
               <!-- Deal Plan & Monthly Brief Card (خطة الشهر المعتمدة وبريف التعاقد) -->
@@ -925,11 +914,20 @@ import { ConfirmService } from '../../services/confirm.service';
                   <div class="subtask-progress-fill" [style.width.%]="getSubtasksProgressPercent(selectedTask)" style="height:100%; background:linear-gradient(90deg, var(--teal, #06b6d4), var(--emerald, #10b981)); border-radius: 8px;"></div>
                 </div>
                 <div class="subtask-list" style="display:flex; flex-direction:column; gap:8px;">
-                  <div class="subtask-item-row" *ngFor="let st of selectedTask.subtasks" [class.completed]="st.status === 'done' || st.is_completed" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius: 8px;">
-                    <input type="checkbox" [checked]="st.status === 'done' || st.is_completed" (change)="toggleSubtaskStatus(selectedTask, st)" style="width:16px; height:16px; cursor:pointer;" />
-                    <span class="st-title" style="flex:1; font-size:0.86rem; font-weight:700; color:var(--text);" [style.text-decoration]="(st.status === 'done' || st.is_completed) ? 'line-through' : 'none'">{{ st.title }}</span>
-                    <span class="st-status" [class.done]="st.status === 'done' || st.is_completed" style="font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius: 8px;" [style.background]="(st.status === 'done' || st.is_completed) ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'" [style.color]="(st.status === 'done' || st.is_completed) ? '#34d399' : '#fbbf24'">
-                      {{ (st.status === 'done' || st.is_completed) ? 'مكتملة' : 'قيد التنفيذ' }}
+                  <div class="subtask-item-row" *ngFor="let st of selectedTask.subtasks" [class.completed]="isSubtaskCompleted(st)" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius: 8px;">
+                    <input type="checkbox" [checked]="isSubtaskCompleted(st)" (change)="toggleSubtaskStatus(selectedTask, st, $event)" style="width:16px; height:16px; cursor:pointer;" />
+                    <span class="st-title" (click)="selectSubtaskInDrawer(st)" style="flex:1; font-size:0.86rem; font-weight:700; color:var(--text); cursor:pointer;" [style.text-decoration]="isSubtaskCompleted(st) ? 'line-through' : 'none'">{{ st.title }}</span>
+                    <span
+                      class="st-status"
+                      [class.done]="isSubtaskCompleted(st)"
+                      (click)="selectSubtaskInDrawer(st)"
+                      style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius: 8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;"
+                      [style.background]="getSubtaskStatusBg(st.status)"
+                      [style.color]="getSubtaskStatusColor(st.status)"
+                      [title]="'المرحلة التشغيلية الحالية: ' + getSubtaskStatusLabel(st.status)"
+                    >
+                      <i class="fa-solid" [ngClass]="getSubtaskStatusIcon(st.status)"></i>
+                      {{ getSubtaskStatusLabel(st.status) }}
                     </span>
                   </div>
                 </div>
@@ -1066,7 +1064,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="drawer-card">
                   <div class="dc-head flex align-items-center justify-content-between">
                     <span>قائمة المهام الفرعية</span>
-                    <button class="btn-open-st-modal" (click)="showNewSubtaskForm = !showNewSubtaskForm" title="إضافة مهمة فرعية جديدة">
+                    <button class="btn-open-st-modal" (click)="toggleNewSubtaskForm()" title="إضافة مهمة فرعية جديدة">
                       <i class="fa-solid fa-plus"></i> مهمة فرعية جديدة
                     </button>
                   </div>
@@ -1076,18 +1074,29 @@ import { ConfirmService } from '../../services/confirm.service';
                       class="subtask-item-clean"
                       *ngFor="let st of selectedTask.subtasks"
                       [class.active-st]="selectedSubtask?.id === st.id"
-                      [class.completed]="st.status === 'done'"
+                      [class.completed]="isSubtaskCompleted(st)"
                     >
                       <label class="st-checkbox-label">
                         <input
                           type="checkbox"
-                          [checked]="st.status === 'done'"
-                          (change)="toggleSubtaskStatus(selectedTask, st)"
+                          [checked]="isSubtaskCompleted(st)"
+                          (change)="toggleSubtaskStatus(selectedTask, st, $event)"
                         />
                         <span class="st-checkmark"><i class="fa-solid fa-check"></i></span>
                       </label>
                       <span class="st-title-clean" (click)="selectSubtaskInDrawer(st)">
                         {{ st.title }}
+                      </span>
+                      <span
+                        class="st-stage-badge"
+                        (click)="selectSubtaskInDrawer(st)"
+                        style="font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;"
+                        [style.background]="getSubtaskStatusBg(st.status)"
+                        [style.color]="getSubtaskStatusColor(st.status)"
+                        [title]="'المرحلة التشغيلية الحالية: ' + getSubtaskStatusLabel(st.status)"
+                      >
+                        <i class="fa-solid" [ngClass]="getSubtaskStatusIcon(st.status)"></i>
+                        {{ getSubtaskStatusLabel(st.status) }}
                       </span>
                       <span class="priority-badge pb-mini" [class]="'pb-' + (st.priority || 'medium')">
                         {{ st.priority | uppercase }}
@@ -1120,9 +1129,41 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="drawer-card" *ngIf="selectedSubtask" style="border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.03);">
                   <div class="dc-head flex align-items-center justify-content-between">
                     <span><i class="fa-solid fa-circle-info" style="color:var(--violet-light)"></i> تفاصيل المهمة الفرعية: {{ selectedSubtask.title }}</span>
-                    <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
-                      <i class="fa-solid fa-bolt"></i> {{ (selectedSubtask.priority || 'medium') | uppercase }}
-                    </span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span
+                        style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;"
+                        [style.background]="getSubtaskStatusBg(selectedSubtask.status)"
+                        [style.color]="getSubtaskStatusColor(selectedSubtask.status)"
+                      >
+                        <i class="fa-solid" [ngClass]="getSubtaskStatusIcon(selectedSubtask.status)"></i>
+                        {{ getSubtaskStatusLabel(selectedSubtask.status) }}
+                      </span>
+                      <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
+                        <i class="fa-solid fa-bolt"></i> {{ (selectedSubtask.priority || 'medium') | uppercase }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Subtask Pipeline Stages Selector -->
+                  <div class="subtask-pipeline-card" *ngIf="!isClient()" style="margin: 8px 0 12px 0; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px 12px;">
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                      <i class="fa-solid fa-bars-progress"></i> المرحلة التشغيلية للمهمة الفرعية:
+                    </div>
+                    <div class="ps-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap:6px;">
+                      <button
+                        *ngFor="let col of columns"
+                        type="button"
+                        class="ps-step"
+                        [class.active]="selectedSubtask.status === col.key"
+                        [style.borderColor]="selectedSubtask.status === col.key ? col.color : 'transparent'"
+                        (click)="updateSubtaskStage(selectedTask, selectedSubtask, col.key, $event)"
+                        style="font-size:0.75rem; padding:6px 8px; border-radius:6px; cursor:pointer;"
+                      >
+                        <span class="ps-dot" [style.background]="col.color"></span>
+                        <span class="ps-name">{{ col.title }}</span>
+                        <i class="fa-solid fa-check ps-check" *ngIf="selectedSubtask.status === col.key"></i>
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Subtask Description -->
@@ -1211,7 +1252,7 @@ import { ConfirmService } from '../../services/confirm.service';
                       </div>
                     </div>
                     <div class="modal-ft" style="padding:10px 0 0 0; display:flex; justify-content:flex-end; gap:8px;">
-                      <button class="btn-cancel" (click)="showNewSubtaskForm = false">إلغاء</button>
+                      <button class="btn-cancel" (click)="closeNewSubtaskForm()">إلغاء</button>
                       <button class="btn-save" (click)="saveFullSubtask()" [disabled]="!subtaskForm.title.trim()"><i class="fa-solid fa-check"></i> حفظ المهمة الفرعية</button>
                     </div>
                   </div>
@@ -1313,28 +1354,58 @@ import { ConfirmService } from '../../services/confirm.service';
         <div class="subtask-detail-modal-body" *ngIf="selectedSubtask" dir="rtl" style="display:flex; flex-direction:column; gap:16px; padding-top:8px;">
 
           <!-- Title & Priority Header Card -->
-          <div class="st-hd-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius: 8px; border:1px solid rgba(99,102,241,0.2); display:flex; justify-content:space-between; align-items:center;">
+          <div class="st-hd-card" style="background:rgba(99,102,241,0.06); padding:16px 18px; border-radius: 8px; border:1px solid rgba(99,102,241,0.2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
               <h4 style="margin:0 0 6px 0; font-size:1.05rem; font-weight:800; color:var(--text);">{{ selectedSubtask.title }}</h4>
-              <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
-                <i class="fa-solid fa-bolt"></i> {{ (selectedSubtask.priority || 'medium') | uppercase }}
-              </span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="priority-badge" [class]="'pb-' + (selectedSubtask.priority || 'medium')">
+                  <i class="fa-solid fa-bolt"></i> {{ (selectedSubtask.priority || 'medium') | uppercase }}
+                </span>
+                <span
+                  style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;"
+                  [style.background]="getSubtaskStatusBg(selectedSubtask.status)"
+                  [style.color]="getSubtaskStatusColor(selectedSubtask.status)"
+                >
+                  <i class="fa-solid" [ngClass]="getSubtaskStatusIcon(selectedSubtask.status)"></i>
+                  {{ getSubtaskStatusLabel(selectedSubtask.status) }}
+                </span>
+              </div>
             </div>
             <button
               class="ps-step"
-              [class.active]="selectedSubtask.status === 'done'"
-              (click)="toggleSubtaskStatus(selectedTask, selectedSubtask)"
+              [class.active]="isSubtaskCompleted(selectedSubtask)"
+              (click)="toggleSubtaskStatus(selectedTask, selectedSubtask, $event)"
               style="padding:8px 16px; border-radius: 8px; border:none; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:6px;"
             >
-              <i class="fa-solid" [class.fa-check-double]="selectedSubtask.status === 'done'" [class.fa-circle]="selectedSubtask.status !== 'done'"></i>
-              {{ selectedSubtask.status === 'done' ? 'مكتملة' : 'قيد التنفيذ' }}
+              <i class="fa-solid" [class.fa-check-double]="isSubtaskCompleted(selectedSubtask)" [class.fa-circle]="!isSubtaskCompleted(selectedSubtask)"></i>
+              {{ isSubtaskCompleted(selectedSubtask) ? 'مكتملة' : 'إكمال المهمة' }}
             </button>
           </div>
 
-          <!-- Description Section -->
-          <div class="drawer-card" *ngIf="selectedSubtask.description || selectedSubtask.scope">
-            <div class="dc-head"><i class="fa-solid fa-file-lines"></i> الوصف والمواصفات التفصيلية</div>
-            <div class="dc-body scope-text" style="font-size:0.88rem; line-height:1.6; white-space:pre-wrap;">{{ selectedSubtask.description || selectedSubtask.scope }}</div>
+          <!-- Description Section (الوصف أولاً) -->
+          <div class="drawer-card" *ngIf="selectedSubtask.description || selectedSubtask.scope" style="border:1px solid rgba(99,102,241,0.25); background:rgba(99,102,241,0.04);">
+            <div class="dc-head"><i class="fa-solid fa-file-lines" style="color:var(--violet-light);"></i> الوصف والمواصفات التفصيلية</div>
+            <div class="dc-body scope-text" style="font-size:0.9rem; line-height:1.7; white-space:pre-wrap;">{{ selectedSubtask.description || selectedSubtask.scope }}</div>
+          </div>
+
+          <!-- Pipeline Stages Selector in Modal -->
+          <div class="drawer-card pipeline-card" *ngIf="!isClient()" style="margin:0; padding:12px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid var(--border);">
+            <div class="dc-head" style="font-size:0.8rem; margin-bottom:8px;"><i class="fa-solid fa-bars-progress"></i> تحديد المرحلة التشغيلية الحالية للمهمة الفرعية:</div>
+            <div class="ps-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap:6px;">
+              <button
+                *ngFor="let col of columns"
+                type="button"
+                class="ps-step"
+                [class.active]="selectedSubtask.status === col.key"
+                [style.borderColor]="selectedSubtask.status === col.key ? col.color : 'transparent'"
+                (click)="updateSubtaskStage(selectedTask, selectedSubtask, col.key, $event)"
+                style="font-size:0.75rem; padding:6px 8px; border-radius:6px; cursor:pointer;"
+              >
+                <span class="ps-dot" [style.background]="col.color"></span>
+                <span class="ps-name">{{ col.title }}</span>
+                <i class="fa-solid fa-check ps-check" *ngIf="selectedSubtask.status === col.key"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Assigned Team Section -->
@@ -1396,7 +1467,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </p-dialog>
 
       <!-- ── SUBTASK CREATION SIDE DRAWER (إضافة مهمة فرعية جديدة من الجانب) ── -->
-      <div class="drawer-backdrop" *ngIf="showSubtaskModal" (click)="showSubtaskModal = false">
+      <div class="drawer-backdrop" *ngIf="showSubtaskModal" (click)="closeSubtaskModal()">
         <div class="detail-drawer glass-panel" (click)="$event.stopPropagation()" style="width: 580px;">
           <!-- Drawer Header -->
           <div class="drawer-hd">
@@ -1409,7 +1480,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="drawer-meta">مرتبطة بالمهمة الرئيسية: {{ selectedTask?.title }}</div>
               </div>
             </div>
-            <button type="button" class="icon-action-btn" (click)="showSubtaskModal = false">
+            <button type="button" class="icon-action-btn" (click)="closeSubtaskModal()">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -1483,7 +1554,7 @@ import { ConfirmService } from '../../services/confirm.service';
 
             <!-- Footer Actions -->
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; margin-top:10px;">
-              <button type="button" class="btn-cancel" (click)="showSubtaskModal = false">إلغاء</button>
+              <button type="button" class="btn-cancel" (click)="closeSubtaskModal()">إلغاء</button>
               <button type="button" class="btn-save" (click)="saveFullSubtask()" [disabled]="!subtaskForm.title.trim()">
                 <i class="fa-solid fa-check"></i> حفظ المهمة الفرعية
               </button>
@@ -1493,7 +1564,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </div>
 
       <!-- ── CREATE TASK SIDE DRAWER (إنشاء مهمة جديدة من الجانب) ── -->
-      <div class="drawer-backdrop" *ngIf="showCreateModal" (click)="showCreateModal = false">
+      <div class="drawer-backdrop" *ngIf="showCreateModal" (click)="closeCreateModal()">
         <div class="detail-drawer glass-panel" (click)="$event.stopPropagation()" style="width: 620px;">
           <!-- Drawer Header -->
           <div class="drawer-hd">
@@ -1506,7 +1577,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="drawer-meta">{{ isEditingTask ? 'تعديل الأسعار والمواصفات وربطها بالصفقات والحسابات' : 'إضافة وتسعير وتكليف مهمة في النظام' }}</div>
               </div>
             </div>
-            <button type="button" class="icon-action-btn" (click)="showCreateModal = false">
+            <button type="button" class="icon-action-btn" (click)="closeCreateModal()">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -1666,7 +1737,7 @@ import { ConfirmService } from '../../services/confirm.service';
               </div>
 
               <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; margin-top:20px;">
-                <button type="button" class="btn-cancel" (click)="showCreateModal = false">إلغاء</button>
+                <button type="button" class="btn-cancel" (click)="closeCreateModal()">إلغاء</button>
                 <button type="submit" class="btn-save" [disabled]="taskForm.invalid || loading">
                   <i class="fa-solid fa-floppy-disk"></i>
                   {{ loading ? 'جاري الحفظ...' : (isEditingTask ? 'حفظ تعديلات المهمة' : 'إنشاء المهمة') }}
@@ -1678,7 +1749,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </div>
 
       <!-- ── CLIENT REVISION SIDE DRAWER (طلب تعديلات العميل من الجانب) ── -->
-      <div class="drawer-backdrop" *ngIf="showRevisionModal" (click)="showRevisionModal = false">
+      <div class="drawer-backdrop" *ngIf="showRevisionModal" (click)="closeRevisionModal()">
         <div class="detail-drawer glass-panel" (click)="$event.stopPropagation()" style="width: 520px;">
           <!-- Drawer Header -->
           <div class="drawer-hd">
@@ -1691,7 +1762,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 <div class="drawer-meta">كتابة الملاحظات المطلوب تنفيذها</div>
               </div>
             </div>
-            <button type="button" class="icon-action-btn" (click)="showRevisionModal = false">
+            <button type="button" class="icon-action-btn" (click)="closeRevisionModal()">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -1704,7 +1775,7 @@ import { ConfirmService } from '../../services/confirm.service';
               <textarea [(ngModel)]="revisionNotes" pInputTextarea rows="4" placeholder="مثال: يرجى تعديل الألوان في التصميم وتغيير الشعار في الصورة الثانية..." style="width:100%; border-radius: 8px; padding:12px; background:var(--bg-input); border:1px solid var(--border); color:var(--text); font-family:inherit; outline:none;"></textarea>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
-              <button type="button" class="btn-cancel" (click)="showRevisionModal = false">إلغاء</button>
+              <button type="button" class="btn-cancel" (click)="closeRevisionModal()">إلغاء</button>
               <button type="button" class="btn-save" style="background:linear-gradient(135deg, var(--amber), #d97706); box-shadow:0 4px 16px rgba(245,158,11,0.35);" [disabled]="!revisionNotes.trim()" (click)="submitRevisionByClient()">
                 <i class="fa-solid fa-paper-plane"></i> إرسال طلب التعديل
               </button>
@@ -4266,7 +4337,7 @@ export class TasksBoardComponent implements OnInit {
   statusList = [
     { id: 'new', label: 'جديد' },
     { id: 'in_progress', label: 'قيد التنفيذ' },
-    { id: 'content_creator', label: 'صناعة المحتوى' },
+    { id: 'content_creator', label: 'كتابة المحتوى' },
     { id: 'in_review', label: 'قيد المراجعة' },
     { id: 'client_feedback', label: 'ملاحظات العميل' },
     { id: 'done', label: 'مكتمل' }
@@ -4275,7 +4346,7 @@ export class TasksBoardComponent implements OnInit {
   columns = [
     { key: 'new',             title: 'جديد',             color: '#a5b4fc' },
     { key: 'in_progress',     title: 'قيد التنفيذ',     color: '#fbbf24' },
-    { key: 'content_creator', title: 'صناعة المحتوى', color: '#f472b6' },
+    { key: 'content_creator', title: 'كتابة المحتوى', color: '#f472b6' },
     { key: 'in_review',       title: 'قيد المراجعة',     color: '#67e8f9' },
     { key: 'client_feedback', title: 'ملاحظات العميل', color: '#93c5fd' },
     { key: 'done',            title: 'مكتمل',            color: '#6ee7b7' },
@@ -4427,7 +4498,8 @@ export class TasksBoardComponent implements OnInit {
       due_date:            [''],
       status:              ['new', Validators.required],
       priority:            ['medium', Validators.required],
-      scope:               ['']
+      scope:               [''],
+      description:         ['']
     });
   }
 
@@ -4485,9 +4557,33 @@ export class TasksBoardComponent implements OnInit {
   subtaskForm = { title: '', description: '', priority: 'medium', user_ids: [] as number[], file: null as File | null };
   subtaskFilePreview: string | null = null;
 
-  openSubtaskModal(): void {
+  resetSubtaskForm(): void {
     this.subtaskForm = { title: '', description: '', priority: 'medium', user_ids: [], file: null };
     this.subtaskFilePreview = null;
+    this.newSubtaskTitle = '';
+  }
+
+  closeSubtaskModal(): void {
+    this.showSubtaskModal = false;
+    this.resetSubtaskForm();
+  }
+
+  toggleNewSubtaskForm(): void {
+    if (this.showNewSubtaskForm) {
+      this.closeNewSubtaskForm();
+    } else {
+      this.resetSubtaskForm();
+      this.showNewSubtaskForm = true;
+    }
+  }
+
+  closeNewSubtaskForm(): void {
+    this.showNewSubtaskForm = false;
+    this.resetSubtaskForm();
+  }
+
+  openSubtaskModal(): void {
+    this.resetSubtaskForm();
     this.showSubtaskModal = true;
   }
   onSubtaskUserSelect(eventOrId: any): void {
@@ -4545,8 +4641,8 @@ export class TasksBoardComponent implements OnInit {
         if (!this.tasks.some(t => t.id === newSt.id)) {
           this.tasks.push(newSt);
         }
-        this.showSubtaskModal = false;
-        this.showNewSubtaskForm = false;
+        this.closeSubtaskModal();
+        this.closeNewSubtaskForm();
         this.loadTaskActivities(this.selectedTask.id);
       }
     });
@@ -4574,10 +4670,237 @@ export class TasksBoardComponent implements OnInit {
     });
   }
 
-  toggleSubtaskStatus(task: any, subtask: any): void {
-    subtask.status = subtask.status === 'done' ? 'new' : 'done';
-    this.apiService.toggleSubtask(subtask.id).subscribe(() => {
-      this.loadTaskActivities(task.id);
+  isSubtaskCompleted(s: any): boolean {
+    if (!s) return false;
+    return ['done', 'completed', 'approved'].includes(s.status) || !!s.is_completed;
+  }
+
+  getSubtaskStatusLabel(status: string): string {
+    switch (status) {
+      case 'done':
+      case 'completed':
+      case 'approved':
+        return 'مكتمل';
+      case 'in_review':
+      case 'client_review':
+      case 'review':
+      case 'awaiting_approval':
+        return 'قيد المراجعة';
+      case 'content_creator':
+        return 'كتابة المحتوى';
+      case 'client_feedback':
+      case 'needs_revision':
+      case 'revision_requested':
+        return 'ملاحظات العميل';
+      case 'new':
+      case 'todo':
+      case 'pending':
+        return 'جديد';
+      case 'in_progress':
+      case 'progress':
+      case 'active':
+      default:
+        return 'قيد التنفيذ';
+    }
+  }
+
+  getSubtaskStatusColor(status: string): string {
+    switch (status) {
+      case 'done':
+      case 'completed':
+      case 'approved':
+        return '#34d399';
+      case 'in_review':
+      case 'client_review':
+      case 'review':
+      case 'awaiting_approval':
+        return '#67e8f9';
+      case 'content_creator':
+        return '#f472b6';
+      case 'client_feedback':
+      case 'needs_revision':
+      case 'revision_requested':
+        return '#93c5fd';
+      case 'new':
+      case 'todo':
+      case 'pending':
+        return '#a5b4fc';
+      case 'in_progress':
+      case 'progress':
+      case 'active':
+      default:
+        return '#fbbf24';
+    }
+  }
+
+  getSubtaskStatusBg(status: string): string {
+    switch (status) {
+      case 'done':
+      case 'completed':
+      case 'approved':
+        return 'rgba(16, 185, 129, 0.15)';
+      case 'in_review':
+      case 'client_review':
+      case 'review':
+      case 'awaiting_approval':
+        return 'rgba(6, 182, 212, 0.15)';
+      case 'content_creator':
+        return 'rgba(244, 114, 182, 0.15)';
+      case 'client_feedback':
+      case 'needs_revision':
+      case 'revision_requested':
+        return 'rgba(56, 189, 248, 0.15)';
+      case 'new':
+      case 'todo':
+      case 'pending':
+        return 'rgba(129, 140, 248, 0.15)';
+      case 'in_progress':
+      case 'progress':
+      case 'active':
+      default:
+        return 'rgba(245, 158, 11, 0.15)';
+    }
+  }
+
+  getSubtaskStatusIcon(status: string): string {
+    switch (status) {
+      case 'done':
+      case 'completed':
+      case 'approved':
+        return 'fa-circle-check';
+      case 'in_review':
+      case 'client_review':
+      case 'review':
+      case 'awaiting_approval':
+        return 'fa-glasses';
+      case 'content_creator':
+        return 'fa-pen-nib';
+      case 'client_feedback':
+      case 'needs_revision':
+      case 'revision_requested':
+        return 'fa-comment-dots';
+      case 'new':
+      case 'todo':
+      case 'pending':
+        return 'fa-circle-plus';
+      case 'in_progress':
+      case 'progress':
+      case 'active':
+      default:
+        return 'fa-spinner';
+    }
+  }
+
+  toggleSubtaskStatus(task: any, subtask: any, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const isCompleted = this.isSubtaskCompleted(subtask);
+    const newStatus = isCompleted ? 'in_progress' : 'done';
+    
+    subtask.status = newStatus;
+    subtask.is_completed = !isCompleted;
+
+    // 1. Sync on board tasks array so the card moves to the correct column immediately
+    const boardTask = this.tasks.find(t => t.id === subtask.id);
+    if (boardTask) {
+      boardTask.status = newStatus;
+      boardTask.is_completed = subtask.is_completed;
+    }
+
+    // 2. Sync selectedSubtask if currently open
+    if (this.selectedSubtask && this.selectedSubtask.id === subtask.id) {
+      this.selectedSubtask.status = newStatus;
+      this.selectedSubtask.is_completed = subtask.is_completed;
+    }
+
+    // 3. Persist to API
+    this.apiService.toggleSubtask(subtask.id).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          subtask.status = res.data.status;
+          subtask.is_completed = this.isSubtaskCompleted(res.data);
+          if (boardTask) {
+            boardTask.status = res.data.status;
+            boardTask.is_completed = subtask.is_completed;
+          }
+          if (this.selectedSubtask && this.selectedSubtask.id === subtask.id) {
+            this.selectedSubtask.status = res.data.status;
+            this.selectedSubtask.is_completed = subtask.is_completed;
+          }
+        }
+        if (task && task.id) {
+          this.loadTaskActivities(task.id);
+        }
+      },
+      error: () => {
+        subtask.status = isCompleted ? 'done' : 'in_progress';
+        subtask.is_completed = isCompleted;
+        if (boardTask) {
+          boardTask.status = subtask.status;
+          boardTask.is_completed = isCompleted;
+        }
+        if (this.selectedSubtask && this.selectedSubtask.id === subtask.id) {
+          this.selectedSubtask.status = subtask.status;
+          this.selectedSubtask.is_completed = isCompleted;
+        }
+      }
+    });
+  }
+
+  updateSubtaskStage(task: any, subtask: any, newStatus: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (!subtask || subtask.status === newStatus) return;
+    const oldStatus = subtask.status;
+    subtask.status = newStatus;
+    subtask.is_completed = this.isSubtaskCompleted(subtask);
+
+    // 1. Sync on board tasks array so the card moves to the correct column immediately
+    const boardTask = this.tasks.find(t => t.id === subtask.id);
+    if (boardTask) {
+      boardTask.status = newStatus;
+      boardTask.is_completed = subtask.is_completed;
+    }
+
+    // 2. Sync selectedSubtask if currently open
+    if (this.selectedSubtask && this.selectedSubtask.id === subtask.id) {
+      this.selectedSubtask.status = newStatus;
+      this.selectedSubtask.is_completed = subtask.is_completed;
+    }
+
+    // 3. Persist to API
+    this.apiService.toggleSubtask(subtask.id, newStatus).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          subtask.status = res.data.status;
+          subtask.is_completed = this.isSubtaskCompleted(res.data);
+          if (boardTask) {
+            boardTask.status = res.data.status;
+            boardTask.is_completed = subtask.is_completed;
+          }
+          if (this.selectedSubtask && this.selectedSubtask.id === subtask.id) {
+            this.selectedSubtask.status = res.data.status;
+            this.selectedSubtask.is_completed = subtask.is_completed;
+          }
+        }
+        if (task && task.id) {
+          this.loadTaskActivities(task.id);
+        }
+      },
+      error: () => {
+        subtask.status = oldStatus;
+        subtask.is_completed = this.isSubtaskCompleted(subtask);
+        if (boardTask) {
+          boardTask.status = oldStatus;
+          boardTask.is_completed = subtask.is_completed;
+        }
+        if (this.selectedSubtask && this.selectedSubtask.id === subtask.id) {
+          this.selectedSubtask.status = oldStatus;
+          this.selectedSubtask.is_completed = subtask.is_completed;
+        }
+      }
     });
   }
 
@@ -4598,7 +4921,7 @@ export class TasksBoardComponent implements OnInit {
 
   getCompletedSubtasksCount(task: any): number {
     if (!task || !task.subtasks) return 0;
-    return task.subtasks.filter((s: any) => s.status === 'done').length;
+    return task.subtasks.filter((s: any) => this.isSubtaskCompleted(s)).length;
   }
 
   getSubtasksProgressPercent(task: any): number {
@@ -5018,6 +5341,11 @@ export class TasksBoardComponent implements OnInit {
     this.showRevisionModal = true;
   }
 
+  closeRevisionModal(): void {
+    this.showRevisionModal = false;
+    this.revisionNotes = '';
+  }
+
   submitRevisionByClient(): void {
     if (!this.revisionNotes.trim() || !this.selectedTask) return;
     const task = this.selectedTask;
@@ -5028,14 +5356,12 @@ export class TasksBoardComponent implements OnInit {
     this.apiService.addTaskNote(task.id, 'طلب تعديل من العميل: ' + noteText).subscribe({
       next: () => {
         this.persistStatusUpdate(task, 'client_feedback', () => {});
-        this.revisionNotes = '';
-        this.showRevisionModal = false;
+        this.closeRevisionModal();
         this.loadTaskActivities(task.id);
       },
       error: () => {
         this.persistStatusUpdate(task, 'client_feedback', () => task.status = oldStatus);
-        this.revisionNotes = '';
-        this.showRevisionModal = false;
+        this.closeRevisionModal();
       }
     });
   }
@@ -5049,19 +5375,35 @@ export class TasksBoardComponent implements OnInit {
   isEditingTask = false;
   editingTaskId: number | null = null;
 
-  openCreateModal(): void {
+  closeCreateModal(): void {
+    this.showCreateModal = false;
     this.isEditingTask = false;
     this.editingTaskId = null;
+    this.createTaskFiles = [];
+    this.computedMarginVal = 0;
     this.taskForm.reset({
       status: 'new',
       priority: 'medium',
       client_price: 0,
       employee_price: 0,
       is_standalone: false,
-      dates_not_specified: false
+      dates_not_specified: false,
+      title: '',
+      scope: '',
+      description: '',
+      department_id: null,
+      deal_id: null,
+      assigned_to: null,
+      shooting_date: '',
+      delivery_date: '',
+      start_date: '',
+      end_date: '',
+      due_date: ''
     });
-    this.createTaskFiles = [];
-    this.computedMarginVal = 0;
+  }
+
+  openCreateModal(): void {
+    this.closeCreateModal();
     this.showCreateModal = true;
   }
 
@@ -5089,7 +5431,8 @@ export class TasksBoardComponent implements OnInit {
       due_date: task.due_date || '',
       status: task.status || 'new',
       priority: task.priority || 'medium',
-      scope: task.scope || task.description || ''
+      scope: task.scope || task.description || '',
+      description: task.description || task.scope || ''
     });
 
     this.showCreateModal = true;
@@ -5103,6 +5446,11 @@ export class TasksBoardComponent implements OnInit {
     }
     this.loading = true;
     const taskVal = { ...this.taskForm.value };
+    if (taskVal.scope && !taskVal.description) {
+      taskVal.description = taskVal.scope;
+    } else if (taskVal.description && !taskVal.scope) {
+      taskVal.scope = taskVal.description;
+    }
 
     // Rule 4: If task is created for a department without specifying an employee, auto-assign to Department Head!
     if (!taskVal.is_standalone && taskVal.department_id && !taskVal.assigned_to && (!taskVal.user_ids || !taskVal.user_ids.length)) {
@@ -5147,13 +5495,10 @@ export class TasksBoardComponent implements OnInit {
         next: (res) => {
           this.loading = false;
           this.toastService.success('تم تعديل بيانات وأسعار المهمة وتحديث كافة الصفقات والحسابات المرتبطة بنجاح', 'تم الحفظ والتحديث');
-          this.showCreateModal = false;
-          this.isEditingTask = false;
-          this.editingTaskId = null;
-          this.createTaskFiles = [];
           if (res && res.data && this.selectedTask && this.selectedTask.id === res.data.id) {
             this.selectedTask = { ...this.selectedTask, ...res.data };
           }
+          this.closeCreateModal();
           this.loadData();
         },
         error: (err) => {
@@ -5168,8 +5513,7 @@ export class TasksBoardComponent implements OnInit {
       next: () => {
         this.loading = false;
         this.toastService.success('تم إنشاء المهمة الجديدة وتحديث سجل الصفقة بنجاح', 'تمت العملية');
-        this.showCreateModal = false;
-        this.createTaskFiles = [];
+        this.closeCreateModal();
         this.loadData();
       },
       error: (err) => {
@@ -5212,6 +5556,9 @@ export class TasksBoardComponent implements OnInit {
   closeTaskDrawer(): void {
     this.selectedTask = null;
     this.pendingTaskIdFromUrl = null;
+    this.closeNewSubtaskForm();
+    this.closeSubtaskModal();
+    this.closeRevisionModal();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { taskId: null },
@@ -5357,7 +5704,8 @@ export class TasksBoardComponent implements OnInit {
       status: newStatus,
       client_price: task.client_price || 0,
       employee_price: task.employee_price || 0,
-      scope: task.scope || '',
+      scope: task.scope || task.description || '',
+      description: task.description || task.scope || '',
       deal_id: task.deal_id || task.deal?.id || null,
       department_id: task.department_id || task.department?.id || null
     };
@@ -5381,6 +5729,25 @@ export class TasksBoardComponent implements OnInit {
     });
   }
 
+  syncSubtaskWithParent(task: any, newStatus: string): void {
+    if (!task || !task.parent_id) return;
+    const parent = (this.tasks || []).find(t => t.id === task.parent_id);
+    if (parent && parent.subtasks) {
+      const st = parent.subtasks.find((s: any) => s.id === task.id);
+      if (st) {
+        st.status = newStatus;
+        st.is_completed = this.isSubtaskCompleted(st);
+      }
+    }
+    if (this.selectedTask && this.selectedTask.id === task.parent_id && this.selectedTask.subtasks) {
+      const st = this.selectedTask.subtasks.find((s: any) => s.id === task.id);
+      if (st) {
+        st.status = newStatus;
+        st.is_completed = this.isSubtaskCompleted(st);
+      }
+    }
+  }
+
   updateTaskStatus(task: any, newStatus: string): void {
     const oldStatus = task.status;
     const completedStatuses = ['done', 'completed', 'approved'];
@@ -5389,7 +5756,19 @@ export class TasksBoardComponent implements OnInit {
       return;
     }
     task.status = newStatus;
-    this.persistStatusUpdate(task, newStatus, () => task.status = oldStatus);
+    this.syncSubtaskWithParent(task, newStatus);
+    this.persistStatusUpdate(task, newStatus, () => {
+      task.status = oldStatus;
+      this.syncSubtaskWithParent(task, oldStatus);
+    });
+  }
+
+  onTaskPriorityChange(eventOrValue: any): void {
+    if (!this.selectedTask || !eventOrValue) return;
+    const newPriority = typeof eventOrValue === 'object' && eventOrValue.value !== undefined ? eventOrValue.value : eventOrValue;
+    if (newPriority && newPriority !== this.selectedTask.priority) {
+      this.updateTaskPriority(this.selectedTask, newPriority);
+    }
   }
 
   updateTaskPriority(task: any, newPriority: string): void {
@@ -5401,6 +5780,11 @@ export class TasksBoardComponent implements OnInit {
     const oldPriority = task.priority;
     task.priority = newPriority;
 
+    const boardTask = this.tasks.find(t => t.id === task.id);
+    if (boardTask) {
+      boardTask.priority = newPriority;
+    }
+
     this.apiService.updateTaskPriority(task.id, newPriority).subscribe({
       next: () => {
         this.toastService.success(`تم تعديل أولوية المهمة إلى "${this.getPriorityLabel(newPriority)}" بنجاح`, 'تم تحديث الأولوية');
@@ -5408,6 +5792,9 @@ export class TasksBoardComponent implements OnInit {
       },
       error: (err) => {
         task.priority = oldPriority;
+        if (boardTask) {
+          boardTask.priority = oldPriority;
+        }
         this.toastService.error(err.error?.message || 'تعذر تعديل أولوية المهمة');
       }
     });
@@ -5706,7 +6093,11 @@ export class TasksBoardComponent implements OnInit {
     }
 
     task.status = targetColKey;
-    this.persistStatusUpdate(task, targetColKey, () => task.status = oldStatus);
+    this.syncSubtaskWithParent(task, targetColKey);
+    this.persistStatusUpdate(task, targetColKey, () => {
+      task.status = oldStatus;
+      this.syncSubtaskWithParent(task, oldStatus);
+    });
   }
 
   onBoardWheel(event: WheelEvent, board: HTMLElement): void {

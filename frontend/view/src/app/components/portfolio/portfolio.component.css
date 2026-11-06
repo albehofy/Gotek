@@ -6,6 +6,8 @@
 .portfolio-hero {
   padding: 80px 0 50px;
   background: var(--bg);
+  position: relative;
+  overflow: hidden;
 }
 
 .portfolio-hero h1 {
@@ -32,30 +34,33 @@
 }
 
 .filter-pill {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
-  padding: 10px 22px;
+  padding: 10px 24px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--ink-dim);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.35s var(--ease-spring);
   font-family: inherit;
   backdrop-filter: blur(10px);
 }
 
 .filter-pill:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
   color: #FFFFFF;
   background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
 }
 
 .filter-pill.active {
   background: var(--accent-gradient);
-  color: #FFFFFF;
+  color: #071113;
+  font-weight: 700;
   border-color: transparent;
-  box-shadow: 0 4px 20px rgba(255, 75, 43, 0.35);
+  box-shadow: 0 6px 24px rgba(45, 212, 191, 0.45);
+  transform: translateY(-2px) scale(1.04);
 }
 
 /* Cinematic Grid */

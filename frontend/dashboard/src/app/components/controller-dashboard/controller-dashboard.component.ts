@@ -473,10 +473,10 @@ export class ControllerDashboardComponent implements OnInit {
     });
 
     // CRM Overview Data Fetching
-    this.apiService.getUsers().subscribe((res: any) => {
+    this.apiService.getUsers({ type: 'client' }).subscribe((res: any) => {
       const arr = Array.isArray(res) ? res : (res?.data || []);
       const clientUsers = arr.filter((u: any) => u.role === 'client');
-      this.crmStats.clients = clientUsers.length > 0 ? clientUsers.length : arr.length;
+      this.crmStats.clients = clientUsers.length;
     });
 
     this.apiService.getDeals().subscribe(res => {

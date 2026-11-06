@@ -5,18 +5,16 @@
 <section class="portfolio-hero">
   <div class="wrap">
     <div class="badge-award">
-      <i class="fa-solid fa-camera-movie"></i>
-      <span>{{ translationService.currentLang() === 'ar' ? 'معرض الأعمال السينمائي' : 'CINEMATIC WORK ARCHIVE' }}</span>
+      <i class="fa-solid fa-clapperboard icon-twinkle"></i>
+      <span>{{ getHeroTag() }}</span>
     </div>
 
     <h1>
-      <span>{{ translationService.currentLang() === 'ar' ? 'إنتاجات تتحدث عن نفسها' : 'Crafted for Global Impact' }}</span>
+      <span>{{ getHeroTitle() }}</span>
     </h1>
 
     <p class="lead">
-      {{ translationService.currentLang() === 'ar' 
-         ? 'نستعرض هنا أرشيف إنتاجاتنا في الأفلام الإعلانية، الهويات البصرية الأيقونية، والحملات الاستراتيجية للعلامات الرائدة.'
-         : 'A curated showcase of our work in commercial film production, iconic visual identity, and high-performance brand campaigns.' }}
+      {{ getHeroDesc() }}
     </p>
 
     <!-- Filter Buttons Row (Pill styling) -->
@@ -37,7 +35,7 @@
         [class.active]="selectedCategory === (cat.id || cat.slug || cat.name)"
         (click)="filterCategory(cat.id || cat.slug || cat.name)"
       >
-        <span>{{ cat.name_ar || cat.name || cat }}</span>
+        <span>{{ getCategoryName(cat) }}</span>
       </button>
     </div>
   </div>
@@ -54,7 +52,7 @@
     <div *ngIf="!loading && filteredProjects.length" class="cinematic-grid">
       <a *ngFor="let p of filteredProjects; let i = index" [routerLink]="['/project', p.id]" class="cinema-card">
         <div class="cinema-thumb">
-          <img *ngIf="p.image || p.main_image" [src]="p.image || p.main_image" [alt]="p.title?.ar || p.title || 'Production'" class="cinema-img" />
+          <img *ngIf="p.image || p.main_image" [src]="p.image || p.main_image" [alt]="getProjectTitle(p)" class="cinema-img" />
           <div *ngIf="!p.image && !p.main_image" class="cinema-placeholder" [class]="'cinema-grad-' + (i % 3 + 1)">
             <i class="fa-solid fa-clapperboard placeholder-icon"></i>
           </div>
@@ -64,11 +62,11 @@
 
         <div class="cinema-info">
           <div class="cinema-tag">
-            {{ p.category?.name_ar || p.category?.name || p.category || (translationService.currentLang() === 'ar' ? 'إنتاج سينمائي' : 'Film Production') }}
+            {{ getCategoryName(p.category) || (translationService.currentLang() === 'ar' ? 'إنتاج سينمائي' : 'Film Production') }}
           </div>
 
-          <h3>{{ p.title?.ar || p.title_ar || (typeof p.title === 'string' ? p.title : '') || 'مشروع ميديا جلو' }}</h3>
-          <p class="cinema-desc">{{ p.description?.ar || p.description_ar || (typeof p.description === 'string' ? p.description : '') || '' }}</p>
+          <h3>{{ getProjectTitle(p) }}</h3>
+          <p class="cinema-desc">{{ getProjectDesc(p) }}</p>
         </div>
       </a>
     </div>
@@ -79,5 +77,26 @@
       <h3>{{ translationService.currentLang() === 'ar' ? 'لا توجد إنتاجات في هذا التصنيف' : 'No productions found in this category' }}</h3>
     </div>
 
+  </div>
+</section>
+
+<!-- Masterpiece CTA -->
+<section class="cta" id="contact">
+  <div class="wrap">
+    <div class="cta-inner-card">
+      <div class="cta-ambient-glow"></div>
+      <div class="eyebrow" style="justify-content:center;">
+        <span class="dash"></span> 
+        <span>{{ translationService.translate('cta.eyebrow') }}</span>
+      </div>
+      <h2>{{ translationService.translate('cta.title') }}</h2>
+      <p class="sub">{{ translationService.translate('cta.sub') }}</p>
+      <div class="cta-actions">
+        <a routerLink="/contact" class="btn btn-solid cta-main-btn">
+          <span>{{ translationService.translate('cta.btn') }}</span>
+          <i class="fa-solid fa-arrow-left arrow-dir"></i>
+        </a>
+      </div>
+    </div>
   </div>
 </section>

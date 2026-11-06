@@ -1,6 +1,7 @@
 <header [class.scrolled]="isScrolled">
-  <div class="nav">
+  <div class="site-header-nav">
     <a routerLink="/" class="logo-text">
+      <img [src]="getLogoUrl()" alt="Media Glow" class="brand-logo-img" />
       <span class="brand-name">{{ translationService.translate('brand') }}</span>
       <span class="studio-badge">{{ getStudioBadge() }}</span>
       <span class="dot"></span>
@@ -16,6 +17,18 @@
     </nav>
 
     <div class="nav-actions">
+      <!-- Dark / Light Mode Switcher -->
+      <button 
+        type="button" 
+        class="theme-toggle-btn" 
+        (click)="toggleTheme()" 
+        [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        aria-label="Toggle Dark/Light Mode"
+      >
+        <i class="fa-solid" [class.fa-sun]="themeService.isDark()" [class.fa-moon]="!themeService.isDark()"></i>
+      </button>
+
+      <!-- Language Switcher Pill -->
       <div class="lang-pill" (click)="toggleLang()">
         <span [class.active]="translationService.currentLang() === 'ar'">AR</span>
         <span class="divider">/</span>
@@ -35,6 +48,24 @@
 
   <!-- Mobile Drawer -->
   <div class="mobile-menu" *ngIf="isMenuOpen">
+    <div class="mobile-controls-row">
+      <div class="lang-pill" (click)="toggleLang()">
+        <span [class.active]="translationService.currentLang() === 'ar'">AR</span>
+        <span class="divider">/</span>
+        <span [class.active]="translationService.currentLang() === 'en'">EN</span>
+      </div>
+
+      <button 
+        type="button" 
+        class="theme-toggle-btn" 
+        (click)="toggleTheme()" 
+        [title]="themeService.isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        aria-label="Toggle Dark/Light Mode"
+      >
+        <i class="fa-solid" [class.fa-sun]="themeService.isDark()" [class.fa-moon]="!themeService.isDark()"></i>
+      </button>
+    </div>
+
     <a routerLink="/" (click)="closeMenu()">{{ translationService.translate('nav.home') }}</a>
     <a routerLink="/services" (click)="closeMenu()">{{ translationService.translate('nav.services') }}</a>
     <a routerLink="/portfolio" (click)="closeMenu()">{{ translationService.translate('nav.work') }}</a>

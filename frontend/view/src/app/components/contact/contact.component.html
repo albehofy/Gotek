@@ -4,8 +4,8 @@
 
 <section class="contact-hero">
   <div class="wrap">
-    <div class="eyebrow">
-      <span class="dash"></span>
+    <div class="badge-award">
+      <i class="fa-solid fa-headset icon-twinkle"></i>
       <span>{{ getHeroEyebrow() }}</span>
     </div>
 
@@ -23,31 +23,65 @@
   <div class="wrap contact-grid">
     <!-- Left / Details Column -->
     <div class="contact-info">
-      <div class="info-item">
-        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</span>
-        <a [href]="'mailto:' + getEmail()" dir="ltr" class="info-val">{{ getEmail() }}</a>
+      <div class="info-item card-interactive">
+        <div class="info-icon-badge icon-badge">
+          <i class="fa-solid fa-envelope-open-text"></i>
+        </div>
+        <div class="info-text">
+          <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</span>
+          <a [href]="'mailto:' + getEmail()" dir="ltr" class="info-val">{{ getEmail() }}</a>
+        </div>
       </div>
 
-      <div class="info-item">
-        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الهاتف والواتساب' : 'Phone & WhatsApp' }}</span>
-        <a [href]="'tel:' + getPhone()" dir="ltr" class="info-val">{{ getPhone() }}</a>
+      <div class="info-item card-interactive">
+        <div class="info-icon-badge icon-badge">
+          <i class="fa-solid fa-phone-volume"></i>
+        </div>
+        <div class="info-text">
+          <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الهاتف والواتساب' : 'Phone & WhatsApp' }}</span>
+          <a [href]="'tel:' + getPhone()" dir="ltr" class="info-val">{{ getPhone() }}</a>
+        </div>
       </div>
 
-      <div class="info-item">
-        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الموقع والمقرات' : 'Location' }}</span>
-        <span class="info-val">{{ getLocation() }}</span>
+      <div class="info-item card-interactive">
+        <div class="info-icon-badge icon-badge">
+          <i class="fa-solid fa-location-dot"></i>
+        </div>
+        <div class="info-text">
+          <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'الموقع والمقرات' : 'Location' }}</span>
+          <span class="info-val">{{ getLocation() }}</span>
+        </div>
       </div>
 
-      <div class="info-item mt-24">
-        <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'أوقات العمل' : 'Working Hours' }}</span>
-        <span class="info-val-sub">{{ getWorkingHours() }}</span>
+      <div class="info-item card-interactive">
+        <div class="info-icon-badge icon-badge">
+          <i class="fa-solid fa-clock"></i>
+        </div>
+        <div class="info-text">
+          <span class="info-lbl">{{ translationService.currentLang() === 'ar' ? 'أوقات العمل' : 'Working Hours' }}</span>
+          <span class="info-val-sub">{{ getWorkingHours() }}</span>
+        </div>
+      </div>
+
+      <!-- Quick WhatsApp VIP card -->
+      <div class="whatsapp-direct-card card-interactive">
+        <div class="wd-badge">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>{{ translationService.currentLang() === 'ar' ? 'تواصل فوري مباشر' : 'INSTANT VIP CHANNEL' }}</span>
+        </div>
+        <h4>{{ translationService.currentLang() === 'ar' ? 'تفضل النقاش المباشر؟' : 'Prefer Direct Conversation?' }}</h4>
+        <p>{{ translationService.currentLang() === 'ar' ? 'فريق الإنتاج والاستراتيجية متواجد للرد على استفساراتك وتقديم عروض الأسعار التقديرية فوراً.' : 'Our production strategists are active to discuss your timeline, specs, and preliminary budget.' }}</p>
+        <a [href]="getWhatsAppUrl()" target="_blank" rel="noopener noreferrer" class="btn btn-solid w-100">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>{{ translationService.currentLang() === 'ar' ? 'محادثة عبر واتساب الآن' : 'Start WhatsApp Chat' }}</span>
+        </a>
       </div>
     </div>
 
     <!-- Right / Form Column -->
     <div class="contact-form-wrap">
       <div *ngIf="formSubmitted" class="success-box">
-        <i class="fa-solid fa-circle-check"></i>
+        <i class="fa-solid fa-circle-check icon-pulse"></i>
         <h3>{{ translationService.currentLang() === 'ar' ? 'تم استلام طلبك بنجاح!' : 'Thank You! Message Received.' }}</h3>
         <p>{{ translationService.currentLang() === 'ar' ? 'سيتواصل معك أحد مستشارينا خلال أقل من 24 ساعة لبدء استشارتك المجانية.' : 'Our consulting team will reach out within 24 hours to schedule your free consultation.' }}</p>
       </div>
@@ -91,7 +125,10 @@
 
         <!-- Submit Button -->
         <button type="submit" class="btn btn-solid w-100" [disabled]="submitting">
-          <span *ngIf="!submitting">{{ translationService.translate('cta.btn') }}</span>
+          <span *ngIf="!submitting">
+            <i class="fa-solid fa-paper-plane" style="margin-inline-end: 8px;"></i>
+            {{ translationService.translate('cta.btn') }}
+          </span>
           <span *ngIf="submitting"><i class="fa-solid fa-spinner fa-spin"></i> {{ translationService.currentLang() === 'ar' ? 'جاري الإرسال...' : 'Sending...' }}</span>
         </button>
       </form>

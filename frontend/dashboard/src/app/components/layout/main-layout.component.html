@@ -47,17 +47,17 @@
           <span class="sb-text">نظرة عامة على CRM</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin()" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
+        <a class="sb-item" *ngIf="isAdmin() || isAccountManager()" routerLink="/clients" routerLinkActive="active" data-tooltip="العملاء">
           <span class="sb-icon"><i class="fa-solid fa-users"></i></span>
           <span class="sb-text">العملاء</span>
         </a>
 
-        <a class="sb-item" *ngIf="isAdmin()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
+        <a class="sb-item" *ngIf="isAdmin() || isAccountManager()" routerLink="/deals" routerLinkActive="active" data-tooltip="الصفقات والعقود">
           <span class="sb-icon"><i class="fa-solid fa-handshake"></i></span>
           <span class="sb-text">الصفقات والعقود</span>
         </a>
 
-        <a class="sb-item" routerLink="/tasks" routerLinkActive="active" data-tooltip="لوحة المهام">
+        <a class="sb-item" *ngIf="!isAccountManager()" routerLink="/tasks" routerLinkActive="active" data-tooltip="لوحة المهام">
           <span class="sb-icon"><i class="fa-solid fa-list-check"></i></span>
           <span class="sb-text">{{ isClient() ? 'لوحة المخرجات والمهام' : 'لوحة المهام' }}</span>
         </a>
@@ -78,12 +78,12 @@
         </a>
 
         <!-- Console Section -->
-        <div class="sb-section" *ngIf="!isEmployee() && !isClient()">
+        <div class="sb-section" *ngIf="isAdmin()">
           <i class="fa-solid fa-sliders"></i>
           <span>لوحة التحكم والرسائل</span>
         </div>
 
-        <a class="sb-item" *ngIf="!isEmployee() && !isClient()" [class.active]="isDashboardTabActive('contact-hub')" (click)="navigateToTab('contact-hub')" data-tooltip="مركز الرسائل والطلبات">
+        <a class="sb-item" *ngIf="isAdmin()" [class.active]="isDashboardTabActive('contact-hub')" (click)="navigateToTab('contact-hub')" data-tooltip="مركز الرسائل والطلبات">
           <span class="sb-icon"><i class="fa-solid fa-inbox"></i></span>
           <span class="sb-text">مركز الرسائل والطلبات</span>
           <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>

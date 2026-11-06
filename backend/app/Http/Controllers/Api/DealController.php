@@ -265,9 +265,12 @@ class DealController extends Controller
                 $employeePrice = (float)($tData['employee_price'] ?? 0);
                 $margin = max(0, $clientPrice - $employeePrice);
 
+                $taskDesc = !empty($tData['description']) ? $tData['description'] : ($tData['scope'] ?? '');
+
                 $newTask = Task::create([
                     'title' => $tData['title'],
-                    'description' => $tData['description'] ?? $tData['title'] ?? '',
+                    'description' => $taskDesc,
+                    'scope' => $taskDesc,
                     'deal_id' => $deal->id,
                     'client_id' => $deal->client_id,
                     'department_id' => $targetDeptId,
@@ -752,9 +755,14 @@ class DealController extends Controller
                             $oldTaskClientPrice = (float)$existingTask->client_price;
                             $oldTaskTitle = $existingTask->title;
 
+                            $taskDesc = isset($tData['description']) && $tData['description'] !== '' 
+                                ? $tData['description'] 
+                                : (isset($tData['scope']) && $tData['scope'] !== '' ? $tData['scope'] : $existingTask->description);
+
                             $existingTask->update([
                                 'title' => $tData['title'],
-                                'description' => $tData['description'] ?? $existingTask->description,
+                                'description' => $taskDesc,
+                                'scope' => $taskDesc,
                                 'client_id' => $deal->client_id,
                                 'department_id' => $targetDeptId,
                                 'client_price' => $clientPrice,
@@ -787,10 +795,13 @@ class DealController extends Controller
                             }
                         }
                     } else {
+                        $taskDesc = !empty($tData['description']) ? $tData['description'] : ($tData['scope'] ?? '');
+
                         // Create newly added task
                         $newTask = Task::create([
                             'title' => $tData['title'],
-                            'description' => $tData['description'] ?? $tData['title'] ?? '',
+                            'description' => $taskDesc,
+                            'scope' => $taskDesc,
                             'deal_id' => $deal->id,
                             'client_id' => $deal->client_id,
                             'department_id' => $targetDeptId,

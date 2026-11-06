@@ -18,11 +18,64 @@ export class AboutComponent implements OnInit {
   aboutContent: any = null;
 
   timeline: any[] = [
-    { year: '2018', title: 'البداية في القاهرة', desc: 'انطلقت ميديا جلو كفريق تسويق وتصميم رقمي يركز على النتائج الحقيقية.' },
-    { year: '2020', title: 'التوسع التقني', desc: 'إطلاق قسم هندسة وتطوير المنصات الرقمية وتطبيقات الويب.' },
-    { year: '2023', title: 'التوسع الإقليمي', desc: 'خدمة أكثر من 200 علامة تجارية رائدة في مصر ودول الخليج العربي.' },
-    { year: '2026', title: 'الريادة والحلول المتكاملة', desc: 'بناء حلول نمو شاملة من الهوية وحتى المنصات والحملات القائمة على العائد الاستثماري.' }
+    {
+      year: '2018',
+      title: { ar: 'البداية في القاهرة', en: 'Foundation in Cairo' },
+      desc: {
+        ar: 'انطلقت ميديا جلو كفريق إنتاج وتسويق رقمي يركز على النتائج الحقيقية والتميز البصري.',
+        en: 'Media Glow was founded as a passionate creative production and marketing team.'
+      }
+    },
+    {
+      year: '2020',
+      title: { ar: 'التوسع التقني والإنتاجي', en: 'Production & Tech Scale' },
+      desc: {
+        ar: 'إطلاق قسم الإنتاج السينمائي وهندسة وتطوير المنصات الرقمية المتكاملة.',
+        en: 'Expanded into cinema-grade production sets, commercial films, and bespoke digital platforms.'
+      }
+    },
+    {
+      year: '2023',
+      title: { ar: 'التوسع الإقليمي', en: 'Regional Expansion' },
+      desc: {
+        ar: 'خدمة أكثر من 200 علامة تجارية رائدة في مصر والمملكة العربية السعودية والإمارات.',
+        en: 'Delivered landmark campaigns for 200+ visionary brands across Egypt, KSA, and UAE.'
+      }
+    },
+    {
+      year: '2026',
+      title: { ar: 'الريادة والحلول المتكاملة', en: 'Industry Leadership' },
+      desc: {
+        ar: 'بناء استوديو إعلامي وسينمائي متكامل يقود الحملات الكبرى والأفلام الإعلانية بمعايير عالمية.',
+        en: 'A flagship full-service production powerhouse shaping cinematic culture and digital dominance.'
+      }
+    }
   ];
+
+  getTimelineTitle(t: any): string {
+    if (!t) return '';
+    const lang = this.translationService.currentLang();
+    if (t.title && typeof t.title === 'object') {
+      return t.title[lang] || t.title[lang === 'ar' ? 'en' : 'ar'] || '';
+    }
+    if (t.title_ar || t.title_en) {
+      return (lang === 'en' ? (t.title_en || t.title_ar) : (t.title_ar || t.title_en)) || '';
+    }
+    return typeof t.title === 'string' ? t.title : '';
+  }
+
+  getTimelineDesc(t: any): string {
+    if (!t) return '';
+    const lang = this.translationService.currentLang();
+    const d = t.description || t.desc;
+    if (d && typeof d === 'object') {
+      return d[lang] || d[lang === 'ar' ? 'en' : 'ar'] || '';
+    }
+    if (t.description_ar || t.description_en) {
+      return (lang === 'en' ? (t.description_en || t.description_ar) : (t.description_ar || t.description_en)) || '';
+    }
+    return typeof d === 'string' ? d : '';
+  }
 
   ngOnInit() {
     this.apiService.getAbout().subscribe((res: any) => {
@@ -91,5 +144,82 @@ export class AboutComponent implements OnInit {
       return p.desc[lang] || p.desc.ar || p.desc.en || '';
     }
     return p.desc || '';
+  }
+
+  getPrincipleIcon(p: any, index: number): string {
+    if (p?.icon) return p.icon;
+    const icons = [
+      'fa-solid fa-eye',
+      'fa-solid fa-gem',
+      'fa-solid fa-wand-magic-sparkles',
+      'fa-solid fa-rocket'
+    ];
+    return icons[index % icons.length];
+  }
+
+  getTimelineIcon(t: any, index: number): string {
+    if (t?.icon) return t.icon;
+    const icons = [
+      'fa-solid fa-rocket',
+      'fa-solid fa-laptop-code',
+      'fa-solid fa-earth-americas',
+      'fa-solid fa-crown'
+    ];
+    return icons[index % icons.length];
+  }
+
+  // --- Team Leadership Section ---
+  getTeamMembers(): any[] {
+    const fromSite = this.translationService.siteContent()?.team?.items;
+    if (Array.isArray(fromSite) && fromSite.length > 0) {
+      return fromSite;
+    }
+    return [
+      {
+        name_ar: 'م. أحمد الشريف',
+        name_en: 'Ahmed El-Sherif',
+        role_ar: 'المخرج الإبداعي ومؤسس الاستوديو',
+        role_en: 'Creative Director & Founder',
+        image: '/assets/media-glow-icon.png'
+      },
+      {
+        name_ar: 'د. ليلى فهمي',
+        name_en: 'Dr. Layla Fahmy',
+        role_ar: 'مديرة استراتيجيات النمو والتسويق',
+        role_en: 'Head of Growth Strategy',
+        image: '/assets/media-glow-icon.png'
+      },
+      {
+        name_ar: 'كريم ممدوح',
+        name_en: 'Karim Mamdouh',
+        role_ar: 'مدير التصوير والإنتاج السينمائي',
+        role_en: 'Director of Photography (DoP)',
+        image: '/assets/media-glow-icon.png'
+      }
+    ];
+  }
+
+  getTeamMemberName(m: any): string {
+    if (!m) return '';
+    const lang = this.translationService.currentLang();
+    if (m.name && typeof m.name === 'object') {
+      return m.name[lang] || m.name.ar || m.name.en || '';
+    }
+    if (lang === 'en') {
+      return m.name_en || m.name_ar || m.name || '';
+    }
+    return m.name_ar || m.name_en || m.name || '';
+  }
+
+  getTeamMemberRole(m: any): string {
+    if (!m) return '';
+    const lang = this.translationService.currentLang();
+    if (m.role && typeof m.role === 'object') {
+      return m.role[lang] || m.role.ar || m.role.en || '';
+    }
+    if (lang === 'en') {
+      return m.role_en || m.role_ar || m.role || '';
+    }
+    return m.role_ar || m.role_en || m.role || '';
   }
 }

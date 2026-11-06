@@ -10,18 +10,28 @@ export class TranslationService {
   siteContent = signal<any>({});
 
   constructor() {
-    const savedLang = localStorage.getItem('mediaglow_lang') || 'ar';
+    let savedLang = 'ar';
+    if (typeof localStorage !== 'undefined') {
+      savedLang = localStorage.getItem('mediaglow_lang') || 'ar';
+    }
     this.setLanguage(savedLang);
   }
 
   setLanguage(lang: string) {
     this.currentLang.set(lang);
-    localStorage.setItem('mediaglow_lang', lang);
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    if (typeof document !== 'undefined' && document.body) {
-      document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.body.classList.toggle('lang-en', lang === 'en');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mediaglow_lang', lang);
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.classList.toggle('lang-en', lang === 'en');
+      document.documentElement.classList.toggle('lang-ar', lang === 'ar');
+      if (document.body) {
+        document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.body.classList.toggle('lang-en', lang === 'en');
+        document.body.classList.toggle('lang-ar', lang === 'ar');
+      }
     }
   }
 
@@ -120,6 +130,69 @@ export class TranslationService {
         if (c.btn) {
           if (c.btn.ar) this.setDynamicOverride('ar', 'cta.btn', c.btn.ar);
           if (c.btn.en) this.setDynamicOverride('en', 'cta.btn', c.btn.en);
+        }
+      }
+
+      // Map Services Bento overrides
+      if (content.home?.services_bento) {
+        const b = content.home.services_bento;
+        if (b.eyebrow) {
+          if (b.eyebrow.ar) this.setDynamicOverride('ar', 'services.eyebrow', b.eyebrow.ar);
+          if (b.eyebrow.en) this.setDynamicOverride('en', 'services.eyebrow', b.eyebrow.en);
+        }
+        if (b.title) {
+          if (b.title.ar) this.setDynamicOverride('ar', 'services.title', b.title.ar);
+          if (b.title.en) this.setDynamicOverride('en', 'services.title', b.title.en);
+        }
+        if (b.sub) {
+          if (b.sub.ar) this.setDynamicOverride('ar', 'services.sub', b.sub.ar);
+          if (b.sub.en) this.setDynamicOverride('en', 'services.sub', b.sub.en);
+        }
+        [1, 2, 3, 4].forEach(i => {
+          if (b[`s${i}_title`]) {
+            if (b[`s${i}_title`].ar) this.setDynamicOverride('ar', `services.s${i}.t`, b[`s${i}_title`].ar);
+            if (b[`s${i}_title`].en) this.setDynamicOverride('en', `services.s${i}.t`, b[`s${i}_title`].en);
+          }
+          if (b[`s${i}_desc`]) {
+            if (b[`s${i}_desc`].ar) this.setDynamicOverride('ar', `services.s${i}.d`, b[`s${i}_desc`].ar);
+            if (b[`s${i}_desc`].en) this.setDynamicOverride('en', `services.s${i}.d`, b[`s${i}_desc`].en);
+          }
+        });
+      }
+
+      // Map Workflow overrides
+      if (content.home?.workflow) {
+        const w = content.home.workflow;
+        if (w.eyebrow) {
+          if (w.eyebrow.ar) this.setDynamicOverride('ar', 'process.eyebrow', w.eyebrow.ar);
+          if (w.eyebrow.en) this.setDynamicOverride('en', 'process.eyebrow', w.eyebrow.en);
+        }
+        if (w.title) {
+          if (w.title.ar) this.setDynamicOverride('ar', 'process.title', w.title.ar);
+          if (w.title.en) this.setDynamicOverride('en', 'process.title', w.title.en);
+        }
+        [1, 2, 3, 4].forEach(i => {
+          if (w[`s${i}_title`]) {
+            if (w[`s${i}_title`].ar) this.setDynamicOverride('ar', `process.s${i}.t`, w[`s${i}_title`].ar);
+            if (w[`s${i}_title`].en) this.setDynamicOverride('en', `process.s${i}.t`, w[`s${i}_title`].en);
+          }
+          if (w[`s${i}_desc`]) {
+            if (w[`s${i}_desc`].ar) this.setDynamicOverride('ar', `process.s${i}.d`, w[`s${i}_desc`].ar);
+            if (w[`s${i}_desc`].en) this.setDynamicOverride('en', `process.s${i}.d`, w[`s${i}_desc`].en);
+          }
+        });
+      }
+
+      // Map Services Page overrides
+      if (content.services?.hero) {
+        const s = content.services.hero;
+        if (s.title) {
+          if (s.title.ar) this.setDynamicOverride('ar', 'services.title', s.title.ar);
+          if (s.title.en) this.setDynamicOverride('en', 'services.title', s.title.en);
+        }
+        if (s.desc) {
+          if (s.desc.ar) this.setDynamicOverride('ar', 'services.sub', s.desc.ar);
+          if (s.desc.en) this.setDynamicOverride('en', 'services.sub', s.desc.en);
         }
       }
 

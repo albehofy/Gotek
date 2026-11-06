@@ -179,7 +179,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </div>
 
       <!-- PrimeNG Dialog: Add / Edit Deal -->
-      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="isEditMode ? 'تعديل بيانات ومخرجات الصفقة' : 'إنشاء صفقة وعقد جديد'" [style]="{ width: '92vw', maxWidth: '750px' }">
+      <p-dialog [(visible)]="showAddModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeAddModal()" [header]="isEditMode ? 'تعديل بيانات ومخرجات الصفقة' : 'إنشاء صفقة وعقد جديد'" [style]="{ width: '92vw', maxWidth: '750px' }">
         <form [formGroup]="dealForm" (ngSubmit)="saveDeal()">
           <div class="form-grid" style="padding: 20px 0 10px;">
             <div class="form-group full-width">
@@ -517,7 +517,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </p-dialog>
 
       <!-- PrimeNG Dialog: Payment Modal -->
-      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" [header]="'تسجيل دفعة / قسط: ' + (selectedDeal?.title || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
+      <p-dialog [(visible)]="showPaymentModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closePaymentModal()" [header]="'تسجيل دفعة / قسط: ' + (selectedDeal?.title || '')" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;" *ngIf="selectedDeal">
             <div class="form-group">
@@ -560,7 +560,7 @@ import { ConfirmService } from '../../services/confirm.service';
       </p-dialog>
 
       <!-- PrimeNG Dialog: Quick Add Client Modal -->
-      <p-dialog [(visible)]="showAddClientModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" header="إضافة عميل جديد" [style]="{ width: '92vw', maxWidth: '480px' }">
+      <p-dialog [(visible)]="showAddClientModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeQuickClientModal()" header="إضافة عميل جديد" [style]="{ width: '92vw', maxWidth: '480px' }">
         <form [formGroup]="quickClientForm" (ngSubmit)="saveQuickClient()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
@@ -586,7 +586,7 @@ import { ConfirmService } from '../../services/confirm.service';
             </div>
           </div>
           <div class="dialog-footer-actions">
-            <button type="button" class="btn-dialog-cancel" (click)="showAddClientModal = false">إلغاء</button>
+            <button type="button" class="btn-dialog-cancel" (click)="closeQuickClientModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="quickClientForm.invalid || loading">
               {{ loading ? 'جاري الحفظ...' : 'حفظ وتحديد العميل' }}
             </button>
@@ -1036,7 +1036,8 @@ export class DealsManagementComponent implements OnInit {
     const sanitizedTasks = validTasks.map(t => ({
       id: t.id || null,
       title: t.title,
-      description: t.description || '',
+      description: t.description || t.scope || '',
+      scope: t.description || t.scope || '',
       department_id: t.department_id || null,
       client_price: t.client_price || 0,
       employee_price: t.employee_price || 0,
@@ -1365,7 +1366,8 @@ export class DealsManagementComponent implements OnInit {
         this.dealTasks = (d.tasks || []).map((t: any) => ({
           id: t.id,
           title: t.title || '',
-          description: t.description || '',
+          description: t.description || t.scope || '',
+          scope: t.scope || t.description || '',
           department_id: t.department_id || null,
           client_price: t.client_price || 0,
           employee_price: t.employee_price || 0,
@@ -1450,6 +1452,30 @@ export class DealsManagementComponent implements OnInit {
     this.showAddModal = false;
     this.isEditMode = false;
     this.editingDealId = null;
+    this.dealForm.reset({
+      title: '',
+      status: 'pending',
+      client_id: null,
+      department_id: null,
+      sales_person_id: null,
+      sales_commission_type: 'none',
+      sales_commission_value: 0,
+      total_price: 0,
+      paid_amount: 0,
+      payment_method: 'cash',
+      discount_type: 'none',
+      discount_value: 0,
+      dates_not_specified: false,
+      start_date: '',
+      end_date: '',
+      due_date: '',
+      shooting_date: '',
+      delivery_date: '',
+      description: '',
+      agreed_scope: '',
+      reference_link: ''
+    });
+    this.dealTasks = [];
     this.dealAttachmentFile = null;
     this.briefFile = null;
     this.planFile = null;
@@ -1458,9 +1484,21 @@ export class DealsManagementComponent implements OnInit {
   }
 
   triggerQuickAddClient(): void {
-    this.quickClientForm.reset({ password: 'password123' });
+    this.quickClientForm.reset({ password: 'password123', client_category: 'normal' });
     this.showQuickClientPw = false;
     this.showAddClientModal = true;
+  }
+
+  closeQuickClientModal(): void {
+    this.showAddClientModal = false;
+    this.quickClientForm.reset({
+      name: '',
+      email: '',
+      phone: '',
+      password: 'password123',
+      client_category: 'normal'
+    });
+    this.showQuickClientPw = false;
   }
 
   openPaymentModal(deal: any): void {
@@ -1468,7 +1506,9 @@ export class DealsManagementComponent implements OnInit {
     this.paymentForm.reset({
       amount: deal.remaining_balance,
       payment_date: new Date().toISOString().split('T')[0],
-      payment_method: 'cash'
+      payment_method: 'cash',
+      receipt_ref: '',
+      notes: ''
     });
     this.showPaymentModal = true;
   }
@@ -1476,6 +1516,13 @@ export class DealsManagementComponent implements OnInit {
   closePaymentModal(): void {
     this.showPaymentModal = false;
     this.selectedDeal = null;
+    this.paymentForm.reset({
+      amount: 0,
+      payment_date: new Date().toISOString().split('T')[0],
+      payment_method: 'cash',
+      receipt_ref: '',
+      notes: ''
+    });
   }
 
   formatDatePayload(val: any): string {
