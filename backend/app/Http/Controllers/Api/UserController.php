@@ -647,11 +647,11 @@ class UserController extends Controller
                 ], 422);
             }
         } else {
-            // All deletions inside the system must be by Super Admin only
-            if (!$authUser || !$authUser->isSuperAdmin()) {
+            // All deletions inside the system must be by Super Admin or Admin
+            if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'غير مصرح لك بحذف الحسابات أو العملاء. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                    'message' => 'غير مصرح لك بحذف الحسابات أو العملاء. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
                 ], 403);
             }
         }

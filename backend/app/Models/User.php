@@ -125,10 +125,10 @@ class User extends Authenticatable
     public function canAccessFinance(): bool
     {
         $role = strtolower(str_replace(' ', '_', trim($this->role ?? '')));
-        if (in_array($role, ['super_admin', 'account_manager'])) {
+        if (in_array($role, ['super_admin', 'account_manager', 'admin'])) {
             return true;
         }
-        return $this->hasRole('super_admin') || $this->hasRole('account_manager');
+        return $this->hasRole('super_admin') || $this->hasRole('account_manager') || $this->hasRole('admin');
     }
 
     public function hasRole($roleSlug)

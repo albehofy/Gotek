@@ -665,6 +665,9 @@ class FinanceController extends Controller
 
             $netPayable = max(0, $baseSalary + $taskEarnings + $commissionEarnings - $advances - $deductions + $bonuses);
 
+            // Detailed ledger entries for this employee
+            $employeeLedgerEntries = (clone $lQuery)->with('category')->latest('date')->get();
+
             $payrollList[] = [
                 'employee_id' => $employee->id,
                 'employee_name' => $employee->name,
@@ -692,6 +695,17 @@ class FinanceController extends Controller
                         'deal_title' => $t->deal?->title ?? 'مستقلة',
                         'price' => (float) ($t->employee_price ?? $t->client_price ?? 0),
                         'date' => $t->updated_at ? $t->updated_at->format('Y-m-d') : null
+                    ];
+                }),
+                'ledger_entries' => $employeeLedgerEntries->map(function($e) {
+                    return [
+                        'id' => $e->id,
+                        'date' => $e->date ? (is_string($e->date) ? substr($e->date, 0, 10) : $e->date->format('Y-m-d')) : null,
+                        'type' => $e->type,
+                        'category_name' => $e->category?->name_ar ?? 'عام',
+                        'amount' => (float)$e->amount,
+                        'payment_method' => $e->payment_method,
+                        'description' => $e->description
                     ];
                 })
             ];

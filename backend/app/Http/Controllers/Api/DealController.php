@@ -926,10 +926,10 @@ class DealController extends Controller
     public function destroy(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$this->isSuperAdmin($user)) {
+        if (!$this->isSuperAdmin($user) && $user->role !== 'admin') {
             return response()->json([
                 'status' => 'error',
-                'message' => 'غير مصرح لك بحذف الصفقة. حذف الصفقات مقتصر حصرياً على السوبر أدمن (Super Admin) ولا يحق لمدير النظام حذف الصفقات.'
+                'message' => 'غير مصرح لك بحذف الصفقة. حذف الصفقات مقتصر حصرياً على الإدارة.'
             ], 403);
         }
 

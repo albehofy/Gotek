@@ -19,6 +19,7 @@ Route::get('/storage/{path}', function ($path) {
     return serveAppMediaFile($path);
 })->where('path', '.*');
 
+if (!function_exists('serveAppMediaFile')) {
 function serveAppMediaFile($path) {
     $cleanPath = ltrim($path, '/');
     $fileName = basename($cleanPath);
@@ -100,5 +101,6 @@ function serveAppMediaFile($path) {
     }
 
     return response()->file($filePath, $headers);
+}
 }
 

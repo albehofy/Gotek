@@ -70,14 +70,32 @@ export class MainLayoutComponent implements OnInit {
     }
 
     this.updateActiveTabAndPath();
+    this.redirectRestrictedRolesIfNeeded();
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateActiveTabAndPath();
+      this.redirectRestrictedRolesIfNeeded();
     });
 
     this.loadStats();
+  }
+
+  redirectRestrictedRolesIfNeeded() {
+    const role = this.currentUser?.role;
+    if (['employee', 'department_manager'].includes(role)) {
+      if (!this.currentPath || this.currentPath === 'dashboard' || this.currentPath === '') {
+        this.router.navigate(['/tasks']);
+      }
+    }
+  }
+
+  getLogoRoute(): string[] {
+    if (this.isClient()) return ['/client-portal'];
+    if (this.isEmployee() || this.isDepartmentManager()) return ['/tasks'];
+    if (this.isAccountManager()) return ['/finance'];
+    return ['/dashboard'];
   }
 
   updateActiveTabAndPath() {

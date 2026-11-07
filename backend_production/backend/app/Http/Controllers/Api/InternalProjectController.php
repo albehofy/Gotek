@@ -78,10 +78,10 @@ public function show($id)
 public function destroy($id)
 {
     $authUser = \Illuminate\Support\Facades\Auth::user();
-    if (!$authUser || !$authUser->isSuperAdmin()) {
+    if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
         return response()->json([
             'status' => 'error',
-            'message' => 'غير مصرح لك بحذف المشاريع الداخلية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+            'message' => 'غير مصرح لك بحذف المشاريع الداخلية. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
         ], 403);
     }
 

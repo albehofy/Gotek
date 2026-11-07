@@ -112,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/sub-categories', [DepartmentController::class, 'addSubCategory']);
         Route::put('/sub-categories/{subId}', [DepartmentController::class, 'updateSubCategory']);
         Route::delete('/sub-categories/{subId}', [DepartmentController::class, 'deleteSubCategory']);
+        Route::post('/{id}/assign-employee', [DepartmentController::class, 'assignEmployee']);
         Route::delete('/{id}', [DepartmentController::class, 'destroy']);
     });
 
@@ -141,8 +142,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [RoleController::class, 'destroyRole']);
     });
 
-    // Full Accounting & Finance Routes (Restricted strictly to super_admin and account_manager)
-    Route::prefix('finance')->middleware('role:super_admin,account_manager')->group(function () {
+    // Full Accounting & Finance Routes (Accessible to super_admin, account_manager, and admin)
+    Route::prefix('finance')->middleware('role:super_admin,account_manager,admin')->group(function () {
         Route::get('/summary', [FinanceController::class, 'summary']);
         Route::get('/ledger', [FinanceController::class, 'getLedger']);
         Route::post('/ledger', [FinanceController::class, 'storeLedger']);
@@ -161,32 +162,40 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/payroll', [FinanceController::class, 'getPayrollSummary']);
     });
 
-    // Portfolio Admin Resources
+    // Contact Hub (Messages & Inquiries - strictly super_admin and admin)
+    Route::middleware('role:super_admin,admin')->group(function () {
+        Route::get('contact', [ContactMessageController::class, 'index']);
+        Route::delete('contact/{id}', [ContactMessageController::class, 'destroy']);
+    });
+
+    // Activity logs
     Route::get('/activity-logs', [ActivityController::class, 'index']);
-    Route::apiResource('extras', ExtraController::class)->except(['index', 'show']);
-    Route::post('projects', [ProjectController::class, 'store']);
-    Route::put('projects/{project}', [ProjectController::class, 'update']);
-    Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
-    Route::apiResource('services', ServiceController::class)->except(['index', 'show']);
-    Route::post('about', [AboutController::class, 'store']);
-    Route::post('page-content/{page}', [PageContentController::class, 'store']);
-    Route::post('blogs', [BlogController::class, 'store']);
-    Route::match(['put', 'patch'], 'blogs/{blog}', [BlogController::class, 'update']);
-    Route::delete('blogs/{blog}', [BlogController::class, 'destroy']);
-    Route::post('testimonials', [TestimonialController::class, 'store']);
-    Route::put('testimonials/{testimonial}', [TestimonialController::class, 'update']);
-    Route::delete('testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
-    Route::post('/faqs', [FAQController::class, 'store']);
-    Route::put('/faqs/{faq}', [FAQController::class, 'update']);
-    Route::delete('/faqs/{faq}', [FAQController::class, 'destroy']);
-    Route::post('categories', [CategoryController::class, 'store']);
-    Route::put('categories/{category}', [CategoryController::class, 'update']);
-    Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
-    Route::post('contact-info', [ContactInfoAdminController::class, 'store']);
-    Route::put('contact-info', [ContactInfoAdminController::class, 'update']);
-    Route::delete('contact-info', [ContactInfoAdminController::class, 'destroy']);
-    Route::get('contact', [ContactMessageController::class, 'index']);
-    Route::delete('contact/{id}', [ContactMessageController::class, 'destroy']);
+
+    // Portfolio & Website Management Admin Resources
+    Route::middleware('role:super_admin,admin')->group(function () {
+        Route::apiResource('extras', ExtraController::class)->except(['index', 'show']);
+        Route::post('projects', [ProjectController::class, 'store']);
+        Route::put('projects/{project}', [ProjectController::class, 'update']);
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
+        Route::apiResource('services', ServiceController::class)->except(['index', 'show']);
+        Route::post('about', [AboutController::class, 'store']);
+        Route::post('page-content/{page}', [PageContentController::class, 'store']);
+        Route::post('blogs', [BlogController::class, 'store']);
+        Route::match(['put', 'patch'], 'blogs/{blog}', [BlogController::class, 'update']);
+        Route::delete('blogs/{blog}', [BlogController::class, 'destroy']);
+        Route::post('testimonials', [TestimonialController::class, 'store']);
+        Route::put('testimonials/{testimonial}', [TestimonialController::class, 'update']);
+        Route::delete('testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
+        Route::post('/faqs', [FAQController::class, 'store']);
+        Route::put('/faqs/{faq}', [FAQController::class, 'update']);
+        Route::delete('/faqs/{faq}', [FAQController::class, 'destroy']);
+        Route::post('categories', [CategoryController::class, 'store']);
+        Route::put('categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
+        Route::post('contact-info', [ContactInfoAdminController::class, 'store']);
+        Route::put('contact-info', [ContactInfoAdminController::class, 'update']);
+        Route::delete('contact-info', [ContactInfoAdminController::class, 'destroy']);
+    });
 
     Route::prefix('internal-projects')->group(function () {
         Route::get('/', [InternalProjectController::class, 'index']);

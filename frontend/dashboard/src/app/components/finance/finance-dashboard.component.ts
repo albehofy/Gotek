@@ -251,6 +251,7 @@ import { ConfirmService } from '../../services/confirm.service';
                   <th>التاريخ</th>
                   <th>نوع الحركة</th>
                   <th>التصنيف</th>
+                  <th>الموظف المرتبط</th>
                   <th>طريقة الدفع</th>
                   <th>المبلغ (ج.م)</th>
                   <th>الوصف والبيان</th>
@@ -262,6 +263,10 @@ import { ConfirmService } from '../../services/confirm.service';
                   <td style="color:var(--text-2);">{{ entry.date }}</td>
                   <td><span class="badge" [ngClass]="entry.type === 'income' ? 'badge-e' : 'badge-r'">{{ entry.type === 'income' ? 'إيراد' : 'مصروف' }}</span></td>
                   <td>{{ entry.category?.name_ar || entry.category?.name_en || 'عام' }}</td>
+                  <td style="font-weight:600; color:var(--text);">
+                    <span *ngIf="entry.employee"><i class="fa-solid fa-user" style="color:var(--violet-light); margin-left:4px;"></i>{{ entry.employee.name }}</span>
+                    <span *ngIf="!entry.employee" style="color:var(--text-3); font-size:0.8rem;">-</span>
+                  </td>
                   <td><span class="method-badge">{{ getPaymentMethodLabel(entry.payment_method) }}</span></td>
                   <td style="font-weight:700;" [ngClass]="entry.type === 'income' ? 'text-success' : 'text-danger'">
                     {{ entry.type === 'income' ? '+' : '-' }}{{ entry.amount | number:'1.2-2' }} ج.م
@@ -431,8 +436,21 @@ import { ConfirmService } from '../../services/confirm.service';
       <!-- TAB 5: PAYROLL DUE & EMPLOYEE STATEMENT -->
       <div class="tab-content" *ngIf="activeTab === 'payroll'">
         <div class="section-card glass-panel">
-          <h3 style="font-size:1rem; color:var(--text); font-weight:700;"><i class="fa-solid fa-money-check-dollar" style="color:var(--teal-light);"></i> ملخص المرتبات والمستحقات المالية للموظفين</h3>
-          <p style="font-size:0.78rem; color:var(--text-2); margin-top:4px;">المعادلة: المستحق الصافي = الراتب الأساسي + أرباح المهام + العمولات - السلف - الخصومات + المكافآت</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <div>
+              <h3 style="font-size:1rem; color:var(--text); font-weight:700; margin:0;"><i class="fa-solid fa-money-check-dollar" style="color:var(--teal-light); margin-left:6px;"></i> ملخص المرتبات والمستحقات المالية للموظفين</h3>
+              <p style="font-size:0.78rem; color:var(--text-2); margin-top:4px; margin-bottom:0;">المعادلة: المستحق الصافي = الراتب الأساسي + أرباح المهام + العمولات - السلف - الخصومات + المكافآت</p>
+            </div>
+            <div style="min-width:280px;">
+              <app-prime-picker-select
+                [items]="employees"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="🔍 بحث سريع وعرض كشف حساب موظف..."
+                (onChange)="onQuickEmployeeStatementSelect($event)"
+              ></app-prime-picker-select>
+            </div>
+          </div>
           <div class="table-responsive margin-top">
             <table class="crm-table">
               <thead>
@@ -580,6 +598,16 @@ import { ConfirmService } from '../../services/confirm.service';
                 optionLabel="name"
                 optionValue="id"
                 placeholder="اختر القسم..."
+              ></app-prime-picker-select>
+            </div>
+            <div class="form-group">
+              <label>الموظف المستلم / المرتبط بالحركة</label>
+              <app-prime-picker-select
+                formControlName="employee_id"
+                [items]="employees"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="اختر الموظف (سلفة، حافز، مرتب...)..."
               ></app-prime-picker-select>
             </div>
             <div class="form-group">
@@ -756,12 +784,51 @@ import { ConfirmService } from '../../services/confirm.service';
             </div>
           </div>
 
+          <!-- Direct Ledger Transactions (سجل السلف، الحوافز، الخصومات) -->
+          <div style="margin-top:20px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; padding:16px;">
+            <h4 style="font-size:0.95rem; font-weight:800; color:var(--text); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-receipt" style="color:var(--amber);"></i> سجل القيود المالية المباشرة (السلف، الحوافز، الخصومات، الرواتب)
+            </h4>
+
+            <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
+              <table class="crm-table">
+                <thead>
+                  <tr>
+                    <th>التاريخ</th>
+                    <th>التصنيف</th>
+                    <th>نوع الحركة</th>
+                    <th>طريقة الدفع</th>
+                    <th>المبلغ (ج.م)</th>
+                    <th>البيان والملاحظات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let le of selectedEmployeeStatement.ledger_entries">
+                    <td style="color:var(--text-2); font-size:0.85rem;">{{ le.date }}</td>
+                    <td style="font-weight:700;">{{ le.category_name }}</td>
+                    <td><span class="badge" [ngClass]="le.type === 'income' ? 'badge-e' : 'badge-r'">{{ le.type === 'income' ? 'إيراد / استرداد' : 'صرف / استحقاق' }}</span></td>
+                    <td><span class="method-badge">{{ getPaymentMethodLabel(le.payment_method) }}</span></td>
+                    <td style="font-weight:800;" [ngClass]="le.type === 'income' ? 'text-success' : 'text-danger'">
+                      {{ le.type === 'income' ? '+' : '-' }}{{ le.amount | number:'1.2-2' }} ج.م
+                    </td>
+                    <td style="color:var(--text-2); font-size:0.85rem;">{{ le.description || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="!selectedEmployeeStatement.ledger_entries || selectedEmployeeStatement.ledger_entries.length === 0">
+                    <td colspan="6" style="text-align:center; padding:18px; color:var(--text-2); font-size:0.85rem;">
+                      لا توجد قيود مالية مباشرة مسجلة باسم هذا الموظف.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Work Log Table -->
-          <h4 style="font-size:0.95rem; font-weight:800; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <h4 style="font-size:0.95rem; font-weight:800; color:var(--text); margin-top:24px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
             <i class="fa-solid fa-list-check" style="color:var(--violet-light);"></i> سجل المهام والأعمال المنجزة خلال الفترة ({{ selectedEmployeeStatement.tasks_count }} مهمة)
           </h4>
 
-          <div class="table-responsive" style="max-height: 340px; overflow-y: auto;">
+          <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
             <table class="crm-table">
               <thead>
                 <tr>
@@ -1679,6 +1746,28 @@ export class FinanceDashboardComponent implements OnInit {
     this.showStatementModal = true;
   }
 
+  onQuickEmployeeStatementSelect(eventOrId: any): void {
+    const empId = typeof eventOrId === 'object' && eventOrId && eventOrId.value !== undefined ? eventOrId.value : eventOrId;
+    if (!empId) return;
+    const found = this.payrollSummary.find((p: any) => Number(p.employee_id) === Number(empId));
+    if (found) {
+      this.selectEmployeeForStatement(found);
+    } else {
+      this.apiService.getPayrollSummary({ employee_id: empId }).subscribe({
+        next: (res: any) => {
+          if (res && res.data && res.data.length > 0) {
+            this.selectEmployeeForStatement(res.data[0]);
+          } else {
+            this.toastService.warning('لا توجد بيانات مالية مسجلة لهذا الموظف');
+          }
+        },
+        error: () => {
+          this.toastService.warning('تعذر تحميل بيانات الموظف المالي');
+        }
+      });
+    }
+  }
+
   loadPayrollSummary(): void {
     const params: any = {};
     if (this.filterEmployeeId) params.employee_id = this.filterEmployeeId;
@@ -1809,6 +1898,7 @@ export class FinanceDashboardComponent implements OnInit {
       amount: [0, [Validators.required, Validators.min(0.01)]],
       payment_method: ['cash', Validators.required],
       department_id: [null],
+      employee_id: [null],
       date: [new Date().toISOString().split('T')[0], Validators.required],
       description: ['']
     });
@@ -1869,6 +1959,7 @@ export class FinanceDashboardComponent implements OnInit {
       amount: 0,
       date: new Date().toISOString().split('T')[0],
       department_id: null,
+      employee_id: null,
       client_id: null,
       category_id: null,
       description: '',
@@ -1891,6 +1982,7 @@ export class FinanceDashboardComponent implements OnInit {
       amount: entry.amount,
       payment_method: entry.payment_method || 'cash',
       department_id: entry.department_id || (entry.department ? entry.department.id : null),
+      employee_id: entry.employee_id || (entry.employee ? entry.employee.id : null),
       date: entry.date,
       description: entry.description || ''
     });

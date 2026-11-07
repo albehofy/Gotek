@@ -22,6 +22,14 @@ class DepartmentController extends Controller
 
     public function store(Request $request)
     {
+        $authUser = Auth::user();
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بإنشاء الأقسام. تقتصر الصلاحية على مدير النظام والسوبر أدمن.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -40,6 +48,11 @@ class DepartmentController extends Controller
             'partner_name' => $validated['partner_name'] ?? null,
             'partner_percentage' => $validated['partner_percentage'] ?? 0,
         ]);
+
+        // Auto sync manager role & department
+        if (!empty($validated['manager_id'])) {
+            $this->syncManagerRoleAndPermissions($department, (int)$validated['manager_id']);
+        }
 
         if (!empty($validated['sub_categories'])) {
             foreach ($validated['sub_categories'] as $subName) {
@@ -64,7 +77,16 @@ class DepartmentController extends Controller
 
     public function update(Request $request, $id)
     {
+        $authUser = Auth::user();
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لمدير القسم بتعديل بيانات الأقسام أو إدارتها. تقتصر الصلاحية على مدير النظام والسوبر أدمن.'
+            ], 403);
+        }
+
         $department = Department::findOrFail($id);
+        $oldManagerId = $department->manager_id ? (int)$department->manager_id : null;
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -77,7 +99,80 @@ class DepartmentController extends Controller
 
         $department->update($validated);
 
+        $newManagerId = !empty($validated['manager_id']) ? (int)$validated['manager_id'] : null;
+
+        if ($oldManagerId !== $newManagerId) {
+            // Revert old manager if not managing other departments
+            if ($oldManagerId) {
+                $managingOther = Department::where('manager_id', $oldManagerId)->where('id', '!=', $department->id)->exists();
+                if (!$managingOther) {
+                    $oldMgr = User::find($oldManagerId);
+                    if ($oldMgr && $oldMgr->role === 'department_manager') {
+                        $oldMgr->update(['role' => 'employee']);
+                    }
+                }
+            }
+
+            // Upgrade new manager
+            if ($newManagerId) {
+                $this->syncManagerRoleAndPermissions($department, $newManagerId);
+            }
+        }
+
         return response()->json(['status' => 'success', 'data' => $department->load(['subCategories', 'manager'])]);
+    }
+
+    /**
+     * Assign existing employee to department
+     */
+    public function assignEmployee(Request $request, $id)
+    {
+        $authUser = Auth::user();
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'غير مصرح لك بإضافة أو نقل موظفين بين الأقسام.'
+            ], 403);
+        }
+
+        $department = Department::findOrFail($id);
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        $user = User::findOrFail($validated['user_id']);
+        $user->update(['department_id' => $department->id]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم تعيين الموظف للقسم بنجاح',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Automatically upgrade user to department_manager and link department
+     */
+    protected function syncManagerRoleAndPermissions(Department $department, int $managerId): void
+    {
+        $manager = User::find($managerId);
+        if (!$manager) return;
+
+        // Upgrade role to department_manager if not higher admin
+        if (!in_array($manager->role, ['super_admin', 'admin'])) {
+            $manager->update([
+                'role' => 'department_manager',
+                'department_id' => $department->id
+            ]);
+
+            $deptMgrRole = \App\Models\Role::where('slug', 'department_manager')->first();
+            if ($deptMgrRole) {
+                $manager->roles()->syncWithoutDetaching([$deptMgrRole->id]);
+            }
+        } else {
+            // Admin or Super Admin managing department - keep their department_id assigned
+            $manager->update(['department_id' => $department->id]);
+        }
     }
 
     public function addSubCategory(Request $request, $id)
@@ -120,10 +215,10 @@ class DepartmentController extends Controller
     public function deleteSubCategory($subId)
     {
         $authUser = Auth::user();
-        if (!$authUser || !$authUser->isSuperAdmin()) {
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'غير مصرح لك بحذف التصنيفات الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                'message' => 'غير مصرح لك بحذف التصنيفات الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
             ], 403);
         }
 
@@ -135,10 +230,10 @@ class DepartmentController extends Controller
     public function destroy($id)
     {
         $authUser = Auth::user();
-        if (!$authUser || !$authUser->isSuperAdmin()) {
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'غير مصرح لك بحذف الأقسام. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                'message' => 'غير مصرح لك بحذف الأقسام. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
             ], 403);
         }
 

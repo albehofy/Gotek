@@ -35,10 +35,10 @@ import { ConfirmService } from '../../services/confirm.service';
           </div>
         </div>
         <div class="header-actions">
-          <button class="btn-glass-purple" *ngIf="isManagerOrAdmin()" (click)="openAddEmployeeModal()">
+          <button class="btn-glass-purple" *ngIf="isAdmin()" (click)="openAddEmployeeModal()">
             <i class="fa-solid fa-user-plus"></i> إضافة موظف جديد
           </button>
-          <button class="btn-primary-gradient" *ngIf="isManagerOrAdmin()" (click)="openAddModal()">
+          <button class="btn-primary-gradient" *ngIf="isAdmin()" (click)="openAddModal()">
             <i class="fa-solid fa-plus"></i> إضافة قسم جديد
           </button>
         </div>
@@ -75,9 +75,9 @@ import { ConfirmService } from '../../services/confirm.service';
               <div class="mgr-details">
                 <span class="mgr-label">مدير القسم / المسؤول:</span>
                 <span class="mgr-name" *ngIf="dept.manager">{{ dept.manager.name }}</span>
-                <span class="mgr-empty" *ngIf="!dept.manager" (click)="openEditModal(dept)">غير محدد (انقر لتعيين مدير)</span>
+                <span class="mgr-empty" *ngIf="!dept.manager" (click)="isAdmin() && openEditModal(dept)">غير محدد (انقر لتعيين مدير)</span>
               </div>
-              <button class="btn-mgr-edit" *ngIf="isManagerOrAdmin()" (click)="openEditModal(dept)" title="تغيير مدير القسم">
+              <button class="btn-mgr-edit" *ngIf="isAdmin()" (click)="openEditModal(dept)" title="تغيير مدير القسم">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>
             </div>
@@ -88,7 +88,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 <span class="section-title">
                   <i class="fa-solid fa-users"></i> الموظفون بالقسم ({{ dept.employees?.length || 0 }})
                 </span>
-                <button class="btn-box-action" *ngIf="isManagerOrAdmin()" (click)="openAddEmployeeModal(dept.id)">
+                <button class="btn-box-action" *ngIf="isAdmin()" (click)="openAddEmployeeModal(dept.id)">
                   <i class="fa-solid fa-plus"></i> موظف
                 </button>
               </div>
@@ -136,7 +136,7 @@ import { ConfirmService } from '../../services/confirm.service';
             </div>
 
             <!-- Card Actions Row -->
-            <div class="card-footer-actions" *ngIf="isManagerOrAdmin()">
+            <div class="card-footer-actions" *ngIf="isAdmin()">
               <button class="btn-action edit" (click)="openEditModal(dept)">
                 <i class="fa-solid fa-pen-to-square"></i> تعديل القسم
               </button>
@@ -214,9 +214,53 @@ import { ConfirmService } from '../../services/confirm.service';
         </form>
       </p-dialog>
 
-      <!-- PrimeNG Dialog: Add Employee -->
-      <p-dialog [(visible)]="showEmployeeModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeEmployeeModal()" header="إضافة موظف جديد وتعيين قسمه" [style]="{ width: '92vw', maxWidth: '560px' }">
-        <form [formGroup]="empForm" (ngSubmit)="saveEmployee()">
+      <!-- PrimeNG Dialog: Add Employee / Assign to Dept -->
+      <p-dialog [(visible)]="showEmployeeModal" [modal]="true" [dismissableMask]="true" [appendTo]="'body'" (onHide)="closeEmployeeModal()" header="إضافة أو إسناد موظف للقسم" [style]="{ width: '92vw', maxWidth: '560px' }">
+        <!-- Mode Switcher Tabs -->
+        <div style="display:flex; gap:8px; margin-bottom:16px; background:rgba(255,255,255,0.04); padding:4px; border-radius:8px; border:1px solid var(--border);">
+          <button type="button" (click)="employeeAddMode = 'existing'" style="flex:1; padding:9px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:700; font-size:0.85rem; transition:all 0.2s;" [style.background]="employeeAddMode === 'existing' ? 'var(--violet)' : 'transparent'" [style.color]="employeeAddMode === 'existing' ? '#fff' : 'var(--text-2)'">
+            <i class="fa-solid fa-user-check"></i> اختيار موظف مسجل بالنظام
+          </button>
+          <button type="button" (click)="employeeAddMode = 'new'" style="flex:1; padding:9px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:700; font-size:0.85rem; transition:all 0.2s;" [style.background]="employeeAddMode === 'new' ? 'var(--violet)' : 'transparent'" [style.color]="employeeAddMode === 'new' ? '#fff' : 'var(--text-2)'">
+            <i class="fa-solid fa-user-plus"></i> إنشاء موظف جديد
+          </button>
+        </div>
+
+        <!-- MODE 1: Assign Existing Employee -->
+        <div *ngIf="employeeAddMode === 'existing'" style="padding:10px 0; display:flex; flex-direction:column; gap:16px;">
+          <div class="form-group">
+            <label>الموظف المراد إسناده للقسم <span class="required">*</span></label>
+            <app-prime-picker-select
+              [(ngModel)]="selectedExistingEmployeeId"
+              [items]="employees"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="ابحث عن الموظف بالاسم أو البريد..."
+            ></app-prime-picker-select>
+            <small style="color:var(--text-2); font-size:0.75rem; margin-top:4px;">ابحث واختر الموظف لإسناده مباشرة إلى هذا القسم.</small>
+          </div>
+
+          <div class="form-group" *ngIf="!targetDeptId">
+            <label>القسم المسند إليه الموظف <span class="required">*</span></label>
+            <app-prime-picker-select
+              [(ngModel)]="targetDeptId"
+              [items]="departments"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="اختر القسم..."
+            ></app-prime-picker-select>
+          </div>
+
+          <div class="dialog-footer-actions">
+            <button type="button" class="btn-dialog-cancel" (click)="closeEmployeeModal()">إلغاء</button>
+            <button type="button" class="btn-dialog-submit" [disabled]="!selectedExistingEmployeeId || !targetDeptId || loading" (click)="assignExistingEmployee()">
+              {{ loading ? 'جاري الإسناد...' : 'إسناد الموظف للقسم' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- MODE 2: Create New Employee -->
+        <form *ngIf="employeeAddMode === 'new'" [formGroup]="empForm" (ngSubmit)="saveEmployee()">
           <div style="padding:10px 0; display:flex; flex-direction:column; gap:14px;">
             <div class="form-group">
               <label>اسم الموظف الكامل <span class="required">*</span></label>
@@ -273,7 +317,7 @@ import { ConfirmService } from '../../services/confirm.service';
           <div class="dialog-footer-actions">
             <button type="button" class="btn-dialog-cancel" (click)="closeEmployeeModal()">إلغاء</button>
             <button type="submit" class="btn-dialog-submit" [disabled]="empForm.invalid || loading">
-              {{ loading ? 'جاري الإضافة...' : 'إضافة الموظف' }}
+              {{ loading ? 'جاري الإضافة...' : 'إنشاء وإضافة الموظف' }}
             </button>
           </div>
         </form>
@@ -690,6 +734,10 @@ export class DepartmentsSectionsComponent implements OnInit {
   selectedDept: any = null;
   loading = false;
 
+  employeeAddMode: 'existing' | 'new' = 'existing';
+  selectedExistingEmployeeId: number | null = null;
+  targetDeptId: number | null = null;
+
   deptForm!: FormGroup;
   subForm!: FormGroup;
   empForm!: FormGroup;
@@ -707,6 +755,10 @@ export class DepartmentsSectionsComponent implements OnInit {
 
   isSuperAdmin(): boolean {
     return (this.currentUser?.role || '').toLowerCase() === 'super_admin';
+  }
+
+  isAdmin(): boolean {
+    return ['super_admin', 'admin'].includes((this.currentUser?.role || '').toLowerCase());
   }
 
   isEmployee(): boolean { return this.currentUser?.role === 'employee'; }
@@ -864,6 +916,9 @@ export class DepartmentsSectionsComponent implements OnInit {
 
   closeEmployeeModal(): void {
     this.showEmployeeModal = false;
+    this.selectedExistingEmployeeId = null;
+    this.targetDeptId = null;
+    this.employeeAddMode = 'existing';
     this.empForm.reset({
       role: 'employee',
       department_id: null,
@@ -876,10 +931,33 @@ export class DepartmentsSectionsComponent implements OnInit {
 
   openAddEmployeeModal(deptId?: number): void {
     this.closeEmployeeModal();
+    this.targetDeptId = deptId || null;
+    this.employeeAddMode = 'existing';
     this.empForm.patchValue({
       department_id: deptId || null
     });
     this.showEmployeeModal = true;
+  }
+
+  assignExistingEmployee(): void {
+    if (!this.selectedExistingEmployeeId || !this.targetDeptId) {
+      this.toastService.warning('يرجى اختيار الموظف والقسم أولاً');
+      return;
+    }
+    this.loading = true;
+
+    this.apiService.updateUserDepartment(this.selectedExistingEmployeeId, this.targetDeptId).subscribe({
+      next: () => {
+        this.loading = false;
+        this.toastService.success('تم إسناد الموظف إلى القسم بنجاح');
+        this.closeEmployeeModal();
+        this.loadData();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastService.error(err.error?.message || 'تعذر إسناد الموظف للقسم');
+      }
+    });
   }
 
   saveEmployee(): void {

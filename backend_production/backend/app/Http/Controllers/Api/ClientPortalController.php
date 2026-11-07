@@ -147,8 +147,8 @@ class ClientPortalController extends Controller
             'note' => $validated['note']
         ]);
 
-        // Update task status to changes_requested if client leaves note
-        $task->update(['status' => 'changes_requested']);
+        // Update task status back to in_review if client leaves notes / requests revisions
+        $task->update(['status' => 'in_review']);
 
         // Send notification to department manager, assigned staff & task creator (excluding the acting client)
         $recipients = $task->users->pluck('id')->toArray();

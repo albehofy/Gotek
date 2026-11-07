@@ -21,7 +21,7 @@
     <div class="sb-content">
       <!-- Logo & Desktop Toggle -->
       <div class="sb-logo-wrapper">
-        <a [routerLink]="['/dashboard']" class="sb-logo">
+        <a [routerLink]="getLogoRoute()" class="sb-logo">
           <div class="sb-logo-badge"><i class="fa-solid fa-bolt"></i></div>
           <div class="sb-logo-details">
             <div class="sb-logo-text">Media<span>Glow</span></div>
@@ -89,8 +89,8 @@
           <span class="sb-badge" *ngIf="overviewStats.inquiries > 0">{{ overviewStats.inquiries }}</span>
         </a>
 
-        <!-- Website Section Dropdown (Admins only) -->
-        <div class="nav-dropdown" [class.open]="websiteMenuOpen" *ngIf="isAdmin()">
+        <!-- Website Section Dropdown (Super Admins only) -->
+        <div class="nav-dropdown" [class.open]="websiteMenuOpen" *ngIf="isSuperAdmin()">
           <div class="sb-item" (click)="toggleWebsiteMenu()" style="cursor:pointer;" data-tooltip="إدارة الموقع الإلكتروني">
             <span class="sb-icon"><i class="fa-solid fa-globe"></i></span>
             <span class="sb-text">إدارة الموقع الإلكتروني</span>

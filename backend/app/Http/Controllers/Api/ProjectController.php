@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
@@ -278,10 +279,10 @@ class ProjectController extends Controller
     // 5. حذف مشروع وصوره نهائياً
     public function destroy(Project $project) {
         $authUser = Auth::user();
-        if (!$authUser || !$authUser->isSuperAdmin()) {
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'غير مصرح لك بحذف المشاريع. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                'message' => 'غير مصرح لك بحذف المشاريع. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
             ], 403);
         }
 

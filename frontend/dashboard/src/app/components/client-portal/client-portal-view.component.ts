@@ -408,10 +408,11 @@ import { TextareaModule } from 'primeng/textarea';
                     </div>
                   </ng-container>
                   <ng-container *ngIf="!isImage(att)">
-                    <div class="file-icon-box">
-                      <i class="fa-solid fa-file-lines"></i>
+                    <div class="file-icon-box" [class.is-pdf]="isPdf(att)">
+                      <i [class]="getFileIconClass(att)"></i>
                     </div>
-                    <span class="att-doc-name">{{ att.file_name || 'مستند' }}</span>
+                    <span class="att-file-badge" *ngIf="isPdf(att)">PDF</span>
+                    <span class="att-doc-name" [title]="att.file_name || 'مستند'">{{ att.file_name || 'مستند' }}</span>
                   </ng-container>
                 </div>
               </div>
@@ -663,6 +664,27 @@ import { TextareaModule } from 'primeng/textarea';
     .att-thumb { width: 58px; height: 58px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
     .att-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .file-icon-box { color: var(--violet-light); font-size: 1.25rem; }
+    .file-icon-box.is-pdf { color: #ef4444; }
+    .att-thumb-interactive:has(.is-pdf) {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .att-thumb-interactive:has(.is-pdf):hover {
+      border-color: #ef4444;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    }
+    .att-file-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 4px;
+      line-height: 1;
+    }
 
     .ct-notes-thread { margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
     .thread-head { font-size: 0.76rem; font-weight: 700; color: var(--text-2); display: block; margin-bottom: 4px; }
@@ -866,6 +888,26 @@ export class ClientPortalViewComponent implements OnInit {
       event.preventDefault();
     }
     if (url) window.open(url, '_blank');
+  }
+
+  isPdf(att: any): boolean {
+    if (!att) return false;
+    const type = (att.file_type || att.mime_type || '').toLowerCase();
+    const name = (att.file_name || att.name || att.file_path || att.url || '').toLowerCase();
+    return type.includes('pdf') || name.endsWith('.pdf') || name.includes('.pdf?');
+  }
+
+  getFileIconClass(att: any): string {
+    if (this.isPdf(att)) return 'fa-solid fa-file-pdf';
+    const type = (att?.file_type || att?.mime_type || '').toLowerCase();
+    const name = (att?.file_name || att?.name || '').toLowerCase();
+    if (type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx')) return 'fa-solid fa-file-word';
+    if (type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return 'fa-solid fa-file-excel';
+    if (type.includes('presentation') || type.includes('powerpoint') || name.endsWith('.ppt') || name.endsWith('.pptx')) return 'fa-solid fa-file-powerpoint';
+    if (type.includes('video') || name.endsWith('.mp4') || name.endsWith('.mov') || name.endsWith('.avi')) return 'fa-solid fa-file-video';
+    if (type.includes('audio') || name.endsWith('.mp3') || name.endsWith('.wav')) return 'fa-solid fa-file-audio';
+    if (name.endsWith('.zip') || name.endsWith('.rar') || name.endsWith('.7z')) return 'fa-solid fa-file-zipper';
+    return 'fa-solid fa-file-lines';
   }
 
   getFileUrl(att: any): string {

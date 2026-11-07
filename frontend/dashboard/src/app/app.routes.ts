@@ -19,7 +19,7 @@ export const routes: Routes = [
       },
       { 
         path: 'dashboard', 
-        canActivate: [roleGuard(['super_admin', 'admin', 'department_manager', 'employee'])],
+        canActivate: [roleGuard(['super_admin', 'admin'])],
         loadComponent: () => import('./components/controller-dashboard/controller-dashboard.component').then(m => m.ControllerDashboardComponent) 
       },
       { 
@@ -54,7 +54,7 @@ export const routes: Routes = [
       },
       { 
         path: 'finance', 
-        canActivate: [roleGuard(['super_admin', 'account_manager'])],
+        canActivate: [roleGuard(['super_admin', 'admin', 'account_manager'])],
         loadComponent: () => import('./components/finance/finance-dashboard.component').then(m => m.FinanceDashboardComponent) 
       },
       { 
@@ -67,10 +67,10 @@ export const routes: Routes = [
         canActivate: [roleGuard(['super_admin', 'admin'])],
         loadComponent: () => import('./components/roles/roles-management.component').then(m => m.RolesManagementComponent) 
       },
-      // ── Portfolio Management ────────────────────────────────────────────────
+      // ── Portfolio Management (Strictly super_admin only) ──────────────────────────────────
       {
         path: 'portfolio',
-        canActivate: [roleGuard(['super_admin', 'admin'])],
+        canActivate: [roleGuard(['super_admin'])],
         loadComponent: () => import('./components/portfolio/portfolio-management.component').then(m => m.PortfolioManagementComponent),
         children: [
           { path: '', redirectTo: 'overview', pathMatch: 'full' },

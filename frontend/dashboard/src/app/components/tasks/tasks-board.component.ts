@@ -276,16 +276,16 @@ import { ConfirmService } from '../../services/confirm.service';
           <!-- Card Top Info & Badges -->
           <div class="client-card-head">
             <div class="client-card-head-top">
-              <span class="client-badge badge-approved" *ngIf="task.status === 'done' || task.status === 'approved'">
+              <span class="client-badge badge-approved" *ngIf="task.status === 'done' || task.status === 'approved' || task.status === 'completed'">
                 <i class="fa-solid fa-circle-check"></i> مكتمل ومعتمد
               </span>
-              <span class="client-badge badge-pending-approval" *ngIf="task.status === 'client_review' || task.status === 'in_review'">
+              <span class="client-badge badge-pending-approval" *ngIf="task.status === 'client_review' || task.status === 'client_feedback'">
                 <i class="fa-solid fa-clock-rotate-left fa-spin-pulse"></i> بانتظار موافقتك واعتمادك
               </span>
-              <span class="client-badge badge-feedback" *ngIf="task.status === 'client_feedback'">
-                <i class="fa-solid fa-comments"></i> تم طلب تعديلات
+              <span class="client-badge badge-in-review" *ngIf="task.status === 'in_review'" style="background:rgba(6,182,212,0.15); color:#22d3ee; border:1px solid rgba(6,182,212,0.3); font-weight:700;">
+                <i class="fa-solid fa-magnifying-glass"></i> قيد المراجعة الفنية
               </span>
-              <span class="client-badge badge-in-progress" *ngIf="task.status !== 'done' && task.status !== 'approved' && task.status !== 'client_review' && task.status !== 'in_review' && task.status !== 'client_feedback'">
+              <span class="client-badge badge-in-progress" *ngIf="!['done', 'approved', 'completed', 'client_review', 'client_feedback', 'in_review'].includes(task.status)">
                 <i class="fa-solid fa-rotate fa-spin"></i> قيد التنفيذ
               </span>
 
@@ -344,10 +344,11 @@ import { ConfirmService } from '../../services/confirm.service';
                     </div>
                   </ng-container>
                   <ng-container *ngIf="!isImage(att)">
-                    <div class="att-file-icon">
-                      <i class="fa-solid fa-file-lines"></i>
+                    <div class="att-file-icon" [class.is-pdf]="isPdf(att)">
+                      <i [class]="getFileIconClass(att)"></i>
                     </div>
-                    <span class="att-file-name">{{ att.file_name || 'ملف مرفق' }}</span>
+                    <span class="att-file-badge" *ngIf="isPdf(att)">PDF</span>
+                    <span class="att-file-name" [title]="att.file_name || 'ملف مرفق'">{{ att.file_name || 'ملف مرفق' }}</span>
                   </ng-container>
                 </div>
               </div>
@@ -356,8 +357,8 @@ import { ConfirmService } from '../../services/confirm.service';
 
           <!-- Card Footer Actions -->
           <div class="client-card-footer" (click)="$event.stopPropagation()">
-            <!-- If task is strictly in client_review stage -->
-            <div class="client-actions-grid" *ngIf="task.status === 'client_review'">
+            <!-- If task is in client review / feedback stage -->
+            <div class="client-actions-grid" *ngIf="task.status === 'client_review' || task.status === 'client_feedback'">
               <button 
                 type="button" 
                 class="btn-client-approve" 
@@ -374,11 +375,11 @@ import { ConfirmService } from '../../services/confirm.service';
               </button>
             </div>
 
-            <!-- If task is in progress / internal review before client review -->
-            <div class="client-approved-bar" *ngIf="task.status !== 'client_review' && task.status !== 'done' && task.status !== 'approved'">
+            <!-- If task is in progress / technical review before client review -->
+            <div class="client-approved-bar" *ngIf="task.status !== 'client_review' && task.status !== 'client_feedback' && task.status !== 'done' && task.status !== 'approved' && task.status !== 'completed'">
               <div class="approved-status-text" style="color:var(--text-2);">
                 <i class="fa-solid fa-clock-rotate-left" style="color:#fbbf24;"></i>
-                <span>قيد التنفيذ والمراجعة الفنية</span>
+                <span>{{ task.status === 'in_review' ? 'قيد المراجعة الفنية من مدير القسم' : 'قيد التنفيذ والعمليات' }}</span>
               </div>
             </div>
 
@@ -672,8 +673,8 @@ import { ConfirmService } from '../../services/confirm.service';
                   <span>تم اعتماد واستلام هذه المهمة بنجاح.</span>
                 </div>
 
-                <!-- Interactive approval/revision buttons (strictly in client_review status) -->
-                <ng-container *ngIf="selectedTask.status === 'client_review'">
+                <!-- Interactive approval/revision buttons (client_review or client_feedback status) -->
+                <ng-container *ngIf="selectedTask.status === 'client_review' || selectedTask.status === 'client_feedback'">
                   <p style="font-size:0.83rem; color:var(--text-2); margin-bottom:12px; line-height:1.5;">
                     {{ isClient() ? 'المهمة جاهزة للمعاينة الآن. يرجى الاطلاع على المرفقات والتفاصيل ثم اتخاذ الإجراء المناسب:' : 'المهمة في مرحلة مراجعة العميل (Client Review). يمكنك اعتماد المهمة نيابة عن العميل بصفتك الإدارية:' }}
                   </p>
@@ -688,7 +689,7 @@ import { ConfirmService } from '../../services/confirm.service';
                 </ng-container>
 
                 <!-- If client is viewing but task is not in client_review yet -->
-                <div *ngIf="isClient() && selectedTask.status !== 'client_review' && !['done', 'approved', 'completed'].includes(selectedTask.status)" style="color:var(--text-2); font-size:0.82rem; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
+                <div *ngIf="isClient() && selectedTask.status !== 'client_review' && selectedTask.status !== 'client_feedback' && !['done', 'approved', 'completed'].includes(selectedTask.status)" style="color:var(--text-2); font-size:0.82rem; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
                   <i class="fa-solid fa-clock-rotate-left" style="color:#fbbf24; margin-left:6px;"></i> المهمة قيد التنفيذ والمراجعة الفنية، وستتاح خيارات الاعتماد فور إرسالها لمرحلة مراجعة العميل.
                 </div>
               </div>
@@ -828,54 +829,115 @@ import { ConfirmService } from '../../services/confirm.service';
               <!-- Attachments with Client Visibility Controls -->
               <div class="drawer-card">
                 <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والملفات</div>
-                <div class="att-grid" *ngIf="getTaskAttachmentsForUser(selectedTask).length > 0">
-                  <div *ngFor="let att of getTaskAttachmentsForUser(selectedTask)" class="att-item">
-                    <div class="att-img-wrap" *ngIf="isImage(att)">
-                      <img
-                        [src]="getFileUrl(att)"
-                        class="att-img"
-                        (click)="expandImage(getFileUrl(att), $event)"
-                        (error)="handleImageError($event)"
-                        alt="مرفق"
-                      />
-                      <!-- Delete Button on Top Left -->
-                      <button class="att-del-btn" *ngIf="!isClient()" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
-                        <i class="fa-solid fa-trash-can"></i>
-                      </button>
-                      <!-- Client Visibility Pill Badge at Bottom Center -->
-                      <button 
-                        type="button" 
-                        class="att-vis-btn" 
-                        *ngIf="!isClient()"
-                        [class.is-vis]="att.visible_to_client !== false" 
-                        (click)="toggleAttachmentVisibility(selectedTask, att, $event)" 
-                        [title]="att.visible_to_client !== false ? 'المرفق مرئي للعميل (انقر للتغيير إلى داخلي)' : 'المرفق داخلي فقط (انقر للتغيير إلى مرئي للعميل)'"
-                      >
-                        <i class="fa-solid" [ngClass]="att.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
-                        <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي فقط' }}</span>
-                      </button>
-                    </div>
-                    <div *ngIf="!isImage(att)" class="att-doc" style="position:relative; cursor:pointer;" (click)="openFileUrl(getFileUrl(att), $event)" [title]="'فتح وتحميل: ' + (att.file_name || att.name || 'مستند')">
-                      <i class="fa-solid fa-file-pdf"></i>
-                      <span>{{ att.file_name || att.name || 'مستند' }}</span>
-                      <button 
-                        type="button" 
-                        class="att-vis-btn-doc" 
-                        *ngIf="!isClient()"
-                        [class.is-vis]="att.visible_to_client !== false" 
-                        (click)="toggleAttachmentVisibility(selectedTask, att, $event)"
-                        style="padding:2px 7px; border-radius:6px; font-size:0.65rem; font-weight:700; border:none; cursor:pointer; margin-right:6px;"
-                        [style.background]="att.visible_to_client !== false ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'"
-                        [style.color]="att.visible_to_client !== false ? '#34d399' : '#fbbf24'"
-                      >
-                        <i class="fa-solid" [ngClass]="att.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
-                        <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي' }}</span>
-                      </button>
-                      <button class="att-del-btn" *ngIf="!isClient()" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
-                        <i class="fa-solid fa-trash-can"></i>
-                      </button>
+                <!-- Images Section (if any) -->
+                <div class="att-section-block" *ngIf="getUserImages(selectedTask).length > 0">
+                  <div class="att-section-label">
+                    <i class="fa-solid fa-image"></i>
+                    <span>الصور والمخرجات البصرية ({{ getUserImages(selectedTask).length }})</span>
+                  </div>
+                  <div class="att-grid">
+                    <div *ngFor="let att of getUserImages(selectedTask)" class="att-item">
+                      <div class="att-img-wrap">
+                        <img
+                          [src]="getFileUrl(att)"
+                          class="att-img"
+                          (click)="expandImage(getFileUrl(att), $event)"
+                          (error)="handleImageError($event)"
+                          alt="مرفق"
+                        />
+                        <!-- Delete Button on Top Left -->
+                        <button class="att-del-btn" *ngIf="!isClient()" (click)="deleteAttachment(selectedTask, att, $event)" title="حذف المرفق">
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <!-- Client Visibility Pill Badge at Bottom Center -->
+                        <button 
+                          type="button" 
+                          class="att-vis-btn" 
+                          *ngIf="!isClient()"
+                          [class.is-vis]="att.visible_to_client !== false" 
+                          (click)="toggleAttachmentVisibility(selectedTask, att, $event)" 
+                          [title]="att.visible_to_client !== false ? 'المرفق مرئي للعميل (انقر للتغيير إلى داخلي)' : 'المرفق داخلي فقط (انقر للتغيير إلى مرئي للعميل)'"
+                        >
+                          <i class="fa-solid" [ngClass]="att.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
+                          <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي فقط' }}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
+                </div>
+
+                <!-- Documents & Files Section (if any) -->
+                <div class="att-section-block" *ngIf="getUserDocuments(selectedTask).length > 0">
+                  <div class="att-section-label">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>المستندات والملفات المرفقة ({{ getUserDocuments(selectedTask).length }})</span>
+                  </div>
+                  <div class="docs-list-grid">
+                    <div 
+                      *ngFor="let att of getUserDocuments(selectedTask)" 
+                      class="doc-attachment-card" 
+                      [class.card-pdf]="isPdf(att)" 
+                      [class.card-word]="isWord(att)" 
+                      [class.card-excel]="isExcel(att)"
+                      (click)="openFileUrl(getFileUrl(att), $event)"
+                    >
+                      <!-- Right: Icon Box -->
+                      <div class="doc-icon-container">
+                        <i [class]="getFileIconClass(att)"></i>
+                        <span class="doc-type-pill">{{ getFileExtension(att) }}</span>
+                      </div>
+
+                      <!-- Middle: File Info -->
+                      <div class="doc-info-container">
+                        <div class="doc-title" [title]="att.file_name || att.name || 'مستند'">
+                          {{ att.file_name || att.name || 'مستند' }}
+                        </div>
+                        <div class="doc-meta-row">
+                          <span class="doc-meta-badge">{{ getFileMetaLabel(att) }}</span>
+                          <span class="doc-click-hint"><i class="fa-solid fa-arrow-up-right-from-square"></i> انقر للفتح أو المعاينة</span>
+                        </div>
+                      </div>
+
+                      <!-- Left: Action Controls -->
+                      <div class="doc-actions-container" (click)="$event.stopPropagation()">
+                        <!-- Download Link -->
+                        <a [href]="getDownloadUrl(att)" target="_blank" download class="btn-doc-action btn-download" title="تحميل الملف">
+                          <i class="fa-solid fa-download"></i>
+                          <span>تحميل</span>
+                        </a>
+
+                        <!-- Visibility Toggle (Staff Only) -->
+                        <button 
+                          type="button" 
+                          class="btn-doc-action btn-vis" 
+                          *ngIf="!isClient()"
+                          [class.is-vis]="att.visible_to_client !== false" 
+                          (click)="toggleAttachmentVisibility(selectedTask, att, $event)" 
+                          [title]="att.visible_to_client !== false ? 'المرفق مرئي للعميل (انقر للتغيير إلى داخلي)' : 'المرفق داخلي فقط (انقر للتغيير إلى مرئي للعميل)'"
+                        >
+                          <i class="fa-solid" [ngClass]="att.visible_to_client !== false ? 'fa-eye' : 'fa-eye-slash'"></i>
+                          <span>{{ att.visible_to_client !== false ? 'مرئي للعميل' : 'داخلي فقط' }}</span>
+                        </button>
+
+                        <!-- Delete Button (Staff Only) -->
+                        <button 
+                          type="button" 
+                          class="btn-doc-action btn-del" 
+                          *ngIf="!isClient()" 
+                          (click)="deleteAttachment(selectedTask, att, $event)" 
+                          title="حذف الملف"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Empty State if no attachments -->
+                <div class="att-empty-state" *ngIf="getTaskAttachmentsForUser(selectedTask).length === 0">
+                  <i class="fa-regular fa-folder-open"></i>
+                  <span>لا توجد مرفقات أو ملفات مضافة لهذه المهمة حالياً</span>
                 </div>
 
                 <!-- Dual Upload Buttons: Images and Word/PDF Documents -->
@@ -1186,17 +1248,49 @@ import { ConfirmService } from '../../services/confirm.service';
 
                   <!-- Subtask Attachments Grid -->
                   <div style="margin-top:8px;">
-                    <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-paperclip"></i> المرفقات والصور:</div>
-                    <div class="att-grid" *ngIf="(selectedSubtask.attachments || []).length > 0">
-                      <div *ngFor="let att of selectedSubtask.attachments" class="att-item">
-                        <div class="att-img-wrap" *ngIf="isImage(att)">
-                          <img [src]="getFileUrl(att)" class="att-img" (click)="expandImage(getFileUrl(att), $event)" (error)="handleImageError($event)" alt="مرفق" />
-                          <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق"><i class="fa-solid fa-trash-can"></i></button>
+                    <!-- Subtask Images (if any) -->
+                    <div *ngIf="getSubtaskImages(selectedSubtask).length > 0" style="margin-bottom:8px;">
+                      <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-image"></i> الصور المرفقة:</div>
+                      <div class="att-grid">
+                        <div *ngFor="let att of getSubtaskImages(selectedSubtask)" class="att-item">
+                          <div class="att-img-wrap">
+                            <img [src]="getFileUrl(att)" class="att-img" (click)="expandImage(getFileUrl(att), $event)" (error)="handleImageError($event)" alt="مرفق" />
+                            <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق"><i class="fa-solid fa-trash-can"></i></button>
+                          </div>
                         </div>
-                        <div *ngIf="!isImage(att)" class="att-doc" style="position:relative;">
-                          <i class="fa-solid fa-file-pdf"></i>
-                          <span>{{ att.file_name || att.name || 'مستند' }}</span>
-                          <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق"><i class="fa-solid fa-trash-can"></i></button>
+                      </div>
+                    </div>
+
+                    <!-- Subtask Documents (if any) -->
+                    <div *ngIf="getSubtaskDocuments(selectedSubtask).length > 0" style="margin-bottom:8px;">
+                      <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-file-lines"></i> المستندات والملفات:</div>
+                      <div class="docs-list-grid">
+                        <div 
+                          *ngFor="let att of getSubtaskDocuments(selectedSubtask)" 
+                          class="doc-attachment-card"
+                          [class.card-pdf]="isPdf(att)"
+                          [class.card-word]="isWord(att)"
+                          [class.card-excel]="isExcel(att)"
+                          (click)="openFileUrl(getFileUrl(att), $event)"
+                        >
+                          <div class="doc-icon-container">
+                            <i [class]="getFileIconClass(att)"></i>
+                            <span class="doc-type-pill">{{ getFileExtension(att) }}</span>
+                          </div>
+                          <div class="doc-info-container">
+                            <div class="doc-title" [title]="att.file_name || att.name || 'مستند'">{{ att.file_name || att.name || 'مستند' }}</div>
+                            <div class="doc-meta-row">
+                              <span class="doc-meta-badge">{{ getFileMetaLabel(att) }}</span>
+                            </div>
+                          </div>
+                          <div class="doc-actions-container" (click)="$event.stopPropagation()">
+                            <a [href]="getDownloadUrl(att)" target="_blank" download class="btn-doc-action btn-download" title="تحميل">
+                              <i class="fa-solid fa-download"></i>
+                            </a>
+                            <button type="button" class="btn-doc-action btn-del" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف">
+                              <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1428,26 +1522,57 @@ import { ConfirmService } from '../../services/confirm.service';
           <!-- Subtask Attachments Grid & Upload -->
           <div class="drawer-card">
             <div class="dc-head"><i class="fa-solid fa-paperclip"></i> المرفقات والصور للمهمة الفرعية</div>
-            <div class="att-grid" *ngIf="(selectedSubtask.attachments || []).length > 0">
-              <div *ngFor="let att of selectedSubtask.attachments" class="att-item">
-                <div class="att-img-wrap" *ngIf="isImage(att)">
-                  <img
-                    [src]="getFileUrl(att)"
-                    class="att-img"
-                    (click)="expandImage(getFileUrl(att), $event)"
-                    (error)="handleImageError($event)"
-                    alt="مرفق"
-                  />
-                  <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق">
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
+            <!-- Subtask Images (if any) -->
+            <div *ngIf="getSubtaskImages(selectedSubtask).length > 0" style="margin-bottom:10px;">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-image"></i> الصور المرفقة:</div>
+              <div class="att-grid">
+                <div *ngFor="let att of getSubtaskImages(selectedSubtask)" class="att-item">
+                  <div class="att-img-wrap">
+                    <img
+                      [src]="getFileUrl(att)"
+                      class="att-img"
+                      (click)="expandImage(getFileUrl(att), $event)"
+                      (error)="handleImageError($event)"
+                      alt="مرفق"
+                    />
+                    <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
                 </div>
-                <div *ngIf="!isImage(att)" class="att-doc" style="position:relative; cursor:pointer;" (click)="openFileUrl(getFileUrl(att), $event)" [title]="'فتح وتحميل: ' + (att.file_name || att.name || 'مستند')">
-                  <i class="fa-solid fa-file-pdf"></i>
-                  <span>{{ att.file_name || att.name || 'مستند' }}</span>
-                  <button class="att-del-btn" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف المرفق">
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
+              </div>
+            </div>
+
+            <!-- Subtask Documents (if any) -->
+            <div *ngIf="getSubtaskDocuments(selectedSubtask).length > 0" style="margin-bottom:10px;">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:6px;"><i class="fa-solid fa-file-lines"></i> المستندات والملفات:</div>
+              <div class="docs-list-grid">
+                <div 
+                  *ngFor="let att of getSubtaskDocuments(selectedSubtask)" 
+                  class="doc-attachment-card"
+                  [class.card-pdf]="isPdf(att)"
+                  [class.card-word]="isWord(att)"
+                  [class.card-excel]="isExcel(att)"
+                  (click)="openFileUrl(getFileUrl(att), $event)"
+                >
+                  <div class="doc-icon-container">
+                    <i [class]="getFileIconClass(att)"></i>
+                    <span class="doc-type-pill">{{ getFileExtension(att) }}</span>
+                  </div>
+                  <div class="doc-info-container">
+                    <div class="doc-title" [title]="att.file_name || att.name || 'مستند'">{{ att.file_name || att.name || 'مستند' }}</div>
+                    <div class="doc-meta-row">
+                      <span class="doc-meta-badge">{{ getFileMetaLabel(att) }}</span>
+                    </div>
+                  </div>
+                  <div class="doc-actions-container" (click)="$event.stopPropagation()">
+                    <a [href]="getDownloadUrl(att)" target="_blank" download class="btn-doc-action btn-download" title="تحميل">
+                      <i class="fa-solid fa-download"></i>
+                    </a>
+                    <button type="button" class="btn-doc-action btn-del" (click)="deleteSubtaskAttachment(selectedSubtask, att, $event)" title="حذف">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3731,25 +3856,318 @@ import { ConfirmService } from '../../services/confirm.service';
       opacity: 0.95;
     }
     .att-doc {
-      width: 76px;
-      height: 76px;
+      width: 100%;
+      height: 100%;
       border-radius: 8px;
-      background: rgba(99, 102, 241, 0.06);
-      border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      padding: 6px;
-      font-size: 0.65rem;
-      color: var(--text-2);
-      text-align: center;
       position: relative;
     }
-    .att-doc i {
-      font-size: 1.3rem;
+
+    /* Executive Document Cards & Attachments Styling */
+    .att-section-block {
+      margin-bottom: 14px;
+    }
+    .att-section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-2);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .att-section-label i {
+      color: var(--violet);
+    }
+    .att-empty-state {
+      padding: 16px;
+      text-align: center;
+      color: var(--text-2);
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .att-empty-state i {
+      font-size: 1.4rem;
+      opacity: 0.6;
+    }
+
+    .docs-list-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+
+    .doc-attachment-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--bg-card, #131322);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      transition: all 0.22s ease;
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .doc-attachment-card:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+      border-color: var(--violet-light);
+    }
+
+    /* Word Card Theme */
+    .doc-attachment-card.card-word {
+      border-color: rgba(59, 130, 246, 0.3);
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.02) 100%);
+    }
+    .doc-attachment-card.card-word:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.22);
+    }
+    .doc-attachment-card.card-word .doc-icon-container {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(37, 99, 235, 0.28) 100%);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .doc-attachment-card.card-word .doc-type-pill {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    /* PDF Card Theme */
+    .doc-attachment-card.card-pdf {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%);
+    }
+    .doc-attachment-card.card-pdf:hover {
+      border-color: #ef4444;
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.22);
+    }
+    .doc-attachment-card.card-pdf .doc-icon-container {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(220, 38, 38, 0.28) 100%);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .doc-attachment-card.card-pdf .doc-type-pill {
+      background: #dc2626;
+      color: #ffffff;
+    }
+
+    /* Excel Card Theme */
+    .doc-attachment-card.card-excel {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+    }
+    .doc-attachment-card.card-excel:hover {
+      border-color: #10b981;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.22);
+    }
+    .doc-attachment-card.card-excel .doc-icon-container {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.28) 100%);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .doc-attachment-card.card-excel .doc-type-pill {
+      background: #059669;
+      color: #ffffff;
+    }
+
+    .doc-icon-container {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      background: rgba(99, 102, 241, 0.12);
       color: var(--violet-light);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+    .doc-type-pill {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--violet);
+      color: #fff;
+      line-height: 1.1;
+      letter-spacing: 0.5px;
+    }
+
+    .doc-info-container {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .doc-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      direction: rtl;
+    }
+    .doc-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.72rem;
+      color: var(--text-2);
+    }
+    .doc-meta-badge {
+      font-weight: 600;
+      opacity: 0.85;
+    }
+    .doc-click-hint {
+      font-size: 0.68rem;
+      color: var(--violet-light);
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .doc-actions-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-doc-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-doc-action.btn-download {
+      background: rgba(99, 102, 241, 0.12);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+    .btn-doc-action.btn-download:hover {
+      background: #6366f1;
+      color: #ffffff;
+      border-color: #6366f1;
+    }
+
+    .btn-doc-action.btn-vis {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .btn-doc-action.btn-vis.is-vis {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .btn-doc-action.btn-vis:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+
+    .btn-doc-action.btn-del {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      padding: 6px 9px;
+    }
+    .btn-doc-action.btn-del:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    /* Light Theme Support */
+    :host-context(body.light-theme) .doc-attachment-card {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+    }
+    :host-context(body.light-theme) .doc-attachment-card.card-word {
+      background: #f0f7ff !important;
+      border-color: #bfdbfe !important;
+    }
+    :host-context(body.light-theme) .doc-attachment-card.card-pdf {
+      background: #fff5f5 !important;
+      border-color: #fecaca !important;
+    }
+    :host-context(body.light-theme) .doc-attachment-card.card-excel {
+      background: #f0fdf4 !important;
+      border-color: #bbf7d0 !important;
+    }
+    :host-context(body.light-theme) .doc-title {
+      color: #0f172a !important;
+    }
+    :host-context(body.light-theme) .doc-meta-row {
+      color: #64748b !important;
+    }
+
+    /* Board card preview enhancement */
+    .att-file-icon.is-pdf {
+      color: #ef4444 !important;
+    }
+    .att-file-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    :host-context(body.light-theme) .att-item {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    :host-context(body.light-theme) .att-doc-wrap {
+      background: #f8fafc !important;
+    }
+    :host-context(body.light-theme) .att-doc-wrap.is-pdf-card {
+      background: #fff5f5 !important;
+      border-color: #fecaca !important;
+    }
+    :host-context(body.light-theme) .att-doc-filename {
+      color: #0f172a !important;
     }
 
     /* Enhanced History Timeline & Dialog */
@@ -4394,6 +4812,36 @@ export class TasksBoardComponent implements OnInit {
     return ['super_admin', 'admin', 'department_manager', 'manager'].includes(role);
   }
 
+  canMoveTaskToStatus(targetColKey: string): { allowed: boolean, message?: string } {
+    if (this.isSuperAdmin() || this.isAdmin()) {
+      return { allowed: true };
+    }
+    const completedStatuses = ['done', 'completed', 'approved'];
+    const clientReviewStatuses = ['client_review', 'client_feedback'];
+
+    if (this.isEmployee()) {
+      if (completedStatuses.includes(targetColKey) || clientReviewStatuses.includes(targetColKey)) {
+        return {
+          allowed: false,
+          message: 'الموظف غير مصرح له بنقل المهمة إلى مكتمل أو ملاحظات العميل. يمكنك تحويلها إلى قيد المراجعة الفنية فقط.'
+        };
+      }
+      return { allowed: true };
+    }
+
+    if (this.isDepartmentManager()) {
+      if (completedStatuses.includes(targetColKey)) {
+        return {
+          allowed: false,
+          message: 'مدير القسم غير مصرح له بإنهاء المهمة كمكتمل. الاعتماد النهائي حصري للعميل بعد مراجعته وموافقته.'
+        };
+      }
+      return { allowed: true };
+    }
+
+    return { allowed: true };
+  }
+
   canReopenCompletedTasks(): boolean {
     if (!this.currentUser) return false;
     const role = (this.currentUser.role || '').toLowerCase().trim();
@@ -4853,6 +5301,13 @@ export class TasksBoardComponent implements OnInit {
       event.stopPropagation();
     }
     if (!subtask || subtask.status === newStatus) return;
+
+    const check = this.canMoveTaskToStatus(newStatus);
+    if (!check.allowed) {
+      this.toastService.error(check.message || 'ليس لديك صلاحية لتغيير المهمة الفرعية لهذه الحالة');
+      return;
+    }
+
     const oldStatus = subtask.status;
     subtask.status = newStatus;
     subtask.is_completed = this.isSubtaskCompleted(subtask);
@@ -5350,17 +5805,17 @@ export class TasksBoardComponent implements OnInit {
     if (!this.revisionNotes.trim() || !this.selectedTask) return;
     const task = this.selectedTask;
     const oldStatus = task.status;
-    task.status = 'client_feedback';
+    task.status = 'in_review';
     const noteText = this.revisionNotes.trim();
 
-    this.apiService.addTaskNote(task.id, 'طلب تعديل من العميل: ' + noteText).subscribe({
+    this.apiService.addTaskNote(task.id, 'طلب تعديل وملاحظات من العميل: ' + noteText).subscribe({
       next: () => {
-        this.persistStatusUpdate(task, 'client_feedback', () => {});
+        this.persistStatusUpdate(task, 'in_review', () => {});
         this.closeRevisionModal();
         this.loadTaskActivities(task.id);
       },
       error: () => {
-        this.persistStatusUpdate(task, 'client_feedback', () => task.status = oldStatus);
+        this.persistStatusUpdate(task, 'in_review', () => task.status = oldStatus);
         this.closeRevisionModal();
       }
     });
@@ -5750,6 +6205,12 @@ export class TasksBoardComponent implements OnInit {
 
   updateTaskStatus(task: any, newStatus: string): void {
     const oldStatus = task.status;
+    const check = this.canMoveTaskToStatus(newStatus);
+    if (!check.allowed) {
+      this.toastService.error(check.message || 'ليس لديك صلاحية لتغيير المهمة لهذه الحالة');
+      return;
+    }
+
     const completedStatuses = ['done', 'completed', 'approved'];
     if (!this.canReopenCompletedTasks() && completedStatuses.includes(oldStatus) && !completedStatuses.includes(newStatus)) {
       this.toastService.error('المهمة مكتملة، ولا يمكن إرجاعها لحالة سابقة، يقتصر ذلك على المدير، الأدمن، السوبر أدمن، أو مدير القسم.');
@@ -5821,6 +6282,76 @@ export class TasksBoardComponent implements OnInit {
     if (path.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)($|\?)/i)) return true;
     if ((att.file_type && att.file_type.includes('image')) || (att.mime_type && att.mime_type.includes('image'))) return true;
     return false;
+  }
+
+  isPdf(att: any): boolean {
+    if (!att) return false;
+    const type = (att.file_type || att.mime_type || '').toLowerCase();
+    const name = (att.file_name || att.name || att.file_path || att.url || '').toLowerCase();
+    return type.includes('pdf') || name.endsWith('.pdf') || name.includes('.pdf?');
+  }
+
+  getFileExtension(att: any): string {
+    const raw = (att?.file_name || att?.name || att?.file_path || '').split('?')[0];
+    const parts = raw.split('.');
+    if (parts.length > 1) {
+      const ext = parts.pop().toUpperCase();
+      if (ext.length <= 5) return ext;
+    }
+    return this.isPdf(att) ? 'PDF' : 'DOC';
+  }
+
+  getFileIconClass(att: any): string {
+    if (this.isPdf(att)) return 'fa-solid fa-file-pdf';
+    const type = (att?.file_type || att?.mime_type || '').toLowerCase();
+    const name = (att?.file_name || att?.name || '').toLowerCase();
+    if (type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx')) return 'fa-solid fa-file-word';
+    if (type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv')) return 'fa-solid fa-file-excel';
+    if (type.includes('presentation') || type.includes('powerpoint') || name.endsWith('.ppt') || name.endsWith('.pptx')) return 'fa-solid fa-file-powerpoint';
+    if (type.includes('video') || name.endsWith('.mp4') || name.endsWith('.mov') || name.endsWith('.avi')) return 'fa-solid fa-file-video';
+    if (type.includes('audio') || name.endsWith('.mp3') || name.endsWith('.wav')) return 'fa-solid fa-file-audio';
+    if (name.endsWith('.zip') || name.endsWith('.rar') || name.endsWith('.7z')) return 'fa-solid fa-file-zipper';
+    return 'fa-solid fa-file-lines';
+  }
+
+  isWord(att: any): boolean {
+    if (!att) return false;
+    const type = (att.file_type || att.mime_type || '').toLowerCase();
+    const name = (att.file_name || att.name || att.file_path || att.url || '').toLowerCase();
+    return type.includes('word') || name.endsWith('.doc') || name.endsWith('.docx') || name.includes('.docx?');
+  }
+
+  isExcel(att: any): boolean {
+    if (!att) return false;
+    const type = (att.file_type || att.mime_type || '').toLowerCase();
+    const name = (att.file_name || att.name || att.file_path || att.url || '').toLowerCase();
+    return type.includes('excel') || type.includes('sheet') || name.endsWith('.xls') || name.endsWith('.xlsx') || name.endsWith('.csv');
+  }
+
+  getFileMetaLabel(att: any): string {
+    if (this.isPdf(att)) return 'مستند PDF';
+    if (this.isWord(att)) return 'مستند Word (DOCX)';
+    if (this.isExcel(att)) return 'جدول بيانات Excel';
+    const ext = this.getFileExtension(att);
+    return `ملف ${ext}`;
+  }
+
+  getUserImages(task: any): any[] {
+    return this.getTaskAttachmentsForUser(task).filter((a: any) => this.isImage(a));
+  }
+
+  getUserDocuments(task: any): any[] {
+    return this.getTaskAttachmentsForUser(task).filter((a: any) => !this.isImage(a));
+  }
+
+  getSubtaskImages(subtask: any): any[] {
+    if (!subtask || !subtask.attachments) return [];
+    return subtask.attachments.filter((a: any) => this.isImage(a));
+  }
+
+  getSubtaskDocuments(subtask: any): any[] {
+    if (!subtask || !subtask.attachments) return [];
+    return subtask.attachments.filter((a: any) => !this.isImage(a));
   }
 
   getFileUrl(att: any): string {
@@ -6084,6 +6615,12 @@ export class TasksBoardComponent implements OnInit {
     this.draggingTask = null;
 
     if (task.status === targetColKey) return;
+
+    const check = this.canMoveTaskToStatus(targetColKey);
+    if (!check.allowed) {
+      this.toastService.error(check.message || 'ليس لديك صلاحية لنقل المهمة لهذه الحالة');
+      return;
+    }
 
     const oldStatus = task.status;
     const completedStatuses = ['done', 'completed', 'approved'];

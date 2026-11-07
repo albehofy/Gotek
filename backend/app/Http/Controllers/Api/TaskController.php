@@ -469,6 +469,17 @@ class TaskController extends Controller
             $priority = $task->priority; // Keep existing priority
         }
 
+        // Role-based status transition restrictions
+        if ($oldStatus !== $newStatus) {
+            $statusError = $this->validateStatusTransition($user, $newStatus);
+            if ($statusError) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $statusError
+                ], 403);
+            }
+        }
+
         // Only Manager, Admin, Super Admin, or Department Manager can reopen or move completed tasks back
         $completedStatuses = ['done', 'completed', 'approved'];
         if (in_array($oldStatus, $completedStatuses) && !in_array($newStatus, $completedStatuses) && !$this->canReopenCompletedTask($user)) {
@@ -583,11 +594,22 @@ class TaskController extends Controller
         ]);
 
         $newStatus = $request->status;
+        $user = Auth::user();
+
+        // Role-based status transition restrictions
+        if ($oldStatus !== $newStatus) {
+            $statusError = $this->validateStatusTransition($user, $newStatus);
+            if ($statusError) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $statusError
+                ], 403);
+            }
+        }
 
         // Restriction: Once completed, only Manager, Admin, Super Admin, or Department Manager can move it back
         $completedStatuses = ['done', 'completed', 'approved'];
         if (in_array($oldStatus, $completedStatuses) && !in_array($newStatus, $completedStatuses)) {
-            $user = Auth::user();
             if (!$this->canReopenCompletedTask($user)) {
                 return response()->json([
                     'status' => 'error',
@@ -624,6 +646,34 @@ class TaskController extends Controller
         $task->update(['priority' => $request->priority]);
 
         return response()->json(['status' => 'success', 'data' => $task]);
+    }
+
+    /**
+     * Role-based status transition restrictions:
+     * - Employee can move to: new, in_progress, content_creator, in_review
+     * - Employee cannot move to: completed/done, client_review/client_feedback
+     * - Department Manager cannot close task as done/completed/approved (client approval required)
+     */
+    protected function validateStatusTransition($user, string $newStatus): ?string
+    {
+        if (!$user) return null;
+        $role = strtolower(str_replace(' ', '_', trim($user->role ?? '')));
+        $completedStatuses = ['done', 'completed', 'approved'];
+        $clientReviewStatuses = ['client_review', 'client_feedback'];
+
+        if ($role === 'employee') {
+            if (in_array($newStatus, $completedStatuses) || in_array($newStatus, $clientReviewStatuses)) {
+                return 'الموظف غير مصرح له بنقل المهمة إلى مكتمل أو ملاحظات العميل. يمكنك تحويلها إلى قيد المراجعة الفنية فقط.';
+            }
+        }
+
+        if ($role === 'department_manager') {
+            if (in_array($newStatus, $completedStatuses)) {
+                return 'مدير القسم غير مصرح له بإنهاء المهمة كمكتمل. الاعتماد النهائي حصري للعميل بعد مراجعته وموافقته.';
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -850,6 +900,7 @@ class TaskController extends Controller
         $recipientIds = array_merge($recipientIds, $prevCommenters);
 
         // 6. Extract @mentions (e.g., @name or @id) supporting Unicode & Arabic names
+        $mentionedUserIds = [];
         preg_match_all('/@([\p{L}\p{N}_\-]+(?:\s+[\p{L}\p{N}_\-]+)?)/u', $request->note, $matches);
         if (!empty($matches[1])) {
             foreach ($matches[1] as $mentionedName) {
@@ -860,6 +911,7 @@ class TaskController extends Controller
                     ->orWhere('name', 'like', '%' . $cleanName . '%')
                     ->first();
                 if ($mUser) {
+                    $mentionedUserIds[] = $mUser->id;
                     $recipientIds[] = $mUser->id;
                 }
             }
@@ -872,12 +924,14 @@ class TaskController extends Controller
             $targetUser = User::find($uid);
             if (!$targetUser) continue;
 
-            $notifTitle = 'تعليق جديد على المهمة: ' . $task->title;
+            $isMentioned = in_array((int)$uid, $mentionedUserIds);
+            $notifType = $isMentioned ? 'mention' : 'comment';
+            $notifTitle = $isMentioned ? 'تمت الإشارة إليك في تعليق على المهمة: ' . $task->title : 'تعليق جديد على المهمة: ' . $task->title;
             $notifMessage = ($sender ? $sender->name : 'مستخدم') . ': ' . Str::limit($request->note, 120);
 
             NotificationModel::create([
                 'user_id' => $uid,
-                'type' => 'comment',
+                'type' => $notifType,
                 'title' => $notifTitle,
                 'message' => $notifMessage,
                 'notifiable_type' => Task::class,
@@ -1190,10 +1244,10 @@ class TaskController extends Controller
     public function deleteSubtask($id)
     {
         $authUser = Auth::user();
-        if (!$authUser || !$authUser->isSuperAdmin()) {
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'غير مصرح لك بحذف المهام الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                'message' => 'غير مصرح لك بحذف المهام الفرعية. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
             ], 403);
         }
 
@@ -1233,10 +1287,10 @@ class TaskController extends Controller
     public function destroy($id)
     {
         $authUser = Auth::user();
-        if (!$authUser || !$authUser->isSuperAdmin()) {
+        if (!$authUser || (!$authUser->isSuperAdmin() && $authUser->role !== 'admin')) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'غير مصرح لك بحذف المهام. عمليات الحذف في النظام مقتصرة حصرياً على السوبر أدمن (Super Admin).'
+                'message' => 'غير مصرح لك بحذف المهام. عمليات الحذف في النظام مقتصرة حصرياً على الإدارة.'
             ], 403);
         }
 

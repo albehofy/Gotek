@@ -58,7 +58,7 @@ export class LoginComponent implements OnInit {
           }
           if (user && user.role === 'client') {
             this.router.navigate(['/client-portal']);
-          } else if (user && user.role === 'employee') {
+          } else if (user && (user.role === 'employee' || user.role === 'department_manager')) {
             this.router.navigate(['/tasks']);
           } else if (user && user.role === 'account_manager') {
             this.router.navigate(['/finance']);

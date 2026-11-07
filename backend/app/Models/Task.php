@@ -73,6 +73,10 @@ class Task extends Model
                 $task->description = $task->scope;
             }
 
+            if ($task->description === null) {
+                $task->description = '';
+            }
+
             // Automatically sync client_id from deal if deal_id is provided and client_id is empty
             if ($task->deal_id && empty($task->client_id)) {
                 $dealClientId = Deal::where('id', $task->deal_id)->value('client_id');

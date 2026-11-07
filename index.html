@@ -1,0 +1,2439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex CRM — نظام إدارة الوكالات والشركات المتكامل</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --primary-glow: rgba(79, 70, 229, 0.15);
+      
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --info: #06b6d4;
+      --info-light: #ecfeff;
+      --purple: #8b5cf6;
+      --purple-light: #f5f3ff;
+
+      --bg-body: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #24344d;
+      --bg-sidebar: #0b1120;
+      --bg-header: rgba(15, 23, 42, 0.85);
+      --border-color: #334155;
+      --border-subtle: #1e293b;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -4px rgba(0,0,0,0.3);
+      --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.25);
+    }
+
+    /* Light Mode */
+    [data-theme="light"] {
+      --bg-body: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-sidebar: #0f172a;
+      --bg-header: rgba(255, 255, 255, 0.9);
+      --border-color: #e2e8f0;
+      --border-subtle: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+      --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+
+    /* Layout */
+    .app-wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .brand-section {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    }
+    .brand-info h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
+    .brand-info span {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-menu {
+      flex: 1;
+      padding: 20px 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #64748b;
+      margin: 12px 10px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: var(--radius-md);
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid transparent;
+    }
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+    .nav-item:hover i {
+      transform: scale(1.1);
+    }
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(79, 70, 229, 0.25) 0%, rgba(79, 70, 229, 0.1) 100%);
+      color: #818cf8;
+      border-color: rgba(99, 102, 241, 0.3);
+      font-weight: 700;
+    }
+    .nav-badge {
+      margin-right: auto;
+      background: rgba(79, 70, 229, 0.3);
+      color: #a5b4fc;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.15);
+    }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.03);
+    }
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 15px;
+    }
+    .user-details {
+      flex: 1;
+      overflow: hidden;
+    }
+    .user-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .user-role {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-right: 280px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .top-header {
+      height: 72px;
+      background: var(--bg-header);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+    .header-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      width: 340px;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .header-search:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .header-search input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 13px;
+      width: 100%;
+    }
+    .header-search input::placeholder {
+      color: var(--text-dim);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .action-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition);
+    }
+    .action-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--text-dim);
+    }
+    .badge-dot {
+      position: absolute;
+      top: 9px;
+      left: 10px;
+      width: 8px;
+      height: 8px;
+      background: var(--danger);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--danger);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 99px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px #10b981; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+
+    /* Page Container */
+    .page-body {
+      padding: 28px 32px 48px;
+      flex: 1;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .page-title h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .header-btns {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-dim);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-subtle);
+    }
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .icon-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .icon-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+    .icon-cyan { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+    .icon-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+
+    .kpi-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pill-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .pill-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .pill-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .pill-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+    .kpi-currency {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+    .kpi-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .kpi-subtext {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* Charts & Analytics Section */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 22px;
+      margin-bottom: 30px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .card-head h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-head p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Tables */
+    .table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 30px;
+    }
+    .table-header-bar {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+    .custom-table th {
+      background: rgba(0, 0, 0, 0.15);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .custom-table td {
+      padding: 16px 20px;
+      font-size: 13px;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    .custom-table tbody tr {
+      transition: background 0.15s;
+    }
+    .custom-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .badge-info { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+    .badge-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+    /* Kanban Board */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .kanban-col {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 520px;
+    }
+    [data-theme="light"] .kanban-col {
+      background: #e2e8f0;
+    }
+    .kanban-col-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .kanban-col-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .kanban-count {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 99px;
+      color: var(--text-muted);
+    }
+    .kanban-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      cursor: grab;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .kanban-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .kanban-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .kanban-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+    }
+    .kanban-assignee {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .avatar-xs {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #4f46e5;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-window {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: modalIn 0.25s ease-out;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-head {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-head h3 {
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .modal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .form-control {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+      transition: var(--transition);
+    }
+    [data-theme="light"] .form-control {
+      background: #f8fafc;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Views visibility */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mock Client Portal styling */
+    .portal-preview-card {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-right: 0;
+      }
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+      .kanban-board {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <div class="app-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <i class="fa-solid fa-cube"></i>
+        </div>
+        <div class="brand-info">
+          <h2>Apex CRM</h2>
+          <span>Enterprise Agency System</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-label">الرئيسية والتحليلات</div>
+        <a class="nav-item active" onclick="switchTab('overview')">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>لوحة القيادة الرئيسية</span>
+        </a>
+
+        <div class="nav-label">إدارة الأعمال والعملاء</div>
+        <a class="nav-item" onclick="switchTab('deals')">
+          <i class="fa-solid fa-handshake"></i>
+          <span>الصفقات والعقود</span>
+          <span class="nav-badge">18 صفقة</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('clients')">
+          <i class="fa-solid fa-users"></i>
+          <span>دليل وسجل العملاء</span>
+          <span class="nav-badge">34</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('tasks')">
+          <i class="fa-solid fa-list-check"></i>
+          <span>لوحة المهام والمخرجات</span>
+          <span class="nav-badge" style="background: rgba(239, 68, 68, 0.25); color: #f87171;">4 عاجلة</span>
+        </a>
+
+        <div class="nav-label">المالية والعمليات</div>
+        <a class="nav-item" onclick="switchTab('finance')">
+          <i class="fa-solid fa-sack-dollar"></i>
+          <span>المالية والتحصيلات</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('departments')">
+          <i class="fa-solid fa-sitemap"></i>
+          <span>الأقسام وفريق العمل</span>
+        </a>
+        <a class="nav-item" onclick="switchTab('portal')">
+          <i class="fa-solid fa-globe"></i>
+          <span>بوابة العميل (Client Portal)</span>
+        </a>
+
+        <div class="nav-label">النظام</div>
+        <a class="nav-item" onclick="switchTab('settings')">
+          <i class="fa-solid fa-sliders"></i>
+          <span>الإعدادات والصلاحيات</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">م.ع</div>
+          <div class="user-details">
+            <div class="user-name">محمد علي</div>
+            <div class="user-role">المدير التنفيذي (Super Admin)</div>
+          </div>
+          <i class="fa-solid fa-shield-halved" style="color: #10b981; font-size: 14px;"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Navigation Header -->
+      <header class="top-header">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <button class="action-btn" id="menuToggle" style="display: none;" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalSearch" placeholder="بحث سريع في الصفقات، العملاء، أو الفواتير..." onkeyup="handleGlobalSearch(event)">
+          </div>
+          <span class="status-badge">
+            <span class="pulse-dot"></span>
+            النظام يعمل بكفاءة 100%
+          </span>
+        </div>
+
+        <div class="header-actions">
+          <button class="action-btn" title="تبديل المظهر النهاري/الليلي" onclick="toggleTheme()">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+          </button>
+          
+          <button class="action-btn" title="الإشعارات" onclick="showNotificationAlert()">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge-dot"></span>
+          </button>
+
+          <button class="btn btn-primary btn-sm" onclick="openNewDealModal()">
+            <i class="fa-solid fa-plus"></i>
+            <span>صفقة جديدة</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Page Body -->
+      <div class="page-body">
+
+        <!-- ============================================== -->
+        <!-- TAB 1: OVERVIEW DASHBOARD -->
+        <!-- ============================================== -->
+        <section id="tab-overview" class="tab-content active">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> لوحة القيادة ومؤشرات الأداء</h1>
+              <p>نظرة تحليلية شاملة ومباشرة على أداء التعاقدات، التحصيلات، تدفق السيولة ومعدل إنجاز الفرق</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn btn-outline" onclick="exportReport()"><i class="fa-solid fa-file-pdf"></i> تصدير التقرير المالي</button>
+              <button class="btn btn-primary" onclick="switchTab('deals')"><i class="fa-solid fa-arrow-left"></i> متابعة خط الصفقات</button>
+            </div>
+          </div>
+
+          <!-- 6-Metric KPI Cards -->
+          <div class="kpi-grid">
+            <!-- 1. Total Revenue -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <div class="kpi-icon icon-indigo"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <span class="kpi-pill pill-indigo"><i class="fa-solid fa-arrow-trend-up"></i> +18.4% نمو</span>
+              </div>
+              <div class="kpi-value">1,850,000 <span class="kpi-currency">ج.م</span></div>
+              <div class="kpi-label">إجمالي التعاقدات والعقود</div>
+              <div class="kpi-subtext">قيمة 18 صفقة معتمدة خلال الربع الحالي</div>
+            </div>
+
+            <!-- 2. Collections -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <div class="kpi-icon icon-emerald"><i class="fa-solid fa-circle-check"></i></div>
+                <span class="kpi-pill pill-emerald"><i class="fa-solid fa-percent"></i> 67% محصل</span>
+              </div>
+              <div class="kpi-value">1,240,000 <span class="kpi-currency">ج.م</span></div>
+              <div class="kpi-label">التحصيلات الفعلية المسددة</div>
+              <div class="kpi-subtext">إجمالي الدفعات المودعة بالحسابات البنكية</div>
+            </div>
+
+            <!-- 3. Remaining Balance -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <div class="kpi-icon icon-amber"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <span class="kpi-pill pill-amber"><i class="fa-solid fa-hourglass-half"></i> مستحقات</span>
+              </div>
+              <div class="kpi-value">610,000 <span class="kpi-currency">ج.م</span></div>
+              <div class="kpi-label">الرصيد المتبقي لدى العملاء</div>
+              <div class="kpi-subtext">أقساط مجدولة قيد الاستحقاق خلال 45 يوم</div>
+            </div>
+
+            <!-- 4. Profit Margin -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <div class="kpi-icon icon-purple"><i class="fa-solid fa-sack-dollar"></i></div>
+                <span class="kpi-pill pill-purple"><i class="fa-solid fa-chart-line"></i> صافي 31.3%</span>
+              </div>
+              <div class="kpi-value">580,000 <span class="kpi-currency">ج.م</span></div>
+              <div class="kpi-label">أرباح وهامش الوكالة</div>
+              <div class="kpi-subtext">صافي الربح التقديري بعد خصم المصروفات</div>
+            </div>
+
+            <!-- 5. Clients Count -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <div class="kpi-icon icon-cyan"><i class="fa-solid fa-users"></i></div>
+                <span class="kpi-pill pill-emerald"><i class="fa-solid fa-shield"></i> 95% رضا</span>
+              </div>
+              <div class="kpi-value">34 <span class="kpi-currency">عميل</span></div>
+              <div class="kpi-label">قاعدة العملاء النشطين</div>
+              <div class="kpi-subtext">شركات ومؤسسات بعقود سارية المفعول</div>
+            </div>
+
+            <!-- 6. Operational Tasks -->
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <div class="kpi-icon icon-rose"><i class="fa-solid fa-bars-progress"></i></div>
+                <span class="kpi-pill pill-indigo"><i class="fa-solid fa-check-double"></i> 78% إنجاز</span>
+              </div>
+              <div class="kpi-value">28 <span class="kpi-currency">مهمة جارية</span></div>
+              <div class="kpi-label">المخرجات والمهام التشغيلية</div>
+              <div class="kpi-subtext">توزيع العمل على فرق البرمجة والتسويق والتصميم</div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="analytics-grid">
+            <div class="chart-card">
+              <div class="card-head">
+                <div>
+                  <h3><i class="fa-solid fa-chart-column" style="color: var(--primary);"></i> التدفقات المالية والتحصيلات (آخر 6 أشهر)</h3>
+                  <p>مقارنة شهرية بين إجمالي قيمة العقود المحققة والمبالغ المحصلة فعلياً</p>
+                </div>
+                <div class="badge badge-success">معدل تحصيل ممتاز</div>
+              </div>
+              <div style="height: 290px;">
+                <canvas id="revenueChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="card-head">
+                <div>
+                  <h3><i class="fa-solid fa-chart-pie" style="color: var(--purple);"></i> توزيع الإيرادات حسب التخصص</h3>
+                  <p>نسبة مساهمة كل قطاع في العقود</p>
+                </div>
+              </div>
+              <div style="height: 290px; display: flex; align-items: center; justify-content: center;">
+                <canvas id="dealsDistChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Deals Table -->
+          <div class="table-container">
+            <div class="table-header-bar">
+              <div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main);">
+                  <i class="fa-solid fa-clock-rotate-left" style="color: var(--info);"></i> أحدث الصفقات والتعاقدات المبرمة
+                </h3>
+                <span style="font-size: 12px; color: var(--text-muted);">عينة من العقود الجارية ونسب سداد الدفعات</span>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="switchTab('deals')">مشاهدة الكل (18)</button>
+            </div>
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>كود الصفقة</th>
+                  <th>عنوان المشروع / النطاق</th>
+                  <th>العميل</th>
+                  <th>قيمة العقد</th>
+                  <th>المدفوع</th>
+                  <th>المتبقي</th>
+                  <th>الحالة</th>
+                  <th>تاريخ البدء</th>
+                  <th>إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="overviewDealsTable">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: DEALS & CONTRACTS -->
+        <!-- ============================================== -->
+        <section id="tab-deals" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-handshake" style="color: var(--primary);"></i> الصفقات والعقود المالية</h1>
+              <p>إدارة دورة حياة التعاقدات بالكامل من مرحلة التفاوض حتى التسليم النهائي وجدولة الدفعات</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn btn-outline" onclick="filterDeals('all')"><i class="fa-solid fa-filter"></i> جميع الصفقات</button>
+              <button class="btn btn-primary" onclick="openNewDealModal()"><i class="fa-solid fa-plus"></i> إضافة صفقة جديدة</button>
+            </div>
+          </div>
+
+          <!-- Quick Filter Pills -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-outline active" style="border-color: var(--primary); color: #818cf8;" onclick="filterDeals('all')">الكل (18)</button>
+            <button class="btn btn-sm btn-outline" onclick="filterDeals('جارية')"><span class="badge-dot" style="position:static; display:inline-block; background:#10b981;"></span> جارية (11)</button>
+            <button class="btn btn-sm btn-outline" onclick="filterDeals('قيد التفاوض')"><span class="badge-dot" style="position:static; display:inline-block; background:#f59e0b;"></span> قيد التفاوض (4)</button>
+            <button class="btn btn-sm btn-outline" onclick="filterDeals('مكتملة')"><span class="badge-dot" style="position:static; display:inline-block; background:#6366f1;"></span> مكتملة ومغلقة (3)</button>
+          </div>
+
+          <!-- Full Deals Table -->
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>كود العقد</th>
+                  <th>المشروع ونطاق العمل</th>
+                  <th>العميل والمؤسسة</th>
+                  <th>قيمة العقد</th>
+                  <th>المدفوع</th>
+                  <th>المتبقي</th>
+                  <th>نسبة الإنجاز</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="fullDealsTable">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: CLIENTS DIRECTORY -->
+        <!-- ============================================== -->
+        <section id="tab-clients" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-users" style="color: var(--cyan);"></i> دليل وسجل العملاء</h1>
+              <p>بيانات الشركاء التجاريين، قنوات التواصل، كشوف الحسابات وتاريخ التعاقدات السابقة</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn btn-primary" onclick="openNewClientModal()"><i class="fa-solid fa-user-plus"></i> إضافة عميل جديد</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;" id="clientsCardsGrid">
+            <!-- Client Cards populated dynamically -->
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 4: TASKS KANBAN BOARD -->
+        <!-- ============================================== -->
+        <section id="tab-tasks" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-list-check" style="color: var(--purple);"></i> لوحة المهام والمخرجات التشغيلية (Kanban)</h1>
+              <p>توزيع العمل الفني، متابعة المهام الحرجة، وربط كل مهمة بالصفقة والعميل المسؤول</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn btn-primary" onclick="openNewTaskModal()"><i class="fa-solid fa-plus"></i> مهمة تشغيلية جديدة</button>
+            </div>
+          </div>
+
+          <div class="kanban-board">
+            <!-- Col 1: To Do -->
+            <div class="kanban-col">
+              <div class="kanban-col-head">
+                <div class="kanban-col-title">
+                  <i class="fa-solid fa-hourglass-start" style="color: var(--text-dim);"></i>
+                  <span>بانتظار البدء (To Do)</span>
+                </div>
+                <span class="kanban-count" id="count-todo">2</span>
+              </div>
+              <div id="col-todo" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-warning" style="margin-bottom:8px;">تصميم UI/UX</span>
+                  <div class="kanban-card-title">إعداد النماذج الأولية لتطبيق المتجر الإلكتروني</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: تطبيق مجموعة الفارس</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#f59e0b;">س.ح</div>
+                      <span>سارة حسن</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> 14 نوفمبر</span>
+                  </div>
+                </div>
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-purple" style="margin-bottom:8px;">إعداد البنية</span>
+                  <div class="kanban-card-title">تهيئة بيئة السيرفرات وقاعدة بيانات Cloud</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: نظام الأفق اللوجستي</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#8b5cf6;">ك.م</div>
+                      <span>كريم محمود</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> 18 نوفمبر</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col 2: In Progress -->
+            <div class="kanban-col">
+              <div class="kanban-col-head">
+                <div class="kanban-col-title">
+                  <i class="fa-solid fa-spinner fa-spin" style="color: var(--primary);"></i>
+                  <span>قيد التنفيذ (In Progress)</span>
+                </div>
+                <span class="kanban-count" id="count-progress">3</span>
+              </div>
+              <div id="col-progress" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-info" style="margin-bottom:8px;">تطوير برمجي Backend</span>
+                  <div class="kanban-card-title">بناء الـ REST APIs وتكامل بوابات الدفع الإلكتروني</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: بوابة الفهد الاستثمارية</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#06b6d4;">أ.ع</div>
+                      <span>أحمد عصام</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> غداً</span>
+                  </div>
+                </div>
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-success" style="margin-bottom:8px;">حملات تسويقية</span>
+                  <div class="kanban-card-title">إطلاق الحملة الإعلانية للربع الأخير وتحسين التحويلات</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: حملة شركة الرواد</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#10b981;">ن.س</div>
+                      <span>نور سامي</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> 12 نوفمبر</span>
+                  </div>
+                </div>
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-warning" style="margin-bottom:8px;">برمجة Frontend</span>
+                  <div class="kanban-card-title">تطوير لوحة تحكم إدارة المنتجات والطلبات</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: متجر أوميجا ريتيل</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#6366f1;">م.خ</div>
+                      <span>محمد خالد</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> 15 نوفمبر</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col 3: In Review -->
+            <div class="kanban-col">
+              <div class="kanban-col-head">
+                <div class="kanban-col-title">
+                  <i class="fa-solid fa-eye" style="color: var(--warning);"></i>
+                  <span>المراجعة والتدقيق (Review)</span>
+                </div>
+                <span class="kanban-count" id="count-review">2</span>
+              </div>
+              <div id="col-review" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-purple" style="margin-bottom:8px;">فحص الجودة QA</span>
+                  <div class="kanban-card-title">اختبارات الأمان والأداء وضغط السيرفرات (Load Testing)</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: نظام الأفق اللوجستي</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#ef4444;">ح.ص</div>
+                      <span>حسام صلاح</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> اليوم</span>
+                  </div>
+                </div>
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-info" style="margin-bottom:8px;">مراجعة العميل</span>
+                  <div class="kanban-card-title">عرض مسودة الهوية البصرية وشعارات البراند</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: تطوير براند نوفا</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#f59e0b;">س.ح</div>
+                      <span>سارة حسن</span>
+                    </div>
+                    <span><i class="fa-regular fa-calendar"></i> 10 نوفمبر</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col 4: Done -->
+            <div class="kanban-col">
+              <div class="kanban-col-head">
+                <div class="kanban-col-title">
+                  <i class="fa-solid fa-circle-check" style="color: var(--success);"></i>
+                  <span>مكتملة ومسلمة (Done)</span>
+                </div>
+                <span class="kanban-count" id="count-done">3</span>
+              </div>
+              <div id="col-done" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-success" style="margin-bottom:8px;">تسليم نهائي</span>
+                  <div class="kanban-card-title">تسليم المنصة ورفع الكود على السيرفر الإنتاجي</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: منصة كابيتال العقارية</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#10b981;">أ.ع</div>
+                      <span>أحمد عصام</span>
+                    </div>
+                    <span><i class="fa-solid fa-check"></i> مكتملة</span>
+                  </div>
+                </div>
+                <!-- Card -->
+                <div class="kanban-card">
+                  <span class="badge badge-success" style="margin-bottom:8px;">عقد استشاري</span>
+                  <div class="kanban-card-title">تسليم وثيقة التحول الرقمي وخطة الأتمتة السنوية</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">صفقة: استشارات مجموعة النور</div>
+                  <div class="kanban-card-meta">
+                    <div class="kanban-assignee">
+                      <div class="avatar-xs" style="background:#4f46e5;">م.ع</div>
+                      <span>محمد علي</span>
+                    </div>
+                    <span><i class="fa-solid fa-check"></i> مكتملة</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 5: FINANCE & INVOICES -->
+        <!-- ============================================== -->
+        <section id="tab-finance" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-sack-dollar" style="color: var(--emerald);"></i> المالية وسجل الفواتير والتحصيلات</h1>
+              <p>إدارة الفواتير الضريبية، الدفعات المستحقة، تواريخ التحصيل، ومتابعة المطالبات</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn btn-outline" onclick="alert('تم تجهيز كشف الحساب وتصديره بنجاح')"><i class="fa-solid fa-download"></i> كشف الحساب العام</button>
+              <button class="btn btn-primary" onclick="alert('نافذة إنشاء فاتورة ضريبية جديدة')"><i class="fa-solid fa-plus"></i> إصدار فاتورة</button>
+            </div>
+          </div>
+
+          <!-- Financial Snapshot -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-value" style="color: #34d399;">1,240,000 ج.م</div>
+              <div class="kpi-label">المحصل بالخزينة</div>
+              <div class="kpi-subtext">حوالات بنكية ودفعات مؤكدة</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" style="color: #fbbf24;">480,000 ج.م</div>
+              <div class="kpi-label">فواتير قيد الاستحقاق (أقل من 30 يوم)</div>
+              <div class="kpi-subtext">دفعات مرحلية مرتبطة بتسليمات</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" style="color: #f87171;">130,000 ج.م</div>
+              <div class="kpi-label">مطالبات متأخرة</div>
+              <div class="kpi-subtext">تحتاج إلى متابعة مع الشؤون القانونية</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value" style="color: #818cf8;">31.3%</div>
+              <div class="kpi-label">متوسط هامش الربح</div>
+              <div class="kpi-subtext">أعلى بنسبة 4.2% عن الربع السابق</div>
+            </div>
+          </div>
+
+          <!-- Invoices Table -->
+          <div class="table-container">
+            <div class="table-header-bar">
+              <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main);">
+                <i class="fa-solid fa-file-invoice" style="color: var(--primary);"></i> جدول الفواتير الصادرة والمطالبات
+              </h3>
+              <div style="font-size: 12px; color: var(--text-muted);">إجمالي 24 فاتورة صادرة هذا العام</div>
+            </div>
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>رقم الفاتورة</th>
+                  <th>العميل / الشركة</th>
+                  <th>الوصف</th>
+                  <th>المبلغ</th>
+                  <th>تاريخ الاستحقاق</th>
+                  <th>طريقة الدفع</th>
+                  <th>الحالة</th>
+                  <th>إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="invoicesTable">
+                <!-- Invoices populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 6: DEPARTMENTS & TEAM -->
+        <!-- ============================================== -->
+        <section id="tab-departments" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-sitemap" style="color: var(--warning);"></i> الأقسام التنظيمية وفريق العمل</h1>
+              <p>مراكز العمل التشغيلية، الكوادر البشرية، وتوزيع الصلاحيات الإدارية والفنية</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn btn-primary" onclick="alert('نافذة إضافة عضو جديد للفريق')"><i class="fa-solid fa-user-plus"></i> إضافة موظف</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <!-- Department 1 -->
+            <div class="chart-card">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="kpi-icon icon-indigo"><i class="fa-solid fa-code"></i></div>
+                  <div>
+                    <h3 style="font-size:16px; font-weight:700;">قسم البرمجة والتطوير (Software Engineering)</h3>
+                    <span style="font-size:12px; color:var(--text-muted);">8 مهندسين • 12 مشروع نشط</span>
+                  </div>
+                </div>
+              </div>
+              <p style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">
+                مسؤول عن تطوير المنصات السحابية، تطبيقات الهاتف، لوحات التحكم، وبناء واجهات الـ APIs.
+              </p>
+              <div style="border-top:1px solid var(--border-color); padding-top:12px; display:flex; justify-content:space-between; font-size:12px;">
+                <span>رئيس القسم: <strong>م. أحمد عصام</strong></span>
+                <span class="badge badge-success">نسبة الإنجاز: 92%</span>
+              </div>
+            </div>
+
+            <!-- Department 2 -->
+            <div class="chart-card">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="kpi-icon icon-emerald"><i class="fa-solid fa-bullhorn"></i></div>
+                  <div>
+                    <h3 style="font-size:16px; font-weight:700;">قسم التسويق والوسائط الرقمية (Digital Marketing)</h3>
+                    <span style="font-size:12px; color:var(--text-muted);">6 متخصصين • 8 حملات جارية</span>
+                  </div>
+                </div>
+              </div>
+              <p style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">
+                إدارة الحملات الممولة، تحسين محركات البحث SEO، إنتاج المحتوى، وإدارة منصات التواصل.
+              </p>
+              <div style="border-top:1px solid var(--border-color); padding-top:12px; display:flex; justify-content:space-between; font-size:12px;">
+                <span>رئيس القسم: <strong>أ. نور سامي</strong></span>
+                <span class="badge badge-success">عائد الاستثمار: 4.8x</span>
+              </div>
+            </div>
+
+            <!-- Department 3 -->
+            <div class="chart-card">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="kpi-icon icon-purple"><i class="fa-solid fa-palette"></i></div>
+                  <div>
+                    <h3 style="font-size:16px; font-weight:700;">قسم التصميم والهوية البصرية (Design & Creative)</h3>
+                    <span style="font-size:12px; color:var(--text-muted);">5 مصممين • 6 براندات قيد التطوير</span>
+                  </div>
+                </div>
+              </div>
+              <p style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:16px;">
+                ابتكار الهويات التجارية، تصميم واجهات المستخدم UI/UX، الموشن جرافيك والمواد الإعلانية.
+              </p>
+              <div style="border-top:1px solid var(--border-color); padding-top:12px; display:flex; justify-content:space-between; font-size:12px;">
+                <span>رئيسة القسم: <strong>أ. سارة حسن</strong></span>
+                <span class="badge badge-purple">تسليمات في الموعد</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 7: CLIENT PORTAL PREVIEW -->
+        <!-- ============================================== -->
+        <section id="tab-portal" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-globe" style="color: var(--primary);"></i> بوابة العميل المخصصة (Client Portal)</h1>
+              <p>واجهة مستقلة تسمح لعميل الوكالة بالدخول بحسابه الخاص لمتابعة مشاريعه ومخرجاته وفواتيره ذاتياً</p>
+            </div>
+            <div class="header-btns">
+              <span class="badge badge-info"><i class="fa-solid fa-link"></i> رابط مخصص لكل عميل</span>
+            </div>
+          </div>
+
+          <div class="portal-preview-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <div>
+                <span style="font-size:12px; font-weight:700; color:#818cf8; text-transform:uppercase;">معاينة تجربة العميل (Client View Simulation)</span>
+                <h2 style="font-size:20px; font-weight:800; margin-top:4px;">مرحباً بشركة الفهد القابضة 👋</h2>
+                <p style="font-size:13px; color:var(--text-muted);">أنت تتصفح الآن البوابة تماماً كما يراها العميل عند تسجيل دخوله ببياناته الخاصة</p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary btn-sm"><i class="fa-solid fa-download"></i> تحميل العقود الموقعة</button>
+                <button class="btn btn-outline btn-sm"><i class="fa-solid fa-headset"></i> فتح تذكرة دعم</button>
+              </div>
+            </div>
+
+            <!-- Client Portal KPIs -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-top:20px;">
+              <div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <div style="font-size:12px; color:var(--text-muted);">المشاريع النشطة لك</div>
+                <div style="font-size:22px; font-weight:800; margin-top:4px;">2 مشروع</div>
+              </div>
+              <div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <div style="font-size:12px; color:var(--text-muted);">نسبة الإنجاز العام</div>
+                <div style="font-size:22px; font-weight:800; color:#34d399; margin-top:4px;">75%</div>
+              </div>
+              <div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <div style="font-size:12px; color:var(--text-muted);">الفواتير المسددة</div>
+                <div style="font-size:22px; font-weight:800; color:#818cf8; margin-top:4px;">2 من 3</div>
+              </div>
+              <div style="background:var(--bg-card); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <div style="font-size:12px; color:var(--text-muted);">المتبقي للدفعة الأخيرة</div>
+                <div style="font-size:22px; font-weight:800; color:#fbbf24; margin-top:4px;">110,000 ج.م</div>
+              </div>
+            </div>
+
+            <div style="margin-top:24px; background:var(--bg-card); border-radius:var(--radius-md); padding:18px; border:1px solid var(--border-color);">
+              <h4 style="font-size:14px; font-weight:700; margin-bottom:12px;"><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> تسليمات المشروع الجارية والمخرجات المعتمدة</h4>
+              <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                <li style="display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="fa-solid fa-check-circle" style="color:#10b981; margin-left:6px;"></i> وثيقة نطاق العمل والجدول الزمني المعتمد</span>
+                  <span class="badge badge-success">تم الاعتماد والتسليم</span>
+                </li>
+                <li style="display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="fa-solid fa-check-circle" style="color:#10b981; margin-left:6px;"></i> تصميم نماذج واجهات المستخدم وتجربة التصفح</span>
+                  <span class="badge badge-success">تم الاعتماد والتسليم</span>
+                </li>
+                <li style="display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="fa-solid fa-clock" style="color:#f59e0b; margin-left:6px;"></i> ربط واجهات برمجة التطبيقات وبوابات الدفع</span>
+                  <span class="badge badge-warning">قيد التنفيذ والمراجعة</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 8: SYSTEM SETTINGS -->
+        <!-- ============================================== -->
+        <section id="tab-settings" class="tab-content">
+          <div class="page-header">
+            <div class="page-title">
+              <h1><i class="fa-solid fa-sliders" style="color: var(--primary);"></i> إعدادات المنظومة وصلاحيات الوصول</h1>
+              <p>تخصيص العملات، الضرائب، الأدوار الوظيفية وسياسات الأمان والتكامل</p>
+            </div>
+          </div>
+
+          <div style="max-width: 800px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 28px;">
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label>اسم النظام / الوكالة (Brand Display Name)</label>
+              <input type="text" class="form-control" value="Apex CRM - وكالة إدارة الأعمال المتكاملة" id="sysBrandName" oninput="updateBrandName(this.value)">
+              <small style="font-size:11px; color:var(--text-muted); margin-top:4px;">يمكنك تغيير اسم النظام في أي وقت ليناسب هوية شركتك أو عميلك.</small>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
+              <div class="form-group">
+                <label>العملة الرئيسية</label>
+                <select class="form-control" id="sysCurrency" onchange="updateCurrency(this.value)">
+                  <option value="ج.م" selected>الجنيه المصري (EGP - ج.م)</option>
+                  <option value="ر.س">الريال السعودي (SAR - ر.س)</option>
+                  <option value="د.إ">الدرهم الإماراتي (AED - د.إ)</option>
+                  <option value="$">الدولار الأمريكي (USD - $)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>نسبة ضريبة القيمة المضافة (VAT %)</label>
+                <input type="text" class="form-control" value="14%">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label>الأدوار والصلاحيات النشطة (RBAC)</label>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+                <span class="badge badge-purple">Super Admin (إدارة كاملة)</span>
+                <span class="badge badge-info">Project Manager (مدير مشاريع)</span>
+                <span class="badge badge-success">Accountant (المالية والحسابات)</span>
+                <span class="badge badge-warning">Team Member (فني وموظف)</span>
+                <span class="badge badge-danger">Client Viewer (قراءة فقط للعميل)</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="alert('تم حفظ الإعدادات وتحديث المنظومة بنجاح!')">حفظ التغييرات</button>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD / VIEW DEAL -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="dealModal">
+    <div class="modal-window">
+      <div class="modal-head">
+        <h3 id="dealModalTitle"><i class="fa-solid fa-handshake" style="color:var(--primary); margin-left:8px;"></i> تفاصيل الصفقة</h3>
+        <button class="modal-close" onclick="closeModal('dealModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="dealModalBody">
+        <!-- Form elements -->
+      </div>
+      <div class="modal-footer" id="dealModalFooter">
+        <button class="btn btn-outline" onclick="closeModal('dealModal')">إغلاق</button>
+        <button class="btn btn-primary" onclick="saveDeal()">حفظ الصفقة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD CLIENT -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="clientModal">
+    <div class="modal-window">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-user-plus" style="color:var(--cyan); margin-left:8px;"></i> إضافة عميل جديد</h3>
+        <button class="modal-close" onclick="closeModal('clientModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>اسم المسؤول / جهة الاتصال</label>
+          <input type="text" class="form-control" id="newClientName" placeholder="مثال: م. أحمد منصور">
+        </div>
+        <div class="form-group">
+          <label>اسم الشركة أو المؤسسة</label>
+          <input type="text" class="form-control" id="newClientCompany" placeholder="مثال: شركة النماء للحلول اللوجستية">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>رقم الهاتف / واتساب</label>
+            <input type="text" class="form-control" id="newClientPhone" placeholder="+20 100 123 4567">
+          </div>
+          <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" class="form-control" id="newClientEmail" placeholder="contact@company.com">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('clientModal')">إلغاء</button>
+        <button class="btn btn-primary" onclick="saveNewClient()">إضافة العميل</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT LOGIC & STATE -->
+  <!-- ============================================== -->
+  <script>
+    // State Data
+    let currencySymbol = "ج.م";
+
+    const dealsData = [
+      {
+        id: "DL-101",
+        title: "تطوير المنصة السحابية B2B وبوابة الدفع",
+        client: "مجموعة الفهد القابضة",
+        contact: "م. خالد الفهد",
+        total: 420000,
+        paid: 310000,
+        remaining: 110000,
+        progress: 75,
+        status: "جارية",
+        date: "2026-09-15",
+        deadline: "2026-12-01",
+        dept: "البرمجة والتطوير"
+      },
+      {
+        id: "DL-102",
+        title: "إطلاق حملة تسويق موسمية وإدارة الإعلانات",
+        client: "شركة الرواد للتجارة الدولية",
+        contact: "أ. منى زهران",
+        total: 180000,
+        paid: 180000,
+        remaining: 0,
+        progress: 100,
+        status: "مكتملة",
+        date: "2026-08-01",
+        deadline: "2026-10-30",
+        dept: "التسويق الرقمي"
+      },
+      {
+        id: "DL-103",
+        title: "بناء الهوية البصرية الكاملة وتصميم UX/UI",
+        client: "شركة نوفا للتطوير العقاري",
+        contact: "د. طارق سليم",
+        total: 250000,
+        paid: 150000,
+        remaining: 100000,
+        progress: 60,
+        status: "جارية",
+        date: "2026-10-05",
+        deadline: "2026-12-15",
+        dept: "التصميم والهوية"
+      },
+      {
+        id: "DL-104",
+        title: "نظام إدارة الأسطول والتتبع اللوجستي",
+        client: "شركة الأفق اللوجستية",
+        contact: "م. يوسف كامل",
+        total: 390000,
+        paid: 200000,
+        remaining: 190000,
+        progress: 45,
+        status: "جارية",
+        date: "2026-10-18",
+        deadline: "2027-01-15",
+        dept: "البرمجة والتطوير"
+      },
+      {
+        id: "DL-105",
+        title: "استشارات التحول الرقمي وأتمتة العمليات",
+        client: "مجموعة النور للخدمات الطبية",
+        contact: "د. إبراهيم فوزي",
+        total: 190000,
+        paid: 190000,
+        remaining: 0,
+        progress: 100,
+        status: "مكتملة",
+        date: "2026-07-10",
+        deadline: "2026-09-30",
+        dept: "الاستشارات"
+      },
+      {
+        id: "DL-106",
+        title: "تطبيق الموبايل للتجارة الإلكترونية (iOS & Android)",
+        client: "مؤسسة الفارس للتجزئة",
+        contact: "أ. عمر الشريف",
+        total: 310000,
+        paid: 120000,
+        remaining: 190000,
+        progress: 35,
+        status: "جارية",
+        date: "2026-10-25",
+        deadline: "2027-02-10",
+        dept: "البرمجة والتطوير"
+      },
+      {
+        id: "DL-107",
+        title: "عقد صيانة ودعم فني سنوي 24/7",
+        client: "الشركة الدولية للاستثمار",
+        contact: "أ. كريم عبد المنعم",
+        total: 110000,
+        paid: 90000,
+        remaining: 20000,
+        progress: 90,
+        status: "قيد التفاوض",
+        date: "2026-11-01",
+        deadline: "2026-11-20",
+        dept: "الدعم والعمليات"
+      }
+    ];
+
+    const clientsData = [
+      {
+        name: "مجموعة الفهد القابضة",
+        person: "م. خالد الفهد",
+        phone: "+20 100 456 7890",
+        email: "info@alfahad-group.com",
+        dealsCount: 3,
+        totalSpent: 680000,
+        status: "نشط مميز (VIP)",
+        since: "2024"
+      },
+      {
+        name: "شركة الرواد للتجارة الدولية",
+        person: "أ. منى زهران",
+        phone: "+20 102 334 5566",
+        email: "m.zahran@alrowad-trade.com",
+        dealsCount: 2,
+        totalSpent: 340000,
+        status: "نشط",
+        since: "2025"
+      },
+      {
+        name: "شركة نوفا للتطوير العقاري",
+        person: "د. طارق سليم",
+        phone: "+20 111 889 9001",
+        email: "tareq@nova-developments.com",
+        dealsCount: 2,
+        totalSpent: 450000,
+        status: "نشط",
+        since: "2024"
+      },
+      {
+        name: "شركة الأفق اللوجستية",
+        person: "م. يوسف كامل",
+        phone: "+20 120 776 5432",
+        email: "youssef@alofok-logistics.com",
+        dealsCount: 1,
+        totalSpent: 390000,
+        status: "نشط",
+        since: "2026"
+      },
+      {
+        name: "مجموعة النور للخدمات الطبية",
+        person: "د. إبراهيم فوزي",
+        phone: "+20 101 223 3445",
+        email: "management@alnoor-medical.com",
+        dealsCount: 3,
+        totalSpent: 510000,
+        status: "نشط مميز (VIP)",
+        since: "2023"
+      },
+      {
+        name: "مؤسسة الفارس للتجزئة",
+        person: "أ. عمر الشريف",
+        phone: "+20 109 998 8776",
+        email: "omar@alfares-retail.com",
+        dealsCount: 1,
+        totalSpent: 310000,
+        status: "جديد",
+        since: "2026"
+      }
+    ];
+
+    const invoicesData = [
+      { id: "INV-2026-089", client: "مجموعة الفهد القابضة", desc: "دفعة المرحلة الثانية - تطوير منصة B2B", amount: 160000, date: "2026-11-15", method: "تحويل بنكي", status: "مدفوعة" },
+      { id: "INV-2026-090", client: "شركة نوفا العقارية", desc: "الدفعة الأولى - تصميم الهوية وواجهات UX", amount: 150000, date: "2026-10-10", method: "تحويل بنكي", status: "مدفوعة" },
+      { id: "INV-2026-091", client: "شركة الأفق اللوجستية", desc: "الدفعة المقدمة - نظام إدارة الأسطول", amount: 200000, date: "2026-10-20", method: "شيك معتمد", status: "مدفوعة" },
+      { id: "INV-2026-092", client: "مؤسسة الفارس للتجزئة", desc: "دفعة البدء - تطبيق الموبايل التجاري", amount: 120000, date: "2026-11-01", method: "تحويل بنكي", status: "مدفوعة" },
+      { id: "INV-2026-093", client: "مجموعة الفهد القابضة", desc: "الدفعة النهائية المتبقية عند التسليم", amount: 110000, date: "2026-12-05", method: "تحويل بنكي", status: "قيد الاستحقاق" },
+      { id: "INV-2026-094", client: "شركة نوفا العقارية", desc: "الدفعة الثانية المستحقة", amount: 100000, date: "2026-12-15", method: "تحويل بنكي", status: "قيد الاستحقاق" },
+      { id: "INV-2026-085", client: "الشركة الدولية للاستثمار", desc: "فاتورة متأخرة عن خدمات صيانة واستشارات", amount: 20000, date: "2026-10-01", method: "تحويل بنكي", status: "متأخرة" }
+    ];
+
+    // Initialize Page
+    document.addEventListener("DOMContentLoaded", () => {
+      renderOverviewDeals();
+      renderFullDeals();
+      renderClients();
+      renderInvoices();
+      initCharts();
+    });
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+      
+      const targetTab = document.getElementById("tab-" + tabId);
+      if (targetTab) {
+        targetTab.classList.add("active");
+      }
+      
+      // Update nav link
+      const links = document.querySelectorAll(".nav-item");
+      links.forEach(l => {
+        if (l.getAttribute("onclick") && l.getAttribute("onclick").includes(tabId)) {
+          l.classList.add("active");
+        }
+      });
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Render Overview Deals
+    function renderOverviewDeals() {
+      const tbody = document.getElementById("overviewDealsTable");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      dealsData.slice(0, 5).forEach(deal => {
+        const badgeClass = deal.status === "جارية" ? "badge-success" : (deal.status === "مكتملة" ? "badge-info" : "badge-warning");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${deal.id}</strong></td>
+          <td><span style="font-weight:700;">${deal.title}</span></td>
+          <td>${deal.client}</td>
+          <td style="font-weight:700;">${deal.total.toLocaleString()} ${currencySymbol}</td>
+          <td style="color:#34d399; font-weight:700;">${deal.paid.toLocaleString()} ${currencySymbol}</td>
+          <td style="color:#fbbf24; font-weight:700;">${deal.remaining.toLocaleString()} ${currencySymbol}</td>
+          <td><span class="badge ${badgeClass}">${deal.status}</span></td>
+          <td>${deal.date}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="viewDealDetail('${deal.id}')"><i class="fa-solid fa-eye"></i> تفاصيل</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Full Deals Table
+    function renderFullDeals(filter = "all") {
+      const tbody = document.getElementById("fullDealsTable");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      const filtered = filter === "all" ? dealsData : dealsData.filter(d => d.status === filter);
+
+      filtered.forEach(deal => {
+        const badgeClass = deal.status === "جارية" ? "badge-success" : (deal.status === "مكتملة" ? "badge-info" : "badge-warning");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${deal.id}</strong></td>
+          <td>
+            <div style="font-weight:700; color:var(--text-main);">${deal.title}</div>
+            <div style="font-size:11px; color:var(--text-muted);"><i class="fa-solid fa-layer-group"></i> ${deal.dept}</div>
+          </td>
+          <td>
+            <div style="font-weight:600;">${deal.client}</div>
+            <div style="font-size:11px; color:var(--text-dim);">${deal.contact}</div>
+          </td>
+          <td style="font-weight:700;">${deal.total.toLocaleString()} ${currencySymbol}</td>
+          <td style="color:#34d399; font-weight:700;">${deal.paid.toLocaleString()} ${currencySymbol}</td>
+          <td style="color:#fbbf24; font-weight:700;">${deal.remaining.toLocaleString()} ${currencySymbol}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="flex:1; background:rgba(255,255,255,0.08); height:6px; border-radius:99px; overflow:hidden;">
+                <div style="width:${deal.progress}%; height:100%; background:var(--primary); border-radius:99px;"></div>
+              </div>
+              <span style="font-size:11px; font-weight:700;">${deal.progress}%</span>
+            </div>
+          </td>
+          <td><span class="badge ${badgeClass}">${deal.status}</span></td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="viewDealDetail('${deal.id}')" title="عرض"><i class="fa-solid fa-eye"></i></button>
+              <button class="btn btn-outline btn-sm" onclick="alert('تعديل الصفقة')" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterDeals(status) {
+      renderFullDeals(status);
+    }
+
+    // Render Clients
+    function renderClients() {
+      const grid = document.getElementById("clientsCardsGrid");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      clientsData.forEach(client => {
+        const card = document.createElement("div");
+        card.className = "chart-card";
+        card.style.display = "flex";
+        card.style.flexDirection = "column";
+        card.style.justifyContent = "space-between";
+        card.innerHTML = `
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+              <div class="user-avatar" style="width:48px; height:48px; font-size:18px; background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                ${client.name.substring(0, 2)}
+              </div>
+              <span class="badge ${client.status.includes('VIP') ? 'badge-purple' : 'badge-success'}">${client.status}</span>
+            </div>
+            <h3 style="font-size:17px; font-weight:800; margin-bottom:4px;">${client.name}</h3>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;"><i class="fa-solid fa-user-tie"></i> المسؤول: ${client.person}</div>
+            
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--text-muted); background:rgba(0,0,0,0.15); padding:12px; border-radius:var(--radius-sm); margin-bottom:16px;">
+              <div><i class="fa-solid fa-phone" style="width:18px; color:var(--primary);"></i> ${client.phone}</div>
+              <div><i class="fa-solid fa-envelope" style="width:18px; color:var(--primary);"></i> ${client.email}</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:12px; border-top:1px solid var(--border-color); padding-top:10px;">
+              <span>الصفقات: <strong>${client.dealsCount}</strong></span>
+              <span>إجمالي المعاملات: <strong style="color:#34d399;">${client.totalSpent.toLocaleString()} ${currencySymbol}</strong></span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-outline btn-sm" style="flex:1;" onclick="viewClientProfile('${client.name}')"><i class="fa-solid fa-folder-open"></i> الملف والصفقات</button>
+              <button class="btn btn-primary btn-sm" onclick="alert('فتح محادثة واتساب مع: ' + '${client.phone}')"><i class="fa-brands fa-whatsapp"></i></button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Render Invoices
+    function renderInvoices() {
+      const tbody = document.getElementById("invoicesTable");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      invoicesData.forEach(inv => {
+        const badgeClass = inv.status === "مدفوعة" ? "badge-success" : (inv.status === "قيد الاستحقاق" ? "badge-warning" : "badge-danger");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${inv.id}</strong></td>
+          <td><strong>${inv.client}</strong></td>
+          <td style="font-size:12px; color:var(--text-muted);">${inv.desc}</td>
+          <td style="font-weight:800; color:var(--text-main);">${inv.amount.toLocaleString()} ${currencySymbol}</td>
+          <td>${inv.date}</td>
+          <td><span class="badge badge-info">${inv.method}</span></td>
+          <td><span class="badge ${badgeClass}">${inv.status}</span></td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="alert('طباعة وتحميل الفاتورة ${inv.id}')"><i class="fa-solid fa-print"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // View Deal Modal
+    function viewDealDetail(dealId) {
+      const deal = dealsData.find(d => d.id === dealId);
+      if (!deal) return;
+
+      document.getElementById("dealModalTitle").innerHTML = `<i class="fa-solid fa-handshake" style="color:var(--primary); margin-left:8px;"></i> تفاصيل عقد: ${deal.id}`;
+      
+      const body = document.getElementById("dealModalBody");
+      body.innerHTML = `
+        <div style="background:rgba(0,0,0,0.2); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:4px;">${deal.title}</h4>
+          <span style="font-size:12px; color:var(--text-muted);">القسم المسؤول: ${deal.dept}</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>العميل والمؤسسة</label>
+            <input type="text" class="form-control" value="${deal.client}" readonly>
+          </div>
+          <div class="form-group">
+            <label>جهة الاتصال</label>
+            <input type="text" class="form-control" value="${deal.contact}" readonly>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>إجمالي العقد</label>
+            <input type="text" class="form-control" value="${deal.total.toLocaleString()} ${currencySymbol}" readonly style="font-weight:700;">
+          </div>
+          <div class="form-group">
+            <label>المسدد</label>
+            <input type="text" class="form-control" value="${deal.paid.toLocaleString()} ${currencySymbol}" readonly style="color:#34d399; font-weight:700;">
+          </div>
+          <div class="form-group">
+            <label>المتبقي</label>
+            <input type="text" class="form-control" value="${deal.remaining.toLocaleString()} ${currencySymbol}" readonly style="color:#fbbf24; font-weight:700;">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>تاريخ البدء</label>
+            <input type="text" class="form-control" value="${deal.date}" readonly>
+          </div>
+          <div class="form-group">
+            <label>الموعد النهائي للتسليم</label>
+            <input type="text" class="form-control" value="${deal.deadline}" readonly>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>نسبة الإنجاز الفعلي (${deal.progress}%)</label>
+          <div style="background:rgba(255,255,255,0.08); height:10px; border-radius:99px; overflow:hidden; margin-top:4px;">
+            <div style="width:${deal.progress}%; height:100%; background:var(--primary); border-radius:99px;"></div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("dealModalFooter").innerHTML = `
+        <button class="btn btn-outline" onclick="closeModal('dealModal')">إغلاق</button>
+        <button class="btn btn-primary" onclick="alert('تم تحديث بيانات العقد')"><i class="fa-solid fa-save"></i> حفظ التحديثات</button>
+      `;
+
+      openModal("dealModal");
+    }
+
+    // New Deal Modal
+    function openNewDealModal() {
+      document.getElementById("dealModalTitle").innerHTML = `<i class="fa-solid fa-plus-circle" style="color:var(--primary); margin-left:8px;"></i> تسجيل صفقة / عقد جديد`;
+      
+      const body = document.getElementById("dealModalBody");
+      body.innerHTML = `
+        <div class="form-group">
+          <label>عنوان الصفقة أو نطاق العمل</label>
+          <input type="text" class="form-control" id="dealInputTitle" placeholder="مثال: تطوير متجر إلكتروني وتطبيق جوال">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>العميل</label>
+            <select class="form-control" id="dealInputClient">
+              ${clientsData.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>القسم المنفذ</label>
+            <select class="form-control" id="dealInputDept">
+              <option value="البرمجة والتطوير">البرمجة والتطوير</option>
+              <option value="التسويق الرقمي">التسويق الرقمي</option>
+              <option value="التصميم والهوية">التصميم والهوية</option>
+              <option value="الاستشارات">الاستشارات والحلول</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>إجمالي قيمة العقد (${currencySymbol})</label>
+            <input type="number" class="form-control" id="dealInputTotal" placeholder="150000">
+          </div>
+          <div class="form-group">
+            <label>الدفعة المقدمة المسددة (${currencySymbol})</label>
+            <input type="number" class="form-control" id="dealInputPaid" placeholder="50000">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>تاريخ التعاقد</label>
+            <input type="date" class="form-control" id="dealInputDate" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+          <div class="form-group">
+            <label>تاريخ التسليم المتوقع</label>
+            <input type="date" class="form-control" id="dealInputDeadline">
+          </div>
+        </div>
+      `;
+
+      document.getElementById("dealModalFooter").innerHTML = `
+        <button class="btn btn-outline" onclick="closeModal('dealModal')">إلغاء</button>
+        <button class="btn btn-primary" onclick="saveNewDeal()"><i class="fa-solid fa-check"></i> اعتماد العقد</button>
+      `;
+
+      openModal("dealModal");
+    }
+
+    function saveNewDeal() {
+      const title = document.getElementById("dealInputTitle").value;
+      const client = document.getElementById("dealInputClient").value;
+      const dept = document.getElementById("dealInputDept").value;
+      const total = parseFloat(document.getElementById("dealInputTotal").value) || 0;
+      const paid = parseFloat(document.getElementById("dealInputPaid").value) || 0;
+      const date = document.getElementById("dealInputDate").value;
+      const deadline = document.getElementById("dealInputDeadline").value || "2027-01-01";
+
+      if (!title || total <= 0) {
+        alert("يرجى إدخال عنوان الصفقة والقيمة المالية بشكل صحيح.");
+        return;
+      }
+
+      const newId = "DL-" + (100 + dealsData.length + 1);
+      dealsData.unshift({
+        id: newId,
+        title: title,
+        client: client,
+        contact: "المسؤول المالي",
+        total: total,
+        paid: paid,
+        remaining: Math.max(0, total - paid),
+        progress: 10,
+        status: "جارية",
+        date: date,
+        deadline: deadline,
+        dept: dept
+      });
+
+      closeModal("dealModal");
+      renderOverviewDeals();
+      renderFullDeals();
+      alert("تمت إضافة الصفقة الجديدة بنجاح برقم: " + newId);
+    }
+
+    // View Client Profile
+    function viewClientProfile(clientName) {
+      const client = clientsData.find(c => c.name === clientName);
+      if (!client) return;
+
+      const relatedDeals = dealsData.filter(d => d.client === clientName);
+      let dealsListHtml = relatedDeals.map(d => `
+        <div style="background:rgba(0,0,0,0.15); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; font-size:13px;">${d.title}</div>
+            <div style="font-size:11px; color:var(--text-muted);">كود العقد: ${d.id} • الحالة: ${d.status}</div>
+          </div>
+          <div style="text-align:left;">
+            <div style="font-weight:700; color:#34d399;">${d.total.toLocaleString()} ${currencySymbol}</div>
+          </div>
+        </div>
+      `).join('');
+
+      if (!dealsListHtml) {
+        dealsListHtml = `<div style="font-size:12px; color:var(--text-dim); text-align:center; padding:10px;">لا توجد صفقات مسجلة بعد</div>`;
+      }
+
+      document.getElementById("dealModalTitle").innerHTML = `<i class="fa-solid fa-address-card" style="color:var(--cyan); margin-left:8px;"></i> كشف حساب وبروفايل: ${client.name}`;
+      
+      const body = document.getElementById("dealModalBody");
+      body.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+          <div class="form-group">
+            <label>جهة الاتصال</label>
+            <input type="text" class="form-control" value="${client.person}" readonly>
+          </div>
+          <div class="form-group">
+            <label>رقم الهاتف</label>
+            <input type="text" class="form-control" value="${client.phone}" readonly>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+          <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="text" class="form-control" value="${client.email}" readonly>
+          </div>
+          <div class="form-group">
+            <label>إجمالي التعاملات</label>
+            <input type="text" class="form-control" value="${client.totalSpent.toLocaleString()} ${currencySymbol}" readonly style="font-weight:800; color:#34d399;">
+          </div>
+        </div>
+
+        <h4 style="font-size:13px; font-weight:700; margin-bottom:8px; color:var(--text-main);"><i class="fa-solid fa-folder-tree"></i> العقود والصفقات المرتبطة</h4>
+        ${dealsListHtml}
+      `;
+
+      document.getElementById("dealModalFooter").innerHTML = `
+        <button class="btn btn-outline" onclick="closeModal('dealModal')">إغلاق</button>
+      `;
+
+      openModal("dealModal");
+    }
+
+    // New Client Modal
+    function openNewClientModal() {
+      openModal("clientModal");
+    }
+
+    function saveNewClient() {
+      const name = document.getElementById("newClientName").value;
+      const comp = document.getElementById("newClientCompany").value;
+      const phone = document.getElementById("newClientPhone").value;
+      const email = document.getElementById("newClientEmail").value;
+
+      if (!comp) {
+        alert("يرجى كتابة اسم الشركة أو المؤسسة.");
+        return;
+      }
+
+      clientsData.unshift({
+        name: comp,
+        person: name || "المسؤول التجاري",
+        phone: phone || "+20 100 000 0000",
+        email: email || "info@domain.com",
+        dealsCount: 0,
+        totalSpent: 0,
+        status: "جديد",
+        since: "2026"
+      });
+
+      closeModal("clientModal");
+      renderClients();
+      alert("تمت إضافة العميل بنجاح إلى قاعدة البيانات!");
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.add("active");
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+
+    // Notification Alert
+    function showNotificationAlert() {
+      alert("مركز الإشعارات:\n• استحقاق دفعة جديدة من مجموعة الفهد بقيمة 110,000 ج.م قريباً\n• تم الانتهاء من مراجعة مهمة فحص الأمان لمشروع الأفق\n• عميل جديد بانتظار الموافقة");
+    }
+
+    // Export Report
+    function exportReport() {
+      alert("جاري إنشاء التقرير المالي الشامل بصيغة PDF...\nتم تجهيز البيانات بنجاح!");
+    }
+
+    // Global Search
+    function handleGlobalSearch(e) {
+      const val = e.target.value.toLowerCase();
+      if (!val) {
+        renderFullDeals();
+        return;
+      }
+      const filtered = dealsData.filter(d => 
+        d.title.toLowerCase().includes(val) || 
+        d.client.toLowerCase().includes(val) || 
+        d.id.toLowerCase().includes(val)
+      );
+      renderFullDeals("all");
+      // If user presses Enter, jump to deals
+      if (e.key === "Enter") {
+        switchTab("deals");
+      }
+    }
+
+    // Settings Updates
+    function updateBrandName(name) {
+      if (name) {
+        document.querySelector(".brand-info h2").textContent = name.split(" - ")[0];
+        document.title = name;
+      }
+    }
+
+    function updateCurrency(curr) {
+      currencySymbol = curr;
+      renderOverviewDeals();
+      renderFullDeals();
+      renderClients();
+      renderInvoices();
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.getElementById("themeIcon");
+      if (body.getAttribute("data-theme") === "dark") {
+        body.setAttribute("data-theme", "light");
+        icon.className = "fa-solid fa-sun";
+      } else {
+        body.setAttribute("data-theme", "dark");
+        icon.className = "fa-solid fa-moon";
+      }
+    }
+
+    // Charts Initialization
+    function initCharts() {
+      // 1. Revenue Chart
+      const ctxRev = document.getElementById("revenueChart");
+      if (ctxRev) {
+        new Chart(ctxRev, {
+          type: "bar",
+          data: {
+            labels: ["يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر"],
+            datasets: [
+              {
+                label: "إجمالي قيمة العقود (ج.م)",
+                data: [210000, 280000, 340000, 390000, 420000, 490000],
+                backgroundColor: "rgba(79, 70, 229, 0.7)",
+                borderRadius: 6
+              },
+              {
+                label: "التحصيلات الفعلية (ج.م)",
+                data: [180000, 230000, 290000, 310000, 360000, 410000],
+                backgroundColor: "rgba(16, 185, 129, 0.7)",
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+                rtl: true,
+                labels: {
+                  color: "#94a3b8",
+                  font: { family: "Cairo", size: 12 }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: "rgba(255,255,255,0.05)" },
+                ticks: { color: "#94a3b8", font: { family: "Cairo" } }
+              },
+              y: {
+                grid: { color: "rgba(255,255,255,0.05)" },
+                ticks: { color: "#94a3b8", font: { family: "Cairo" } }
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Deals Distribution Chart
+      const ctxDist = document.getElementById("dealsDistChart");
+      if (ctxDist) {
+        new Chart(ctxDist, {
+          type: "doughnut",
+          data: {
+            labels: ["البرمجة والتطوير", "التسويق الرقمي", "التصميم والهوية", "الاستشارات"],
+            datasets: [{
+              data: [50, 25, 15, 10],
+              backgroundColor: [
+                "#4f46e5",
+                "#10b981",
+                "#8b5cf6",
+                "#f59e0b"
+              ],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                rtl: true,
+                labels: {
+                  color: "#94a3b8",
+                  font: { family: "Cairo", size: 11 }
+                }
+              }
+            },
+            cutout: "70%"
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
